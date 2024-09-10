@@ -1,6 +1,17 @@
-export const ListaCategorias = () => {
+import categorias from '../../data/ListaCategorias.json';
+import { BtnCategoria } from './BtnCategoria';
+
+type Props = {};
+
+export const ListaCategorias = ({}: Props) => {
   return (
-    <div className="d-flex">
-    </div>
-  )
-}
+    <nav className="flex gap-4 md:gap-6 mb-6">
+      {categorias.map(category => (
+        <BtnCategoria
+          key={category.id}
+          category={category}
+        />
+      ))}
+    </nav>
+  );
+};
