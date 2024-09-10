@@ -1,0 +1,23 @@
+[
+    {
+        "id": 1,
+        "nombre": "Pizza",
+        "cantidad_productos": 10,
+        "ventas": 0,
+        "imagen": "url_pizza.jpg"
+    },
+    {
+        "id": 2,
+        "nombre": "Bebidas",
+        "cantidad_productos": 15,
+        "ventas": 0,
+        "imagen": "url_bebidas.jpg"
+    },
+    {
+        "id": 3,
+        "nombre": "Hamburguesas",
+        "cantidad_productos": 8,
+        "ventas": 0,
+        "imagen": "url_hamburguesas.jpg"
+    }
+]
