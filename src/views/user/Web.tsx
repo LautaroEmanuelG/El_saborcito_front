@@ -1,6 +1,5 @@
 import { Header } from '../../components/header/Header';
 import { ListaCategorias } from '../../components/categorias/ListaCategorias';
-import { CardProducto } from '../../components/producto/CardPruducto';
 
 type Props = {};
 
