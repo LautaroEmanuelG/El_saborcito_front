@@ -6,7 +6,7 @@
         "precio": 8.99,
         "stock": 20,
         "ventas": 0,
-        "imagen": "url_margherita.jpg"
+        "imagen": ["/img/productos/pizzas/pizzaMargherita.webp","/img/productos/pizzas/pizzaMargherita.jpg"]
     },
     {
         "categoria": "Pizza",
@@ -15,7 +15,7 @@
         "precio": 9.99,
         "stock": 15,
         "ventas": 0,
-        "imagen": "url_pepperoni.jpg"
+        "imagen": ["/img/productos/pizzas/pizzaPeperoni.webp","/img/productos/pizzas/pizzaPeperoni.jpg"]
     },
     {
         "categoria": "Pizza",
@@ -24,7 +24,7 @@
         "precio": 10.99,
         "stock": 10,
         "ventas": 0,
-        "imagen": "url_cuatro_quesos.jpg"
+        "imagen": ["/img/productos/pizzas/pizzaCuatroQuesos.webp","/img/productos/pizzas/pizzaCuatroQuesos.jpg"]
     },
     {
         "categoria": "Pizza",
@@ -33,7 +33,7 @@
         "precio": 9.50,
         "stock": 12,
         "ventas": 0,
-        "imagen": "url_hawaiana.jpg"
+        "imagen": ["/img/productos/pizzas/pizzaHawaiana.webp","/img/productos/pizzas/pizzaHawaiana.jpg"]
     },
     {
         "categoria": "Bebidas",
@@ -42,7 +42,7 @@
         "precio": 1.50,
         "stock": 50,
         "ventas": 0,
-        "imagen": "url_coca_cola.jpg"
+        "imagen": ["/img/productos/bebidas/cocaCola.webp","/img/productos/bebidas/cocaCola.jpg"]
     },
     {
         "categoria": "Bebidas",
@@ -51,7 +51,7 @@
         "precio": 1.00,
         "stock": 30,
         "ventas": 0,
-        "imagen": "url_agua_mineral.jpg"
+        "imagen": ["/img/productos/bebidas/aguaMineral.webp","/img/productos/bebidas/aguaMineral.jpg"]
     },
     {
         "categoria": "Bebidas",
@@ -60,7 +60,7 @@
         "precio": 2.00,
         "stock": 25,
         "ventas": 0,
-        "imagen": "url_jugo_naranja.jpg"
+        "imagen": ["/img/productos/bebidas/jugoNaranja.webp","/img/productos/bebidas/jugoNaranja.jpg"]
     },
     {
         "categoria": "Bebidas",
@@ -69,7 +69,7 @@
         "precio": 3.50,
         "stock": 15,
         "ventas": 0,
-        "imagen": "url_cerveza_artesanal.jpg"
+        "imagen": ["/img/productos/bebidas/cervezaArtesanal.webp","/img/productos/bebidas/cervezaArtesanal.jpg"]
     },
     {
         "categoria": "Hamburguesas",
@@ -78,7 +78,7 @@
         "precio": 7.50,
         "stock": 25,
         "ventas": 0,
-        "imagen": "url_hamburguesa_clasica.jpg"
+        "imagen": ["/img/productos/hamburguesas/hamburguesaClasica.webp","/img/productos/hamburguesas/hamburguesaClasica.jpg"]
     },
     {
         "categoria": "Hamburguesas",
@@ -87,7 +87,7 @@
         "precio": 8.00,
         "stock": 20,
         "ventas": 0,
-        "imagen": "url_hamburguesa_queso.jpg"
+        "imagen": ["/img/productos/hamburguesas/hamburguesaConQueso.webp","/img/productos/hamburguesas/hamburguesaConQueso.jpg"]
     },
     {
         "categoria": "Hamburguesas",
@@ -96,7 +96,7 @@
         "precio": 8.50,
         "stock": 18,
         "ventas": 0,
-        "imagen": "url_hamburguesa_bbq.jpg"
+        "imagen": ["/img/productos/hamburguesas/hamburguesaBbq.webp","/img/productos/hamburguesas/hamburguesaBbq.jpg"]
     },
     {
         "categoria": "Hamburguesas",
@@ -105,6 +105,6 @@
         "precio": 7.00,
         "stock": 22,
         "ventas": 0,
-        "imagen": "url_hamburguesa_vegetariana.jpg"
+        "imagen": ["/img/productos/hamburguesas/hamburguesaVegetariana.webp","/img/productos/hamburguesas/hamburguesaVegetariana.jpg"]
     }
 ]
