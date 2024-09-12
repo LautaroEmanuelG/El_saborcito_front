@@ -11,7 +11,7 @@ export const CardProducto = ({ product }: ProductProps) => {
       style={{ width: '300px' }}>
       <div className="relative">
         <img
-          src={product.imagen}
+          src={product.imagen[0] ?? product.imagen}
           alt={product.nombre}
           className="w-full h-64 object-cover"
           style={{ objectFit: 'cover' }}
