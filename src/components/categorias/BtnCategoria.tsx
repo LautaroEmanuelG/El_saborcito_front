@@ -1,8 +1,7 @@
+import type { Categoria } from '../../utils/types';
+
 type Props = {
-  category: {
-    id: number;
-    nombre: string;
-  };
+  category: Categoria;
 };
 
 export const BtnCategoria = ({ category }: Props) => {
@@ -10,7 +9,7 @@ export const BtnCategoria = ({ category }: Props) => {
     <a
       key={category.id}
       href="#"
-      className="text-lg font-medium hover:text-primary transition-colors">
+      className="text-xl font-bold hover:text-primary transition-colors">
       {category.nombre}
     </a>
   );
