@@ -13,5 +13,5 @@ export interface Producto {
   precio: number;
   stock: number;
   ventas: number;
-  imagen: string;
+  imagen: string | string[];
 }
