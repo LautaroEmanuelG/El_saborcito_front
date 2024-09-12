@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { CardProducto } from './CardProducto';
-import { Producto } from '../../utils/types';
 import listaProductos from '../../data/ListaProductos.json';
 
 export const ListaProductos = () => {
