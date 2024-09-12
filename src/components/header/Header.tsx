@@ -18,7 +18,7 @@ export const Header = ({ totalItems }: Props) => {
         </div>
         <div className="flex items-center gap-4">
           <button className="rounded-full">
-            <span className="text-blanco font-bold">Loggin</span>
+            <span className="text-blanco font-bold">Login</span>
           </button>
           {totalItems > 0 && (
             <div className="relative">
