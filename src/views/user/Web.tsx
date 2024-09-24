@@ -3,6 +3,7 @@ import { Header } from '../../components/header/Header';
 import { ListaCategorias } from '../../components/categorias/ListaCategorias';
 import { ListaProductos } from '../../components/producto/ListaProducto';
 import { ModalProducto } from '../../components/producto/ModalProducto';
+import ActiveSlider from '../../components/carrusel/ActiveSlider';  // Importa el carrusel
 
 // Datos de ejemplo para el modal
 const exampleDish = {
@@ -24,6 +25,7 @@ export const Web = () => {
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 w-full">
       <Header totalItems={0} />
       <div className="container mx-auto px-4 md:px-6 py-4 flex flex-col min-h-screen w-full">
+        <ActiveSlider />
         <ListaCategorias />
         <ListaProductos />
         <ModalProducto
