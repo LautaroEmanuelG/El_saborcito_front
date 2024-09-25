@@ -4,12 +4,15 @@ import IconoCarrito from '../iconos/IconoCarrito';
 import IconoLoggin from '../iconos/IconoLoggin';
 import IconoLogoSaborcito from '../iconos/IconoLogoSaborcito';
 import { LoginModal } from '../LoginModal'; // Import the LoginModal
+import { useState } from 'react';
 
 type Props = {
   totalItems: number;
 };
 
 export const Header = ({ totalItems }: Props) => {
+  const [hoverLogin, setHoverLogin] = useState(false);
+  const [hoverCarrito, setHoverCarrito] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   const toggleLoginModal = () => {
@@ -26,25 +29,31 @@ export const Header = ({ totalItems }: Props) => {
         <div className="relative flex-1 max-w-md">
           <Buscador />
         </div>
-        <div className="flex items-center gap-4">
-          <button onClick={toggleLoginModal} className="rounded-full hover:bg-blanco">
-            <IconoLoggin />
+        <div className="flex items-center gap-4 ">
+          <button
+            className="relative flex items-center justify-center gap-4 w-10 h-10 rounded-full hover:bg-blanco"
+            onMouseEnter={() => setHoverLogin(true)}
+            onMouseLeave={() => setHoverLogin(false)}
+            onClick={toggleLoginModal}>
+            <IconoLoggin color={hoverLogin ? '#E11D48' : 'white'}/>
           </button>
           {totalItems > 0 ? (
-            <div className="relative flex items-center justify-center gap-4 w-10 h-10 rounded-full hover:bg-blanco">
-              <button className="rounded-full">
-                <IconoCarrito />
-                <div className="absolute text-blanco -top-3 -right-3 bg-primary text-primary-foreground rounded-full px-2 py-1 text-xs font-bold hover:bg-blanco hover:text-primary">
-                  {totalItems}
-                </div>
-              </button>
-            </div>
+            <button
+              className="relative flex items-center justify-center gap-4 w-10 h-10 rounded-full hover:bg-blanco"
+              onMouseEnter={() => setHoverCarrito(true)}
+              onMouseLeave={() => setHoverCarrito(false)}>
+              <IconoCarrito color={hoverCarrito ? '#E11D48' : 'white'} />
+              <div className="absolute text-blanco -top-3 -right-3 bg-primary text-primary-foreground rounded-full px-2 py-1 text-xs font-bold hover:bg-blanco hover:text-primary ">
+                {totalItems}
+              </div>
+            </button>
           ) : (
-            <div className="relative flex items-center justify-center gap-4 w-10 h-10 rounded-full hover:bg-blanco">
-              <button className="rounded-full">
-                <IconoCarrito />
-              </button>
-            </div>
+            <button
+              className="relative flex items-center justify-center gap-4 w-10 h-10 rounded-full hover:bg-blanco"
+              onMouseEnter={() => setHoverCarrito(true)}
+              onMouseLeave={() => setHoverCarrito(false)}>
+              <IconoCarrito color={hoverCarrito ? '#E11D48' : 'white'} />
+            </button>
           )}
         </div>
       </div>
