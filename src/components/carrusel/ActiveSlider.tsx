@@ -5,7 +5,7 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
-const ActiveSlider: React.FC = () => {
+export const ActiveSlider: React.FC = () => {
   const images = [
     'img/productos/pizzas/pizzaMargherita.png',
     'img/productos/hamburguesas/hamburguesaBbq.png',
@@ -45,5 +45,3 @@ const ActiveSlider: React.FC = () => {
     </Swiper>
   );
 };
-
-export default ActiveSlider;
