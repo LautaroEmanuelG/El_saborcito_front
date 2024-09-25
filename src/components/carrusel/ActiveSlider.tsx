@@ -1,15 +1,38 @@
 import React from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, Pagination, Navigation } from 'swiper/modules';  // Cambia la ruta del módulo
+import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
+import { BtnAgregarCarrito } from '../utils/BtnAgregarCarrito'; 
+import '../../styles/styles.css';
 
 export const ActiveSlider: React.FC = () => {
-  const images = [
-    'img/productos/pizzas/pizzaMargherita.png',
-    'img/productos/hamburguesas/hamburguesaBbq.png',
-    'img/productos/pizzas/pizzaCuatroQuesos.png'
+  const products = [
+    {
+      name: 'Pizza Margherita',
+      price: 500,
+      image: {
+        webp: 'img/productos/pizzas/pizzaMargherita.webp',
+        png: 'img/productos/pizzas/pizzaMargherita.png'
+      }
+    },
+    {
+      name: 'Hamburguesa BBQ',
+      price: 700,
+      image: {
+        webp: 'img/productos/hamburguesas/hamburguesaBbq.webp',
+        png: 'img/productos/hamburguesas/hamburguesaBbq.png'
+      }
+    },
+    {
+      name: 'Pizza Cuatro Quesos',
+      price: 550,
+      image: {
+        webp: 'img/productos/pizzas/pizzaCuatroQuesos.webp',
+        png: 'img/productos/pizzas/pizzaCuatroQuesos.png'
+      }
+    }
   ];
 
   return (
@@ -28,18 +51,39 @@ export const ActiveSlider: React.FC = () => {
       /* 
       Ancho (w-): w-full, w-3/4, w-1/2, w-96 (384px), o valores personalizados como w-[600px].
       Altura (h-): h-full, h-screen, h-64 (256px), h-96 (384px), o h-[400px] para alturas personalizadas.
-
+ 
       O con CSS directamente anachei
       style={{ width: '80%', height: '400px' }}  // Tamaño personalizado
       */
+
     >
-      {images.map((image, index) => (
-        <SwiperSlide key={index} className="flex justify-center items-center">
-          <img
-            src={image}
-            alt={`Imagen ${index + 1}`}
-            className="object-cover w-full h-full rounded-xl"
-          />
+      {products.map((product, index) => (
+        <SwiperSlide key={index} className="relative flex flex-col items-center justify-center">
+          
+          {/* Efecto oscuro sobre la imagen */}
+          <div className="absolute inset-0 bg-black bg-opacity-30 rounded-xl"></div>
+
+          {/* Elemento picture para cargar imágenes en diferentes formatos */}
+          <picture>
+            <source srcSet={product.image.webp} type="image/webp" />
+            <img
+              src={product.image.png}
+              alt={product.name}
+              className="object-cover w-full h-full rounded-xl"
+            />
+          </picture>
+
+          {/* Contenedor para el detalle del producto 
+            mb = margen inferior 
+          */}
+          <div className="absolute bottom-10 left-0 p-4 mb-3 text-white w-full rounded-b-xl flex flex-col items-start">
+            <h3 className="text-2xl font-semibold">{product.name}</h3>
+            <p className="text-xl font">${product.price.toFixed(2)}</p>
+          </div>
+
+          <div className="absolute bottom-0 left-0 p-4 ">
+            <BtnAgregarCarrito position="left" />
+          </div>
         </SwiperSlide>
       ))}
     </Swiper>
