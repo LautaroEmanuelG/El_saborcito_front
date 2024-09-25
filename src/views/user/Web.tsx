@@ -3,7 +3,7 @@ import { Header } from '../../components/header/Header';
 import { ListaCategorias } from '../../components/categorias/ListaCategorias';
 import { ListaProductos } from '../../components/producto/ListaProducto';
 import { ModalProducto } from '../../components/producto/ModalProducto';
-import ActiveSlider from '../../components/carrusel/ActiveSlider';  // Importa el carrusel
+import { ActiveSlider } from '../../components/carrusel/ActiveSlider';  // Importa el carrusel
 
 // Datos de ejemplo para el modal
 const exampleDish = {
