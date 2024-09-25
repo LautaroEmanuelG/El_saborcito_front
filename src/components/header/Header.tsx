@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { Buscador } from './Buscador';
 import IconoCarrito from '../iconos/IconoCarrito';
 import IconoLoggin from '../iconos/IconoLoggin';
 import IconoLogoSaborcito from '../iconos/IconoLogoSaborcito';
+import { LoginModal } from '../LoginModal'; // Import the LoginModal
 import { useState } from 'react';
 
 type Props = {
@@ -11,13 +13,16 @@ type Props = {
 export const Header = ({ totalItems }: Props) => {
   const [hoverLogin, setHoverLogin] = useState(false);
   const [hoverCarrito, setHoverCarrito] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+
+  const toggleLoginModal = () => {
+    setIsLoginOpen(!isLoginOpen);
+  };
 
   return (
     <header className="bg-primary flex w-full text-primary-foreground py-4 shadow-md">
       <div className="container mx-auto flex items-center justify-between px-4 md:px-6">
-        <a
-          href="#"
-          className="flex items-center gap-4">
+        <a href="#" className="flex items-center gap-4">
           <IconoLogoSaborcito />
           <span className="text-2xl font-bold text-white">El Saborcito</span>
         </a>
@@ -28,7 +33,8 @@ export const Header = ({ totalItems }: Props) => {
           <button
             className="relative flex items-center justify-center gap-4 w-10 h-10 rounded-full hover:bg-blanco"
             onMouseEnter={() => setHoverLogin(true)}
-            onMouseLeave={() => setHoverLogin(false)}>
+            onMouseLeave={() => setHoverLogin(false)}
+            onClick={toggleLoginModal}>
             <IconoLoggin color={hoverLogin ? '#E11D48' : 'white'}/>
           </button>
           {totalItems > 0 ? (
@@ -51,6 +57,8 @@ export const Header = ({ totalItems }: Props) => {
           )}
         </div>
       </div>
+      {/* Render the login modal */}
+      <LoginModal isOpen={isLoginOpen} onClose={toggleLoginModal} />
     </header>
   );
 };
