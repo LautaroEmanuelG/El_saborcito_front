@@ -4,7 +4,6 @@ import IconoCarrito from '../iconos/IconoCarrito';
 import IconoLoggin from '../iconos/IconoLoggin';
 import IconoLogoSaborcito from '../iconos/IconoLogoSaborcito';
 import { LoginModal } from '../LoginModal'; // Import the LoginModal
-import { useState } from 'react';
 
 type Props = {
   totalItems: number;
