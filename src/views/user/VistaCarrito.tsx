@@ -47,9 +47,15 @@ const VistaCarrito = () => {
 
                   <div className="flex items-center">
                     {/* BtnCantidadProducto */}
-                    <BtnCantidadProducto />
-                    <p className="ml-6 text-xl font-semibold">
-                      ${producto.precio.toFixed(2)}
+                    <BtnCantidadProducto
+                      producto={producto}
+                      cantidadProducto={1}
+                      setCantidadProducto={() => {
+                        /* enviamos nada */
+                      }}
+                    />
+                    <p className="ml-6 text-xl font-semibold w-24 flex justify-end">
+                      ${(producto.precio * producto.quantity).toFixed(2)}
                     </p>
                   </div>
                 </div>
@@ -80,7 +86,11 @@ const VistaCarrito = () => {
                 <span>
                   $
                   {carrito
-                    .reduce((total, producto) => total + producto.precio, 0)
+                    .reduce(
+                      (total, producto) =>
+                        total + producto.precio * producto.quantity,
+                      0
+                    )
                     .toFixed(2)}
                 </span>
               </div>
@@ -94,7 +104,11 @@ const VistaCarrito = () => {
               <span>
                 $
                 {carrito
-                  .reduce((total, producto) => total + producto.precio, 0)
+                  .reduce(
+                    (total, producto) =>
+                      total + producto.precio * producto.quantity,
+                    0
+                  )
                   .toFixed(2)}
               </span>
             </div>

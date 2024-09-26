@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import BtnCantidadProducto from './btnCantidadProducto';
 import type { Producto } from '../../utils/types';
 import { BtnAgregarCarrito } from '../utils/BtnAgregarCarrito';
@@ -15,6 +15,7 @@ export const ModalProducto: React.FC<Props> = ({
   onClose,
 }) => {
   if (!isOpen || !product) return null;
+  const [cantidadProducto, setCantidadProducto] = useState(1);
 
   return (
     <section className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
@@ -36,10 +37,14 @@ export const ModalProducto: React.FC<Props> = ({
               <p className="mt-4 text-gray-600">{product.descripcion}</p>
             </div>
 
-            <div className="absolute bottom-4 right-4">
+            <div className="absolute bottom-0 right-0">
               {/* Controles de cantidad */}
               <div className="absolute bottom-20 right-4">
-                <BtnCantidadProducto />
+                <BtnCantidadProducto
+                  producto={product}
+                  cantidadProducto={cantidadProducto}
+                  setCantidadProducto={setCantidadProducto}
+                />
               </div>
 
               {/* Botones de acción */}
@@ -48,7 +53,12 @@ export const ModalProducto: React.FC<Props> = ({
                 onClick={onClose}>
                 Volver
               </button>
-              <BtnAgregarCarrito product={product} />
+              <BtnAgregarCarrito
+                product={product}
+                cantidadProducto={cantidadProducto}
+                setCantidadProducto={setCantidadProducto}
+                onClose={onClose}
+              />
             </div>
           </aside>
         </div>
