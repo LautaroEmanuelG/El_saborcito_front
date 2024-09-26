@@ -70,8 +70,11 @@ export const ActiveSlider: React.FC<ActiveSliderProps> = ({
           </div>
 
           {/* Botón "Agregar al carrito" */}
-          <div className="absolute bottom-0 left-0 p-4 z-10">  {/* z-10 asegura que esté por encima de la paginación */}
-            <BtnAgregarCarrito position="left" />
+          <div className="absolute bottom-0 left-0 p-4 ">
+            <BtnAgregarCarrito
+              position="left"
+              product={product}
+            />
           </div>
         </SwiperSlide>
         // </button>
