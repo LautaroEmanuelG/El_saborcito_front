@@ -25,8 +25,8 @@ export const Web = () => {
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 w-full">
       <Header totalItems={0} />
       <div className="container mx-auto px-4 md:px-6 py-4 flex flex-col min-h-screen w-full">
-        <ActiveSlider />
         <ListaCategorias />
+        <ActiveSlider />
         <ListaProductos />
         <ModalProducto
           dishes={exampleDish} // Pasar datos de ejemplo

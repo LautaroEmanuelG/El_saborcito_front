@@ -1,0 +1,9 @@
+/* Estilos personalizados para Swiper */
+.swiper-button-next,
+.swiper-button-prev {
+  color: white; /* Cambia el color a blanco */
+}
+
+.swiper-pagination-bullet {
+  background: white; /* Cambia el color de los puntos a blanco */
+}
