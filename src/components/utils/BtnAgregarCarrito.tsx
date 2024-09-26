@@ -7,7 +7,10 @@ interface BtnAgregarCarritoProps {
   product: Producto;
 }
 
-export const BtnAgregarCarrito: React.FC<BtnAgregarCarritoProps> = ({ position = 'right', product }) => {
+export const BtnAgregarCarrito: React.FC<BtnAgregarCarritoProps> = ({
+  position = 'right',
+  product,
+}) => {
   const carritoContext = useContext(CarritoContext);
 
   if (!carritoContext) {
@@ -24,13 +27,14 @@ export const BtnAgregarCarrito: React.FC<BtnAgregarCarritoProps> = ({ position =
 
   return (
     <button
-      className={`absolute bg-primary bottom-3 ${position === 'right' ? 'right-3' : 'left-3'} text-white rounded-xl font-semibold hover:bg-blanco hover:text-primary hover:font-bold hover:text-lg transition-all duration-100 ease-in-out transform hover:scale-105`}
+      className={`absolute bg-primary bottom-3 ${
+        position === 'right' ? 'right-3' : 'left-3'
+      } text-white rounded-xl font-semibold hover:bg-blanco hover:text-primary hover:font-bold hover:text-lg transition-all duration-100 ease-in-out transform hover:scale-105`}
       style={{
         width: '200px',
         height: '50px',
       }}
-      onClick={handleAddToCarrito}
-    >
+      onClick={handleAddToCarrito}>
       Agregar al carrito
     </button>
   );
