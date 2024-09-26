@@ -7,9 +7,10 @@ import { LoginModal } from '../LoginModal'; // Import the LoginModal
 
 type Props = {
   totalItems: number;
+  onSearch: (query: string) => void; // Prop para manejar el evento de búsqueda
 };
 
-export const Header = ({ totalItems }: Props) => {
+export const Header = ({ totalItems, onSearch }: Props) => {
   const [hoverLogin, setHoverLogin] = useState(false);
   const [hoverCarrito, setHoverCarrito] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -26,7 +27,7 @@ export const Header = ({ totalItems }: Props) => {
           <span className="text-2xl font-bold text-white">El Saborcito</span>
         </a>
         <div className="relative flex-1 max-w-md">
-          <Buscador />
+          <Buscador onSearch={onSearch} /> {/* Pasar la función de búsqueda al Buscador */}
         </div>
         <div className="flex items-center gap-4 ">
           <button
@@ -34,7 +35,7 @@ export const Header = ({ totalItems }: Props) => {
             onMouseEnter={() => setHoverLogin(true)}
             onMouseLeave={() => setHoverLogin(false)}
             onClick={toggleLoginModal}>
-            <IconoLoggin color={hoverLogin ? '#E11D48' : 'white'}/>
+            <IconoLoggin color={hoverLogin ? '#E11D48' : 'white'} />
           </button>
           {totalItems > 0 ? (
             <button

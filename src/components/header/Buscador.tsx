@@ -1,17 +1,31 @@
+import { useState } from 'react';
 import IconoBuscador from '../iconos/IconoBuscador';
 
-type Props = {};
+type Props = {
+  onSearch: (query: string) => void; // Prop para manejar el evento de búsqueda
+};
 
-export const Buscador = ({}: Props) => {
+export const Buscador = ({ onSearch }: Props) => {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setSearchTerm(value);
+    onSearch(value); // Llamar a la función de búsqueda con el término actual
+  };
+
   return (
     <>
       <div className='absolute px-2 py-2 hover:fill-primary'>
         <IconoBuscador />
-        </div>
+      </div>
       <input
         type="search"
         placeholder="Buscar productos, categorías y más..."
-        className="w-full rounded-md bg-primary-foreground px-10 py-2 text-primary focus:outline-none focus:ring-2 focus:ring-primary-foreground"></input>
+        className="w-full rounded-md bg-primary-foreground px-10 py-2 text-primary focus:outline-none focus:ring-2 focus:ring-primary-foreground"
+        value={searchTerm}
+        onChange={handleChange} // Manejar el cambio en el input
+      />
     </>
   );
 };
