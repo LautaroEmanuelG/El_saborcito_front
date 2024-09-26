@@ -29,7 +29,6 @@ export const ActiveSlider: React.FC = () => {
       O con CSS directamente anachei
       style={{ width: '80%', height: '400px' }}  // Tamaño personalizado
       */
-
     >
       {productsData.map((product, index) => (
         <SwiperSlide key={index} className="relative flex flex-col items-center justify-center">
@@ -47,15 +46,16 @@ export const ActiveSlider: React.FC = () => {
             />
           </picture>
 
-           {/* Contenedor para el detalle del producto 
+          {/* Contenedor para el detalle del producto 
             mb = margen inferior 
           */}
           <div className="absolute bottom-10 left-0 p-4 mb-3 text-white w-full rounded-b-xl flex flex-col items-start">
             <h3 className="text-2xl font-semibold">{product.nombre}</h3>
             <p className="text-xl font">${product.precio.toFixed(2)}</p>
           </div>
-          
-          <div className="absolute bottom-0 left-0 p-4 ">
+
+          {/* Botón "Agregar al carrito" */}
+          <div className="absolute bottom-0 left-0 p-4 z-10">  {/* z-10 asegura que esté por encima de la paginación */}
             <BtnAgregarCarrito position="left" />
           </div>
         </SwiperSlide>
