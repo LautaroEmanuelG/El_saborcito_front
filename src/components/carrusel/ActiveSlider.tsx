@@ -69,6 +69,7 @@ export const ActiveSlider: React.FC<ActiveSliderProps> = ({
             <p className="text-xl font">${product.precio.toFixed(2)}</p>
           </div>
 
+          {/* Botón "Agregar al carrito" */}
           <div className="absolute bottom-0 left-0 p-4 ">
             <BtnAgregarCarrito
               position="left"
