@@ -1,19 +1,30 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { Buscador } from './Buscador';
 import IconoCarrito from '../iconos/IconoCarrito';
 import IconoLoggin from '../iconos/IconoLoggin';
 import IconoLogoSaborcito from '../iconos/IconoLogoSaborcito';
-import { LoginModal } from '../LoginModal'; // Import the LoginModal
+import { LoginModal } from '../loggin/LoginModal';
+import { CarritoContext } from '../carrito/CarritoProvider'; // Import the CarritoContext
 
 type Props = {
-  totalItems: number;
   onSearch: (query: string) => void; // Prop para manejar el evento de búsqueda
 };
 
-export const Header = ({ totalItems, onSearch }: Props) => {
+export const Header = ({ onSearch }: Props) => {
   const [hoverLogin, setHoverLogin] = useState(false);
   const [hoverCarrito, setHoverCarrito] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+
+  const carritoContext = useContext(CarritoContext);
+
+  if (!carritoContext) {
+    throw new Error('Header must be used within a CarritoProvider');
+  }
+
+  const { carrito } = carritoContext;
+
+  // Calculate total items in the cart
+  const totalItems = carrito.reduce((total, product) => total + product.quantity, 0);
 
   const toggleLoginModal = () => {
     setIsLoginOpen(!isLoginOpen);

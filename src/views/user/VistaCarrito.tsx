@@ -1,6 +1,5 @@
-import React from 'react';
-import BtnCantidadProducto from './btnCantidadProducto';
-import UbicacionLogo from './Location.svg'; // Importa el archivo SVG
+import { IconoLocation } from '../../components/iconos/IconoLocation';
+import BtnCantidadProducto from '../../components/producto/btnCantidadProducto';
 
 const VistaCarrito = () => {
   const productos = [
@@ -66,7 +65,8 @@ const VistaCarrito = () => {
             <div className="flex items-center w-full ml-4">
               <span className="mr-2 text-[24px] text-[#E11D48]">Retiro en Local</span>
               <div className="border-t-4 border-[#E11D48] flex-grow mx-2"></div>
-              <img src={UbicacionLogo} alt="Logo de ubicación" className="w-6 h-6" />
+              {/* <img src={UbicacionLogo} alt="Logo de ubicación" className="w-6 h-6" /> */}
+              <IconoLocation />
             </div>
           </div>
         </div>
