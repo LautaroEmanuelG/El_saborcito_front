@@ -5,11 +5,17 @@ import type { Producto } from '../../utils/types';
 interface BtnAgregarCarritoProps {
   position?: 'left' | 'right';
   product: Producto;
+  cantidadProducto: number;
+  setCantidadProducto: React.Dispatch<React.SetStateAction<number>>;
+  onClose: () => void;
 }
 
 export const BtnAgregarCarrito: React.FC<BtnAgregarCarritoProps> = ({
   position = 'right',
   product,
+  cantidadProducto,
+  setCantidadProducto,
+  onClose,
 }) => {
   const carritoContext = useContext(CarritoContext);
 
@@ -21,8 +27,10 @@ export const BtnAgregarCarrito: React.FC<BtnAgregarCarritoProps> = ({
 
   const handleAddToCarrito = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    event.stopPropagation(); // Detener la propagación del evento de clic
-    addToCarrito(product);
+    event.stopPropagation();
+    addToCarrito(product, cantidadProducto || 1);
+    setCantidadProducto(1);
+    onClose();
   };
 
   return (

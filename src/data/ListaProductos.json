@@ -1,5 +1,6 @@
 [
     {
+        "id": 1,
         "categoria": "Pizza",
         "nombre": "Pizza Margherita",
         "descripcion": "Pizza clásica con tomate, mozzarella y albahaca.",
@@ -9,6 +10,7 @@
         "imagen": ["/img/productos/pizzas/pizzaMargherita.webp","/img/productos/pizzas/pizzaMargherita.jpg"]
     },
     {
+        "id": 2,
         "categoria": "Pizza",
         "nombre": "Pizza Pepperoni",
         "descripcion": "Pizza con pepperoni, queso y salsa de tomate.",
@@ -18,6 +20,7 @@
         "imagen": ["/img/productos/pizzas/pizzaPeperoni.webp","/img/productos/pizzas/pizzaPeperoni.jpg"]
     },
     {
+        "id": 3,
         "categoria": "Pizza",
         "nombre": "Pizza Cuatro Quesos",
         "descripcion": "Pizza con mezcla de cuatro quesos: mozzarella, gorgonzola, parmesano y ricotta.",
@@ -27,6 +30,7 @@
         "imagen": ["/img/productos/pizzas/pizzaCuatroQuesos.webp","/img/productos/pizzas/pizzaCuatroQuesos.jpg"]
     },
     {
+        "id": 4,
         "categoria": "Pizza",
         "nombre": "Pizza Hawaiana",
         "descripcion": "Pizza con jamón, piña y queso.",
@@ -36,6 +40,7 @@
         "imagen": ["/img/productos/pizzas/pizzaHawaiana.webp","/img/productos/pizzas/pizzaHawaiana.jpg"]
     },
     {
+        "id": 5,
         "categoria": "Bebidas",
         "nombre": "Coca Cola",
         "descripcion": "Bebida gaseosa refrescante.",
@@ -45,6 +50,7 @@
         "imagen": ["/img/productos/bebidas/cocaCola.webp","/img/productos/bebidas/cocaCola.jpg"]
     },
     {
+        "id": 6,
         "categoria": "Bebidas",
         "nombre": "Agua Mineral",
         "descripcion": "Agua mineral sin gas.",
@@ -54,6 +60,7 @@
         "imagen": ["/img/productos/bebidas/aguaMineral.webp","/img/productos/bebidas/aguaMineral.jpg"]
     },
     {
+        "id": 7,
         "categoria": "Bebidas",
         "nombre": "Jugo de Naranja",
         "descripcion": "Jugo de naranja natural.",
@@ -63,6 +70,7 @@
         "imagen": ["/img/productos/bebidas/jugoNaranja.webp","/img/productos/bebidas/jugoNaranja.jpg"]
     },
     {
+        "id": 8,
         "categoria": "Bebidas",
         "nombre": "Cerveza Artesanal",
         "descripcion": "Cerveza artesanal estilo IPA.",
@@ -72,6 +80,7 @@
         "imagen": ["/img/productos/bebidas/cervezaArtesanal.webp","/img/productos/bebidas/cervezaArtesanal.jpg"]
     },
     {
+        "id": 9,
         "categoria": "Hamburguesas",
         "nombre": "Hamburguesa Clásica",
         "descripcion": "Hamburguesa con carne de res, lechuga, tomate y queso.",
@@ -81,6 +90,7 @@
         "imagen": ["/img/productos/hamburguesas/hamburguesaClasica.webp","/img/productos/hamburguesas/hamburguesaClasica.jpg"]
     },
     {
+        "id": 10,
         "categoria": "Hamburguesas",
         "nombre": "Hamburguesa con Queso",
         "descripcion": "Hamburguesa con carne de res, queso cheddar y cebolla.",
@@ -90,6 +100,7 @@
         "imagen": ["/img/productos/hamburguesas/hamburguesaConQueso.webp","/img/productos/hamburguesas/hamburguesaConQueso.jpg"]
     },
     {
+        "id": 11,
         "categoria": "Hamburguesas",
         "nombre": "Hamburguesa BBQ",
         "descripcion": "Hamburguesa con carne de res, queso, cebolla caramelizada y salsa BBQ.",
@@ -99,6 +110,7 @@
         "imagen": ["/img/productos/hamburguesas/hamburguesaBbq.webp","/img/productos/hamburguesas/hamburguesaBbq.jpg"]
     },
     {
+        "id": 12,
         "categoria": "Hamburguesas",
         "nombre": "Hamburguesa Vegetariana",
         "descripcion": "Hamburguesa con base de garbanzos, lechuga, tomate y guacamole.",

@@ -5,15 +5,17 @@ import { useLocation } from 'react-router-dom';
 
 interface BtnCantidadProductoProps {
   producto: Producto;
-  cantidad: number;
+  cantidadProducto: number;
+  setCantidadProducto: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
   producto,
-  cantidad = 1,
+  cantidadProducto,
+  setCantidadProducto,
 }) => {
   const carritoContext = useContext(CarritoContext);
-  const [quantity, setQuantity] = useState(cantidad);
+  const [quantity, setQuantity] = useState(cantidadProducto);
   const location = useLocation();
 
   if (!carritoContext) {
@@ -36,12 +38,14 @@ const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
   const handleIncrease = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     event.preventDefault();
-    setQuantity(quantity + 1);
+    // setQuantity(quantity + 1);
     if (location.pathname === '/carrito') {
-      addToCarrito(producto);
+      addToCarrito(producto, 1);
+    } else {
+      setCantidadProducto(cantidadProducto + 1);
     }
   };
-  
+
   const handleDecrease = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     event.preventDefault();
@@ -49,12 +53,24 @@ const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
       setQuantity(quantity - 1);
       if (location.pathname === '/carrito') {
         decreaseFromCart(producto);
+      } else {
+        setCantidadProducto(quantity - 1);
       }
     } else {
       // Si la cantidad es 1 y estamos en /carrito, elimina el producto del carrito
       if (location.pathname === '/carrito') {
         decreaseFromCart(producto);
+      } else {
+        setCantidadProducto(1);
       }
+    }
+  };
+
+  const cantProd = () => {
+    if (location.pathname === '/carrito') {
+      return quantity;
+    } else {
+      return cantidadProducto;
     }
   };
 
@@ -65,7 +81,7 @@ const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
         className="px-3 py-2 bg-gray-300 text-black rounded-full hover:bg-gray-400">
         -
       </button>
-      <span className="text-lg font-semibold">{quantity}</span>
+      <span className="text-lg font-semibold">{cantProd()}</span>
       <button
         onClick={handleIncrease}
         className="px-3 py-2 bg-primary text-white rounded-full hover:font-bold hover:bg-primary-dark">

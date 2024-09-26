@@ -47,8 +47,14 @@ const VistaCarrito = () => {
 
                   <div className="flex items-center">
                     {/* BtnCantidadProducto */}
-                    <BtnCantidadProducto producto={producto} cantidad={producto.quantity} />
-                    <p className="ml-6 text-xl font-semibold">
+                    <BtnCantidadProducto
+                      producto={producto}
+                      cantidadProducto={1}
+                      setCantidadProducto={() => {
+                        /* enviamos nada */
+                      }}
+                    />
+                    <p className="ml-6 text-xl font-semibold w-24 flex justify-end">
                       ${(producto.precio * producto.quantity).toFixed(2)}
                     </p>
                   </div>

@@ -15,7 +15,7 @@ export const ModalProducto: React.FC<Props> = ({
   onClose,
 }) => {
   if (!isOpen || !product) return null;
-  const [cantidad, setCantidad] = useState(1);
+  const [cantidadProducto, setCantidadProducto] = useState(1);
 
   return (
     <section className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
@@ -42,7 +42,8 @@ export const ModalProducto: React.FC<Props> = ({
               <div className="absolute bottom-20 right-4">
                 <BtnCantidadProducto
                   producto={product}
-                  cantidad={cantidad}
+                  cantidadProducto={cantidadProducto}
+                  setCantidadProducto={setCantidadProducto}
                 />
               </div>
 
@@ -52,7 +53,12 @@ export const ModalProducto: React.FC<Props> = ({
                 onClick={onClose}>
                 Volver
               </button>
-              <BtnAgregarCarrito product={product} />
+              <BtnAgregarCarrito
+                product={product}
+                cantidadProducto={cantidadProducto}
+                setCantidadProducto={setCantidadProducto}
+                onClose={onClose}
+              />
             </div>
           </aside>
         </div>
