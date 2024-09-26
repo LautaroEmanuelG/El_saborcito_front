@@ -5,7 +5,6 @@ import { ListaProductos } from '../../components/producto/ListaProducto';
 import { ModalProducto } from '../../components/producto/ModalProducto';
 import { ActiveSlider } from '../../components/carrusel/ActiveSlider';
 import listaProductos from '../../data/ListaProductos.json';
-import { CarritoProvider } from '../../components/carrito/CarritoProvider';
 import type { Producto } from '../../utils/types';
 
 //Oferta de un producto al azar
@@ -43,7 +42,6 @@ export const Web = () => {
 
   // const filteredProducts = filterProducts(products);
   return (
-    <CarritoProvider>
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 w-full">
         <Header onSearch={handleSearch} />
         <div className="container mx-auto px-4 md:px-6 py-4 flex flex-col min-h-screen w-full">
@@ -69,6 +67,5 @@ export const Web = () => {
           />
         </div>
       </div>
-    </CarritoProvider>
   );
 };
