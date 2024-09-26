@@ -1,18 +1,30 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { Buscador } from './Buscador';
 import IconoCarrito from '../iconos/IconoCarrito';
 import IconoLoggin from '../iconos/IconoLoggin';
 import IconoLogoSaborcito from '../iconos/IconoLogoSaborcito';
-import { LoginModal } from '../LoginModal'; // Import the LoginModal
+import { LoginModal } from '../loggin/LoginModal';
+import { CarritoContext } from '../carrito/CarritoProvider'; // Import the CarritoContext
 
 type Props = {
-  totalItems: number;
+  onSearch: (query: string) => void; // Prop para manejar el evento de búsqueda
 };
 
-export const Header = ({ totalItems }: Props) => {
+export const Header = ({ onSearch }: Props) => {
   const [hoverLogin, setHoverLogin] = useState(false);
   const [hoverCarrito, setHoverCarrito] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+
+  const carritoContext = useContext(CarritoContext);
+
+  if (!carritoContext) {
+    throw new Error('Header must be used within a CarritoProvider');
+  }
+
+  const { carrito } = carritoContext;
+
+  // Calculate total items in the cart
+  const totalItems = carrito.reduce((total, product) => total + product.quantity, 0);
 
   const toggleLoginModal = () => {
     setIsLoginOpen(!isLoginOpen);
@@ -26,7 +38,7 @@ export const Header = ({ totalItems }: Props) => {
           <span className="text-2xl font-bold text-white">El Saborcito</span>
         </a>
         <div className="relative flex-1 max-w-md">
-          <Buscador />
+          <Buscador onSearch={onSearch} /> {/* Pasar la función de búsqueda al Buscador */}
         </div>
         <div className="flex items-center gap-4 ">
           <button
@@ -34,7 +46,7 @@ export const Header = ({ totalItems }: Props) => {
             onMouseEnter={() => setHoverLogin(true)}
             onMouseLeave={() => setHoverLogin(false)}
             onClick={toggleLoginModal}>
-            <IconoLoggin color={hoverLogin ? '#E11D48' : 'white'}/>
+            <IconoLoggin color={hoverLogin ? '#E11D48' : 'white'} />
           </button>
           {totalItems > 0 ? (
             <button

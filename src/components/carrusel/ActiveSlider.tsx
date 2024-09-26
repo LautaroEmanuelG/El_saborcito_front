@@ -4,11 +4,21 @@ import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
-import { BtnAgregarCarrito } from '../utils/BtnAgregarCarrito'; 
+import { BtnAgregarCarrito } from '../utils/BtnAgregarCarrito';
 import '../../styles/styles.css';
 import productsData from '../../data/ListaProductos.json'; // Importa el JSON
+import type { Producto } from '../../utils/types';
 
-export const ActiveSlider: React.FC = () => {
+interface ActiveSliderProps {
+  setProductoModal: (producto: Producto) => void;
+}
+
+export const ActiveSlider: React.FC<ActiveSliderProps> = ({
+  setProductoModal,
+}) => {
+  const handleProductClick = (product: Producto) => {
+    setProductoModal(product);
+  };
   return (
     <Swiper
       spaceBetween={30}
@@ -21,24 +31,29 @@ export const ActiveSlider: React.FC = () => {
       navigation={true}
       modules={[Autoplay, Pagination, Navigation]}
       //className="w-full h-screen"
-      className= "w-full h-[400px]"
+      className="w-full h-[400px]"
       /* 
       Ancho (w-): w-full, w-3/4, w-1/2, w-96 (384px), o valores personalizados como w-[600px].
       Altura (h-): h-full, h-screen, h-64 (256px), h-96 (384px), o h-[400px] para alturas personalizadas.
- 
+
       O con CSS directamente anachei
       style={{ width: '80%', height: '400px' }}  // Tamaño personalizado
       */
     >
       {productsData.map((product, index) => (
-        <SwiperSlide key={index} className="relative flex flex-col items-center justify-center">
-          
+        // <button onClick={() => handleProductClick(product)}>
+        <SwiperSlide
+          key={index}
+          className="relative flex flex-col items-center justify-center">
           {/* Efecto oscuro sobre la imagen */}
           <div className="absolute inset-0 bg-black bg-opacity-30 rounded-xl"></div>
-          
+
           {/* Elemento picture para cargar imágenes en diferentes formatos */}
           <picture>
-            <source srcSet={product.imagen[0]} type="image/webp" />
+            <source
+              srcSet={product.imagen[0]}
+              type="image/webp"
+            />
             <img
               src={product.imagen[1]}
               alt={product.nombre}
@@ -59,6 +74,7 @@ export const ActiveSlider: React.FC = () => {
             <BtnAgregarCarrito position="left" />
           </div>
         </SwiperSlide>
+        // </button>
       ))}
     </Swiper>
   );
