@@ -1,71 +1,58 @@
-import React from "react";
-import BtnCantidadProducto from "./btnCantidadProducto";
-
-type Dishes = {
-  id: number;
-  image: string;
-  title: string;
-  price: number;
-  description: string;
-};
+import React from 'react';
+import BtnCantidadProducto from './btnCantidadProducto';
+import type { Producto } from '../../utils/types';
+import { BtnAgregarCarrito } from '../utils/BtnAgregarCarrito';
 
 type Props = {
-  dishes: Dishes;
+  product: Producto | null;
   isOpen: boolean;
   onClose: () => void;
 };
 
 export const ModalProducto: React.FC<Props> = ({
-  dishes,
+  product = null,
   isOpen,
   onClose,
 }) => {
-  if (!isOpen) return null;
+  if (!isOpen || !product) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-lg max-w-3xl w-full">
-        <div className="flex">
-          {/* Imagen del plato */}
-          <div className="w-1/2">
-            <img
-              src={dishes.image}
-              alt={dishes.title}
-              className="w-full h-auto object-cover rounded-lg"
-            />
-          </div>
+    <section className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <article className="relative flex flex-row bg-white p-6 rounded-lg shadow-lg max-w-3xl w-full">
+        {/* Imagen del plato */}
+        <div className="w-full flex">
+          <img
+            src={
+              Array.isArray(product.imagen) ? product.imagen[0] : product.imagen
+            }
+            alt={product.nombre}
+            className="w-1/2 h-auto object-cover rounded-lg"
+          />
+          <aside className="relative w-1/2 h-auto">
+            {/* Detalles del plato */}
+            <div className="pl-6 flex flex-col h-72">
+              <h2 className="text-2xl font-semibold">{product.nombre}</h2>
+              <p className="text-xl text-gray-500 mt-2">${product.precio}</p>
+              <p className="mt-4 text-gray-600">{product.descripcion}</p>
+            </div>
 
-          {/* Detalles del plato */}
-          <div className="w-1/2 pl-6">
-            <h2 className="text-2xl font-semibold">{dishes.title}</h2>
-            <p className="text-xl text-gray-500 mt-2">${dishes.price}</p>
-            <p className="mt-4 text-gray-600">{dishes.description}</p>
-          </div>
-        </div>
+            <div className="absolute bottom-4 right-4">
+              {/* Controles de cantidad */}
+              <div className="absolute bottom-20 right-4">
+                <BtnCantidadProducto />
+              </div>
 
-        {/* Controles de cantidad */}
-        <div className="absolute bottom-20 right-4">
-          <BtnCantidadProducto />
+              {/* Botones de acción */}
+              <button
+                className="absolute px-4 py-2 bg-[#C2BCBC] text-black rounded-md right-56 bottom-4"
+                onClick={onClose}>
+                Volver
+              </button>
+              <BtnAgregarCarrito product={product} />
+            </div>
+          </aside>
         </div>
-
-        {/* Botones de acción */}
-        <div className="absolute bottom-4 right-4 flex space-x-4">
-          <button
-            className="px-4 py-2 bg-[#C2BCBC] text-black rounded-md"
-            onClick={onClose}
-          >
-            Volver
-          </button>
-          <button
-            className="px-4 py-2 bg-[#E11D48] text-white rounded-md"
-            onClick={() => {
-              onClose(); // Cerrar modal después de agregar al carrito
-            }}
-          >
-            Agregar al carrito
-          </button>
-        </div>
-      </div>
-    </div>
+      </article>
+    </section>
   );
 };

@@ -15,3 +15,6 @@ export interface Producto {
   ventas: number;
   imagen: string | string[];
 }
+export interface ProductoCarrito extends Producto {
+  quantity: number;
+}
