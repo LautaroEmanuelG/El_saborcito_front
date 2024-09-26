@@ -6,35 +6,9 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import { BtnAgregarCarrito } from '../utils/BtnAgregarCarrito'; 
 import '../../styles/styles.css';
+import productsData from '../../data/ListaProductos.json'; // Importa el JSON
 
 export const ActiveSlider: React.FC = () => {
-  const products = [
-    {
-      name: 'Pizza Margherita',
-      price: 500,
-      image: {
-        webp: 'img/productos/pizzas/pizzaMargherita.webp',
-        png: 'img/productos/pizzas/pizzaMargherita.png'
-      }
-    },
-    {
-      name: 'Hamburguesa BBQ',
-      price: 700,
-      image: {
-        webp: 'img/productos/hamburguesas/hamburguesaBbq.webp',
-        png: 'img/productos/hamburguesas/hamburguesaBbq.png'
-      }
-    },
-    {
-      name: 'Pizza Cuatro Quesos',
-      price: 550,
-      image: {
-        webp: 'img/productos/pizzas/pizzaCuatroQuesos.webp',
-        png: 'img/productos/pizzas/pizzaCuatroQuesos.png'
-      }
-    }
-  ];
-
   return (
     <Swiper
       spaceBetween={30}
@@ -57,30 +31,30 @@ export const ActiveSlider: React.FC = () => {
       */
 
     >
-      {products.map((product, index) => (
+      {productsData.map((product, index) => (
         <SwiperSlide key={index} className="relative flex flex-col items-center justify-center">
           
           {/* Efecto oscuro sobre la imagen */}
           <div className="absolute inset-0 bg-black bg-opacity-30 rounded-xl"></div>
-
+          
           {/* Elemento picture para cargar imágenes en diferentes formatos */}
           <picture>
-            <source srcSet={product.image.webp} type="image/webp" />
+            <source srcSet={product.imagen[0]} type="image/webp" />
             <img
-              src={product.image.png}
-              alt={product.name}
+              src={product.imagen[1]}
+              alt={product.nombre}
               className="object-cover w-full h-full rounded-xl"
             />
           </picture>
 
-          {/* Contenedor para el detalle del producto 
+           {/* Contenedor para el detalle del producto 
             mb = margen inferior 
           */}
           <div className="absolute bottom-10 left-0 p-4 mb-3 text-white w-full rounded-b-xl flex flex-col items-start">
-            <h3 className="text-2xl font-semibold">{product.name}</h3>
-            <p className="text-xl font">${product.price.toFixed(2)}</p>
+            <h3 className="text-2xl font-semibold">{product.nombre}</h3>
+            <p className="text-xl font">${product.precio.toFixed(2)}</p>
           </div>
-
+          
           <div className="absolute bottom-0 left-0 p-4 ">
             <BtnAgregarCarrito position="left" />
           </div>
