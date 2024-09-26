@@ -1,11 +1,16 @@
-export const BtnAgregarCarrito = () => {
+interface BtnAgregarCarritoProps {
+  position?: 'left' | 'right';
+}
+
+export const BtnAgregarCarrito: React.FC<BtnAgregarCarritoProps> = ({ position = 'right' }) => {
   return (
     <button
-      className="absolute bg-primary bottom-3 right-3 text-white rounded-xl font-semibold hover:bg-blanco hover:text-primary hover:font-bold hover:text-lg transition-all duration-100 ease-in-out transform hover:scale-105"
+      className={`absolute bg-primary bottom-3 ${position === 'right' ? 'right-3' : 'left-3'} text-white rounded-xl font-semibold hover:bg-blanco hover:text-primary hover:font-bold hover:text-lg transition-all duration-100 ease-in-out transform hover:scale-105`}
       style={{
-      width: '200px',
-      height: '50px',
-      }}>
+        width: '200px',
+        height: '50px',
+      }}
+    >
       Agregar al carrito
     </button>
   );

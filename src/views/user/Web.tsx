@@ -35,11 +35,11 @@ export const Web = () => {
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 w-full">
       <Header totalItems={0} onSearch={handleSearch} /> {/* Pasar la función de búsqueda al Header */}
       <div className="container mx-auto px-4 md:px-6 py-4 flex flex-col min-h-screen w-full">
-        <ActiveSlider />
         <ListaCategorias />
         {searchTerm && filteredProducts.length === 0 ? ( // No mostrar productos si no hay coincidencias
           <p className="text-center text-xl">No se encontraron productos para "{searchTerm}"</p>
         ) : (
+          <ActiveSlider />
           <ListaProductos productos={filteredProducts} /> // Pasar los productos filtrados
         )}
         <ModalProducto
