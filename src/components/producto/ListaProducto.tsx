@@ -2,9 +2,13 @@ import { useState } from 'react';
 import { CardProducto } from './CardProducto';
 import listaProductos from '../../data/ListaProductos.json';
 
-export const ListaProductos = () => {
+type Props = {
+  productos: typeof listaProductos; // Definimos el tipo de productos como el de listaProductos
+};
+
+export const ListaProductos = ({ productos = listaProductos }: Props) => {
   const categorias = [
-    ...new Set(listaProductos.map(producto => producto.categoria)),
+    ...new Set(productos.map(producto => producto.categoria)),
   ];
 
   // Estado para manejar la cantidad de productos visibles por categoría
@@ -17,7 +21,7 @@ export const ListaProductos = () => {
 
   const handleVerMas = (categoria: string) => {
     setProductosVisibles(prevState => {
-      const totalProductos = listaProductos.filter(producto => producto.categoria === categoria).length;
+      const totalProductos = productos.filter(producto => producto.categoria === categoria).length;
       return {
         ...prevState,
         [categoria]: prevState[categoria] === 3 ? totalProductos : 3, // Alternar entre mostrar todos y mostrar 3
@@ -40,7 +44,7 @@ export const ListaProductos = () => {
             </button>
           </span>
           <div className="flex gap-4 md:gap-6 flex-wrap">
-            {listaProductos
+            {productos
               .filter(producto => producto.categoria === categoria)
               .slice(0, productosVisibles[categoria]) // Mostrar la cantidad de productos según el estado
               .map((producto, prodIndex) => (
