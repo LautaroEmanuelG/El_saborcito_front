@@ -7,3 +7,10 @@
 .swiper-pagination-bullet {
   background: white; /* Cambia el color de los puntos a blanco */
 }
+
+.swiper-pagination.swiper-pagination-clickable.swiper-pagination-bullets.swiper-pagination-horizontal {
+  width: auto; /* Ajuste automático al contenido */
+  left: 50%; /* Centra el contenedor */
+  transform: translateX(-50%); /* Asegura que esté bien centrado */
+  max-width: 60%; /* Limita el ancho máximo */
+}
