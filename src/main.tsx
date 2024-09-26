@@ -7,7 +7,7 @@ import VistaCarrito from './views/user/VistaCarrito.tsx';
 import { CarritoProvider } from './components/carrito/CarritoProvider.tsx';
 
 createRoot(document.getElementById('root')!).render(
-  // <StrictMode>
+  <StrictMode>
     <BrowserRouter>
       <Routes>
         <Route
@@ -41,5 +41,5 @@ createRoot(document.getElementById('root')!).render(
         />
       </Routes>
     </BrowserRouter>
-  // </StrictMode>
+  </StrictMode>
 );
