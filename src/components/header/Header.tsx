@@ -5,9 +5,10 @@ import IconoLoggin from '../iconos/IconoLoggin';
 import IconoLogoSaborcito from '../iconos/IconoLogoSaborcito';
 import { LoginModal } from '../loggin/LoginModal';
 import { CarritoContext } from '../carrito/CarritoProvider'; // Import the CarritoContext
+import { Link } from 'react-router-dom';
 
 type Props = {
-  onSearch: (query: string) => void; // Prop para manejar el evento de búsqueda
+  onSearch?: (query: string) => void; // Prop para manejar el evento de búsqueda, puede ser null
 };
 
 export const Header = ({ onSearch }: Props) => {
@@ -24,7 +25,10 @@ export const Header = ({ onSearch }: Props) => {
   const { carrito } = carritoContext;
 
   // Calculate total items in the cart
-  const totalItems = carrito.reduce((total, product) => total + product.quantity, 0);
+  const totalItems = carrito.reduce(
+    (total, product) => total + product.quantity,
+    0
+  );
 
   const toggleLoginModal = () => {
     setIsLoginOpen(!isLoginOpen);
@@ -33,12 +37,14 @@ export const Header = ({ onSearch }: Props) => {
   return (
     <header className="bg-primary flex w-full text-primary-foreground py-4 shadow-md">
       <div className="container mx-auto flex items-center justify-between px-4 md:px-6">
-        <a href="#" className="flex items-center gap-4">
+        <Link
+          to="/"
+          className="flex items-center gap-4">
           <IconoLogoSaborcito />
           <span className="text-2xl font-bold text-white">El Saborcito</span>
-        </a>
+        </Link>
         <div className="relative flex-1 max-w-md">
-          <Buscador onSearch={onSearch} /> {/* Pasar la función de búsqueda al Buscador */}
+          {onSearch && <Buscador onSearch={onSearch} />}
         </div>
         <div className="flex items-center gap-4 ">
           <button
@@ -48,28 +54,27 @@ export const Header = ({ onSearch }: Props) => {
             onClick={toggleLoginModal}>
             <IconoLoggin color={hoverLogin ? '#E11D48' : 'white'} />
           </button>
-          {totalItems > 0 ? (
-            <button
+          {window.location.pathname !== '/carrito' && (
+            <Link
+              to="/carrito"
               className="relative flex items-center justify-center gap-4 w-10 h-10 rounded-full hover:bg-blanco"
               onMouseEnter={() => setHoverCarrito(true)}
               onMouseLeave={() => setHoverCarrito(false)}>
               <IconoCarrito color={hoverCarrito ? '#E11D48' : 'white'} />
-              <div className="absolute text-blanco -top-3 -right-3 bg-primary text-primary-foreground rounded-full px-2 py-1 text-xs font-bold hover:bg-blanco hover:text-primary ">
-                {totalItems}
-              </div>
-            </button>
-          ) : (
-            <button
-              className="relative flex items-center justify-center gap-4 w-10 h-10 rounded-full hover:bg-blanco"
-              onMouseEnter={() => setHoverCarrito(true)}
-              onMouseLeave={() => setHoverCarrito(false)}>
-              <IconoCarrito color={hoverCarrito ? '#E11D48' : 'white'} />
-            </button>
+              {totalItems > 0 ? (
+                <div className="absolute text-blanco -top-3 -right-3 bg-primary text-primary-foreground rounded-full px-2 py-1 text-xs font-bold hover:bg-blanco hover:text-primary ">
+                  {totalItems}
+                </div>
+              ) : null}
+            </Link>
           )}
         </div>
       </div>
       {/* Render the login modal */}
-      <LoginModal isOpen={isLoginOpen} onClose={toggleLoginModal} />
+      <LoginModal
+        isOpen={isLoginOpen}
+        onClose={toggleLoginModal}
+      />
     </header>
   );
 };
