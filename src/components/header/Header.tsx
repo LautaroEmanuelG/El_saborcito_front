@@ -20,13 +20,10 @@ export const Header = ({ onSearch }: Props) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const carritoContext = useContext(CarritoContext);
-
   if (!carritoContext) {
     throw new Error('Header must be used within a CarritoProvider');
   }
-
   const { carrito } = carritoContext;
-
   const totalItems = carrito.reduce(
     (total, product) => total + product.quantity,
     0
