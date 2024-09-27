@@ -27,7 +27,7 @@ export const ActiveSlider: React.FC<ActiveSliderProps> = ({
         delay: 2500,
         disableOnInteraction: false,
       }}
-      pagination={{ clickable: true }}
+      // pagination={{ clickable: true }}
       navigation={true}
       modules={[Autoplay, Pagination, Navigation]}
       //className="w-full h-screen"
@@ -74,6 +74,9 @@ export const ActiveSlider: React.FC<ActiveSliderProps> = ({
             <BtnAgregarCarrito
               position="left"
               product={product}
+              cantidadProducto={1}
+              setCantidadProducto={() => 1}
+              onClose={() => handleProductClick(product)}
             />
           </div>
         </SwiperSlide>

@@ -1,5 +1,3 @@
-import React, { useState } from 'react';
-
 type LoginModalProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -12,7 +10,7 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
     <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
       <div className="bg-white rounded-lg w-[700px] h-[370px] shadow-lg relative p-8">
         <button
-          className="absolute top-2 right-2 text-gray-500"
+          className="absolute font-bold top-6 right-8 text-negro text-xl hover:text-blanco hover:bg-primary rounded-full w-10 h-10"
           onClick={onClose}
         >
           X

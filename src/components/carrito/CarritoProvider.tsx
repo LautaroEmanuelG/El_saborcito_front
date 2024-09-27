@@ -35,14 +35,11 @@ const carritoReducer = (state: State, action: any): State => {
 
       if (existingProductIndex !== -1) {
         const updatedCarrito = [...state.carrito];
-        console.log('Updatede para sumar', updatedCarrito);
-        console.log('Cantidad a sumar', action.payload.cantidad);
         updatedCarrito[existingProductIndex].quantity +=
           action.payload.cantidad;
         return { ...state, carrito: updatedCarrito };
       }
 
-      console.log('Updatede para agregar', state.carrito);
       return {
         ...state,
         carrito: [

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import BtnCantidadProducto from './btnCantidadProducto';
+import BtnCantidadProducto from './BtnCantidadProducto';
 import type { Producto } from '../../utils/types';
 import { BtnAgregarCarrito } from '../utils/BtnAgregarCarrito';
 
