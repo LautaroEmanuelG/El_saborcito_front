@@ -1,6 +1,6 @@
 import { Header } from '../../components/header/Header';
 import { IconoLocation } from '../../components/iconos/IconoLocation';
-import BtnCantidadProducto from '../../components/producto/btnCantidadProducto';
+import BtnCantidadProducto from '../../components/producto/BtnCantidadProducto';
 import { useCart } from '../../hooks/useCart';
 
 const VistaCarrito = () => {
@@ -8,14 +8,14 @@ const VistaCarrito = () => {
 
   return (
     <>
-      <Header onSearch={undefined} />
       <div className="min-h-screen bg-gray-100">
+        <Header onSearch={undefined} />
         {/* Contenido del carrito */}
-        <div className="container mx-auto px-4 py-6 flex">
+        <div className="container min-h-full mx-auto px-4 py-6 flex">
           {/* Productos */}
-          <div className="bg-[#F2F2F2] p-4 rounded-xl shadow-lg shadow-gray-300 w-[1068px] h-[812px] mr-4 flex flex-col justify-between">
+          <div className="bg-blanco min-h-full p-4 rounded-xl shadow-lg shadow-gray-300 w-[1068px] mr-4 flex flex-col justify-between">
             <div>
-              <h2 className="text-[36px] font-semibold mb-4">Productos</h2>
+              <h2 className="text-3xl font-semibold mb-4">Productos</h2>
               {carrito.map((producto, index) => (
                 <div
                   key={index}
@@ -35,7 +35,7 @@ const VistaCarrito = () => {
                         {producto.nombre}
                       </h3>
                       <button
-                        className="text-[24px] text-[#E11D48] hover:underline"
+                        className="text-[24px] text-primary hover:underline"
                         onClick={() => removeFromCart(producto)}>
                         Eliminar
                       </button>
