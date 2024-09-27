@@ -40,9 +40,12 @@ export const Header = ({ onSearch }: Props) => {
   return (
     <>
       {/* Ocultar el header cuando el menú está abierto */}
-      <header className={`bg-primary flex w-full text-primary-foreground py-4 shadow-md ${menuOpen ? 'hidden' : 'block'}`}>
+      <header
+        className={`bg-primary flex w-full text-primary-foreground py-4 shadow-md `}>
         <div className="container mx-auto flex items-center justify-between px-4 md:px-6">
-          <Link to="/" className="flex items-center gap-4">
+          <Link
+            to="/"
+            className="flex items-center gap-4">
             <IconoLogoSaborcito />
             <span className="text-2xl font-bold text-white">El Saborcito</span>
           </Link>
@@ -57,8 +60,7 @@ export const Header = ({ onSearch }: Props) => {
               className="relative flex items-center justify-center gap-4 w-10 h-10 rounded-full hover:bg-blanco"
               onMouseEnter={() => setHoverLogin(true)}
               onMouseLeave={() => setHoverLogin(false)}
-              onClick={toggleLoginModal}
-            >
+              onClick={toggleLoginModal}>
               <IconoLoggin color={hoverLogin ? '#E11D48' : 'white'} />
             </button>
 
@@ -67,8 +69,7 @@ export const Header = ({ onSearch }: Props) => {
                 to="/carrito"
                 className="relative flex items-center justify-center gap-4 w-10 h-10 rounded-full hover:bg-blanco"
                 onMouseEnter={() => setHoverCarrito(true)}
-                onMouseLeave={() => setHoverCarrito(false)}
-              >
+                onMouseLeave={() => setHoverCarrito(false)}>
                 <IconoCarrito color={hoverCarrito ? '#E11D48' : 'white'} />
                 {totalItems > 0 ? (
                   <div className="absolute text-blanco -top-3 -right-3 bg-primary text-primary-foreground rounded-full px-2 py-1 text-xs font-bold hover:bg-blanco hover:text-primary ">
@@ -81,24 +82,32 @@ export const Header = ({ onSearch }: Props) => {
 
           <button
             onClick={toggleMenu}
-            className="md:hidden focus:outline-none z-20"
-          >
-            {menuOpen ? <IconoCruz /> : <IconoMenuHamburguesa />}
+            className="md:hidden focus:outline-none z-20">
+            {menuOpen ? null : <IconoMenuHamburguesa />}
           </button>
         </div>
       </header>
 
-      <LoginModal isOpen={isLoginOpen} onClose={toggleLoginModal} />
+      <LoginModal
+        isOpen={isLoginOpen}
+        onClose={toggleLoginModal}
+      />
 
       <div
-        className={`fixed top-0 left-0 h-full bg-primary text-white transition-transform duration-300 ease-in-out ${menuOpen ? 'translate-x-0' : '-translate-x-full'} w-[265px] z-10`}
-      >
+        className={`fixed top-0 left-0 h-full bg-primary text-white transition-transform duration-300 ease-in-out z-20 ${
+          menuOpen ? 'translate-x-0' : '-translate-x-full'
+        } w-[265px] z-10`}>
         <div className="flex justify-between items-center p-4">
-          <Link to="/" className="flex items-center gap-4" onClick={toggleMenu}>
+          <Link
+            to="/"
+            className="flex items-center gap-4"
+            onClick={toggleMenu}>
             <IconoLogoSaborcito />
             <span className="text-2xl font-bold text-white">El Saborcito</span>
           </Link>
-          <button onClick={toggleMenu} className="text-white text-2xl">
+          <button
+            onClick={toggleMenu}
+            className="text-white text-2xl">
             <IconoCruz />
           </button>
         </div>
@@ -110,9 +119,27 @@ export const Header = ({ onSearch }: Props) => {
         <div className="p-4">
           <nav className="mt-6">
             <ul className="space-y-4">
-              <li><Link to="/bebidas" onClick={toggleMenu}>Bebidas</Link></li>
-              <li><Link to="/hamburguesas" onClick={toggleMenu}>Hamburguesas</Link></li>
-              <li><Link to="/pizzas" onClick={toggleMenu}>Pizzas</Link></li>
+              <li>
+                <Link
+                  to="/bebidas"
+                  onClick={toggleMenu}>
+                  Bebidas
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/hamburguesas"
+                  onClick={toggleMenu}>
+                  Hamburguesas
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/pizzas"
+                  onClick={toggleMenu}>
+                  Pizzas
+                </Link>
+              </li>
             </ul>
           </nav>
         </div>
@@ -122,12 +149,13 @@ export const Header = ({ onSearch }: Props) => {
           <div className="p-4 border-t border-white mt-6 flex justify-around">
             <button
               className="relative flex items-center justify-center gap-4 w-10 h-10 rounded-full hover:bg-blanco"
-              onClick={toggleLoginModal}
-            >
+              onClick={toggleLoginModal}>
               <IconoLoggin color="white" />
             </button>
 
-            <Link to="/carrito" className="relative flex items-center justify-center gap-4 w-10 h-10 rounded-full hover:bg-blanco">
+            <Link
+              to="/carrito"
+              className="relative flex items-center justify-center gap-4 w-10 h-10 rounded-full hover:bg-blanco">
               <IconoCarrito color="white" />
               {totalItems > 0 ? (
                 <div className="absolute text-blanco -top-3 -right-3 bg-primary text-primary-foreground rounded-full px-2 py-1 text-xs font-bold hover:bg-blanco hover:text-primary">
@@ -142,8 +170,7 @@ export const Header = ({ onSearch }: Props) => {
       {menuOpen && (
         <div
           onClick={toggleMenu}
-          className="fixed inset-0 bg-black opacity-50 z-5"
-        ></div>
+          className="fixed inset-0 bg-black opacity-50 z-10"></div>
       )}
     </>
   );
