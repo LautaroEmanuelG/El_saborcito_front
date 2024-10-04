@@ -1,4 +1,4 @@
-# 🍔🍟 Proyecto Web de E-commerce para Restaurante
+# 🍔🍟 El Saborcito - Frontend
 
 ## Descripción del Proyecto
 
