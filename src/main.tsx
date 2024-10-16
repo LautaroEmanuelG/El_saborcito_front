@@ -5,6 +5,8 @@ import { Web } from './views/user/Web.tsx';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import VistaCarrito from './views/user/VistaCarrito.tsx';
 import { CarritoProvider } from './components/carrito/CarritoProvider.tsx';
+import { LayoutAdmin } from './views/admin/LayoutAdmin.tsx';
+import Control from './views/admin/Control.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -26,10 +28,10 @@ createRoot(document.getElementById('root')!).render(
             </CarritoProvider>
           }
         />
-        {/* <Route
-          path="/admin"
-          element={<Admin />}
-        /> */}
+        <Route path="/admin" element={<LayoutAdmin />}>
+          <Route index element={<Control />}
+          />
+        </Route>
         <Route
           path="*"
           element={
