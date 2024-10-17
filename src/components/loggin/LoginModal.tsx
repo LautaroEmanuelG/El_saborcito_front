@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 type LoginModalProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -11,8 +13,7 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
       <div className="bg-white rounded-lg w-[700px] h-[370px] shadow-lg relative p-8">
         <button
           className="absolute font-bold top-6 right-8 text-negro text-xl hover:text-blanco hover:bg-primary rounded-full w-10 h-10"
-          onClick={onClose}
-        >
+          onClick={onClose}>
           X
         </button>
         <h2 className="text-2xl font-bold mb-6">Iniciar Sesión</h2>
@@ -36,12 +37,17 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
             className="w-full px-4 py-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
-        <button
+        {/* <button
             className="w-full bg-[#E11D48] text-white py-2 rounded-lg hover:bg-[#BE123C]"
             onClick={onClose}
             >
             Ingresar
-        </button>
+        </button> */}
+        <Link
+          to="/admin"
+          className="flex justify-center bg-primary text-white py-2 rounded-lg hover:bg-primary">
+          Ingresa
+        </Link>
       </div>
     </div>
   );
