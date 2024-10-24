@@ -1,4 +1,3 @@
-// services/productoService.ts
 import axiosInstance from './axiosConfig';  // Importar la instancia preconfigurada
 
 const API_BASE_URL = '/productos';
@@ -20,5 +19,10 @@ export const getProductById = async (id: number) => {
 
 export const getAllProductos = async () => {
   const response = await axiosInstance.get(`${API_BASE_URL}/all`);
+  return response.data;
+};
+
+export const getProductosByCategoria = async (categoriaId: number) => {
+  const response = await axiosInstance.get(`${API_BASE_URL}/categoria`, { params: { id: categoriaId } });
   return response.data;
 };

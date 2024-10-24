@@ -1,20 +1,17 @@
 export interface Categoria {
-  id: number;
+  id?: number;
   nombre: string;
-  cantidad_productos: number;
-  ventas: number;
-  imagen: string;
+  descripcion?: string;
 }
 
 export interface Producto {
-  id:number;
-  categoria: string;
+  id?:number;
+  categoria: number;
   nombre: string;
-  descripcion: string;
+  descripcion?: string;
   precio: number;
+  costo:number;
   stock: number;
-  ventas: number;
-  imagen: string | string[];
 }
 export interface ProductoCarrito extends Producto {
   quantity: number;

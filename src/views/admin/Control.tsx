@@ -11,7 +11,6 @@ import {
   getAllCategorias,
   saveCategoria,
 } from '../../utils/services/axios/categoriaService';
-import { Link } from 'react-router-dom';
 
 interface Producto {
   productoId: number;
@@ -92,16 +91,6 @@ const TicketManager: React.FC = () => {
     fetchInitialData(); // Refresca los datos después de la creación
   };
 
-  const handleCreateCategoria = async () => {
-    const newCategoria = {
-      nombre: categoryForm.nombre,
-      descripcion: categoryForm.descripcion,
-    };
-    await saveCategoria(newCategoria);
-    setIsCategoryModalOpen(false); // Cierra el modal
-    fetchInitialData(); // Refresca los datos después de la creación
-  };
-
   // Función para restar un producto del ticket
   const handleRemoveProductoFromTicket = (productoId: number) => {
     setNewTicket(prevTicket => {
@@ -164,18 +153,8 @@ const TicketManager: React.FC = () => {
     <div className="container mx-auto p-6">
       <h1 className="text-3xl font-bold mb-4">Gestión Administrador</h1>
 
-      {/* Volver Atras */}
-<div className="fixed top-4 right-4 bg-primary/80 text-white px-4 py-2 rounded">
-  <Link to="/">Atras</Link>
-</div>
-
       {/* Botones para crear productos y categorías */}
       <div className="mb-4">
-        <button
-          onClick={() => setIsCategoryModalOpen(true)}
-          className="bg-primary/80 text-white px-4 py-2 rounded mr-4">
-          Crear Categoría
-        </button>
         <button
           onClick={() => setIsProductModalOpen(true)}
           className="mr-4 bg-primary/90 text-white px-4 py-2 rounded">
@@ -329,48 +308,6 @@ const TicketManager: React.FC = () => {
               <button
                 onClick={handleCreateProduct}
                 className="bg-blue-500 text-white px-4 py-2 rounded">
-                Crear
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal de Crear Categoría */}
-      {isCategoryModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-8 rounded-lg w-96">
-            <h2 className="text-2xl font-bold mb-4">Crear Categoría</h2>
-            <form>
-              <input
-                type="text"
-                placeholder="Nombre"
-                className="w-full mb-2 p-2 border"
-                onChange={e =>
-                  setCategoryForm({ ...categoryForm, nombre: e.target.value })
-                }
-              />
-              <input
-                type="text"
-                placeholder="Descripción"
-                className="w-full mb-2 p-2 border"
-                onChange={e =>
-                  setCategoryForm({
-                    ...categoryForm,
-                    descripcion: e.target.value,
-                  })
-                }
-              />
-            </form>
-            <div className="flex justify-end">
-              <button
-                onClick={() => setIsCategoryModalOpen(false)}
-                className="mr-2 bg-gray-300 px-4 py-2 rounded">
-                Cancelar
-              </button>
-              <button
-                onClick={handleCreateCategoria}
-                className="bg-green-500 text-white px-4 py-2 rounded">
                 Crear
               </button>
             </div>
