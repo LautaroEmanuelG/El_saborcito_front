@@ -5,7 +5,7 @@ import {
   deleteCategoria,
 } from '../../utils/services/axios/categoriaService';
 import { Categoria, Producto } from '../../utils/types';
-import { getProductosByCategoria } from '../../utils/services/axios/productoService';
+import { getProductosByCategoria, deleteProduct } from '../../utils/services/axios/productoService';
 
 export const Categorias = () => {
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
@@ -20,9 +20,7 @@ export const Categorias = () => {
     nombre: '',
     descripcion: '',
   });
-  const [selectedCategoria, setSelectedCategoria] = useState<Categoria | null>(
-    null
-  );
+  const [selectedCategoria, setSelectedCategoria] = useState<Categoria | null>(null);
   const [productos, setProductos] = useState<Producto[]>([]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
@@ -44,13 +42,18 @@ export const Categorias = () => {
 
   const handleDeleteCategoria = async (id: number) => {
     const productosData = await getProductosByCategoria(id);
-    console.log(productosData);
     setProductos(productosData);
+    setSelectedCategoria(categorias.find(categoria => categoria.id === id) || null);
     setIsDeleteModalOpen(true);
   };
 
   const confirmDeleteCategoria = async () => {
     if (selectedCategoria) {
+      for (const producto of productos) {
+        if (producto.id !== undefined) {
+          await deleteProduct(producto.id);
+        }
+      }
       await deleteCategoria(selectedCategoria.id ?? 0);
       setIsDeleteModalOpen(false);
       fetchInitialData(); // Refresca los datos después de la eliminación

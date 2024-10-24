@@ -1,26 +1,19 @@
-import axiosInstance from './axiosConfig'; // Importar la instancia preconfigurada
+import axiosInstance from './axiosConfig';  // Importar la instancia preconfigurada
 
 const API_BASE_URL = '/productos';
 
 export const saveProduct = async (productData: any) => {
-  const response = await axiosInstance.post(
-    `${API_BASE_URL}/guardar`,
-    productData
-  );
+  const response = await axiosInstance.post(`${API_BASE_URL}/guardar`, productData);
   return response.data;
 };
 
 export const deleteProduct = async (id: number) => {
-  const response = await axiosInstance.post(`${API_BASE_URL}/eliminar`, null, {
-    params: { id },
-  });
+  const response = await axiosInstance.post(`${API_BASE_URL}/eliminar`, null, { params: { id } });
   return response.data;
 };
 
 export const getProductById = async (id: number) => {
-  const response = await axiosInstance.get(`${API_BASE_URL}/id`, {
-    params: { id },
-  });
+  const response = await axiosInstance.get(`${API_BASE_URL}/id`, { params: { id } });
   return response.data;
 };
 
@@ -30,8 +23,6 @@ export const getAllProductos = async () => {
 };
 
 export const getProductosByCategoria = async (categoriaId: number) => {
-  const response = await axiosInstance.get(`${API_BASE_URL}/productos`, {
-    params: { id: categoriaId },
-  });
+  const response = await axiosInstance.get(`${API_BASE_URL}/categoria`, { params: { id: categoriaId } });
   return response.data;
 };

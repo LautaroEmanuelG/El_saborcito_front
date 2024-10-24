@@ -1,4 +1,4 @@
-import axiosInstance from './axiosConfig';
+import axiosInstance from './axiosConfig'; // Importar la instancia preconfigurada
 
 const API_BASE_URL = '/categorias';
 

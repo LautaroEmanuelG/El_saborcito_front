@@ -13,9 +13,9 @@ export const Productos = () => {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [productos, setProductos] = useState<any[]>([]);
   const [categorias, setCategorias] = useState<any[]>([]);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const [productForm, setProductForm] = useState<Producto>({
-    id: 0,
     nombre: '',
     descripcion: '',
     stock: 0,
@@ -23,7 +23,7 @@ export const Productos = () => {
     costo: 0,
     categoria: 0,
   });
-  const [selectedProduct, setSelectedProduct] = useState<Producto | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
 
   useEffect(() => {
     fetchInitialData();
@@ -39,6 +39,11 @@ export const Productos = () => {
   };
 
   const handleSaveProduct = async () => {
+    if (productForm.categoria === 0) {
+      setFormError('Debe seleccionar una categoría.');
+      return;
+    }
+
     const productData = {
       ...productForm,
       categoria: { id: productForm.categoria },
@@ -48,6 +53,7 @@ export const Productos = () => {
     setIsProductModalOpen(false); // Cierra el modal
     setIsUpdateModalOpen(false); // Cierra el modal de actualización
     fetchInitialData(); // Refresca los datos después de la creación/actualización
+    setFormError(null); // Resetea el error del formulario
   };
 
   const handleDeleteProduct = async (id: number) => {
@@ -167,6 +173,7 @@ export const Productos = () => {
                     categoria: parseInt(e.target.value),
                   })
                 }>
+                <option value="">Seleccione una categoría</option>
                 {categorias.map(categoria => (
                   <option
                     key={categoria.id}
@@ -175,6 +182,7 @@ export const Productos = () => {
                   </option>
                 ))}
               </select>
+              {formError && <p className="text-red-500">{formError}</p>}
             </form>
             <div className="flex justify-end">
               <button
@@ -264,6 +272,7 @@ export const Productos = () => {
                     categoria: parseInt(e.target.value),
                   })
                 }>
+                <option value="">Seleccione una categoría</option>
                 {categorias.map(categoria => (
                   <option
                     key={categoria.id}
@@ -272,6 +281,7 @@ export const Productos = () => {
                   </option>
                 ))}
               </select>
+              {formError && <p className="text-red-500">{formError}</p>}
             </form>
             <div className="flex justify-end">
               <button
