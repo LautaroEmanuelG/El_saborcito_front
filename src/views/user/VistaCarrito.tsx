@@ -1,10 +1,14 @@
+import React, { useState } from 'react';
 import { Header } from '../../components/header/Header';
 import { IconoLocation } from '../../components/iconos/IconoLocation';
 import BtnCantidadProducto from '../../components/producto/BtnCantidadProducto';
 import { useCart } from '../../hooks/useCart';
+import MetodoPagoModal from './MetodoPagoModal';
+
 
 const VistaCarrito = () => {
   const { carrito, removeFromCart } = useCart();
+  const [isMetodoPagoOpen, setMetodoPagoOpen] = useState(false);
 
   return (
     <>
@@ -21,19 +25,14 @@ const VistaCarrito = () => {
                   key={index}
                   className="flex items-center justify-between border-t border-gray-300 py-4">
                   <div className="flex items-center">
+                    {/* Imagen del producto */}
                     <img
-                      src={
-                        Array.isArray(producto.imagen)
-                          ? producto.imagen[0]
-                          : producto.imagen
-                      }
+                      src={Array.isArray(producto.imagen) ? producto.imagen[0] : producto.imagen}
                       alt={producto.nombre}
                       className="w-20 h-20 object-cover rounded-lg"
                     />
                     <div className="ml-4">
-                      <h3 className="text-[24px] font-semibold">
-                        {producto.nombre}
-                      </h3>
+                      <h3 className="text-[24px] font-semibold">{producto.nombre}</h3>
                       <button
                         className="text-[24px] text-primary hover:underline"
                         onClick={() => removeFromCart(producto)}>
@@ -46,13 +45,10 @@ const VistaCarrito = () => {
                   </div>
 
                   <div className="flex items-center">
-                    {/* BtnCantidadProducto */}
                     <BtnCantidadProducto
                       producto={producto}
                       cantidadProducto={1}
-                      setCantidadProducto={() => {
-                        /* enviamos nada */
-                      }}
+                      setCantidadProducto={() => { /* enviamos nada */ }}
                     />
                     <p className="ml-6 text-xl font-semibold w-24 flex justify-end">
                       ${(producto.precio * producto.quantity).toFixed(2)}
@@ -64,13 +60,9 @@ const VistaCarrito = () => {
 
             {/* Barra de Envío: Retiro en Local */}
             <div className="flex justify-between items-center py-2 text-[#E11D48] mt-4">
-              <span className="font-semibold text-black text-[24px]">
-                Envío
-              </span>
+              <span className="font-semibold text-black text-[24px]">Envío</span>
               <div className="flex items-center w-full ml-4">
-                <span className="mr-2 text-[24px] text-[#E11D48]">
-                  Retiro en Local
-                </span>
+                <span className="mr-2 text-[24px] text-[#E11D48]">Retiro en Local</span>
                 <div className="border-t-4 border-[#E11D48] flex-grow mx-2"></div>
                 <IconoLocation />
               </div>
@@ -112,11 +104,20 @@ const VistaCarrito = () => {
                   .toFixed(2)}
               </span>
             </div>
-            <button className="mt-4 w-full py-2 bg-[#E11D48] text-[24px] font-semibold text-white rounded-lg text-center">
+            <button
+              onClick={() => setMetodoPagoOpen(true)}
+              className="mt-4 w-full py-2 bg-[#E11D48] text-[24px] font-semibold text-white rounded-lg text-center">
               Comprar
             </button>
           </div>
         </div>
+
+        {/* Modal de método de pago */}
+        <MetodoPagoModal 
+          isOpen={isMetodoPagoOpen} 
+          onClose={() => setMetodoPagoOpen(false)} 
+          total={carrito.reduce((total, producto) => total + producto.precio * producto.quantity, 0)} 
+        />
       </div>
     </>
   );
