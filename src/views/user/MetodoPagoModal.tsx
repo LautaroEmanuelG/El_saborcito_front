@@ -13,11 +13,10 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
       <div className="bg-white w-[750px] h-[350px] rounded-lg shadow-lg p-6 relative">
-        <button
-          onClick={onClose}
-          className="absolute top-2 right-4 text-2xl hover:text-[#E11D48] transition-colors duration-300 ease-in-out"
-        >
-          <IconoCruz />
+      <button
+          className="absolute font-bold top-6 right-8 text-negro text-xl hover:text-blanco hover:bg-primary rounded-full w-10 h-10"
+          onClick={onClose}>
+          X
         </button>
         <h2 className="text-2xl font-bold mb-4">Selecciona tu método de pago</h2>
         
@@ -41,8 +40,8 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
         </div>
 
         <div className="mt-6 flex justify-between items-center">
-          <span className="text-xl font-semibold">Total: ${total.toFixed(2)}</span>
-          <button className="bg-[#E11D48] text-white py-2 px-4 rounded-lg text-lg">Pagar</button>
+          <span className="text-3xl text-primary font-black">Total: ${total.toFixed(2)}</span>
+          <button className="bg-primary text-white py-2 px-4 rounded-lg text-lg">Pagar</button>
         </div>
       </div>
     </div>

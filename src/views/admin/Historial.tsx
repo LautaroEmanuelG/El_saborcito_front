@@ -142,7 +142,7 @@ export const Historial: React.FC = () => {
 
   // Función para calcular alertas de stock
   const getStockAlerts = () => {
-    return productos.filter(producto => producto.stock < 5);
+    return productos.filter(producto => producto.stock < 10);
   };
 
   return (
