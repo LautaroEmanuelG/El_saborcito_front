@@ -44,8 +44,8 @@ createRoot(document.getElementById('root')!).render(
             path="historial"
             element={
               <ProtectedRoute>
-                {/* <Historial /> */}
-                <Control />
+                <Historial />
+                {/* <Control /> */}
               </ProtectedRoute>
             }
           />

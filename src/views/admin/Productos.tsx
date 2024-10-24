@@ -39,8 +39,8 @@ export const Productos = () => {
   };
 
   const handleSaveProduct = async () => {
-    if (productForm.categoria === 0) {
-      setFormError('Debe seleccionar una categoría.');
+    if (!productForm.nombre || productForm.precio <= 0 || productForm.stock <= 0 || productForm.costo <= 0 || productForm.categoria === 0) {
+      setFormError('Todos los campos son obligatorios y deben ser válidos.');
       return;
     }
 
@@ -76,11 +76,23 @@ export const Productos = () => {
     setIsUpdateModalOpen(true);
   };
 
+  const openCreateModal = () => {
+    setProductForm({
+      nombre: '',
+      descripcion: '',
+      stock: 0,
+      precio: 0,
+      costo: 0,
+      categoria: 0,
+    });
+    setIsProductModalOpen(true);
+  };
+
   return (
     <div className="p-4 w-full">
       <h2 className="text-3xl font-bold mb-4">Gestor de Productos</h2>
       <button
-        onClick={() => setIsProductModalOpen(true)}
+        onClick={openCreateModal}
         className="mr-4 bg-primary/90 text-white px-4 py-2 rounded">
         Crear Producto
       </button>
@@ -117,6 +129,7 @@ export const Productos = () => {
                 type="text"
                 placeholder="Nombre"
                 className="w-full mb-2 p-2 border"
+                value={productForm.nombre}
                 onChange={e =>
                   setProductForm({ ...productForm, nombre: e.target.value })
                 }
@@ -125,6 +138,7 @@ export const Productos = () => {
                 type="text"
                 placeholder="Descripción"
                 className="w-full mb-2 p-2 border"
+                value={productForm.descripcion}
                 onChange={e =>
                   setProductForm({
                     ...productForm,
@@ -136,6 +150,7 @@ export const Productos = () => {
                 type="number"
                 placeholder="Precio"
                 className="w-full mb-2 p-2 border"
+                value={productForm.precio === 0 ? '' : productForm.precio}
                 onChange={e =>
                   setProductForm({
                     ...productForm,
@@ -147,6 +162,7 @@ export const Productos = () => {
                 type="number"
                 placeholder="Stock"
                 className="w-full mb-2 p-2 border"
+                value={productForm.stock === 0 ? '' : productForm.stock}
                 onChange={e =>
                   setProductForm({
                     ...productForm,
@@ -158,6 +174,7 @@ export const Productos = () => {
                 type="number"
                 placeholder="Costo"
                 className="w-full mb-2 p-2 border"
+                value={productForm.costo === 0 ? '' : productForm.costo}
                 onChange={e =>
                   setProductForm({
                     ...productForm,
@@ -167,6 +184,7 @@ export const Productos = () => {
               />
               <select
                 className="w-full mb-2 p-2 border"
+                value={productForm.categoria}
                 onChange={e =>
                   setProductForm({
                     ...productForm,
@@ -231,7 +249,7 @@ export const Productos = () => {
                 type="number"
                 placeholder="Precio"
                 className="w-full mb-2 p-2 border"
-                value={productForm.precio}
+                value={productForm.precio === 0 ? '' : productForm.precio}
                 onChange={e =>
                   setProductForm({
                     ...productForm,
@@ -243,7 +261,7 @@ export const Productos = () => {
                 type="number"
                 placeholder="Stock"
                 className="w-full mb-2 p-2 border"
-                value={productForm.stock}
+                value={productForm.stock === 0 ? '' : productForm.stock}
                 onChange={e =>
                   setProductForm({
                     ...productForm,
@@ -255,7 +273,7 @@ export const Productos = () => {
                 type="number"
                 placeholder="Costo"
                 className="w-full mb-2 p-2 border"
-                value={productForm.costo}
+                value={productForm.costo === 0 ? '' : productForm.costo}
                 onChange={e =>
                   setProductForm({
                     ...productForm,

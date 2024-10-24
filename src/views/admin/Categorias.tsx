@@ -5,7 +5,10 @@ import {
   deleteCategoria,
 } from '../../utils/services/axios/categoriaService';
 import { Categoria, Producto } from '../../utils/types';
-import { getProductosByCategoria, deleteProduct } from '../../utils/services/axios/productoService';
+import {
+  getProductosByCategoria,
+  deleteProduct,
+} from '../../utils/services/axios/productoService';
 
 export const Categorias = () => {
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
@@ -20,7 +23,9 @@ export const Categorias = () => {
     nombre: '',
     descripcion: '',
   });
-  const [selectedCategoria, setSelectedCategoria] = useState<Categoria | null>(null);
+  const [selectedCategoria, setSelectedCategoria] = useState<Categoria | null>(
+    null
+  );
   const [productos, setProductos] = useState<Producto[]>([]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
@@ -43,7 +48,9 @@ export const Categorias = () => {
   const handleDeleteCategoria = async (id: number) => {
     const productosData = await getProductosByCategoria(id);
     setProductos(productosData);
-    setSelectedCategoria(categorias.find(categoria => categoria.id === id) || null);
+    setSelectedCategoria(
+      categorias.find(categoria => categoria.id === id) || null
+    );
     setIsDeleteModalOpen(true);
   };
 
@@ -70,12 +77,21 @@ export const Categorias = () => {
     setIsUpdateModalOpen(true);
   };
 
+  const openCreateModal = () => {
+    setCategoryForm({
+      id: null,
+      nombre: '',
+      descripcion: '',
+    });
+    setIsCategoryModalOpen(true);
+  };
+
   return (
     <div className="p-4 w-full">
       <h2 className="text-3xl font-bold mb-4">Gestor de Categorias</h2>
 
       <button
-        onClick={() => setIsCategoryModalOpen(true)}
+        onClick={openCreateModal}
         className="mr-4 bg-primary/90 text-white px-4 py-2 rounded">
         Crear Categoría
       </button>

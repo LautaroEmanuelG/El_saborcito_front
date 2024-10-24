@@ -7,10 +7,7 @@ import {
   getAllProductos,
   saveProduct,
 } from '../../utils/services/axios/productoService';
-import {
-  getAllCategorias,
-  saveCategoria,
-} from '../../utils/services/axios/categoriaService';
+import { getAllCategorias } from '../../utils/services/axios/categoriaService';
 
 interface Producto {
   productoId: number;
@@ -29,7 +26,6 @@ const TicketManager: React.FC = () => {
 
   // Estados para controlar la visibilidad de los modales
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
-  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
 
   // Estados para almacenar los datos del formulario
   const [productForm, setProductForm] = useState({
@@ -39,11 +35,6 @@ const TicketManager: React.FC = () => {
     precio: 0,
     costo: 0,
     categoriaId: 1,
-  });
-
-  const [categoryForm, setCategoryForm] = useState({
-    nombre: '',
-    descripcion: '',
   });
 
   useEffect(() => {
@@ -152,15 +143,6 @@ const TicketManager: React.FC = () => {
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-3xl font-bold mb-4">Gestión Administrador</h1>
-
-      {/* Botones para crear productos y categorías */}
-      <div className="mb-4">
-        <button
-          onClick={() => setIsProductModalOpen(true)}
-          className="mr-4 bg-primary/90 text-white px-4 py-2 rounded">
-          Crear Producto
-        </button>
-      </div>
 
       {/* Mostrar productos y permitir agregarlos al ticket */}
       <div className="mb-4">
