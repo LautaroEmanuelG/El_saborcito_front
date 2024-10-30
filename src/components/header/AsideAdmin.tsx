@@ -6,7 +6,7 @@ export const AsideAdmin = () => {
       <ul className="space-y-4 p-4 mt-6">
         <li>
           <Link to="/admin/historial">
-            Historial
+            Control
           </Link>
         </li>
         <li>
