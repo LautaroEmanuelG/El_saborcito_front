@@ -10,12 +10,11 @@ import BtnFlotanteCarrito from '../../components/carrito/BtnFlotanteCarrito';
 import { CarritoContext } from '../../components/carrito/CarritoProvider';
 
 //Oferta de un producto al azar
-const productRandom =
-  listaProductos[Math.floor(Math.random() * listaProductos.length)];
+// const productRandom =  listaProductos[Math.floor(Math.random() * listaProductos.length)];
 
 export const Web = () => {
   const [productoModal, setProductoModal] = useState<Producto | null>(
-    productRandom
+    // productRandom
   );
   const [isModalOpen, setModalOpen] = useState(true); // Modal siempre abierto para prueba
   const [searchTerm, setSearchTerm] = useState(''); // Estado para el término de búsqueda

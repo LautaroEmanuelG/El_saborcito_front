@@ -21,7 +21,7 @@ export const CardProducto = ({ product, setProductoModal }: ProductProps) => {
       <div className="relative flex justify-end items-end w-full bg-red-900">
         <div className="bg-red-500 h-64 w-full">
           <img
-            src={product.imagen[0] ?? product.imagen}
+            // src={product.imagen[0] ?? product.imagen}
             alt={product.nombre}
             className="object-cover w-full h-full"
           />
