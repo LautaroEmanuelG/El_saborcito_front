@@ -1,5 +1,4 @@
 import React from 'react';
-import IconoCruz from '../../components/iconos/IconoCruz';
 
 interface MetodoPagoModalProps {
   isOpen: boolean;

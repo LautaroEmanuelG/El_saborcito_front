@@ -6,7 +6,7 @@ export interface Categoria {
 
 export interface Producto {
   id?:number;
-  categoria: number;
+  categoriaId: number;
   nombre: string;
   descripcion?: string;
   precio: number;
@@ -15,4 +15,31 @@ export interface Producto {
 }
 export interface ProductoCarrito extends Producto {
   quantity: number;
+}
+
+export interface TicketProducto {
+  id?: number;
+  producto: ProductoValor;
+  cantidad: number;
+}
+
+export interface Ticket {
+  id?: number;
+  ticketProductos: TicketProducto[];
+  total: number;
+  fecha: string;
+}
+
+export interface ProductoValor extends Producto {
+  costo: number;
+  ganancia: number;
+  valor: {
+    costo: number;
+    precio: number;
+  }
+  categoria: Categoria;
+}
+
+export interface CategoriaVentas extends Categoria {
+  ventas: number;
 }
