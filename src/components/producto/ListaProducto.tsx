@@ -14,7 +14,7 @@ export const ListaProductos = ({
   setProductoModal,
 }: Props) => {
   const categorias = [
-    ...new Set(productos.map(producto => producto.categoria)),
+    ...new Set(productos.map(producto => producto.categoriaId)),
   ];
 
   // Estado para manejar la cantidad de productos visibles por categoría
@@ -30,7 +30,7 @@ export const ListaProductos = ({
   const handleVerMas = (categoria: string) => {
     setProductosVisibles(prevState => {
       const totalProductos = productos.filter(
-        producto => producto.categoria === categoria
+        producto => producto.categoriaId === categoria
       ).length;
       return {
         ...prevState,
@@ -62,7 +62,7 @@ export const ListaProductos = ({
           </span>
           <div className="flex gap-4 md:gap-6 flex-wrap">
             {productos
-              .filter(producto => producto.categoria === categoria)
+              .filter(producto => producto.categoriaId === categoria)
               .slice(0, productosVisibles[categoria]) // Mostrar la cantidad de productos según el estado
               .map((producto, prodIndex) => (
                 <div
