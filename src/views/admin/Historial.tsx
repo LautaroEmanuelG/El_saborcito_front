@@ -52,12 +52,15 @@ export const Historial: React.FC = () => {
     }
   };
 
-  // Función para calcular alertas de stock
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(amount);
+  };
+
   const getStockAlerts = () => {
     return productos.filter(producto => producto.stock < 10);
   };
 
-  const openUpdateModal = (productoId) => {
+  const openUpdateModal = (productoId: number) => {
     const producto = productos.find(p => p.id === productoId);
     if (producto) {
       setProductForm({
@@ -116,16 +119,25 @@ export const Historial: React.FC = () => {
       {/* Mostrar tickets */}
       <div className="mb-4">
         <h2 className="text-2xl font-semibold">Tickets</h2>
-        {tickets
-          .slice()
-          .reverse()
-          .map(ticket => (
-            <div key={ticket.id} className="p-2 border my-2">
-              <span>
-                Ticket ID: {ticket.id} - Total: {ticket.total}
-              </span>
-            </div>
-          ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {tickets
+            .slice()
+            .reverse()
+            .map(ticket => (
+              <div key={ticket.id} className="p-4 border border-gray-300 rounded-lg shadow-md bg-white">
+                <h3 className="text-xl font-semibold text-gray-700 mb-2 flex items-center">
+                  <span className="mr-2 text-blue-500">🎫</span>
+                  Ticket ID: {ticket.id}
+                </h3>
+                <div className="text-lg text-gray-600">
+                  <span className="font-medium">Total:</span> {formatCurrency(ticket.total)}
+                </div>
+                <div className="mt-2 text-sm text-gray-500">
+                  Fecha de Creación: {new Date(ticket.fechaCreacion).toLocaleDateString()}
+                </div>
+              </div>
+            ))}
+        </div>
       </div>
 
       {/* Modal de Actualizar Producto */}
