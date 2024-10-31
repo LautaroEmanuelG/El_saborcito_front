@@ -1,13 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import {
-  createTicket,
-  getAllTickets,
-} from '../../utils/services/axios/ticketService';
-import {
-  getAllProductos,
-  saveProduct,
-} from '../../utils/services/axios/productoService';
-import { getAllCategorias } from '../../utils/services/axios/categoriaService';
+import { createTicket, getAllTickets } from '../../utils/services/axios/ticketService';
+import { getAllProductos } from '../../utils/services/axios/productoService';
 
 interface Producto {
   productoId: number;
@@ -21,21 +14,17 @@ interface Ticket {
 export const Historial: React.FC = () => {
   const [tickets, setTickets] = useState<any[]>([]);
   const [productos, setProductos] = useState<any[]>([]);
-  const [categorias, setCategorias] = useState<any[]>([]);
   const [newTicket, setNewTicket] = useState<Ticket>({ productos: [] });
-
-  // Estados para controlar la visibilidad de los modales
-  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
-
-  // Estados para almacenar los datos del formulario
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [productForm, setProductForm] = useState({
     nombre: '',
     descripcion: '',
-    stock: 0,
     precio: 0,
+    stock: 0,
     costo: 0,
-    categoriaId: 1,
+    categoria: '',
   });
+  const [formError, setFormError] = useState('');
 
   useEffect(() => {
     fetchInitialData();
@@ -44,105 +33,51 @@ export const Historial: React.FC = () => {
   const fetchInitialData = async () => {
     const ticketsData = await getAllTickets();
     const productosData = await getAllProductos();
-    const categoriasData = await getAllCategorias();
-
     setTickets(ticketsData);
     setProductos(productosData);
-    setCategorias(categoriasData);
   };
 
   const handleCreateTicket = async () => {
     try {
-      // Asegurarse de que el formato de los productos sea correcto
       const ticketToCreate = newTicket.productos.map(p => ({
         productoId: p.productoId,
         cantidad: p.cantidad,
       }));
 
       await createTicket(ticketToCreate);
-      fetchInitialData(); // Refresca los datos después de la creación
-
-      // Limpiar el ticket después de crearlo
+      fetchInitialData();
       setNewTicket({ productos: [] });
     } catch (error) {
       console.error('Error al crear ticket:', error);
     }
   };
 
-  const handleCreateProduct = async () => {
-    const newProduct = {
-      nombre: productForm.nombre,
-      descripcion: productForm.descripcion,
-      stock: productForm.stock,
-      categoria: { id: productForm.categoriaId },
-      valor: { precio: productForm.precio, costo: productForm.costo },
-    };
-    await saveProduct(newProduct);
-    setIsProductModalOpen(false); // Cierra el modal
-    fetchInitialData(); // Refresca los datos después de la creación
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(amount);
   };
 
-  // Función para restar un producto del ticket
-  const handleRemoveProductoFromTicket = (productoId: number) => {
-    setNewTicket(prevTicket => {
-      const existingProduct = prevTicket.productos.find(
-        p => p.productoId === productoId
-      );
-      if (existingProduct && existingProduct.cantidad > 1) {
-        // Reducir la cantidad si es mayor que 1
-        return {
-          ...prevTicket,
-          productos: prevTicket.productos.map(p =>
-            p.productoId === productoId ? { ...p, cantidad: p.cantidad - 1 } : p
-          ),
-        };
-      } else {
-        // Eliminar el producto si la cantidad es 1
-        return {
-          ...prevTicket,
-          productos: prevTicket.productos.filter(
-            p => p.productoId !== productoId
-          ),
-        };
-      }
-    });
-  };
-
-  // Función para agregar un producto al ticket
-  const handleAddProductoToTicket = (productoId: number) => {
-    setNewTicket(prevTicket => {
-      const existingProduct = prevTicket.productos.find(
-        p => p.productoId === productoId
-      );
-      if (existingProduct) {
-        // Incrementar la cantidad si el producto ya está en el ticket
-        return {
-          ...prevTicket,
-          productos: prevTicket.productos.map(p =>
-            p.productoId === productoId ? { ...p, cantidad: p.cantidad + 1 } : p
-          ),
-        };
-      } else {
-        // Agregar el producto si no está en el ticket
-        return {
-          ...prevTicket,
-          productos: [...prevTicket.productos, { productoId, cantidad: 1 }],
-        };
-      }
-    });
-  };
-
-  // Función para obtener la cantidad de un producto en el ticket
-  const getProductQuantity = (productoId: number) => {
-    const productInTicket = newTicket.productos.find(
-      p => p.productoId === productoId
-    );
-    return productInTicket ? productInTicket.cantidad : 0;
-  };
-
-  // Función para calcular alertas de stock
   const getStockAlerts = () => {
     return productos.filter(producto => producto.stock < 10);
+  };
+
+  const openUpdateModal = (productoId: number) => {
+    const producto = productos.find(p => p.id === productoId);
+    if (producto) {
+      setProductForm({
+        nombre: producto.nombre,
+        descripcion: producto.descripcion,
+        precio: producto.precio,
+        stock: producto.stock,
+        costo: producto.costo,
+        categoria: producto.categoria || '',
+      });
+      setIsUpdateModalOpen(true);
+    }
+  };
+
+  const handleSaveProduct = () => {
+    // Lógica para guardar los cambios del producto
+    setIsUpdateModalOpen(false);
   };
 
   return (
@@ -154,12 +89,15 @@ export const Historial: React.FC = () => {
         <h2 className="text-2xl font-semibold">Alertas de Stock</h2>
         {getStockAlerts().length > 0 ? (
           getStockAlerts().map(producto => (
-            <div
-              key={producto.id}
-              className="p-2 border my-2 bg-red-100">
+            <div key={producto.id} className="p-2 border my-2 bg-red-100 flex justify-between items-center">
               <span>
                 Producto: {producto.nombre} - Stock: {producto.stock}
               </span>
+              <button
+                onClick={() => openUpdateModal(producto.id)}
+                className="bg-blue-500 text-white px-4 py-2 rounded">
+                Actualizar
+              </button>
             </div>
           ))
         ) : (
@@ -167,42 +105,6 @@ export const Historial: React.FC = () => {
             <span>No hay alertas de stock.</span>
           </div>
         )}
-      </div>
-
-      {/* Mostrar productos y permitir agregarlos al ticket */}
-      <div className="mb-4">
-        <h2 className="text-2xl font-semibold">Productos</h2>
-        {productos.map(producto => (
-          <div
-            key={producto.id}
-            className={`flex justify-between items-center my-2 p-2 border ${
-              getProductQuantity(producto.id) > 0 ? 'border-blue-500' : ''
-            }`}>
-            <span>{producto.nombre}</span>
-            <div className="flex items-center">
-              {/* Botón para restar producto */}
-              {getProductQuantity(producto.id) > 0 && (
-                <button
-                  onClick={() => handleRemoveProductoFromTicket(producto.id)}
-                  className="bg-gray-400 text-white px-2 py-1 rounded mx-1">
-                  -
-                </button>
-              )}
-              {/* Mostrar la cantidad agregada */}
-              {getProductQuantity(producto.id) > 0 && (
-                <span className="text-xl font-bold mx-2">
-                  {getProductQuantity(producto.id)}
-                </span>
-              )}
-              {/* Botón para agregar producto */}
-              <button
-                onClick={() => handleAddProductoToTicket(producto.id)}
-                className="bg-primary text-white px-4 py-2 rounded">
-                +
-              </button>
-            </div>
-          </div>
-        ))}
       </div>
 
       {/* Botón para crear ticket */}
@@ -217,105 +119,88 @@ export const Historial: React.FC = () => {
       {/* Mostrar tickets */}
       <div className="mb-4">
         <h2 className="text-2xl font-semibold">Tickets</h2>
-        {tickets
-          .slice()
-          .reverse()
-          .map(ticket => (
-            <div
-              key={ticket.id}
-              className="p-2 border my-2">
-              <span>
-                Ticket ID: {ticket.id} - Total: {ticket.total}
-              </span>
-            </div>
-          ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {tickets
+            .slice()
+            .reverse()
+            .map(ticket => (
+              <div key={ticket.id} className="p-4 border border-gray-300 rounded-lg shadow-md bg-white">
+                <h3 className="text-xl font-semibold text-gray-700 mb-2 flex items-center">
+                  <span className="mr-2 text-blue-500">🎫</span>
+                  Ticket ID: {ticket.id}
+                </h3>
+                <div className="text-lg text-gray-600">
+                  <span className="font-medium">Total:</span> {formatCurrency(ticket.total)}
+                </div>
+                <div className="mt-2 text-sm text-gray-500">
+                  Fecha de Creación: {new Date(ticket.fechaCreacion).toLocaleDateString()}
+                </div>
+              </div>
+            ))}
+        </div>
       </div>
 
-      {/* Modal de Crear Producto */}
-      {isProductModalOpen && (
+      {/* Modal de Actualizar Producto */}
+      {isUpdateModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-8 rounded-lg w-96">
-            <h2 className="text-2xl font-bold mb-4">Crear Producto</h2>
+            <h2 className="text-2xl font-bold mb-4">Actualizar Producto</h2>
             <form>
+              <label className="block mb-1">Nombre</label>
               <input
                 type="text"
-                placeholder="Nombre"
                 className="w-full mb-2 p-2 border"
-                onChange={e =>
-                  setProductForm({ ...productForm, nombre: e.target.value })
-                }
+                value={productForm.nombre}
+                onChange={e => setProductForm({ ...productForm, nombre: e.target.value })}
               />
+              <label className="block mb-1">Descripción</label>
               <input
                 type="text"
-                placeholder="Descripción"
                 className="w-full mb-2 p-2 border"
-                onChange={e =>
-                  setProductForm({
-                    ...productForm,
-                    descripcion: e.target.value,
-                  })
-                }
+                value={productForm.descripcion}
+                onChange={e => setProductForm({ ...productForm, descripcion: e.target.value })}
               />
+              <label className="block mb-1">Precio</label>
               <input
                 type="number"
-                placeholder="Stock"
                 className="w-full mb-2 p-2 border"
-                onChange={e =>
-                  setProductForm({
-                    ...productForm,
-                    stock: parseInt(e.target.value),
-                  })
-                }
+                value={productForm.precio || ''}
+                onChange={e => setProductForm({ ...productForm, precio: parseFloat(e.target.value) })}
               />
+              <label className="block mb-1">Stock</label>
               <input
                 type="number"
-                placeholder="Precio"
                 className="w-full mb-2 p-2 border"
-                onChange={e =>
-                  setProductForm({
-                    ...productForm,
-                    precio: parseFloat(e.target.value),
-                  })
-                }
+                value={productForm.stock || ''}
+                onChange={e => setProductForm({ ...productForm, stock: parseInt(e.target.value, 10) })}
               />
+              <label className="block mb-1">Costo</label>
               <input
                 type="number"
-                placeholder="Costo"
                 className="w-full mb-2 p-2 border"
-                onChange={e =>
-                  setProductForm({
-                    ...productForm,
-                    costo: parseFloat(e.target.value),
-                  })
-                }
+                value={productForm.costo || ''}
+                onChange={e => setProductForm({ ...productForm, costo: parseFloat(e.target.value) })}
               />
+              <label className="block mb-1">Categoría</label>
               <select
                 className="w-full mb-2 p-2 border"
-                onChange={e =>
-                  setProductForm({
-                    ...productForm,
-                    categoriaId: parseInt(e.target.value),
-                  })
-                }>
-                {categorias.map(categoria => (
-                  <option
-                    key={categoria.id}
-                    value={categoria.id}>
-                    {categoria.nombre}
-                  </option>
-                ))}
+                value={productForm.categoria}
+                onChange={e => setProductForm({ ...productForm, categoria: e.target.value })}>
+                <option value="">Seleccione una categoría</option>
+                {/* Aquí van las opciones de categorías */}
               </select>
+              {formError && <p className="text-red-500">{formError}</p>}
             </form>
             <div className="flex justify-end">
               <button
-                onClick={() => setIsProductModalOpen(false)}
+                onClick={() => setIsUpdateModalOpen(false)}
                 className="mr-2 bg-gray-300 px-4 py-2 rounded">
                 Cancelar
               </button>
               <button
-                onClick={handleCreateProduct}
-                className="bg-blue-500 text-white px-4 py-2 rounded">
-                Crear
+                onClick={handleSaveProduct}
+                className="bg-green-500 text-white px-4 py-2 rounded">
+                Actualizar
               </button>
             </div>
           </div>
