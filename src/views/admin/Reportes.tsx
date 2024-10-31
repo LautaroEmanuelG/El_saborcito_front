@@ -20,7 +20,12 @@ import {
 import { getAllCategorias } from '../../utils/services/axios/categoriaService';
 import { getAllProductos } from '../../utils/services/axios/productoService';
 import { getAllTickets } from '../../utils/services/axios/ticketService';
-import { Ticket, TicketProducto, type CategoriaVentas, type ProductoValor } from '../../utils/types';
+import {
+  Ticket,
+  TicketProducto,
+  type CategoriaVentas,
+  type ProductoValor,
+} from '../../utils/types';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
@@ -44,7 +49,9 @@ export const Reportes = () => {
   };
 
   const data = categorias.map(categoria => {
-    const productCount = productos.filter(producto => producto.categoria.id === categoria.id).length;
+    const productCount = productos.filter(
+      producto => producto.categoria.id === categoria.id
+    ).length;
     return { name: categoria.nombre, value: productCount };
   });
 
@@ -56,97 +63,149 @@ export const Reportes = () => {
 
   const radarData = categorias.map(categoria => {
     const ventas = tickets.reduce((acc, ticket) => {
-      const ticketProductos = (ticket.ticketProductos as TicketProducto[]).filter(tp => tp.producto.categoria.id === categoria.id);
-      const ventasCategoria = ticketProductos.reduce((acc, tp) => acc + tp.cantidad, 0);
+      const ticketProductos = (
+        ticket.ticketProductos as TicketProducto[]
+      ).filter(tp => tp.producto.categoria.id === categoria.id);
+      const ventasCategoria = ticketProductos.reduce(
+        (acc, tp) => acc + tp.cantidad,
+        0
+      );
       return acc + ventasCategoria;
     }, 0);
-    return { subject: categoria.nombre, ventas, fullMark: Math.max(...productos.map(p => p.stock)) };
+    return {
+      subject: categoria.nombre,
+      ventas,
+      fullMark: Math.max(...productos.map(p => p.stock)),
+    };
   });
 
-  const totalGastos = productos.reduce((acc, producto) => acc + producto.valor.costo * producto.stock, 0);
+  const totalGastos = productos.reduce(
+    (acc, producto) => acc + producto.valor.costo * producto.stock,
+    0
+  );
   const totalGanancias = tickets.reduce((acc, ticket) => acc + ticket.total, 0);
 
-  const categoriaMasVendida = categorias.reduce((max, categoria) => {
-    const ventas = tickets.reduce((acc, ticket) => {
-      console.log('ticket', ticket.ticketProductos.map(tp => tp.producto.categoria.id));
-      console.log('categoria.id', categoria.id)
-      const ticketProductos = ticket.ticketProductos.filter(tp => tp.producto.categoria.id === categoria.id);
-      const ventasCategoria = ticketProductos.reduce((acc, tp) => acc + tp.cantidad, 0);
-      console.log('ventasCategoria', ventasCategoria)
-      return acc + ventasCategoria;
-    }, 0);
-    return ventas > max.ventas ? { nombre: categoria.nombre, ventas, } : max;
-  }, { nombre: '', ventas: 0});
+  const categoriaMasVendida = categorias.reduce(
+    (max, categoria) => {
+      const ventas = tickets.reduce((acc, ticket) => {
+        console.log(
+          'ticket',
+          ticket.ticketProductos.map(tp => tp.producto.categoria.id)
+        );
+        console.log('categoria.id', categoria.id);
+        const ticketProductos = ticket.ticketProductos.filter(
+          tp => tp.producto.categoria.id === categoria.id
+        );
+        const ventasCategoria = ticketProductos.reduce(
+          (acc, tp) => acc + tp.cantidad,
+          0
+        );
+        console.log('ventasCategoria', ventasCategoria);
+        return acc + ventasCategoria;
+      }, 0);
+      return ventas > max.ventas ? { nombre: categoria.nombre, ventas } : max;
+    },
+    { nombre: '', ventas: 0 }
+  );
 
   const totalProductos = productos.length;
   const totalCategorias = categorias.length;
   const totalTickets = tickets.length;
 
   return (
-    <div className='bg-gray-100 w-full min-h-full p-4'>
-      <div className='grid grid-cols-2 gap-4'>
-        <div className='p-2 bg-white rounded-lg shadow-md'>
-          <ResponsiveContainer width="100%" height={300}>
+    <div className="bg-gray-100 w-full min-h-full p-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="p-2 bg-white rounded-lg shadow-md">
+          <ResponsiveContainer
+            width="100%"
+            height={300}>
             <PieChart>
-              <Pie dataKey="value" data={data} fill="#8884d8" label>
+              <Pie
+                dataKey="value"
+                data={data}
+                fill="#8884d8"
+                label>
                 {data.map((_, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
                 ))}
               </Pie>
               <Legend />
             </PieChart>
           </ResponsiveContainer>
         </div>
-        <div className='bg-white rounded-lg shadow-md p-2'>
-          <ResponsiveContainer width="100%" height={300}>
+        <div className="bg-white rounded-lg shadow-md p-2">
+          <ResponsiveContainer
+            width="100%"
+            height={300}>
             <BarChart data={barData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="costo" fill="#FF8042" />
-              <Bar dataKey="ganancia" fill="#0088FE" />
+              <Bar
+                dataKey="costo"
+                fill="#FF8042"
+              />
+              <Bar
+                dataKey="ganancia"
+                fill="#0088FE"
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>
-        <div className='bg-white rounded-lg shadow-md'>
-          <ResponsiveContainer width="100%" height={300}>
-            <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
+        <div className="bg-white rounded-lg shadow-md">
+          <ResponsiveContainer
+            width="100%"
+            height={300}>
+            <RadarChart
+              cx="50%"
+              cy="50%"
+              outerRadius="80%"
+              data={radarData}>
               <PolarGrid />
               <PolarAngleAxis dataKey="subject" />
               <PolarRadiusAxis />
-              <Radar name="Ventas" dataKey="ventas" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
+              <Radar
+                name="Ventas"
+                dataKey="ventas"
+                stroke="#8884d8"
+                fill="#8884d8"
+                fillOpacity={0.6}
+              />
             </RadarChart>
           </ResponsiveContainer>
         </div>
-        <div className='p-2 flex flex-col gap-7'>
-          <div className='bg-white p-4 rounded-lg shadow-md'>
-            <h2 className='text-2xl font-bold mb-4'>Total Ganancias</h2>
-            <p className='text-4xl'>{totalGanancias}</p>
+        <div className="p-2 flex flex-col gap-7">
+          <div className="bg-white p-4 rounded-lg shadow-md">
+            <h2 className="text-2xl font-bold mb-4">Total Ganancias</h2>
+            <p className="text-4xl">{totalGanancias}</p>
           </div>
-          <div className='bg-white p-4 rounded-lg shadow-md'>
-            <h2 className='text-2xl font-bold mb-4'>Total Gastos</h2>
-            <p className='text-4xl'>{totalGastos}</p>
+          <div className="bg-white p-4 rounded-lg shadow-md">
+            <h2 className="text-2xl font-bold mb-4">Total Gastos</h2>
+            <p className="text-4xl">{totalGastos}</p>
           </div>
         </div>
-          <div className='bg-white p-4 rounded-lg shadow-md'>
-            <h2 className='text-2xl font-bold mb-4'>Categoría Más Vendida</h2>
-            <p className='text-4xl'>{categoriaMasVendida.nombre}</p>
-            <p className='text-xl'>Ventas: {categoriaMasVendida.ventas}</p>
-          </div>
-          <div className='bg-white p-4 rounded-lg shadow-md'>
-            <h2 className='text-2xl font-bold mb-4'>Total Productos</h2>
-            <p className='text-4xl'>{totalProductos}</p>
-          </div>
-          <div className='bg-white p-4 rounded-lg shadow-md'>
-            <h2 className='text-2xl font-bold mb-4'>Total Categorías</h2>
-            <p className='text-4xl'>{totalCategorias}</p>
-          </div>
-          <div className='bg-white p-4 rounded-lg shadow-md'>
-            <h2 className='text-2xl font-bold mb-4'>Total Tickets</h2>
-            <p className='text-4xl'>{totalTickets}</p>
-          </div>
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <h2 className="text-2xl font-bold mb-4">Categoría Más Vendida</h2>
+          <p className="text-4xl">{categoriaMasVendida.nombre}</p>
+          <p className="text-xl">Ventas: {categoriaMasVendida.ventas}</p>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <h2 className="text-2xl font-bold mb-4">Total Productos</h2>
+          <p className="text-4xl">{totalProductos}</p>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <h2 className="text-2xl font-bold mb-4">Total Categorías</h2>
+          <p className="text-4xl">{totalCategorias}</p>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <h2 className="text-2xl font-bold mb-4">Total Tickets</h2>
+          <p className="text-4xl">{totalTickets}</p>
+        </div>
       </div>
     </div>
   );
