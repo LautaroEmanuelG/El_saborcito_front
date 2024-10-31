@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { CardProducto } from './CardProducto';
-import type { Categoria, Producto, ProductoValor } from '../../utils/types';
+import type { Categoria, ProductoValor } from '../../utils/types';
 import { getAllCategorias } from '../../utils/services/axios/categoriaService';
 
 type Props = {
@@ -11,7 +11,6 @@ type Props = {
 
 export const ListaProductos = ({
   productos,
-  onProductClick,
   setProductoModal,
 }: Props) => {
   const [categorias, setCategorias] = useState<Categoria[]>([]);

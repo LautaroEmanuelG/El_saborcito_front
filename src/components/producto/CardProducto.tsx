@@ -1,4 +1,4 @@
-import type { Producto, ProductoValor } from '../../utils/types';
+import type { ProductoValor } from '../../utils/types';
 import { BtnAgregarCarrito } from '../utils/BtnAgregarCarrito';
 
 type ProductProps = {

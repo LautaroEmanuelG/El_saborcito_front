@@ -7,7 +7,7 @@ export const LayoutAdmin: React.FC = () => {
     <div className="flex flex-col min-h-screen">
       <main>
         <HeaderAdmin />
-        <div className='flex min-h-[calc(100vh-4.9rem)]'>
+        <div className="flex min-h-[calc(100vh-4.9rem)]">
           <AsideAdmin />
           <Outlet />
         </div>

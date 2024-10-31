@@ -1,13 +1,14 @@
 import React, { useContext } from 'react';
 import { CarritoContext } from '../carrito/CarritoProvider';
-import type { Producto } from '../../utils/types';
+import type { ProductoValor } from '../../utils/types';
 
 interface BtnAgregarCarritoProps {
   position?: 'left' | 'right';
-  product: Producto;
+  product: ProductoValor;
   cantidadProducto: number;
   setCantidadProducto: React.Dispatch<React.SetStateAction<number>>;
   onClose: () => void;
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void; // Make onClick optional
 }
 
 export const BtnAgregarCarrito: React.FC<BtnAgregarCarritoProps> = ({
@@ -16,6 +17,7 @@ export const BtnAgregarCarrito: React.FC<BtnAgregarCarritoProps> = ({
   cantidadProducto,
   setCantidadProducto,
   onClose,
+  onClick, // Destructure onClick
 }) => {
   const carritoContext = useContext(CarritoContext);
 
@@ -31,6 +33,9 @@ export const BtnAgregarCarrito: React.FC<BtnAgregarCarritoProps> = ({
     addToCarrito(product, cantidadProducto || 1);
     setCantidadProducto(1);
     onClose();
+    if (onClick) {
+      onClick(event); // Call onClick if it is provided
+    }
   };
 
   return (

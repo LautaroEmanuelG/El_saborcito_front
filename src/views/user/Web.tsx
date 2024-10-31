@@ -4,7 +4,11 @@ import { ListaCategorias } from '../../components/categorias/ListaCategorias';
 import { ListaProductos } from '../../components/producto/ListaProducto';
 import { ModalProducto } from '../../components/producto/ModalProducto';
 import { ActiveSlider } from '../../components/carrusel/ActiveSlider';
-import { Categoria, type Producto, type ProductoValor } from '../../utils/types';
+import {
+  Categoria,
+  type Producto,
+  type ProductoValor,
+} from '../../utils/types';
 import BtnFlotanteCarrito from '../../components/carrito/BtnFlotanteCarrito';
 import { CarritoContext } from '../../components/carrito/CarritoProvider';
 import { getAllProductos } from '../../utils/services/axios/productoService';
@@ -13,7 +17,9 @@ import { getAllCategorias } from '../../utils/services/axios/categoriaService';
 export const Web = () => {
   const [productos, setProductos] = useState<ProductoValor[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
-  const [productoModal, setProductoModal] = useState<ProductoValor | null>(null);
+  const [productoModal, setProductoModal] = useState<ProductoValor | null>(
+    null
+  );
   const [isModalOpen, setModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState(''); // Estado para el término de búsqueda
   const [filteredProducts, setFilteredProducts] = useState<ProductoValor[]>([]);
@@ -78,7 +84,10 @@ export const Web = () => {
           </p>
         ) : (
           <>
-            <ActiveSlider products={productos} setProductoModal={setProductoModal}/>
+            <ActiveSlider
+              products={productos}
+              setProductoModal={setProductoModal}
+            />
             <ListaProductos
               productos={filteredProducts}
               setProductoModal={setProductoModal}
