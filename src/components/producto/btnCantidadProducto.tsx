@@ -1,10 +1,10 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { CarritoContext } from '../carrito/CarritoProvider';
-import type { Producto } from '../../utils/types';
+import type { ProductoValor } from '../../utils/types';
 import { useLocation } from 'react-router-dom';
 
 interface BtnCantidadProductoProps {
-  producto: Producto;
+  producto: ProductoValor;
   cantidadProducto: number;
   setCantidadProducto: React.Dispatch<React.SetStateAction<number>>;
 }
@@ -19,17 +19,13 @@ const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
   const location = useLocation();
 
   if (!carritoContext) {
-    throw new Error(
-      'BtnCantidadProducto must be used within a CarritoProvider'
-    );
+    throw new Error('BtnCantidadProducto must be used within a CarritoProvider');
   }
 
   const { carrito, addToCarrito, decreaseFromCart } = carritoContext;
 
   useEffect(() => {
-    const productoEnCarrito = carrito.find(
-      item => item.nombre === producto.nombre
-    );
+    const productoEnCarrito = carrito.find(item => item.nombre === producto.nombre);
     if (productoEnCarrito) {
       setQuantity(productoEnCarrito.quantity);
     }
@@ -38,7 +34,6 @@ const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
   const handleIncrease = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     event.preventDefault();
-    // setQuantity(quantity + 1);
     if (location.pathname === '/carrito') {
       addToCarrito(producto, 1);
     } else {
@@ -52,14 +47,14 @@ const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
     if (quantity > 1) {
       setQuantity(quantity - 1);
       if (location.pathname === '/carrito') {
-        decreaseFromCart(producto);
+        decreaseFromCart({ id: producto.id! });
       } else {
         setCantidadProducto(quantity - 1);
       }
     } else {
       // Si la cantidad es 1 y estamos en /carrito, elimina el producto del carrito
       if (location.pathname === '/carrito') {
-        decreaseFromCart(producto);
+        decreaseFromCart({ id: producto.id! });
       } else {
         setCantidadProducto(1);
       }

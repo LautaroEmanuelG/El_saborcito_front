@@ -13,7 +13,7 @@ export interface Producto {
   costo:number;
   stock: number;
 }
-export interface ProductoCarrito extends Producto {
+export interface ProductoCarrito extends ProductoValor {
   quantity: number;
 }
 

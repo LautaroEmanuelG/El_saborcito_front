@@ -154,7 +154,9 @@ export const Historial: React.FC = () => {
         <h2 className="text-2xl font-semibold">Alertas de Stock</h2>
         {getStockAlerts().length > 0 ? (
           getStockAlerts().map(producto => (
-            <div key={producto.id} className="p-2 border my-2 bg-red-100">
+            <div
+              key={producto.id}
+              className="p-2 border my-2 bg-red-100">
               <span>
                 Producto: {producto.nombre} - Stock: {producto.stock}
               </span>

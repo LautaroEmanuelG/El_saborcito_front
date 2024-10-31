@@ -1,5 +1,5 @@
 import React, { createContext, useReducer, ReactNode, useEffect } from 'react';
-import type { Producto, ProductoCarrito } from '../../utils/types';
+import type { ProductoCarrito, ProductoValor } from '../../utils/types';
 
 // Define the state shape
 interface State {
@@ -9,16 +9,14 @@ interface State {
 // Define the context value shape
 interface CarritoContextValue {
   carrito: ProductoCarrito[];
-  addToCarrito: (producto: Producto, cantidad: number) => void;
+  addToCarrito: (producto: ProductoValor, cantidad: number) => void;
   removeFromCart: (producto: { nombre: string }) => void;
   decreaseFromCart: (producto: { id: number }) => void;
   clearCarrito: () => void;
 }
 
 // Create the context
-export const CarritoContext = createContext<CarritoContextValue | undefined>(
-  undefined
-);
+export const CarritoContext = createContext<CarritoContextValue | undefined>(undefined);
 
 // Define the initial state
 const initialState: State = {
@@ -35,8 +33,7 @@ const carritoReducer = (state: State, action: any): State => {
 
       if (existingProductIndex !== -1) {
         const updatedCarrito = [...state.carrito];
-        updatedCarrito[existingProductIndex].quantity +=
-          action.payload.cantidad;
+        updatedCarrito[existingProductIndex].quantity += action.payload.cantidad;
         return { ...state, carrito: updatedCarrito };
       }
 
@@ -48,13 +45,6 @@ const carritoReducer = (state: State, action: any): State => {
         ],
       };
     case 'REMOVE_FROM_CARRITO':
-      if (!action.payload || !action.payload.id) {
-        console.error(
-          'REMOVE_FROM_CARRITO action payload is invalid:',
-          action.payload
-        );
-        return state;
-      }
       return {
         ...state,
         carrito: state.carrito.filter(
@@ -62,13 +52,6 @@ const carritoReducer = (state: State, action: any): State => {
         ),
       };
     case 'DECREASE_FROM_CARRITO':
-      if (!action.payload || !action.payload.nombre) {
-        console.error(
-          'DECREASE_FROM_CARRITO action payload is invalid:',
-          action.payload
-        );
-        return state;
-      }
       const productIndex = state.carrito.findIndex(
         product => product.id === action.payload.id
       );
@@ -93,16 +76,14 @@ const carritoReducer = (state: State, action: any): State => {
 };
 
 // Define the provider component
-export const CarritoProvider: React.FC<{ children: ReactNode }> = ({
-  children,
-}) => {
+export const CarritoProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(carritoReducer, initialState);
 
   useEffect(() => {
     localStorage.setItem('carrito', JSON.stringify(state.carrito));
   }, [state.carrito]);
 
-  const addToCarrito = (producto: Producto, cantidad: number = 1) => {
+  const addToCarrito = (producto: ProductoValor, cantidad: number = 1) => {
     dispatch({ type: 'ADD_TO_CARRITO', payload: { producto, cantidad } });
   };
 
