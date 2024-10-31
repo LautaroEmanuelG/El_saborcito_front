@@ -38,7 +38,7 @@ createRoot(document.getElementById('root')!).render(
           element={<LayoutAdmin />}>
           <Route
             index
-            element={<Control />}
+            element={<Historial />}
           />
           <Route
             path="historial"
