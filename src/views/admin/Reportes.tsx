@@ -88,11 +88,6 @@ export const Reportes = () => {
   const categoriaMasVendida = categorias.reduce(
     (max, categoria) => {
       const ventas = tickets.reduce((acc, ticket) => {
-        console.log(
-          'ticket',
-          ticket.ticketProductos.map(tp => tp.producto.categoria.id)
-        );
-        console.log('categoria.id', categoria.id);
         const ticketProductos = ticket.ticketProductos.filter(
           tp => tp.producto.categoria.id === categoria.id
         );
@@ -100,7 +95,6 @@ export const Reportes = () => {
           (acc, tp) => acc + tp.cantidad,
           0
         );
-        console.log('ventasCategoria', ventasCategoria);
         return acc + ventasCategoria;
       }, 0);
       return ventas > max.ventas ? { nombre: categoria.nombre, ventas } : max;

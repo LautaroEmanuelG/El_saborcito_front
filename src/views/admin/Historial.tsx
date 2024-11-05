@@ -1,16 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { getAllTickets } from '../../utils/services/axios/ticketService';
-import { getAllProductos, getProductById, saveProduct } from '../../utils/services/axios/productoService';
+import {
+  getAllProductos,
+  getProductById,
+  saveProduct,
+} from '../../utils/services/axios/productoService';
 import type { Producto } from '../../utils/types';
-
-interface Ticket {
-  productos: Producto[];
-}
 
 export const Historial: React.FC = () => {
   const [tickets, setTickets] = useState<any[]>([]);
   const [productos, setProductos] = useState<any[]>([]);
-  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [productForm, setProductForm] = useState<Producto>({
     nombre: '',
@@ -20,7 +19,6 @@ export const Historial: React.FC = () => {
     costo: 0,
     categoriaId: 0,
   });
-  const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -30,12 +28,28 @@ export const Historial: React.FC = () => {
   const fetchInitialData = async () => {
     const ticketsData = await getAllTickets();
     const productosData = await getAllProductos();
+    console.log(ticketsData);
     setTickets(ticketsData);
     setProductos(productosData);
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(amount);
+    return new Intl.NumberFormat('es-ES', {
+      style: 'currency',
+      currency: 'ARS'
+    }).format(amount);
+  };
+
+  const formatDate = (dateString: string) => {
+    const options: Intl.DateTimeFormatOptions = {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    };
+    return new Intl.DateTimeFormat('es-ES', options).format(new Date(dateString));
   };
 
   const getStockAlerts = () => {
@@ -44,7 +58,6 @@ export const Historial: React.FC = () => {
 
   const openUpdateModal = async (id: number) => {
     const product = await getProductById(id);
-    setSelectedProduct(product);
     setProductForm({
       id: product.id,
       nombre: product.nombre,
@@ -75,7 +88,6 @@ export const Historial: React.FC = () => {
       valor: { precio: productForm.precio, costo: productForm.costo },
     };
     await saveProduct(productData);
-    setIsProductModalOpen(false); // Cierra el modal
     setIsUpdateModalOpen(false); // Cierra el modal de actualización
     fetchInitialData(); // Refresca los datos después de la creación/actualización
     setFormError(null); // Resetea el error del formulario
@@ -90,7 +102,9 @@ export const Historial: React.FC = () => {
         <h2 className="text-2xl font-semibold">Alertas de Stock</h2>
         {getStockAlerts().length > 0 ? (
           getStockAlerts().map(producto => (
-            <div key={producto.id} className="p-2 border my-2 bg-red-100 flex justify-between items-center">
+            <div
+              key={producto.id}
+              className="p-2 border my-2 bg-red-100 flex justify-between items-center">
               <span>
                 Producto: {producto.nombre} - Stock: {producto.stock}
               </span>
@@ -116,16 +130,20 @@ export const Historial: React.FC = () => {
             .slice()
             .reverse()
             .map(ticket => (
-              <div key={ticket.id} className="p-4 border border-gray-300 rounded-lg shadow-md bg-white">
+              <div
+                key={ticket.id}
+                className="p-4 border border-gray-300 rounded-lg shadow-md bg-white">
                 <h3 className="text-xl font-semibold text-gray-700 mb-2 flex items-center">
                   <span className="mr-2 text-blue-500">🎫</span>
                   Ticket ID: {ticket.id}
                 </h3>
                 <div className="text-lg text-gray-600">
-                  <span className="font-medium">Total:</span> {formatCurrency(ticket.total)}
+                  <span className="font-medium">Total:</span>{' '}
+                  {formatCurrency(ticket.total)}
                 </div>
                 <div className="mt-2 text-sm text-gray-500">
-                  Fecha de Creación: {new Date(ticket.fechaCreacion).toLocaleDateString()}
+                  Fecha de Creación:{' '}
+                  {formatDate(ticket.fecha)}
                 </div>
               </div>
             ))}
@@ -143,35 +161,57 @@ export const Historial: React.FC = () => {
                 type="text"
                 className="w-full mb-2 p-2 border"
                 value={productForm.nombre}
-                onChange={e => setProductForm({ ...productForm, nombre: e.target.value })}
+                onChange={e =>
+                  setProductForm({ ...productForm, nombre: e.target.value })
+                }
               />
               <label className="block mb-1">Descripción</label>
               <input
                 type="text"
                 className="w-full mb-2 p-2 border"
                 value={productForm.descripcion}
-                onChange={e => setProductForm({ ...productForm, descripcion: e.target.value })}
+                onChange={e =>
+                  setProductForm({
+                    ...productForm,
+                    descripcion: e.target.value,
+                  })
+                }
               />
               <label className="block mb-1">Precio</label>
               <input
                 type="number"
                 className="w-full mb-2 p-2 border"
                 value={productForm.precio || ''}
-                onChange={e => setProductForm({ ...productForm, precio: parseFloat(e.target.value) })}
+                onChange={e =>
+                  setProductForm({
+                    ...productForm,
+                    precio: parseFloat(e.target.value),
+                  })
+                }
               />
               <label className="block mb-1">Stock</label>
               <input
                 type="number"
                 className="w-full mb-2 p-2 border"
                 value={productForm.stock || ''}
-                onChange={e => setProductForm({ ...productForm, stock: parseInt(e.target.value, 10) })}
+                onChange={e =>
+                  setProductForm({
+                    ...productForm,
+                    stock: parseInt(e.target.value, 10),
+                  })
+                }
               />
               <label className="block mb-1">Costo</label>
               <input
                 type="number"
                 className="w-full mb-2 p-2 border"
                 value={productForm.costo || ''}
-                onChange={e => setProductForm({ ...productForm, costo: parseFloat(e.target.value) })}
+                onChange={e =>
+                  setProductForm({
+                    ...productForm,
+                    costo: parseFloat(e.target.value),
+                  })
+                }
               />
               {formError && <p className="text-red-500">{formError}</p>}
             </form>
