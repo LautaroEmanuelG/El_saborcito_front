@@ -21,7 +21,7 @@ export const Productos = () => {
     stock: 0,
     precio: 0,
     costo: 0,
-    categoria: 0,
+    categoriaId: 0,
   });
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
 
@@ -39,14 +39,20 @@ export const Productos = () => {
   };
 
   const handleSaveProduct = async () => {
-    if (!productForm.nombre || productForm.precio <= 0 || productForm.stock <= 0 || productForm.costo <= 0 || productForm.categoria === 0) {
+    if (
+      !productForm.nombre ||
+      productForm.precio <= 0 ||
+      productForm.stock <= 0 ||
+      productForm.costo <= 0 ||
+      productForm.categoriaId === 0
+    ) {
       setFormError('Todos los campos son obligatorios y deben ser válidos.');
       return;
     }
 
     const productData = {
       ...productForm,
-      categoria: { id: productForm.categoria },
+      categoria: { id: productForm.categoriaId },
       valor: { precio: productForm.precio, costo: productForm.costo },
     };
     await saveProduct(productData);
@@ -71,7 +77,7 @@ export const Productos = () => {
       precio: product.valor.precio,
       stock: product.stock,
       costo: product.valor.costo,
-      categoria: product.categoria.id,
+      categoriaId: product.categoria.id,
     });
     setIsUpdateModalOpen(true);
   };
@@ -83,7 +89,7 @@ export const Productos = () => {
       stock: 0,
       precio: 0,
       costo: 0,
-      categoria: 0,
+      categoriaId: 0,
     });
     setIsProductModalOpen(true);
   };
@@ -124,95 +130,95 @@ export const Productos = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-8 rounded-lg w-96">
             <h2 className="text-2xl font-bold mb-4">Crear Producto</h2>
-                <form>
-                  <label className="block text-gray-700 mb-1">Nombre</label>
-                  <input
-                    type="text"
-                    placeholder="Ingrese el nombre del producto"
-                    className="w-full mb-4 p-2 border"
-                    value={productForm.nombre}
-                    onChange={e =>
-                      setProductForm({ ...productForm, nombre: e.target.value })
-                    }
-                  />
+            <form>
+              <label className="block text-gray-700 mb-1">Nombre</label>
+              <input
+                type="text"
+                placeholder="Ingrese el nombre del producto"
+                className="w-full mb-4 p-2 border"
+                value={productForm.nombre}
+                onChange={e =>
+                  setProductForm({ ...productForm, nombre: e.target.value })
+                }
+              />
 
-                  <label className="block text-gray-700 mb-1">Descripción</label>
-                  <input
-                    type="text"
-                    placeholder="Ingrese la descripción del producto"
-                    className="w-full mb-4 p-2 border"
-                    value={productForm.descripcion}
-                    onChange={e =>
-                      setProductForm({
-                        ...productForm,
-                        descripcion: e.target.value,
-                      })
-                    }
-                  />
+              <label className="block text-gray-700 mb-1">Descripción</label>
+              <input
+                type="text"
+                placeholder="Ingrese la descripción del producto"
+                className="w-full mb-4 p-2 border"
+                value={productForm.descripcion}
+                onChange={e =>
+                  setProductForm({
+                    ...productForm,
+                    descripcion: e.target.value,
+                  })
+                }
+              />
 
-                  <label className="block text-gray-700 mb-1">Precio</label>
-                  <input
-                    type="number"
-                    placeholder="Ingrese el precio"
-                    className="w-full mb-4 p-2 border"
-                    value={productForm.precio === 0 ? '' : productForm.precio}
-                    onChange={e =>
-                      setProductForm({
-                        ...productForm,
-                        precio: parseFloat(e.target.value),
-                      })
-                    }
-                  />
+              <label className="block text-gray-700 mb-1">Precio</label>
+              <input
+                type="number"
+                placeholder="Ingrese el precio"
+                className="w-full mb-4 p-2 border"
+                value={productForm.precio === 0 ? '' : productForm.precio}
+                onChange={e =>
+                  setProductForm({
+                    ...productForm,
+                    precio: parseFloat(e.target.value),
+                  })
+                }
+              />
 
-                  <label className="block text-gray-700 mb-1">Stock</label>
-                  <input
-                    type="number"
-                    placeholder="Ingrese el stock"
-                    className="w-full mb-4 p-2 border"
-                    value={productForm.stock === 0 ? '' : productForm.stock}
-                    onChange={e =>
-                      setProductForm({
-                        ...productForm,
-                        stock: parseInt(e.target.value, 10),
-                      })
-                    }
-                  />
+              <label className="block text-gray-700 mb-1">Stock</label>
+              <input
+                type="number"
+                placeholder="Ingrese el stock"
+                className="w-full mb-4 p-2 border"
+                value={productForm.stock === 0 ? '' : productForm.stock}
+                onChange={e =>
+                  setProductForm({
+                    ...productForm,
+                    stock: parseInt(e.target.value, 10),
+                  })
+                }
+              />
 
-                  <label className="block text-gray-700 mb-1">Costo</label>
-                  <input
-                    type="number"
-                    placeholder="Ingrese el costo"
-                    className="w-full mb-4 p-2 border"
-                    value={productForm.costo === 0 ? '' : productForm.costo}
-                    onChange={e =>
-                      setProductForm({
-                        ...productForm,
-                        costo: parseFloat(e.target.value),
-                      })
-                    }
-                  />
+              <label className="block text-gray-700 mb-1">Costo</label>
+              <input
+                type="number"
+                placeholder="Ingrese el costo"
+                className="w-full mb-4 p-2 border"
+                value={productForm.costo === 0 ? '' : productForm.costo}
+                onChange={e =>
+                  setProductForm({
+                    ...productForm,
+                    costo: parseFloat(e.target.value),
+                  })
+                }
+              />
 
-                  <label className="block text-gray-700 mb-1">Categoría</label>
-                  <select
-                    className="w-full mb-4 p-2 border"
-                    value={productForm.categoria}
-                    onChange={e =>
-                      setProductForm({
-                        ...productForm,
-                        categoria: parseInt(e.target.value),
-                      })
-                    }>
-                    <option value="">Seleccione una categoría</option>
-                    {categorias.map(categoria => (
-                      <option
-                        key={categoria.id}
-                        value={categoria.id}>
-                        {categoria.nombre}
-                      </option>
-                    ))}
-                  </select>
-                  {formError && <p className="text-red-500">{formError}</p>}
-                </form>
+              <label className="block text-gray-700 mb-1">Categoría</label>
+              <select
+                className="w-full mb-4 p-2 border"
+                value={productForm.categoriaId}
+                onChange={e =>
+                  setProductForm({
+                    ...productForm,
+                    categoriaId: parseInt(e.target.value),
+                  })
+                }>
+                <option value="">Seleccione una categoría</option>
+                {categorias.map(categoria => (
+                  <option
+                    key={categoria.id}
+                    value={categoria.id}>
+                    {categoria.nombre}
+                  </option>
+                ))}
+              </select>
+              {formError && <p className="text-red-500">{formError}</p>}
+            </form>
             <div className="flex justify-end">
               <button
                 onClick={() => setIsProductModalOpen(false)}
@@ -295,16 +301,18 @@ export const Productos = () => {
               <label className="block mb-1">Categoría</label>
               <select
                 className="w-full mb-2 p-2 border"
-                value={productForm.categoria}
+                value={productForm.categoriaId}
                 onChange={e =>
                   setProductForm({
                     ...productForm,
-                    categoria: parseInt(e.target.value),
+                    categoriaId: parseInt(e.target.value),
                   })
                 }>
                 <option value="">Seleccione una categoría</option>
                 {categorias.map(categoria => (
-                  <option key={categoria.id} value={categoria.id}>
+                  <option
+                    key={categoria.id}
+                    value={categoria.id}>
                     {categoria.nombre}
                   </option>
                 ))}
