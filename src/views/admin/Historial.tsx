@@ -1,11 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { createTicket, getAllTickets } from '../../utils/services/axios/ticketService';
-import { getAllProductos } from '../../utils/services/axios/productoService';
-
-interface Producto {
-  productoId: number;
-  cantidad: number;
-}
+import { getAllTickets } from '../../utils/services/axios/ticketService';
+import { getAllProductos, getProductById, saveProduct } from '../../utils/services/axios/productoService';
+import type { Producto } from '../../utils/types';
 
 interface Ticket {
   productos: Producto[];
@@ -14,17 +10,18 @@ interface Ticket {
 export const Historial: React.FC = () => {
   const [tickets, setTickets] = useState<any[]>([]);
   const [productos, setProductos] = useState<any[]>([]);
-  const [newTicket, setNewTicket] = useState<Ticket>({ productos: [] });
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-  const [productForm, setProductForm] = useState({
+  const [productForm, setProductForm] = useState<Producto>({
     nombre: '',
     descripcion: '',
-    precio: 0,
     stock: 0,
+    precio: 0,
     costo: 0,
-    categoria: '',
+    categoriaId: 0,
   });
-  const [formError, setFormError] = useState('');
+  const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchInitialData();
@@ -37,21 +34,6 @@ export const Historial: React.FC = () => {
     setProductos(productosData);
   };
 
-  const handleCreateTicket = async () => {
-    try {
-      const ticketToCreate = newTicket.productos.map(p => ({
-        productoId: p.productoId,
-        cantidad: p.cantidad,
-      }));
-
-      await createTicket(ticketToCreate);
-      fetchInitialData();
-      setNewTicket({ productos: [] });
-    } catch (error) {
-      console.error('Error al crear ticket:', error);
-    }
-  };
-
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(amount);
   };
@@ -60,24 +42,43 @@ export const Historial: React.FC = () => {
     return productos.filter(producto => producto.stock < 10);
   };
 
-  const openUpdateModal = (productoId: number) => {
-    const producto = productos.find(p => p.id === productoId);
-    if (producto) {
-      setProductForm({
-        nombre: producto.nombre,
-        descripcion: producto.descripcion,
-        precio: producto.precio,
-        stock: producto.stock,
-        costo: producto.costo,
-        categoria: producto.categoria || '',
-      });
-      setIsUpdateModalOpen(true);
-    }
+  const openUpdateModal = async (id: number) => {
+    const product = await getProductById(id);
+    setSelectedProduct(product);
+    setProductForm({
+      id: product.id,
+      nombre: product.nombre,
+      descripcion: product.descripcion,
+      precio: product.valor.precio,
+      stock: product.stock,
+      costo: product.valor.costo,
+      categoriaId: product.categoria.id,
+    });
+    setIsUpdateModalOpen(true);
   };
 
-  const handleSaveProduct = () => {
-    // Lógica para guardar los cambios del producto
-    setIsUpdateModalOpen(false);
+  const handleSaveProduct = async () => {
+    if (
+      !productForm.nombre ||
+      productForm.precio <= 0 ||
+      productForm.stock <= 0 ||
+      productForm.costo <= 0 ||
+      productForm.categoriaId === 0
+    ) {
+      setFormError('Todos los campos son obligatorios y deben ser válidos.');
+      return;
+    }
+
+    const productData = {
+      ...productForm,
+      categoria: { id: productForm.categoriaId },
+      valor: { precio: productForm.precio, costo: productForm.costo },
+    };
+    await saveProduct(productData);
+    setIsProductModalOpen(false); // Cierra el modal
+    setIsUpdateModalOpen(false); // Cierra el modal de actualización
+    fetchInitialData(); // Refresca los datos después de la creación/actualización
+    setFormError(null); // Resetea el error del formulario
   };
 
   return (
@@ -106,15 +107,6 @@ export const Historial: React.FC = () => {
           </div>
         )}
       </div>
-
-      {/* Botón para crear ticket */}
-      {/* <div className="mb-4">
-        <button
-          onClick={handleCreateTicket}
-          className="bg-primary text-white px-4 py-2 rounded">
-          Crear Ticket
-        </button>
-      </div> */}
 
       {/* Mostrar tickets */}
       <div className="mb-4">
@@ -181,14 +173,6 @@ export const Historial: React.FC = () => {
                 value={productForm.costo || ''}
                 onChange={e => setProductForm({ ...productForm, costo: parseFloat(e.target.value) })}
               />
-              <label className="block mb-1">Categoría</label>
-              <select
-                className="w-full mb-2 p-2 border"
-                value={productForm.categoria}
-                onChange={e => setProductForm({ ...productForm, categoria: e.target.value })}>
-                <option value="">Seleccione una categoría</option>
-                {/* Aquí van las opciones de categorías */}
-              </select>
               {formError && <p className="text-red-500">{formError}</p>}
             </form>
             <div className="flex justify-end">
