@@ -1,21 +1,27 @@
-import { useSearch } from '../../hooks/useSearch';
 import type { Categoria } from '../../utils/types';
 
 type Props = {
   category: Categoria;
   onSearch: (query: string) => void;
+  termAnterior: string;
+  setTermAnterior: (term: string) => void;
 };
 
-export const BtnCategoria = ({ category, onSearch }: Props) => {
-  const { searchTerm, setSearchTerm } = useSearch('');
-
+export const BtnCategoria = ({
+  category,
+  onSearch,
+  termAnterior,
+  setTermAnterior,
+}: Props) => {
   const handleCategoryClick = (categoriaNombre: string) => {
-    if (searchTerm === categoriaNombre) {
-      setSearchTerm('');
+    setTermAnterior(categoriaNombre);
+    if (categoriaNombre === termAnterior) {
       onSearch('');
+      console.log('borrado el nombre');
+      setTermAnterior('');
     } else {
-      setSearchTerm(categoriaNombre);
       onSearch(categoriaNombre);
+      console.log('colocado el nombre');
     }
   };
 

@@ -28,6 +28,7 @@ export const Historial: React.FC = () => {
   const fetchInitialData = async () => {
     const ticketsData = await getAllTickets();
     const productosData = await getAllProductos();
+    console.log(ticketsData);
     setTickets(ticketsData);
     setProductos(productosData);
   };
@@ -35,8 +36,20 @@ export const Historial: React.FC = () => {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-ES', {
       style: 'currency',
-      currency: 'EUR',
+      currency: 'ARS'
     }).format(amount);
+  };
+
+  const formatDate = (dateString: string) => {
+    const options: Intl.DateTimeFormatOptions = {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    };
+    return new Intl.DateTimeFormat('es-ES', options).format(new Date(dateString));
   };
 
   const getStockAlerts = () => {
@@ -130,7 +143,7 @@ export const Historial: React.FC = () => {
                 </div>
                 <div className="mt-2 text-sm text-gray-500">
                   Fecha de Creación:{' '}
-                  {new Date(ticket.fechaCreacion).toLocaleDateString()}
+                  {formatDate(ticket.fecha)}
                 </div>
               </div>
             ))}
