@@ -1,16 +1,22 @@
 import { useState } from 'react';
-import IconoLoggin from '../iconos/IconoLoggin';
 import IconoLogoSaborcito from '../iconos/IconoLogoSaborcito';
-import { LoginModal } from '../loggin/LoginModal';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { ModalConfirm } from '../utils/ModalConfirm';
+import { IconoCerrar } from '../iconos/IconoCerrar';
 
 export const HeaderAdmin = () => {
   const [hoverLogin, setHoverLogin] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const navigate = useNavigate();
 
   const toggleLoginModal = () => {
     setIsLoginOpen(!isLoginOpen);
   };
+
+  const handleCerrarSesion = () => {
+    localStorage.removeItem('token');
+    navigate('/');
+  }
 
   return (
     <>
@@ -28,13 +34,15 @@ export const HeaderAdmin = () => {
               onMouseLeave={() => setHoverLogin(false)}
               onClick={toggleLoginModal}
             >
-              <IconoLoggin color={hoverLogin ? '#E11D48' : 'white'} />
+              <IconoCerrar color={hoverLogin ? '#E11D48' : 'white'} />
             </button>
           </div>
         </div>
       </header>
 
-      <LoginModal isOpen={isLoginOpen} onClose={toggleLoginModal} />
+      <ModalConfirm isOpen={isLoginOpen} setIsOpen={setIsLoginOpen} onConfirm={handleCerrarSesion} title="Cerrar Sesión" message="¿Estás seguro que deseas cerrar sesión?"
+        confirmText="Cerrar Sesión" 
+       />
     </>
   );
 };

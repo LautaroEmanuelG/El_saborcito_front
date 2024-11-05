@@ -7,6 +7,7 @@ import {
 } from '../../utils/services/axios/productoService';
 import { getAllCategorias } from '../../utils/services/axios/categoriaService';
 import { Producto } from '../../utils/types';
+import { ModalConfirm } from '../../components/utils/ModalConfirm';
 
 export const Productos = () => {
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
@@ -14,6 +15,8 @@ export const Productos = () => {
   const [productos, setProductos] = useState<any[]>([]);
   const [categorias, setCategorias] = useState<any[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
+  const [isModalDelete, setIsModalDelete] = useState(false);
+  const [isModalUpdate, setIsModalUpdate] = useState(false);
 
   const [productForm, setProductForm] = useState<Producto>({
     nombre: '',
@@ -60,6 +63,7 @@ export const Productos = () => {
     setIsUpdateModalOpen(false); // Cierra el modal de actualización
     fetchInitialData(); // Refresca los datos después de la creación/actualización
     setFormError(null); // Resetea el error del formulario
+    setIsModalUpdate(false);
   };
 
   const handleDeleteProduct = async (id: number) => {
@@ -94,6 +98,10 @@ export const Productos = () => {
     setIsProductModalOpen(true);
   };
 
+  const toggleModalDelete = () => {
+    setIsModalDelete(!isModalDelete);
+  };
+
   return (
     <div className="p-4 w-full">
       <h2 className="text-3xl font-bold mb-4">Gestor de Productos</h2>
@@ -105,23 +113,34 @@ export const Productos = () => {
       {/* Mostrar productos y permitir agregarlos al ticket */}
       <div className="flex flex-col w-full mb-4">
         {productos.map(producto => (
-          <div
-            key={producto.id}
-            className="p-2 border my-2 flex justify-between items-center">
-            <span>{producto.nombre}</span>
-            <div className="flex">
-              <button
-                onClick={() => openUpdateModal(producto.id)}
-                className="bg-blue-500 text-white px-4 py-2 rounded mr-2">
-                Actualizar
-              </button>
-              <button
-                onClick={() => handleDeleteProduct(producto.id)}
-                className="bg-red-500 text-white px-4 py-2 rounded">
-                Eliminar
-              </button>
+          <>
+            <div
+              key={producto.id}
+              className="p-2 border my-2 flex justify-between items-center">
+              <span>{producto.nombre}</span>
+              <div className="flex">
+                <button
+                  onClick={() => openUpdateModal(producto.id)}
+                  className="bg-blue-500 text-white px-4 py-2 rounded mr-2">
+                  Actualizar
+                </button>
+                <button
+                  onClick={toggleModalDelete}
+                  className="bg-red-500 text-white px-4 py-2 rounded">
+                  Eliminar
+                </button>
+              </div>
             </div>
-          </div>
+            {/* Modal de Confirmación Eliminar*/}
+            <ModalConfirm
+              isOpen={isModalDelete}
+              setIsOpen={setIsModalDelete}
+              onConfirm={() => handleDeleteProduct(producto.id)}
+              title={`Desea eliminar ${producto.nombre}`}
+              message="¿Estás seguro que deseas eliminar?"
+              confirmText="Eliminar"
+            />
+          </>
         ))}
       </div>
 
