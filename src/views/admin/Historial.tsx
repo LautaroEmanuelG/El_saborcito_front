@@ -108,13 +108,13 @@ export const Historial: React.FC = () => {
       </div>
 
       {/* Botón para crear ticket */}
-      <div className="mb-4">
+      {/* <div className="mb-4">
         <button
           onClick={handleCreateTicket}
           className="bg-primary text-white px-4 py-2 rounded">
           Crear Ticket
         </button>
-      </div>
+      </div> */}
 
       {/* Mostrar tickets */}
       <div className="mb-4">

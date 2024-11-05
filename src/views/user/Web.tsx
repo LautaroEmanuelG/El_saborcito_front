@@ -4,36 +4,29 @@ import { ListaCategorias } from '../../components/categorias/ListaCategorias';
 import { ListaProductos } from '../../components/producto/ListaProducto';
 import { ModalProducto } from '../../components/producto/ModalProducto';
 import { ActiveSlider } from '../../components/carrusel/ActiveSlider';
-import {
-  Categoria,
-  type Producto,
-  type ProductoValor,
-} from '../../utils/types';
+import { Categoria, type ProductoValor } from '../../utils/types';
 import BtnFlotanteCarrito from '../../components/carrito/BtnFlotanteCarrito';
 import { CarritoContext } from '../../components/carrito/CarritoProvider';
-import { getAllProductos } from '../../utils/services/axios/productoService';
 import { getAllCategorias } from '../../utils/services/axios/categoriaService';
+import { useSearch } from '../../hooks/useSearch';
 
 export const Web = () => {
-  const [productos, setProductos] = useState<ProductoValor[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [productoModal, setProductoModal] = useState<ProductoValor | null>(
     null
   );
   const [isModalOpen, setModalOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState(''); // Estado para el término de búsqueda
-  const [filteredProducts, setFilteredProducts] = useState<ProductoValor[]>([]);
 
   useEffect(() => {
     async function fetchData() {
-      const productosData = await getAllProductos();
       const categoriasData = await getAllCategorias();
-      setProductos(productosData);
       setCategorias(categoriasData);
-      setFilteredProducts(productosData as ProductoValor[]); // Inicialmente, mostrar todos los productos
     }
     fetchData();
   }, []);
+
+  const { searchTerm, handleSearch, filteredProducts } =
+    useSearch(''); // Estado para el término de búsqueda
 
   useEffect(() => {
     if (productoModal) {
@@ -43,19 +36,6 @@ export const Web = () => {
 
   const handleCloseModal = () => {
     setModalOpen(false); // Cerrar el modal
-  };
-
-  const handleSearch = (query: string) => {
-    setSearchTerm(query); // Actualizar el término de búsqueda
-    if (query === '') {
-      setFilteredProducts(productos); // Mostrar todos los productos si el término de búsqueda está vacío
-    } else {
-      setFilteredProducts(
-        productos.filter(producto =>
-          producto.nombre.toLowerCase().includes(query.toLowerCase())
-        )
-      );
-    }
   };
 
   const handleProductClick = (producto: ProductoValor) => {
@@ -84,10 +64,11 @@ export const Web = () => {
           </p>
         ) : (
           <>
-            <ActiveSlider
-              products={productos}
-              setProductoModal={setProductoModal}
-            />
+            {searchTerm ? null : (
+              <ActiveSlider
+                setProductoModal={setProductoModal}
+              />
+            )}
             <ListaProductos
               productos={filteredProducts}
               setProductoModal={setProductoModal}

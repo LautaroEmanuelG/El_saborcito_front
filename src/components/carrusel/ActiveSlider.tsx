@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 import 'swiper/css';
@@ -7,19 +7,26 @@ import 'swiper/css/pagination';
 import { BtnAgregarCarrito } from '../utils/BtnAgregarCarrito';
 import '../../styles/styles.css';
 import type { ProductoValor } from '../../utils/types';
+import { getAllProductos } from '../../utils/services/axios/productoService';
 
 interface ActiveSliderProps {
-  products: ProductoValor[];
   setProductoModal: (producto: ProductoValor) => void;
 }
 
 export const ActiveSlider: React.FC<ActiveSliderProps> = ({
-  products,
   setProductoModal,
 }) => {
+  const [products , setProducts] = React.useState<ProductoValor[]>([]);
   const handleProductClick = (product: ProductoValor) => {
     setProductoModal(product);
   };
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const data = await getAllProductos();
+      setProducts(data);
+    };
+    fetchProducts();
+  })
   return (
     <Swiper
       spaceBetween={30}

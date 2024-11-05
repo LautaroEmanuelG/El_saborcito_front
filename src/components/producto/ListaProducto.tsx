@@ -9,16 +9,12 @@ type Props = {
   setProductoModal: (producto: ProductoValor | null) => void;
 };
 
-export const ListaProductos = ({
-  productos,
-  setProductoModal,
-}: Props) => {
+export const ListaProductos = ({ productos, setProductoModal }: Props) => {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
 
   useEffect(() => {
     async function fetchCategorias() {
       const categoriasData = await getAllCategorias();
-      console.log('categoriasData', categoriasData);
       setCategorias(categoriasData);
     }
     fetchCategorias();
@@ -31,20 +27,21 @@ export const ListaProductos = ({
     }, 0);
   };
 
-  console.log('productos', productos);
   return (
     <nav className="flex gap-4 md:gap-6 mb-6 flex-wrap">
-      {categorias.map(categoria => (
-        <div
-          key={categoria.id}
-          className="w-full">
-          <span className="w-full flex justify-between pb-4">
-            <h2 className="text-2xl font-bold">{categoria.nombre}</h2>
-          </span>
-          <div className="flex gap-4 md:gap-6 flex-wrap">
-            {productos
-              .filter(producto => producto.categoria.id === categoria.id)
-              .map(producto => (
+      {categorias.map(categoria => {
+        const productosFiltrados = productos.filter(
+          producto => producto.categoria.id === categoria.id
+        );
+        return productosFiltrados.length > 0 ? (
+          <div
+            key={categoria.id}
+            className="w-full">
+            <span className="w-full flex justify-between pb-4">
+              <h2 className="text-2xl font-bold">{categoria.nombre}</h2>
+            </span>
+            <div className="flex gap-4 md:gap-6 flex-wrap">
+              {productosFiltrados.map(producto => (
                 <div
                   onClick={() => handleProductClick(producto)}
                   key={producto.id}>
@@ -54,9 +51,10 @@ export const ListaProductos = ({
                   />
                 </div>
               ))}
+            </div>
           </div>
-        </div>
-      ))}
+        ) : null;
+      })}
     </nav>
   );
 };

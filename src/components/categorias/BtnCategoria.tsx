@@ -1,3 +1,4 @@
+import { useSearch } from '../../hooks/useSearch';
 import type { Categoria } from '../../utils/types';
 
 type Props = {
@@ -5,12 +6,16 @@ type Props = {
 };
 
 export const BtnCategoria = ({ category }: Props) => {
+    const { handleSearch } = useSearch('');
+
   return (
-    <a
+    <button
       key={category.id}
-      href="#"
+      onClick={() => {
+        handleSearch(category.nombre);
+      }}
       className="text-xl font-bold hover:text-primary transition-colors">
       {category.nombre}
-    </a>
+    </button>
   );
 };
