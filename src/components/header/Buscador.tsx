@@ -6,7 +6,7 @@ type Props = {
 };
 
 export const Buscador = ({ onSearch }: Props) => {
-  const { searchTerm, handleSearchChange } = useSearch('', []);
+  const { searchTerm, handleSearchChange } = useSearch('');
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     handleSearchChange(event);

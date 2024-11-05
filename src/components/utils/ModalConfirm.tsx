@@ -4,7 +4,7 @@ interface ModalConfirmProps {
   onConfirm: () => void;
   title: string;
   message: string;
-    confirmText: string;
+  confirmText: string;
 }
 
 export const ModalConfirm = ({
@@ -13,7 +13,7 @@ export const ModalConfirm = ({
   onConfirm,
   title,
   message,
-  confirmText
+  confirmText,
 }: ModalConfirmProps) => {
   return (
     <div

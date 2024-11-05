@@ -16,7 +16,6 @@ export const Productos = () => {
   const [categorias, setCategorias] = useState<any[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
   const [isModalDelete, setIsModalDelete] = useState(false);
-  const [isModalUpdate, setIsModalUpdate] = useState(false);
 
   const [productForm, setProductForm] = useState<Producto>({
     nombre: '',
@@ -26,7 +25,6 @@ export const Productos = () => {
     costo: 0,
     categoriaId: 0,
   });
-  const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
 
   useEffect(() => {
     fetchInitialData();
@@ -63,7 +61,6 @@ export const Productos = () => {
     setIsUpdateModalOpen(false); // Cierra el modal de actualización
     fetchInitialData(); // Refresca los datos después de la creación/actualización
     setFormError(null); // Resetea el error del formulario
-    setIsModalUpdate(false);
   };
 
   const handleDeleteProduct = async (id: number) => {
@@ -73,7 +70,6 @@ export const Productos = () => {
 
   const openUpdateModal = async (id: number) => {
     const product = await getProductById(id);
-    setSelectedProduct(product);
     setProductForm({
       id: product.id,
       nombre: product.nombre,

@@ -14,6 +14,12 @@ export const useSearch = (initialValue: string = '') => {
     }
     fetchData();
   }, []);
+
+  useEffect(() => {
+    console.log('searchTerm', searchTerm);
+    handleSearch(searchTerm);
+  }, [searchTerm]);
+
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     setSearchTerm(value);
