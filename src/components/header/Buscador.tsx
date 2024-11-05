@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useSearch } from '../../hooks/useSearch';
 import IconoBuscador from '../iconos/IconoBuscador';
 
 type Props = {
@@ -6,20 +6,20 @@ type Props = {
 };
 
 export const Buscador = ({ onSearch }: Props) => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const { searchTerm, handleSearchChange } = useSearch('', []);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    setSearchTerm(value);
-    onSearch(value); // Llamar a la función de búsqueda con el término actual
+    handleSearchChange(event);
+    onSearch(event.target.value); // Llamar a la función de búsqueda con el término actual
   };
 
   return (
     <>
-      <div className='absolute px-2 py-2 hover:fill-primary'>
+      <div className="absolute px-2 py-2 hover:fill-primary">
         <IconoBuscador />
       </div>
       <input
+        id="search"
         type="search"
         placeholder="Buscar productos, categorías y más..."
         className="w-full rounded-md bg-primary-foreground px-10 py-2 text-primary focus:outline-none focus:ring-2 focus:ring-primary-foreground"

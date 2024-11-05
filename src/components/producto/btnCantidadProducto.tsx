@@ -25,7 +25,7 @@ const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
   const { carrito, addToCarrito, decreaseFromCart } = carritoContext;
 
   useEffect(() => {
-    const productoEnCarrito = carrito.find(item => item.nombre === producto.nombre);
+    const productoEnCarrito = carrito.find(item => item.nombre === producto.nombre); 
     if (productoEnCarrito) {
       setQuantity(productoEnCarrito.quantity);
     }
