@@ -1,4 +1,6 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { loginUsuario } from '../../utils/services/axios/loginService';
+import { useNavigate } from 'react-router-dom';
 
 type LoginModalProps = {
   isOpen: boolean;
@@ -6,7 +8,28 @@ type LoginModalProps = {
 };
 
 export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
+  const [email, setEmail] = useState('');
+  const [contraseña, setContraseña] = useState('');
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+
   if (!isOpen) return null;
+
+  const handleLogin = async () => {
+    try {
+      const response = await loginUsuario(email, contraseña);
+      // Suponiendo que `response.success` indica si el login fue exitoso
+      console.log(response)
+      if (response.success) {
+        navigate("/admin");
+      } else {
+        setError("Credenciales incorrectas. Por favor, inténtalo de nuevo.");
+      }
+    } catch (error) {
+      setError("Hubo un problema con el inicio de sesión. Intenta más tarde.");
+      console.error("Error en login:", error);
+    }
+  };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
@@ -19,11 +42,13 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
         <h2 className="text-2xl font-bold mb-6">Iniciar Sesión</h2>
         <div className="mb-4">
           <label className="block text-gray-700 text-sm font-bold mb-2">
-            Usuario
+            Mail
           </label>
           <input
             type="text"
-            placeholder="Ingresa tu usuario"
+            placeholder="Ingresa tu mail"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             className="w-full px-4 py-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
@@ -34,20 +59,17 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
           <input
             type="password"
             placeholder="Ingresa tu contraseña"
+            value={contraseña}
+            onChange={(e) => setContraseña(e.target.value)}
             className="w-full px-4 py-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
-        {/* <button
-            className="w-full bg-[#E11D48] text-white py-2 rounded-lg hover:bg-[#BE123C]"
-            onClick={onClose}
-            >
-            Ingresar
-        </button> */}
-        <Link
-          to="/admin"
-          className="flex justify-center bg-primary text-white py-2 rounded-lg hover:bg-primary">
-          Ingresa
-        </Link>
+        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+        <button
+          className="w-full bg-[#E11D48] text-white py-2 rounded-lg hover:bg-[#BE123C]"
+          onClick={handleLogin}>
+          Ingresar
+        </button>
       </div>
     </div>
   );
