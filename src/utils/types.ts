@@ -33,7 +33,7 @@ export interface Ticket {
 export interface ProductoValor extends Producto {
   costo: number;
   ganancia: number;
-  imagen: string[];
+  imagen?: string[];
   valor: {
     costo: number;
     precio: number;
