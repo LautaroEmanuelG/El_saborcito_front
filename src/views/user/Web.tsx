@@ -25,8 +25,7 @@ export const Web = () => {
     fetchData();
   }, []);
 
-  const { searchTerm, handleSearch, filteredProducts } =
-    useSearch(''); // Estado para el término de búsqueda
+  const { searchTerm, handleSearch, filteredProducts } = useSearch(''); // Estado para el término de búsqueda
 
   useEffect(() => {
     if (productoModal) {
@@ -57,7 +56,10 @@ export const Web = () => {
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 w-full">
       <Header onSearch={handleSearch} />
       <div className="container mx-auto px-4 md:px-6 py-4 flex flex-col min-h-screen w-full">
-        <ListaCategorias categorias={categorias} />
+        <ListaCategorias
+          categorias={categorias}
+          onSearch={handleSearch}
+        />
         {searchTerm && filteredProducts.length === 0 ? (
           <p className="text-center text-xl">
             No se encontraron productos para "{searchTerm}"
@@ -65,9 +67,7 @@ export const Web = () => {
         ) : (
           <>
             {searchTerm ? null : (
-              <ActiveSlider
-                setProductoModal={setProductoModal}
-              />
+              <ActiveSlider setProductoModal={setProductoModal} />
             )}
             <ListaProductos
               productos={filteredProducts}

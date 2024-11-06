@@ -16,7 +16,7 @@ interface ActiveSliderProps {
 export const ActiveSlider: React.FC<ActiveSliderProps> = ({
   setProductoModal,
 }) => {
-  const [products , setProducts] = React.useState<ProductoValor[]>([]);
+  const [products, setProducts] = React.useState<ProductoValor[]>([]);
   const handleProductClick = (product: ProductoValor) => {
     setProductoModal(product);
   };
@@ -26,7 +26,7 @@ export const ActiveSlider: React.FC<ActiveSliderProps> = ({
       setProducts(data);
     };
     fetchProducts();
-  })
+  });
   return (
     <Swiper
       spaceBetween={30}
@@ -43,6 +43,10 @@ export const ActiveSlider: React.FC<ActiveSliderProps> = ({
       {products.map((product, index) => (
         // <button onClick={() => handleProductClick(product)}>
         <SwiperSlide
+          onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+            e.stopPropagation();
+            handleProductClick(product);
+          }}
           key={index}
           className="relative flex flex-col items-center justify-center">
           {/* Efecto oscuro sobre la imagen */}
@@ -77,11 +81,7 @@ export const ActiveSlider: React.FC<ActiveSliderProps> = ({
               product={product}
               cantidadProducto={1}
               setCantidadProducto={() => 1}
-              onClose={() => handleProductClick(product)}
-              onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                e.stopPropagation();
-                handleProductClick(product);
-              }}
+              onClose={() => {}}
             />
           </div>
         </SwiperSlide>

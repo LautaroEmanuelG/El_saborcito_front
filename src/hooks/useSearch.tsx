@@ -14,6 +14,11 @@ export const useSearch = (initialValue: string = '') => {
     }
     fetchData();
   }, []);
+
+  useEffect(() => {
+    handleSearch(searchTerm);
+  }, [searchTerm]);
+
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     setSearchTerm(value);
@@ -21,8 +26,6 @@ export const useSearch = (initialValue: string = '') => {
 
   const handleSearch = (query: string) => {
     setSearchTerm(query); // Actualizar el término de búsqueda
-    console.log('query', query);
-    console.log('productos', productos);
     if (query === '') {
       setFilteredProducts(productos); // Mostrar todos los productos si el término de búsqueda está vacío
     } else {
