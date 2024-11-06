@@ -17,7 +17,7 @@ export const getAllProductos = async () => {
 
   // Añadir las rutas de las imágenes a cada producto
   productos.forEach((producto: any) => {
-    producto.imagen = addImagesToProduct(producto.nombre, producto.categoria);
+    producto.imagen = addImagesToProduct(producto.nombre, producto.categoria.nombre);
   });
 
   return productos;
@@ -30,7 +30,7 @@ export const getProductosByCategoria = async (categoriaId: number) => {
 
   // Añadir las rutas de las imágenes a cada producto
   productos.forEach((producto: any) => {
-    producto.imagen = addImagesToProduct(producto.nombre, producto.categoria);
+    producto.imagen = addImagesToProduct(producto.nombre, producto.categoria.nombre);
   });
 
   return productos;
