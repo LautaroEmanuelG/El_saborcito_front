@@ -54,7 +54,7 @@ export const getProductById = async (id: number) => {
   const producto = response.data;
 
   // Añadir las rutas de las imágenes al producto obtenido
-  producto.imagen = addImagesToProduct(producto.nombre, producto.categoria);
+  // producto.imagen = addImagesToProduct(producto.nombre, producto.categoria);
 
   return producto;
 };
