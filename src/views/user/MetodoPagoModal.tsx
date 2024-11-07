@@ -74,6 +74,14 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
         } else {
           console.error('Error: no se obtuvo el init_point');
         }
+
+
+        const productos = carrito.map(producto => ({
+          productoId: producto.id ?? 0,
+          cantidad: producto.quantity,
+        }));
+        await createTicket(productos, selectedPaymentMethod);
+        
       } else {
         const productos = carrito.map(producto => ({
           productoId: producto.id ?? 0,
