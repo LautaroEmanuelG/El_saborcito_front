@@ -69,7 +69,7 @@ const carritoReducer = (state: State, action: any): State => {
       }
       return state;
     case 'CLEAR_CARRITO':
-      return initialState;
+      return { ...state, carrito: [] };
     default:
       return state;
   }
@@ -97,6 +97,7 @@ export const CarritoProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const clearCarrito = () => {
     dispatch({ type: 'CLEAR_CARRITO' });
+    localStorage.removeItem('carrito');
   };
 
   return (
