@@ -2,10 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getAllTransaccion } from '../../utils/services/axios/transaccionService';
 
 export const Control: React.FC = () => {
-  const [transaccions, setTransaccions] = useState<any[]>([]);
   const [asientosContables, setAsientosContables] = useState<any[]>([]);
-  const [libroDiario, setLibroDiario] = useState<any[]>([]);
-  const [libroMayor, setLibroMayor] = useState<any[]>([]);
   const [selectedTipo, setSelectedTipo] = useState<string>('MP');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
@@ -16,7 +13,6 @@ export const Control: React.FC = () => {
 
   const fetchInitialData = async () => {
     const transaccionsData = await getAllTransaccion();
-    setTransaccions(transaccionsData);
     generateAsientosContables(transaccionsData);
   };
 
@@ -57,41 +53,6 @@ export const Control: React.FC = () => {
       };
     });
     setAsientosContables(asientos);
-    generateLibroDiario(asientos);
-    generateLibroMayor(asientos);
-  };
-
-  const generateLibroDiario = (asientos: any[]) => {
-    const diario = asientos.map(asiento => ({
-      fecha: asiento.fecha,
-      descripcion: `Venta de productos - Transacción ID: ${asiento.id}`,
-      debe: asiento.debe,
-      haber: asiento.haber,
-    }));
-    setLibroDiario(diario);
-  };
-
-  const generateLibroMayor = (asientos: any[]) => {
-    const mayor = asientos.reduce((acc, asiento) => {
-      asiento.detalles.forEach((detalle: any) => {
-        if (!acc[detalle.producto]) {
-          acc[detalle.producto] = { debe: 0, haber: 0 };
-        }
-        if (['MP', 'EFECTIVO', 'CRIPTO'].includes(asiento.tipo)) {
-          acc[detalle.producto].haber += detalle.ganancia * detalle.cantidad;
-        } else if (asiento.tipo === 'MERCADERIA') {
-          acc[detalle.producto].debe += detalle.precio * detalle.cantidad;
-          acc[detalle.producto].haber += detalle.precio * detalle.cantidad;
-        }
-      });
-      return acc;
-    }, {});
-    setLibroMayor(
-      Object.entries(mayor).map(([producto, valores]) => ({
-        producto,
-        ...valores,
-      }))
-    );
   };
 
   const formatCurrency = (amount: number) => {
