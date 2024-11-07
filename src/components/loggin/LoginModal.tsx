@@ -1,4 +1,6 @@
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { loginUsuario } from '../../utils/services/axios/loginService';
 
 type LoginModalProps = {
   isOpen: boolean;
@@ -6,7 +8,61 @@ type LoginModalProps = {
 };
 
 export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
+  const [email, setEmail] = useState('');
+  const [contraseña, setContraseña] = useState('');
+  const [error, setError] = useState('');
+  const [attempts, setAttempts] = useState(0);
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [blockTime, setBlockTime] = useState(0);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isBlocked) {
+      const timer = setInterval(() => {
+        setBlockTime((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            setIsBlocked(false);
+            setAttempts(0);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+  }, [isBlocked]);
+
   if (!isOpen) return null;
+
+  const handleLogin = async () => {
+    try {
+      const response = await loginUsuario(email, contraseña);
+      console.log('Login exitoso:', response);
+
+      // Extraer el rol del usuario de la respuesta
+      const rolMatch = response.match(/Rol: (\w+)/);
+      const rol = rolMatch ? rolMatch[1] : null;
+
+      if (rol) {
+        // Guardar el rol en el localStorage
+        localStorage.setItem('rol', rol);
+
+        // Redirigir a /admin
+        navigate('/admin');
+      }
+
+      onClose();
+    } catch (error) {
+      console.error('Error en el login:', error);
+      setError('Credenciales inválidas.');
+      setAttempts((prev) => prev + 1);
+
+      if (attempts + 1 >= 3) {
+        setIsBlocked(true);
+        setBlockTime(30);
+      }
+    }
+  };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
@@ -25,6 +81,9 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
             type="text"
             placeholder="Ingresa tu usuario"
             className="w-full px-4 py-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={isBlocked}
           />
         </div>
         <div className="mb-6">
@@ -35,19 +94,18 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
             type="password"
             placeholder="Ingresa tu contraseña"
             className="w-full px-4 py-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
+            value={contraseña}
+            onChange={(e) => setContraseña(e.target.value)}
+            disabled={isBlocked}
           />
         </div>
-        {/* <button
-            className="w-full bg-[#E11D48] text-white py-2 rounded-lg hover:bg-[#BE123C]"
-            onClick={onClose}
-            >
-            Ingresar
-        </button> */}
-        <Link
-          to="/admin"
-          className="flex justify-center bg-primary text-white py-2 rounded-lg hover:bg-primary">
-          Ingresa
-        </Link>
+        {error && <p className="text-red-500 mb-4">{error}</p>}
+        <button
+          className={`w-full bg-[#E11D48] text-white py-2 rounded-lg cursor-pointer ${isBlocked ? 'opacity-50' : ''}`}
+          onClick={handleLogin}
+          disabled={isBlocked}>
+            Ingresar {isBlocked && <span className="text-white mb-4">{blockTime}</span>}
+        </button>
       </div>
     </div>
   );
