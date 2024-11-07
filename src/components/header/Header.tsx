@@ -42,7 +42,7 @@ export const Header = ({ onSearch }: Props) => {
       {/* Ocultar el header cuando el menú está abierto */}
       <header
         className={`bg-primary flex w-full text-primary-foreground py-4 shadow-md `}>
-        <div className="container mx-auto flex items-center justify-between px-4 md:px-6">
+        <div className="container mx-auto flex items-center justify-between px-4 md:px-6 gap-12">
           <Link
             to="/"
             className="flex items-center gap-4">
@@ -106,42 +106,14 @@ export const Header = ({ onSearch }: Props) => {
             <span className="text-2xl font-bold text-white">El Saborcito</span>
           </Link>
           <button
-            onClick={toggleMenu}
-            className="text-white text-2xl">
-            <IconoCruz />
-          </button>
+          className="absolute font-bold top-2 right-2 text-white text-xl hover:text-blanco hover:bg-primary rounded-full w-10 h-10"
+          onClick={toggleMenu}>
+          X
+        </button>
         </div>
 
         <div className="p-4">
           {onSearch && <Buscador onSearch={onSearch} />}
-        </div>
-
-        <div className="p-4">
-          <nav className="mt-6">
-            <ul className="space-y-4">
-              <li>
-                <Link
-                  to="/bebidas"
-                  onClick={toggleMenu}>
-                  Bebidas
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/hamburguesas"
-                  onClick={toggleMenu}>
-                  Hamburguesas
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/pizzas"
-                  onClick={toggleMenu}>
-                  Pizzas
-                </Link>
-              </li>
-            </ul>
-          </nav>
         </div>
 
         {/* Iconos solo se muestran si el menú está abierto */}
