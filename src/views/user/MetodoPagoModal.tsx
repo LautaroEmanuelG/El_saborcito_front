@@ -31,7 +31,7 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
         cantidad: producto.quantity,
       }));
 
-      await createTicket(productos);
+      await createTicket(productos,selectedPaymentMethod);
       clearCarrito();
       onClose();
       alert('Compra realizada con éxito.');
@@ -56,7 +56,7 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
             <input
               type="radio"
               name="pago"
-              value="Mercado Pago"
+              value="MP"
               className="mr-2"
               onChange={handlePaymentMethodChange}
             />
@@ -66,17 +66,17 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
             <input
               type="radio"
               name="pago"
-              value="Transferencia bancaria"
+              value="EFECTIVO"
               className="mr-2"
               onChange={handlePaymentMethodChange}
             />
-            Transferencia bancaria
+            Efectivo
           </label>
           <label className="flex items-center text-lg">
             <input
               type="radio"
               name="pago"
-              value="Criptomonedas"
+              value="CRIPTO"
               className="mr-2"
               onChange={handlePaymentMethodChange}
             />

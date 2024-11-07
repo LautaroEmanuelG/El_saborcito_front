@@ -24,13 +24,13 @@ export const Historial: React.FC = () => {
   useEffect(() => {
     fetchInitialData();
   }, []);
-
+  
   const fetchInitialData = async () => {
     const ticketsData = await getAllTickets();
     const productosData = await getAllProductos();
-    console.log(ticketsData);
     setTickets(ticketsData);
     setProductos(productosData);
+    console.log('tickets', tickets)
   };
 
   const formatCurrency = (amount: number) => {
@@ -149,7 +149,6 @@ export const Historial: React.FC = () => {
             ))}
         </div>
       </div>
-
       {/* Modal de Actualizar Producto */}
       {isUpdateModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
