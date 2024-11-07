@@ -11,18 +11,12 @@ import {
   CartesianGrid,
   Tooltip,
   Cell,
-  Radar,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
 } from 'recharts';
 import { getAllCategorias } from '../../utils/services/axios/categoriaService';
 import { getAllProductos } from '../../utils/services/axios/productoService';
 import { getAllTickets } from '../../utils/services/axios/ticketService';
 import {
   Ticket,
-  TicketProducto,
   type CategoriaVentas,
   type ProductoValor,
 } from '../../utils/types';
@@ -61,29 +55,21 @@ export const Reportes = () => {
     ganancia: producto.valor.precio - producto.valor.costo,
   }));
 
-  const radarData = categorias.map(categoria => {
-    const ventas = tickets.reduce((acc, ticket) => {
-      const ticketProductos = (
-        ticket.ticketProductos as TicketProducto[]
-      ).filter(tp => tp.producto.categoria.id === categoria.id);
-      const ventasCategoria = ticketProductos.reduce(
-        (acc, tp) => acc + tp.cantidad,
-        0
-      );
-      return acc + ventasCategoria;
-    }, 0);
-    return {
-      subject: categoria.nombre,
-      ventas,
-      fullMark: Math.max(...productos.map(p => p.stock)),
-    };
-  });
-
   const totalGastos = productos.reduce(
     (acc, producto) => acc + producto.valor.costo * producto.stock,
     0
   );
-  const totalGanancias = tickets.reduce((acc, ticket) => acc + ticket.total, 0);
+
+  const totalGanancias = tickets.reduce((acc, ticket) => {
+    if (ticket.total > 0) {
+      const ticketTotal = ticket.ticketProductos.reduce(
+        (acc, tp) => acc + tp.cantidad * tp.producto.valor.precio,
+        0
+      );
+      return acc + ticketTotal;
+    }
+    return acc;
+  }, 0);
 
   const categoriaMasVendida = categorias.reduce(
     (max, categoria) => {
@@ -151,35 +137,13 @@ export const Reportes = () => {
             </BarChart>
           </ResponsiveContainer>
         </div>
-        <div className="bg-white rounded-lg shadow-md">
-          <ResponsiveContainer
-            width="100%"
-            height={300}>
-            <RadarChart
-              cx="50%"
-              cy="50%"
-              outerRadius="80%"
-              data={radarData}>
-              <PolarGrid />
-              <PolarAngleAxis dataKey="subject" />
-              <PolarRadiusAxis />
-              <Radar
-                name="Ventas"
-                dataKey="ventas"
-                stroke="#8884d8"
-                fill="#8884d8"
-                fillOpacity={0.6}
-              />
-            </RadarChart>
-          </ResponsiveContainer>
-        </div>
         <div className="p-2 flex flex-col gap-7">
           <div className="bg-white p-4 rounded-lg shadow-md">
-            <h2 className="text-2xl font-bold mb-4">Total Ganancias</h2>
+            <h2 className="text-2xl font-bold mb-4">Ingresos Totales</h2>
             <p className="text-4xl">{totalGanancias}</p>
           </div>
           <div className="bg-white p-4 rounded-lg shadow-md">
-            <h2 className="text-2xl font-bold mb-4">Total Gastos</h2>
+            <h2 className="text-2xl font-bold mb-4">Patrimonio Total</h2>
             <p className="text-4xl">{totalGastos}</p>
           </div>
         </div>

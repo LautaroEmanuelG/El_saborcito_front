@@ -7,7 +7,6 @@ import { LoginModal } from '../loggin/LoginModal';
 import { CarritoContext } from '../carrito/CarritoProvider';
 import { Link } from 'react-router-dom';
 import IconoMenuHamburguesa from '../iconos/IconoMenuHamburguesa';
-import IconoCruz from '../iconos/IconoCruz';
 
 type Props = {
   onSearch?: (query: string) => void;
@@ -41,7 +40,7 @@ export const Header = ({ onSearch }: Props) => {
     <>
       {/* Ocultar el header cuando el menú está abierto */}
       <header
-        className={`bg-primary flex w-full text-primary-foreground py-4 shadow-md `}>
+        className={`bg-primary fixed top-0 z-50 flex w-full text-primary-foreground py-4 shadow-md `}>
         <div className="container mx-auto flex items-center justify-between px-4 md:px-6 gap-12">
           <Link
             to="/"

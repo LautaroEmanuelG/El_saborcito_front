@@ -13,81 +13,81 @@ import { Categorias } from './views/admin/Categorias.tsx';
 import { Reportes } from './views/admin/Reportes.tsx';
 
 createRoot(document.getElementById('root')!).render(
-    <BrowserRouter>
-      <Routes>
+  <BrowserRouter>
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <CarritoProvider>
+            <Web />
+          </CarritoProvider>
+        }
+      />
+      <Route
+        path="/carrito"
+        element={
+          <CarritoProvider>
+            <VistaCarrito />
+          </CarritoProvider>
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute>
+            <LayoutAdmin />
+          </ProtectedRoute>
+        }>
         <Route
-          path="/"
+          path="historial"
           element={
-            <CarritoProvider>
-              <Web />
-            </CarritoProvider>
+            <ProtectedRoute>
+              <Historial />
+            </ProtectedRoute>
           }
         />
         <Route
-          path="/carrito"
+          path="productos"
           element={
-            <CarritoProvider>
-              <VistaCarrito />
-            </CarritoProvider>
+            <ProtectedRoute>
+              <Productos />
+            </ProtectedRoute>
           }
         />
         <Route
-          path="/admin"
-          element={<LayoutAdmin />}>
-          <Route
-            index
-            element={<Historial />}
-          />
-          <Route
-            path="historial"
-            element={
-              <ProtectedRoute>
-                <Historial />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="productos"
-            element={
-              <ProtectedRoute>
-                <Productos />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="categorias"
-            element={
-              <ProtectedRoute>
-                <Categorias />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="reportes"
-            element={
-              <ProtectedRoute>
-                <Reportes />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="control"
-            element={
-              <ProtectedRoute>
-                <Control />
-              </ProtectedRoute>
-            }
-          />
-        </Route>
-        <Route
-          path="*"
+          path="categorias"
           element={
-            <Navigate
-              replace
-              to="/"
-            />
+            <ProtectedRoute>
+              <Categorias />
+            </ProtectedRoute>
           }
         />
-      </Routes>
-    </BrowserRouter>
+        <Route
+          path="reportes"
+          element={
+            <ProtectedRoute>
+              <Reportes />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="control"
+          element={
+            <ProtectedRoute>
+              <Control />
+            </ProtectedRoute>
+          }
+        />
+      </Route>
+      <Route
+        path="*"
+        element={
+          <Navigate
+            replace
+            to="/"
+          />
+        }
+      />
+    </Routes>
+  </BrowserRouter>
 );

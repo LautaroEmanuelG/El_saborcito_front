@@ -48,7 +48,7 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
         localStorage.setItem('rol', rol);
 
         // Redirigir a /admin
-        navigate('/admin');
+        navigate('/admin/historial');
       }
 
       onClose();
