@@ -38,6 +38,9 @@ export const getProductosByCategoria = async (categoriaId: number) => {
 
 // Función para guardar un producto en la base de datos
 export const saveProduct = async (productData: any) => {
+  if (!productData.items) {
+    productData.items = [];
+  }
   const response = await axiosInstance.post(`${API_BASE_URL}/guardar`, productData);
   return response.data;
 };
