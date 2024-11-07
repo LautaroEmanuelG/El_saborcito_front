@@ -6,6 +6,7 @@ import VistaCarrito from './views/user/VistaCarrito.tsx';
 import { CarritoProvider } from './components/carrito/CarritoProvider.tsx';
 import { LayoutAdmin } from './views/admin/LayoutAdmin.tsx';
 import { Historial } from './views/admin/Historial.tsx';
+import { Control } from './views/admin/Control.tsx';
 import { Productos } from './views/admin/Productos.tsx';
 import ProtectedRoute from './components/utils/ProtectedRoute.tsx';
 import { Categorias } from './views/admin/Categorias.tsx';
@@ -42,7 +43,6 @@ createRoot(document.getElementById('root')!).render(
             element={
               <ProtectedRoute>
                 <Historial />
-                {/* <Control /> */}
               </ProtectedRoute>
             }
           />
@@ -67,6 +67,14 @@ createRoot(document.getElementById('root')!).render(
             element={
               <ProtectedRoute>
                 <Reportes />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="control"
+            element={
+              <ProtectedRoute>
+                <Control />
               </ProtectedRoute>
             }
           />

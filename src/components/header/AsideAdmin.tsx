@@ -24,6 +24,11 @@ export const AsideAdmin = () => {
             BI / Reportes
           </Link>
         </li>
+        <li>
+          <Link to="/admin/control">
+            Control
+          </Link>
+        </li>
       </ul>
     </nav>
   );
