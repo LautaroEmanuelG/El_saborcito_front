@@ -119,11 +119,14 @@ const VistaCarrito = () => {
                   .toFixed(2)}
               </span>
             </div>
-            <button
-              onClick={() => setMetodoPagoOpen(true)}
-              className="mt-4 w-full py-2 bg-[#E11D48] text-[24px] font-semibold text-white rounded-lg text-center">
-              Comprar
-            </button>
+            {/* Condicional para mostrar el botón Comprar */}
+            {carrito.length > 0 && (
+              <button
+                onClick={() => setMetodoPagoOpen(true)}
+                className="mt-4 w-full py-2 bg-[#E11D48] text-[24px] font-semibold text-white rounded-lg text-center">
+                Comprar
+              </button>
+            )}
           </div>
         </div>
 
