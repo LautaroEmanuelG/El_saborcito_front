@@ -14,3 +14,63 @@
   transform: translateX(-50%); /* Asegura que esté bien centrado */
   max-width: 60%; /* Limita el ancho máximo */
 }
+
+/* ---------------------------------------------------------------------------------- */
+/* Estilo para el botón de Mercado Pago */
+.btn-mercado-pago {
+  background-color: #009ee3;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Estilo para el botón de Efectivo */
+.btn-efectivo {
+  background-color: #4caf50; /* Color verde para efectivo */
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Estilo para el botón de Criptomonedas */
+.btn-cripto {
+  background-color: #f7931a; /* Color naranja para criptomonedas */
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Icono y texto del botón */
+button img {
+  z-index: 1;
+}
+
+.button-text {
+  position: relative;
+  z-index: 1;
+}
+
+/* Barra de progreso */
+.progress-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0;
+  background-color: rgba(255, 255, 255, 0.3);
+  transition: width 1.5s ease;
+}
+
+/* Estado de carga */
+.loading {
+  width: 100%;
+}
