@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../../hooks/useCart';
 import { createTicket } from '../../utils/services/axios/ticketService';
+import '../../styles/styles.css';
 
 interface MetodoPagoModalProps {
   isOpen: boolean;
@@ -14,8 +15,6 @@ declare global {
   }
 }
 
-export {};
-
 const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, total }) => {
   if (!isOpen) return null;
 
@@ -24,11 +23,11 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://sdk.mercadopago.com/js/v2";
+    const script = document.createElement('script');
+    script.src = 'https://sdk.mercadopago.com/js/v2';
     script.onload = () => {
-      new window.MercadoPago("APP_USR-679e9c30-b8ee-44cf-943b-04e088ec9163", {
-        locale: "es-AR",
+      new window.MercadoPago('APP_USR-679e9c30-b8ee-44cf-943b-04e088ec9163', {
+        locale: 'es-AR',
       });
     };
     document.body.appendChild(script);
@@ -49,18 +48,23 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
     }
 
     setLoading(true);
-    
+
     try {
+      const productos = carrito.map((producto) => ({
+        productoId: producto.id ?? 0,
+        cantidad: producto.quantity,
+      }));
+
       if (selectedPaymentMethod === 'MP') {
-        const response = await fetch("http://localhost:5252/api/mp/crear-preferencia", {
-          method: "POST",
+        const response = await fetch('http://localhost:5252/api/mp/crear-preferencia', {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             total: total,
-            userEmail: "usuario@example.com",
-            descripcionProducto: "Compra en ecommerce",
+            userEmail: 'usuario@example.com',
+            descripcionProducto: 'Compra en ecommerce',
             cantidad: 1,
             precioUnitario: total,
           }),
@@ -69,29 +73,20 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
         const { init_point } = await response.json();
 
         if (init_point) {
-          window.open(init_point, "_blank");
+          window.open(init_point, '_blank');
           clearCarrito();
+          onClose(); // Cierra el modal después de abrir la ventana de pago
         } else {
           console.error('Error: no se obtuvo el init_point');
+          alert('Hubo un problema al crear la preferencia de pago.');
         }
-
-
-        const productos = carrito.map(producto => ({
-          productoId: producto.id ?? 0,
-          cantidad: producto.quantity,
-        }));
-        await createTicket(productos, selectedPaymentMethod);
-        
       } else {
-        const productos = carrito.map(producto => ({
-          productoId: producto.id ?? 0,
-          cantidad: producto.quantity,
-        }));
-
+        // Simulación de efecto de carga para métodos de pago "Efectivo" y "Criptomonedas"
+        await new Promise((resolve) => setTimeout(resolve, 1500)); // Pausa de 1.5 segundos
         await createTicket(productos, selectedPaymentMethod);
         clearCarrito();
         alert('Compra realizada con éxito.');
-        onClose();
+        onClose(); // Cierra el modal después de una compra exitosa
       }
     } catch (error) {
       console.error('Error en el proceso de pago:', error);
@@ -111,7 +106,7 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
           X
         </button>
         <h2 className="text-2xl font-bold mb-4">Selecciona tu método de pago</h2>
-        
+
         <div className="flex flex-col space-y-4">
           <label className="flex items-center text-lg">
             <input
@@ -148,11 +143,49 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
         <div className="mt-6 flex justify-between items-center">
           <span className="text-3xl text-primary font-black">Total: ${total.toFixed(2)}</span>
           <button
-            className="bg-primary text-white py-2 px-4 rounded-lg text-lg"
+            className={`relative py-2 px-4 rounded-lg text-lg flex items-center justify-center overflow-hidden ${
+              selectedPaymentMethod === 'MP'
+                ? 'btn-mercado-pago'
+                : selectedPaymentMethod === 'EFECTIVO'
+                ? 'btn-efectivo'
+                : selectedPaymentMethod === 'CRIPTO'
+                ? 'btn-cripto'
+                : 'bg-primary text-white'
+            }`}
             onClick={handleConfirmPayment}
             disabled={loading}
           >
-            {loading ? "Procesando..." : "Pagar"}
+            {selectedPaymentMethod === 'MP' && (
+              <img
+                src="/img/iconoMP/iconMp.png"
+                alt="Icono Mercado Pago"
+                className="w-6 h-6 mr-2"
+              />
+            )}
+            {selectedPaymentMethod === 'EFECTIVO' && (
+              <img
+                src="/img/iconoMP/iconBillete.png"
+                alt="Icono Efectivo"
+                className="w-6 h-6 mr-2"
+              />
+            )}
+            {selectedPaymentMethod === 'CRIPTO' && (
+              <img
+                src="/img/iconoMP/iconCoinBase.png"
+                alt="Icono Criptomonedas"
+                className="w-6 h-6 mr-2"
+              />
+            )}
+            <div className={`progress-bar ${loading ? 'loading' : ''}`}></div>
+            <span className="button-text">
+              {selectedPaymentMethod === 'MP'
+                ? 'Pagar con Mercado Pago'
+                : selectedPaymentMethod === 'EFECTIVO'
+                ? 'Pagar con Efectivo'
+                : selectedPaymentMethod === 'CRIPTO'
+                ? 'Pagar con Criptomonedas'
+                : 'Pagar'}
+            </span>
           </button>
         </div>
       </div>
