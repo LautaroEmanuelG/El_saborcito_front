@@ -11,6 +11,7 @@ import { Productos } from './views/admin/Productos.tsx';
 import ProtectedRoute from './components/utils/ProtectedRoute.tsx';
 import { Categorias } from './views/admin/Categorias.tsx';
 import { Reportes } from './views/admin/Reportes.tsx';
+import ProtectedCarrito from './components/utils/ProtectCarrito.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <BrowserRouter>
@@ -27,7 +28,9 @@ createRoot(document.getElementById('root')!).render(
         path="/carrito"
         element={
           <CarritoProvider>
-            <VistaCarrito />
+            <ProtectedCarrito>
+              <VistaCarrito />
+            </ProtectedCarrito>
           </CarritoProvider>
         }
       />
