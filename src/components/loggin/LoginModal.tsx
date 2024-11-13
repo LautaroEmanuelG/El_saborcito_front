@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import emailjs from 'emailjs-com';
 import { loginUsuario } from '../../utils/services/axios/loginService';
 
 type LoginModalProps = {
@@ -17,8 +18,9 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isBlocked) {
-      const timer = setInterval(() => {
+    let timer: NodeJS.Timeout;
+    if (isBlocked && blockTime > 0) {
+      timer = setInterval(() => {
         setBlockTime((prev) => {
           if (prev <= 1) {
             clearInterval(timer);
@@ -30,7 +32,8 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
         });
       }, 1000);
     }
-  }, [isBlocked]);
+    return () => clearInterval(timer);
+  }, [isBlocked, blockTime]);
 
   if (!isOpen) return null;
 
@@ -60,8 +63,29 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
       if (attempts + 1 >= 3) {
         setIsBlocked(true);
         setBlockTime(30);
+        sendEmail(); // Enviar correo tras 3 intentos fallidos
       }
     }
+  };
+
+  const sendEmail = () => {
+    const templateParams = {
+      to_name: "Profesor",
+      message: "Intentos fallidos de inicio de sesión en la aplicación.",
+    };
+
+    emailjs.send(
+      "service_knm7iv4",  // tu service ID
+      "template_8m66sol",  // tu template ID
+      templateParams,
+      "5YeDDYePK2xnzByFN"  // tu public key (user ID)
+    )
+    .then((response) => {
+      console.log("Correo enviado", response);
+    })
+    .catch((error) => {
+      console.error("Error al enviar correo", error);
+    });
   };
 
   return (
