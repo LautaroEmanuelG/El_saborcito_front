@@ -42,7 +42,7 @@ const VistaCarrito = () => {
                       />
                     </picture>
                     <div className="w-full">
-                      <h3 className="text-lg md:text-xl  font-semibold">
+                      <h3 className="text-md md:text-xl  font-semibold">
                         {producto.nombre}
                       </h3>
                       <button
@@ -61,7 +61,7 @@ const VistaCarrito = () => {
                         /* enviamos nada */
                       }}
                     />
-                    <p className="ml-6 text-xl font-semibold flex justify-end">
+                    <p className="ml-6 sm:text-xl font-semibold flex justify-end">
                       ${(producto.valor.precio * producto.quantity).toFixed(2)}
                     </p>
                   </div>
