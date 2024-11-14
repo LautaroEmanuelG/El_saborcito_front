@@ -144,9 +144,9 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({
         }));
 
         await createTicket(productos, selectedPaymentMethod);
-          alert(`Pago exitoso con ${selectedCrypto}`);
-          clearCarrito();
-          onClose();
+        alert(`Pago exitoso con ${selectedCrypto}`);
+        clearCarrito();
+        onClose();
         // Redirigir a la página de compra exitosa
         // const tipoPago = 'cripto';
         // const url = `/compra-exitosa?total=${total}&tipoPago=${tipoPago}&moneda=${selectedCrypto}`;
@@ -262,60 +262,62 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({
               </span>
             )}
           </div>
-            <button
+          <button
             className={`relative py-2 px-4 h-10 sm:h-14 w-42 sm:w-80 rounded-lg sm:text-lg flex justify-end overflow-hidden ${
               selectedPaymentMethod === 'MP'
-              ? 'btn-mercado-pago'
-              : selectedPaymentMethod === 'EFECTIVO'
-              ? 'btn-efectivo'
-              : selectedPaymentMethod === 'CRIPTO'
-              ? 'btn-cripto'
-              : null
+                ? 'btn-mercado-pago'
+                : selectedPaymentMethod === 'EFECTIVO'
+                ? 'btn-efectivo'
+                : selectedPaymentMethod === 'CRIPTO'
+                ? 'btn-cripto'
+                : null
             }`}
             onClick={handleConfirmPayment}
             disabled={loading}
-            style={{ visibility: selectedPaymentMethod ? 'visible' : 'hidden' }}>
+            style={{
+              visibility: selectedPaymentMethod ? 'visible' : 'hidden',
+            }}>
             {selectedPaymentMethod === 'MP' && (
               <img
-              src="/img/iconoMP/iconMp.png"
-              alt="Icono Mercado Pago"
-              className="w-6 h-6 mr-2"
+                src="/img/iconoMP/iconMp.png"
+                alt="Icono Mercado Pago"
+                className="w-6 h-6 mr-2"
               />
             )}
             {selectedPaymentMethod === 'EFECTIVO' && (
               <img
-              src="/img/iconoMP/iconBillete.png"
-              alt="Icono Efectivo"
-              className="w-6 h-6 mr-2"
+                src="/img/iconoMP/iconBillete.png"
+                alt="Icono Efectivo"
+                className="w-6 h-6 mr-2"
               />
             )}
             {selectedPaymentMethod === 'CRIPTO' && (
               <img
-              src="/img/iconoMP/iconCoinBase.png"
-              alt="Icono Criptomonedas"
-              className="w-6 h-6 mr-2"
+                src="/img/iconoMP/iconCoinBase.png"
+                alt="Icono Criptomonedas"
+                className="w-6 h-6 mr-2"
               />
             )}
             <div className={`progress-bar ${loading ? 'loading' : ''}`}></div>
             <span className="button-text">
               <span className="hidden sm:inline">
-              {selectedPaymentMethod === 'MP'
-                ? 'Pagar con '
-                : selectedPaymentMethod === 'EFECTIVO'
-                ? 'Pagar con '
-                : selectedPaymentMethod === 'CRIPTO'
-                ? 'Pagar con '
-                : null}
+                {selectedPaymentMethod === 'MP'
+                  ? 'Pagar con '
+                  : selectedPaymentMethod === 'EFECTIVO'
+                  ? 'Pagar con '
+                  : selectedPaymentMethod === 'CRIPTO'
+                  ? 'Pagar con '
+                  : null}
               </span>
               {selectedPaymentMethod === 'MP'
-              ? 'Mercado Pago'
-              : selectedPaymentMethod === 'EFECTIVO'
-              ? 'Efectivo'
-              : selectedPaymentMethod === 'CRIPTO'
-              ? 'Criptomonedas'
-              : null }
+                ? 'Mercado Pago'
+                : selectedPaymentMethod === 'EFECTIVO'
+                ? 'Efectivo'
+                : selectedPaymentMethod === 'CRIPTO'
+                ? 'Criptomonedas'
+                : null}
             </span>
-            </button>
+          </button>
         </div>
       </div>
     </div>
