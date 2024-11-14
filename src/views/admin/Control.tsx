@@ -22,7 +22,7 @@ export const Control: React.FC = () => {
     let saldoCripto = 10000;
     let saldoEfectivo = 10000;
     let saldoMercaderia = 10000;
-
+  
     const asientos = transaccions.map(transaccion => {
       const detalles = transaccion.ticket.ticketProductos.map((tp: any) => ({
         producto: tp.producto.nombre,
@@ -31,34 +31,19 @@ export const Control: React.FC = () => {
         costo: tp.producto.valor.costo,
         ganancia: tp.producto.valor.precio - tp.producto.valor.costo,
       }));
-
+  
       const debe = ['MP', 'EFECTIVO', 'CRIPTO'].includes(transaccion.tipo)
-        ? detalles.reduce(
-            (acc: number, detalle: any) => acc + detalle.precio,
-            0
-          )
-        : detalles.reduce(
-            (acc: number, detalle: any) =>
-              acc + detalle.costo * detalle.cantidad,
-            0
-          );
-
+        ? detalles.reduce((acc: number, detalle: any) => acc + (detalle.precio * detalle.cantidad), 0)
+        : detalles.reduce((acc: number, detalle: any) => acc + (detalle.costo * detalle.cantidad), 0);
+  
       const haber = ['MP', 'EFECTIVO', 'CRIPTO'].includes(transaccion.tipo)
-        ? detalles.reduce(
-            (acc: number, detalle: any) =>
-              acc + detalle.costo + detalle.ganancia,
-            0
-          )
-        : detalles.reduce(
-            (acc: number, detalle: any) =>
-              acc + detalle.costo * detalle.cantidad,
-            0
-          );
-
+        ? detalles.reduce((acc: number, detalle: any) => acc + ((detalle.costo + detalle.ganancia) * detalle.cantidad), 0)
+        : detalles.reduce((acc: number, detalle: any) => acc + (detalle.costo * detalle.cantidad), 0);
+  
       // Asignar al azar una de las otras cajas si el tipo es 'MERCADERIA'
       const cajas = ['MP', 'EFECTIVO', 'CRIPTO'];
       const cajaRandom = cajas[Math.floor(Math.random() * cajas.length)];
-
+  
       // Actualizar los saldos de las cajas
       if (transaccion.tipo === 'MERCADERIA') {
         saldoMercaderia += debe;
@@ -71,7 +56,7 @@ export const Control: React.FC = () => {
         if (transaccion.tipo === 'EFECTIVO') saldoEfectivo += debe;
         saldoMercaderia -= haber;
       }
-
+  
       console.log(
         'Saldos:',
         saldoMP,
@@ -83,8 +68,7 @@ export const Control: React.FC = () => {
         id: transaccion.id,
         fecha: transaccion.fecha,
         tipo: transaccion.tipo,
-        cajaAfectada:
-          transaccion.tipo === 'MERCADERIA' ? cajaRandom : 'MERCADERIA',
+        cajaAfectada: transaccion.tipo === 'MERCADERIA' ? cajaRandom : 'MERCADERIA',
         debe,
         haber,
         detalles,
@@ -269,15 +253,6 @@ export const Control: React.FC = () => {
                       ? formatCurrency(asiento.haber)
                       : null}
                   </div>
-                  <div>
-                    {formatCurrency(
-                      selectedTipo === 'MP'
-                        ? asiento.saldoMP
-                        : selectedTipo === 'EFECTIVO'
-                        ? asiento.saldoEfectivo
-                        : asiento.saldoCripto
-                    )}
-                  </div>
                 </div>
               ) : (asiento.tipo === 'CRIPTO' ||
                   asiento.cajaAfectada === 'CRIPTO') &&
@@ -299,7 +274,6 @@ export const Control: React.FC = () => {
                       ? formatCurrency(asiento.haber)
                       : null}
                   </div>
-                  <div>{formatCurrency(asiento.saldoCripto)}</div>
                 </div>
               ) : (asiento.tipo === 'EFECTIVO' ||
                   asiento.cajaAfectada === 'EFECTIVO') &&
@@ -321,7 +295,6 @@ export const Control: React.FC = () => {
                       ? formatCurrency(asiento.haber)
                       : null}
                   </div>
-                  <div>{formatCurrency(asiento.saldoEfectivo)}</div>
                 </div>
               ) : null
             )}

@@ -70,13 +70,13 @@ const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
   };
 
   return (
-    <div className="flex items-center justify-between space-x-4 rounded-3xl border-t-gray-300 border-2 w-32">
+    <div className="flex items-center justify-between space-x-2 sm:space-x-4 rounded-3xl border-t-gray-300 border-2 sm:w-32">
       <button
         onClick={handleDecrease}
         className="px-3 py-2 bg-gray-300 text-black rounded-full hover:bg-gray-400">
         -
       </button>
-      <span className="text-lg font-semibold">{cantProd()}</span>
+      <span className="sm:text-lg font-semibold">{cantProd()}</span>
       <button
         onClick={handleIncrease}
         className="px-3 py-2 bg-primary text-white rounded-full hover:font-bold hover:bg-primary-dark">
