@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../../hooks/useCart';
 import { createTicket } from '../../utils/services/axios/ticketService';
+import { Checkout, CheckoutButton, CheckoutStatus } from '@coinbase/onchainkit/checkout';
 import '../../styles/styles.css';
 
 interface MetodoPagoModalProps {
@@ -20,9 +21,13 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
 
   const { carrito, clearCarrito } = useCart();
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
+  const [selectedCrypto, setSelectedCrypto] = useState<string>('BTC');  // Default to BTC
   const [loading, setLoading] = useState(false);
 
+  const cryptoOptions = ['BTC', 'USDT', 'BNB'];  // Available cryptos
+
   useEffect(() => {
+    // MercadoPago SDK integration
     const script = document.createElement('script');
     script.src = 'https://sdk.mercadopago.com/js/v2';
     script.onload = () => {
@@ -39,6 +44,11 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
 
   const handlePaymentMethodChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedPaymentMethod(event.target.value);
+    setSelectedCrypto('');  // Reset crypto selection if switching payment method
+  };
+
+  const handleCryptoChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedCrypto(event.target.value);
   };
 
   const handleConfirmPayment = async () => {
@@ -50,17 +60,11 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
     setLoading(true);
 
     try {
-      const productos = carrito.map((producto) => ({
-        productoId: producto.id ?? 0,
-        cantidad: producto.quantity,
-      }));
-
       if (selectedPaymentMethod === 'MP') {
+        // Mercado Pago Payment
         const response = await fetch('http://localhost:5252/api/mp/crear-preferencia', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             total: total,
             userEmail: 'usuario@example.com',
@@ -71,22 +75,40 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
         });
 
         const { init_point } = await response.json();
-
         if (init_point) {
           window.open(init_point, '_blank');
           clearCarrito();
-          onClose(); // Cierra el modal después de abrir la ventana de pago
+          onClose();
         } else {
-          console.error('Error: no se obtuvo el init_point');
-          alert('Hubo un problema al crear la preferencia de pago.');
+          alert('Error al crear la preferencia de pago con Mercado Pago.');
         }
+      } else if (selectedPaymentMethod === 'CRIPTO') {
+        // Coinbase Commerce Crypto Payment
+        alert(`Procesando pago con ${selectedCrypto}...`);
+        // Simulate crypto payment success after 2 seconds
+        setTimeout(() => {
+          alert(`Pago exitoso con ${selectedCrypto}`);
+          clearCarrito();
+          onClose();
+           // Redirigir a la página de compra exitosa
+        const tipoPago = 'cripto';
+        const url = `/compra-exitosa?total=${total}&tipoPago=${tipoPago}&moneda=${selectedCrypto}`;
+        window.location.href = url; // Redirección a la página de compra exitosa
+        }, 2000);
       } else {
-        // Simulación de efecto de carga para métodos de pago "Efectivo" y "Criptomonedas"
-        await new Promise((resolve) => setTimeout(resolve, 1500)); // Pausa de 1.5 segundos
+        // Efectivo or other payment methods
+        const productos = carrito.map((producto) => ({
+          productoId: producto.id ?? 0,
+          cantidad: producto.quantity,
+        }));
+
         await createTicket(productos, selectedPaymentMethod);
         clearCarrito();
         alert('Compra realizada con éxito.');
-        onClose(); // Cierra el modal después de una compra exitosa
+        onClose();
+         const tipoPago = 'efectivo';
+      const url = `/compra-exitosa?total=${total}&tipoPago=${tipoPago}`;
+      window.location.href = url; // Redirección a la página de compra exitosa
       }
     } catch (error) {
       console.error('Error en el proceso de pago:', error);
@@ -98,7 +120,7 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white w-[750px] h-[350px] rounded-lg shadow-lg p-6 relative">
+      <div className="bg-white w-[750px] h-[400px] rounded-lg shadow-lg p-6 relative">
         <button
           className="absolute font-bold top-6 right-8 text-negro text-xl hover:text-blanco hover:bg-primary rounded-full w-10 h-10"
           onClick={onClose}
@@ -140,6 +162,37 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
           </label>
         </div>
 
+        {selectedPaymentMethod === 'CRIPTO' && (
+          <div className="mt-6">
+          <label htmlFor="crypto-select" className="block text-lg font-medium mb-2">
+            Selecciona la moneda:
+          </label>
+          <select
+            id="crypto-select"
+            className="border border-gray-300 rounded-lg p-2 w-full"
+            value={selectedCrypto}
+            onChange={handleCryptoChange}
+          >
+            <option value="" disabled>
+              Selecciona una opción
+            </option>
+            {cryptoOptions.map((crypto) => (
+              <option key={crypto} value={crypto}>
+                {crypto}
+              </option>
+            ))}
+          </select>
+          {/* {selectedCrypto && (
+            <div className="mt-4">
+              <Checkout productId="6a003d54-e95f-413f-b78b-27e759349e11"  >
+                <CheckoutButton coinbaseBranded  />
+                <CheckoutStatus />
+              </Checkout>
+            </div>
+          )} 
+          )}*/}
+        </div>
+        )}
         <div className="mt-6 flex justify-between items-center">
           <span className="text-3xl text-primary font-black">Total: ${total.toFixed(2)}</span>
           <button
