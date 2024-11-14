@@ -14,7 +14,7 @@ const VistaCarrito = () => {
       <div className="min-h-screen bg-gray-300">
         <Header onSearch={undefined} />
         {/* Contenido del carrito */}
-        <div className="container min-h-full mx-auto py-12 flex gap-4 flex-col md:flex-row">
+        <div className="container min-h-full mx-auto px-6 py-12 flex gap-4 flex-col md:flex-row">
           {/* Productos */}
           <div className="bg-blanco min-h-full p-4 rounded-xl shadow-lg shadow-gray-300 w-full mr-4 flex flex-col justify-between">
             <div>
