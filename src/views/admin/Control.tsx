@@ -199,7 +199,7 @@ export const Control: React.FC = () => {
           />
         </div>
         {/* Lista de asientos en formato tabla */}
-        <div className="border border-gray-300 rounded-lg overflow-hidden shadow-md">
+        <div className="border border-gray-300 rounded-lg overflow-auto max-h-[480px]  shadow-md">
           <div className="grid grid-cols-5 h-10 place-content-center font-semibold bg-gray-200 text-center">
             <div>ID</div>
             <div>Fecha</div>
