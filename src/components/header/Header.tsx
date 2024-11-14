@@ -122,7 +122,7 @@ export const Header = ({ onSearch }: Props) => {
               <IconoLoggin color="white" />
             </button>
 
-            {totalItems >= 0 ? (
+            {totalItems > 0 ? (
               <Link
                 to="/carrito"
                 className="relative flex items-center justify-center gap-4 w-10 h-10 rounded-full hover:bg-blanco">
