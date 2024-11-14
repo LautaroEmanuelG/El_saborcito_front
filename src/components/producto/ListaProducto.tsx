@@ -36,13 +36,14 @@ export const ListaProductos = ({ productos, setProductoModal }: Props) => {
         return productosFiltrados.length > 0 ? (
           <div
             key={categoria.id}
-            className="w-full">
+            className="w-full mt-4">
             <span className="w-full flex justify-between pb-4">
-              <h2 className="text-2xl font-bold">{categoria.nombre}</h2>
+              <h2 className="text-lg sm:text-2xl font-bold">{categoria.nombre}</h2>
             </span>
-            <div className="flex gap-4 md:gap-6 flex-wrap">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 flex-wrap">
               {productosFiltrados.map(producto => (
                 <div
+                className=''
                   onClick={() => handleProductClick(producto)}
                   key={producto.id}>
                   <CardProducto

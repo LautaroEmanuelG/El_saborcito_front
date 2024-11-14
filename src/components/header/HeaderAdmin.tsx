@@ -29,7 +29,7 @@ export const HeaderAdmin = () => {
             <span className="text-2xl font-bold text-white">El Saborcito</span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-4">
+          <div className="absolute top-4 right-14 md:right-4 md:flex items-center gap-4">
             <button
               className="relative flex items-center justify-center gap-4 w-10 h-10 rounded-full hover:bg-blanco"
               onMouseEnter={() => setHoverLogin(true)}

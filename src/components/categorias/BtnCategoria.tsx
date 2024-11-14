@@ -29,7 +29,7 @@ export const BtnCategoria = ({
     <button
       key={category.id}
       onClick={() => handleCategoryClick(category.nombre)}
-      className="text-xl font-bold hover:text-primary transition-colors">
+      className="text-lg sm:text-xl font-bold hover:text-primary transition-colors">
       {category.nombre}
     </button>
   );

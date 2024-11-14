@@ -155,106 +155,22 @@ export const Control: React.FC = () => {
     setSelectedAsiento(null);
   };
 
+
+  const calcularSaldo = (selectedTipo:string) => {
+    return asientosContables.reduce((acc, a) => {
+      if (a.tipo === selectedTipo) {
+        return acc + a.debe;
+      } else if (a.cajaAfectada === selectedTipo) {
+        return acc - a.haber;
+      }
+      return acc;
+    }, 0);
+  };
+
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-3xl font-bold mb-4">Control de Asientos Contables</h1>
-
-      {/* Mostrar Libro Mayor */}
-      {/* <div className="mb-4">
-        <h2 className="text-2xl font-semibold pb-4">Libro Mayor</h2>
-        <div className="flex justify-center mb-4">
-          <button
-            className={`px-4 py-2 mx-2 rounded ${selectedTipo === 'MP' ? 'bg-primary text-white' : 'bg-gray-200'}`}
-            onClick={() => handleTipoChange('MP')}
-          >
-            MP
-          </button>
-          <button
-            className={`px-4 py-2 mx-2 rounded ${selectedTipo === 'EFECTIVO' ? 'bg-primary text-white' : 'bg-gray-200'}`}
-            onClick={() => handleTipoChange('EFECTIVO')}
-          >
-            EFECTIVO
-          </button>
-          <button
-            className={`px-4 py-2 mx-2 rounded ${selectedTipo === 'CRIPTO' ? 'bg-primary text-white' : 'bg-gray-200'}`}
-            onClick={() => handleTipoChange('CRIPTO')}
-          >
-            CRIPTO
-          </button>
-          <button
-            className={`px-4 py-2 mx-2 rounded ${selectedTipo === 'MERCADERIA' ? 'bg-primary text-white' : 'bg-gray-200'}`}
-            onClick={() => handleTipoChange('MERCADERIA')}
-          >
-            MERCADERIA
-          </button>
-        </div>
-        <div className="flex justify-center mb-4">
-          <input
-            type="date"
-            value={startDate}
-            onChange={handleStartDateChange}
-            className="px-4 py-2 mx-2 border rounded"
-          />
-          <input
-            type="date"
-            value={endDate}
-            onChange={handleEndDateChange}
-            className="px-4 py-2 mx-2 border rounded"
-          />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {asientosContables
-            .filter(asiento => asiento.tipo === selectedTipo)
-            .filter(filterByDate)
-            .map((asiento) => (
-              <div
-              key={asiento.id}
-              className="p-4 border border-gray-300 rounded-lg shadow-md bg-white">
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                Asiento ID: {asiento.id}
-              </h3>
-              <div className="text-lg text-gray-600">
-                <span className="font-medium">Fecha:</span>{' '}
-                {formatDate(asiento.fecha)}
-              </div>
-              {asiento.tipo === 'MERCADERIA' ? (
-                <>
-                  <div className="text-lg text-gray-600">
-                    <span className="font-medium">Debe:</span>{' '}
-                    {formatCurrency(asiento.debe)}
-                  </div>
-                  
-                  <div className="text-lg text-gray-600">
-                    <span className="pl-4 font-medium">- Caja:</span> MERCADERIA
-                  </div>
-                  <div className="text-lg text-gray-600">
-                    <span className="font-medium">Haber:</span>{' '}
-                    {formatCurrency(asiento.haber)}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="text-lg text-gray-600">
-                    <span className="font-medium">Debe:</span>{' '}
-                    {formatCurrency(asiento.debe)}
-                  </div>
-                  <div className="text-lg text-gray-600">
-                    <span className="pl-4 font-medium">- Caja:</span> {asiento.tipo}
-                  </div>
-                  <div className="text-lg text-gray-600">
-                    <span className="font-medium">Haber:</span>{' '}
-                    {formatCurrency(asiento.haber)}
-                  </div>
-                  
-                  <div className="text-lg text-gray-600">
-                    <span className="pl-4 font-medium">- Caja:</span> MERCADERIA
-                  </div>
-                </>
-              )}
-            </div>
-            ))}
-        </div>
-      </div> */}
+      
       {/* Mostrar Libro Mayor */}
       <div className="mb-4">
         <h2 className="text-2xl font-semibold pb-4">Libro Mayor</h2>
@@ -300,13 +216,12 @@ export const Control: React.FC = () => {
         </div>
         {/* Lista de asientos en formato tabla */}
         <div className="border border-gray-300 rounded-lg overflow-hidden shadow-md">
-          <div className="grid grid-cols-6 h-10 place-content-center font-semibold bg-gray-200 text-center">
+          <div className="grid grid-cols-5 h-10 place-content-center font-semibold bg-gray-200 text-center">
             <div>ID</div>
             <div>Fecha</div>
-            <div>Desglose</div>
+            <div>Caja</div>
             <div>Debe</div>
             <div>Haber</div>
-            <div>Saldo</div>
           </div>
           {asientosContables
             .slice()
@@ -315,30 +230,31 @@ export const Control: React.FC = () => {
             .filter(filterByDate)
             .map(asiento =>
               selectedTipo === 'MERCADERIA' ? (
-                <div
-                  key={asiento.id}
-                  className="grid grid-cols-6 place-content-center min-h-12 text-center border-t hover:bg-gray-100 cursor-pointer"
-                  onClick={() => handleAsientoSelect(asiento.id)}>
-                  <div>{asiento.id}</div>
-                  <div>{formatDate(asiento.fecha)}</div>
-                  <div>{'MERCADERIA'}</div>
-                  <div>
-                    {asiento.tipo === 'MERCADERIA'
-                      ? formatCurrency(asiento.debe)
-                      : null}
+                <>
+                  <div
+                    key={asiento.id}
+                    className="grid grid-cols-5 place-content-center min-h-12 text-center border-t hover:bg-gray-100 cursor-pointer"
+                    onClick={() => handleAsientoSelect(asiento.id)}>
+                    <div>{asiento.id}</div>
+                    <div>{formatDate(asiento.fecha)}</div>
+                    <div>{'MERCADERIA'}</div>
+                    <div>
+                      {asiento.tipo === 'MERCADERIA'
+                        ? formatCurrency(asiento.debe)
+                        : null}
+                    </div>
+                    <div>
+                      {asiento.tipo === 'MERCADERIA'
+                        ? null
+                        : formatCurrency(asiento.haber)}
+                    </div>
                   </div>
-                  <div>
-                    {asiento.tipo === 'MERCADERIA'
-                      ? null
-                      : formatCurrency(asiento.haber)}
-                  </div>
-                  <div>{formatCurrency(asiento.saldoMercaderia)}</div>
-                </div>
+                </>
               ) : (asiento.tipo === 'MP' || asiento.cajaAfectada === 'MP') &&
                 selectedTipo === 'MP' ? (
                 <div
                   key={asiento.id}
-                  className="grid grid-cols-6 place-content-center min-h-12 text-center border-t hover:bg-gray-100 cursor-pointer"
+                  className="grid grid-cols-5 place-content-center min-h-12 text-center border-t hover:bg-gray-100 cursor-pointer"
                   onClick={() => handleAsientoSelect(asiento.id)}>
                   <div>{asiento.id}</div>
                   <div>{formatDate(asiento.fecha)}</div>
@@ -368,7 +284,7 @@ export const Control: React.FC = () => {
                 selectedTipo === 'CRIPTO' ? (
                 <div
                   key={asiento.id}
-                  className="grid grid-cols-6 place-content-center min-h-12 text-center border-t hover:bg-gray-100 cursor-pointer"
+                  className="grid grid-cols-5 place-content-center min-h-12 text-center border-t hover:bg-gray-100 cursor-pointer"
                   onClick={() => handleAsientoSelect(asiento.id)}>
                   <div>{asiento.id}</div>
                   <div>{formatDate(asiento.fecha)}</div>
@@ -390,7 +306,7 @@ export const Control: React.FC = () => {
                 selectedTipo === 'EFECTIVO' ? (
                 <div
                   key={asiento.id}
-                  className="grid grid-cols-6 place-content-center min-h-12 text-center border-t hover:bg-gray-100 cursor-pointer"
+                  className="grid grid-cols-5 place-content-center min-h-12 text-center border-t hover:bg-gray-100 cursor-pointer"
                   onClick={() => handleAsientoSelect(asiento.id)}>
                   <div>{asiento.id}</div>
                   <div>{formatDate(asiento.fecha)}</div>
@@ -409,6 +325,9 @@ export const Control: React.FC = () => {
                 </div>
               ) : null
             )}
+        </div>
+        <div className="mt-4 font-semibold text-right cursor-pointer mb-12 bg-primary py-2 px-4 rounded-lg text-white text-3xl">
+          Saldo: {formatCurrency(calcularSaldo(selectedTipo))}
         </div>
       </div>
 

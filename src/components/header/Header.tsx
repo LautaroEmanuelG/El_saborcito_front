@@ -63,20 +63,18 @@ export const Header = ({ onSearch }: Props) => {
               <IconoLoggin color={hoverLogin ? '#E11D48' : 'white'} />
             </button>
 
-            {window.location.pathname !== '/carrito' && (
+            {window.location.pathname !== '/carrito' && totalItems > 0 ? (
               <Link
                 to="/carrito"
                 className="relative flex items-center justify-center gap-4 w-10 h-10 rounded-full hover:bg-blanco"
                 onMouseEnter={() => setHoverCarrito(true)}
                 onMouseLeave={() => setHoverCarrito(false)}>
                 <IconoCarrito color={hoverCarrito ? '#E11D48' : 'white'} />
-                {totalItems > 0 ? (
-                  <div className="absolute text-blanco -top-3 -right-3 bg-primary text-primary-foreground rounded-full px-2 py-1 text-xs font-bold hover:bg-blanco hover:text-primary ">
-                    {totalItems}
-                  </div>
-                ) : null}
+                <div className="absolute text-blanco -top-3 -right-3 bg-primary text-primary-foreground rounded-full px-2 py-1 text-xs font-bold hover:bg-blanco hover:text-primary ">
+                  {totalItems}
+                </div>
               </Link>
-            )}
+            ) : null}
           </div>
 
           <button
@@ -105,10 +103,10 @@ export const Header = ({ onSearch }: Props) => {
             <span className="text-2xl font-bold text-white">El Saborcito</span>
           </Link>
           <button
-          className="absolute font-bold top-2 right-2 text-white text-xl hover:text-blanco hover:bg-primary rounded-full w-10 h-10"
-          onClick={toggleMenu}>
-          X
-        </button>
+            className="absolute font-bold top-2 right-2 text-white text-xl hover:text-blanco hover:bg-primary rounded-full w-10 h-10"
+            onClick={toggleMenu}>
+            X
+          </button>
         </div>
 
         <div className="p-4">
@@ -124,16 +122,16 @@ export const Header = ({ onSearch }: Props) => {
               <IconoLoggin color="white" />
             </button>
 
-            <Link
-              to="/carrito"
-              className="relative flex items-center justify-center gap-4 w-10 h-10 rounded-full hover:bg-blanco">
-              <IconoCarrito color="white" />
-              {totalItems > 0 ? (
+            {totalItems > 0 ? (
+              <Link
+                to="/carrito"
+                className="relative flex items-center justify-center gap-4 w-10 h-10 rounded-full hover:bg-blanco">
+                <IconoCarrito color="white" />
                 <div className="absolute text-blanco -top-3 -right-3 bg-primary text-primary-foreground rounded-full px-2 py-1 text-xs font-bold hover:bg-blanco hover:text-primary">
                   {totalItems}
                 </div>
-              ) : null}
-            </Link>
+              </Link>
+            ) : null}
           </div>
         )}
       </div>

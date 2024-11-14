@@ -16,8 +16,7 @@ export const CardProducto = ({ product, setProductoModal }: ProductProps) => {
   return (
     <div
       onClick={handleProductoModal}
-      className="bg-white rounded-xl shadow-lg overflow-hidden border cursor-pointer"
-      style={{ width: '300px' }}>
+      className="bg-white flex-1 rounded-xl shadow-lg overflow-hidden border cursor-pointer ">
       <div className="relative flex justify-end items-end w-full bg-red-900">
         <div className="bg-red-500 h-64 w-full">
           <picture>
