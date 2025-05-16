@@ -15,11 +15,7 @@ import {
 import { getAllCategorias } from '../../utils/services/axios/categoriaService';
 import { getAllProductos } from '../../utils/services/axios/productoService';
 import { getAllTickets } from '../../utils/services/axios/ticketService';
-import {
-  Ticket,
-  type CategoriaVentas,
-  type ProductoValor,
-} from '../../utils/types';
+import { Ticket, type CategoriaVentas, type ProductoValor } from '../../utils/types';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
@@ -42,14 +38,14 @@ export const Reportes = () => {
     setTickets(ticketsData);
   };
 
-  const data = categorias.map(categoria => {
+  const data = categorias.map((categoria) => {
     const productCount = productos.filter(
-      producto => producto.categoria.id === categoria.id
+      (producto) => producto.categoria.id === categoria.id
     ).length;
     return { name: categoria.nombre, value: productCount };
   });
 
-  const barData = productos.map(producto => ({
+  const barData = productos.map((producto) => ({
     name: producto.nombre,
     costo: producto.valor.costo,
     ganancia: producto.valor.precio - producto.valor.costo,
@@ -75,12 +71,9 @@ export const Reportes = () => {
     (max, categoria) => {
       const ventas = tickets.reduce((acc, ticket) => {
         const ticketProductos = ticket.ticketProductos.filter(
-          tp => tp.producto.categoria.id === categoria.id
+          (tp) => tp.producto.categoria.id === categoria.id
         );
-        const ventasCategoria = ticketProductos.reduce(
-          (acc, tp) => acc + tp.cantidad,
-          0
-        );
+        const ventasCategoria = ticketProductos.reduce((acc, tp) => acc + tp.cantidad, 0);
         return acc + ventasCategoria;
       }, 0);
       return ventas > max.ventas ? { nombre: categoria.nombre, ventas } : max;
@@ -96,20 +89,11 @@ export const Reportes = () => {
     <div className="bg-gray-100 w-full min-h-full p-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="p-2 bg-white rounded-lg shadow-md">
-          <ResponsiveContainer
-            width="100%"
-            height={300}>
+          <ResponsiveContainer width="100%" height={300}>
             <PieChart>
-              <Pie
-                dataKey="value"
-                data={data}
-                fill="#8884d8"
-                label>
+              <Pie dataKey="value" data={data} fill="#8884d8" label>
                 {data.map((_, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                  />
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
               <Legend />
@@ -117,23 +101,15 @@ export const Reportes = () => {
           </ResponsiveContainer>
         </div>
         <div className="bg-white rounded-lg shadow-md p-2">
-          <ResponsiveContainer
-            width="100%"
-            height={300}>
+          <ResponsiveContainer width="100%" height={300}>
             <BarChart data={barData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar
-                dataKey="costo"
-                fill="#FF8042"
-              />
-              <Bar
-                dataKey="ganancia"
-                fill="#0088FE"
-              />
+              <Bar dataKey="costo" fill="#FF8042" />
+              <Bar dataKey="ganancia" fill="#0088FE" />
             </BarChart>
           </ResponsiveContainer>
         </div>

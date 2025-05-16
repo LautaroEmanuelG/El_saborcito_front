@@ -4,18 +4,14 @@ interface IconoCarritoProps {
 
 const IconoCarrito: React.FC<IconoCarritoProps> = ({ color }) => {
   return (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <svg
         width="24"
         height="17"
         viewBox="0 0 24 17"
         fill="none"
-        xmlns="http://www.w3.org/2000/svg">
+        xmlns="http://www.w3.org/2000/svg"
+      >
         <path
           d="M1.82886 1.76001H3.8733L6.59241 13.904C6.69216 14.3488 6.95088 14.7463 7.32403 15.0283C7.69718 15.3103 8.16143 15.459 8.63686 15.4489H18.6342C19.0995 15.4482 19.5506 15.2957 19.913 15.0166C20.2754 14.7375 20.5275 14.3484 20.6275 13.9138L22.3142 6.6489H4.96708"
           stroke={color}

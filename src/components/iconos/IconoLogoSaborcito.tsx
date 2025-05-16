@@ -6,23 +6,12 @@ const IconoLogoSaborcito: React.FC = () => {
       viewBox="0 0 45 46"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      xmlnsXlink="http://www.w3.org/1999/xlink">
-      <rect
-        y="0.5"
-        width="45"
-        height="45"
-        fill="url(#pattern0_42_33)"
-      />
+      xmlnsXlink="http://www.w3.org/1999/xlink"
+    >
+      <rect y="0.5" width="45" height="45" fill="url(#pattern0_42_33)" />
       <defs>
-        <pattern
-          id="pattern0_42_33"
-          patternContentUnits="objectBoundingBox"
-          width="1"
-          height="1">
-          <use
-            xlinkHref="#image0_42_33"
-            transform="scale(0.0104167)"
-          />
+        <pattern id="pattern0_42_33" patternContentUnits="objectBoundingBox" width="1" height="1">
+          <use xlinkHref="#image0_42_33" transform="scale(0.0104167)" />
         </pattern>
         <image
           id="image0_42_33"

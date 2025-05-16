@@ -13,9 +13,7 @@ interface ActiveSliderProps {
   setProductoModal: (producto: ProductoValor) => void;
 }
 
-export const ActiveSlider: React.FC<ActiveSliderProps> = ({
-  setProductoModal,
-}) => {
+export const ActiveSlider: React.FC<ActiveSliderProps> = ({ setProductoModal }) => {
   const [products, setProducts] = React.useState<ProductoValor[]>([]);
   const handleProductClick = (product: ProductoValor) => {
     setProductoModal(product);
@@ -37,7 +35,8 @@ export const ActiveSlider: React.FC<ActiveSliderProps> = ({
       }}
       navigation={true}
       modules={[Autoplay, Pagination, Navigation]}
-      className="w-full h-[400px]">
+      className="w-full h-[400px]"
+    >
       {products.map((product, index) => (
         <SwiperSlide
           onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
@@ -45,9 +44,9 @@ export const ActiveSlider: React.FC<ActiveSliderProps> = ({
             handleProductClick(product);
           }}
           key={index}
-
           /* Efecto oscuro sobre la imagen */
-          className="relative flex flex-col items-center justify-center cursor-pointer rounded-xl overflow-hidden">
+          className="relative flex flex-col items-center justify-center cursor-pointer rounded-xl overflow-hidden"
+        >
           <div className="absolute inset-0 bg-black bg-opacity-30 rounded-xl"></div>
 
           {/* Elemento picture para cargar imágenes en diferentes formatos */}
@@ -58,8 +57,8 @@ export const ActiveSlider: React.FC<ActiveSliderProps> = ({
                 Array.isArray(product.imagen) && product.imagen.length > 0
                   ? product.imagen[0]
                   : Array.isArray(product.imagen) && product.imagen.length > 1
-                  ? product.imagen[1]
-                  : ''
+                    ? product.imagen[1]
+                    : ''
               }
               alt={product.nombre}
               className="object-cover w-full h-full rounded-xl"
@@ -69,8 +68,8 @@ export const ActiveSlider: React.FC<ActiveSliderProps> = ({
             <h3 className="text-2xl font-semibold">{product.nombre}</h3>
             <p className="text-xl font">${product.valor.precio.toFixed(2)}</p>
           </div>
-          
-           {/* Botón "Agregar al carrito" */}
+
+          {/* Botón "Agregar al carrito" */}
           <div className="absolute bottom-0 left-0 p-4 ">
             <BtnAgregarCarrito
               position="left"

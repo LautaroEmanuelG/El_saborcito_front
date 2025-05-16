@@ -24,19 +24,19 @@ export const Historial: React.FC = () => {
   useEffect(() => {
     fetchInitialData();
   }, []);
-  
+
   const fetchInitialData = async () => {
     const ticketsData = await getAllTickets();
     const productosData = await getAllProductos();
     setTickets(ticketsData);
     setProductos(productosData);
-    console.log('tickets', tickets)
+    console.log('tickets', tickets);
   };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-ES', {
       style: 'currency',
-      currency: 'ARS'
+      currency: 'ARS',
     }).format(amount);
   };
 
@@ -53,7 +53,7 @@ export const Historial: React.FC = () => {
   };
 
   const getStockAlerts = () => {
-    return productos.filter(producto => producto.stock < 10);
+    return productos.filter((producto) => producto.stock < 10);
   };
 
   const openUpdateModal = async (id: number) => {
@@ -101,16 +101,18 @@ export const Historial: React.FC = () => {
       <div className="mb-4">
         <h2 className="text-2xl font-semibold">Alertas de Stock</h2>
         {getStockAlerts().length > 0 ? (
-          getStockAlerts().map(producto => (
+          getStockAlerts().map((producto) => (
             <div
               key={producto.id}
-              className="p-2 border my-2 bg-red-100 flex justify-between items-center">
+              className="p-2 border my-2 bg-red-100 flex justify-between items-center"
+            >
               <span>
                 Producto: {producto.nombre} - Stock: {producto.stock}
               </span>
               <button
                 onClick={() => openUpdateModal(producto.id)}
-                className="bg-blue-500 text-white px-4 py-2 rounded">
+                className="bg-blue-500 text-white px-4 py-2 rounded"
+              >
                 Actualizar
               </button>
             </div>
@@ -129,21 +131,20 @@ export const Historial: React.FC = () => {
           {tickets
             .slice()
             .reverse()
-            .map(ticket => (
+            .map((ticket) => (
               <div
                 key={ticket.id}
-                className="p-4 border border-gray-300 rounded-lg shadow-md bg-white">
+                className="p-4 border border-gray-300 rounded-lg shadow-md bg-white"
+              >
                 <h3 className="text-xl font-semibold text-gray-700 mb-2 flex items-center">
                   <span className="mr-2 text-blue-500">🎫</span>
                   Ticket ID: {ticket.id}
                 </h3>
                 <div className="text-lg text-gray-600">
-                  <span className="font-medium">Total:</span>{' '}
-                  {formatCurrency(ticket.total)}
+                  <span className="font-medium">Total:</span> {formatCurrency(ticket.total)}
                 </div>
                 <div className="mt-2 text-sm text-gray-500">
-                  Fecha de Creación:{' '}
-                  {formatDate(ticket.fecha)}
+                  Fecha de Creación: {formatDate(ticket.fecha)}
                 </div>
               </div>
             ))}
@@ -160,16 +161,14 @@ export const Historial: React.FC = () => {
                 type="text"
                 className="w-full mb-2 p-2 border"
                 value={productForm.nombre}
-                onChange={e =>
-                  setProductForm({ ...productForm, nombre: e.target.value })
-                }
+                onChange={(e) => setProductForm({ ...productForm, nombre: e.target.value })}
               />
               <label className="block mb-1">Descripción</label>
               <input
                 type="text"
                 className="w-full mb-2 p-2 border"
                 value={productForm.descripcion}
-                onChange={e =>
+                onChange={(e) =>
                   setProductForm({
                     ...productForm,
                     descripcion: e.target.value,
@@ -181,7 +180,7 @@ export const Historial: React.FC = () => {
                 type="number"
                 className="w-full mb-2 p-2 border"
                 value={productForm.precio || ''}
-                onChange={e =>
+                onChange={(e) =>
                   setProductForm({
                     ...productForm,
                     precio: parseFloat(e.target.value),
@@ -193,7 +192,7 @@ export const Historial: React.FC = () => {
                 type="number"
                 className="w-full mb-2 p-2 border"
                 value={productForm.stock || ''}
-                onChange={e =>
+                onChange={(e) =>
                   setProductForm({
                     ...productForm,
                     stock: parseInt(e.target.value, 10),
@@ -205,7 +204,7 @@ export const Historial: React.FC = () => {
                 type="number"
                 className="w-full mb-2 p-2 border"
                 value={productForm.costo || ''}
-                onChange={e =>
+                onChange={(e) =>
                   setProductForm({
                     ...productForm,
                     costo: parseFloat(e.target.value),
@@ -217,12 +216,14 @@ export const Historial: React.FC = () => {
             <div className="flex justify-end">
               <button
                 onClick={() => setIsUpdateModalOpen(false)}
-                className="mr-2 bg-gray-300 px-4 py-2 rounded">
+                className="mr-2 bg-gray-300 px-4 py-2 rounded"
+              >
                 Cancelar
               </button>
               <button
                 onClick={handleSaveProduct}
-                className="bg-green-500 text-white px-4 py-2 rounded">
+                className="bg-green-500 text-white px-4 py-2 rounded"
+              >
                 Actualizar
               </button>
             </div>

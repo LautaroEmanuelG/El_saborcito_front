@@ -22,8 +22,8 @@ export const Control: React.FC = () => {
     let saldoCripto = 10000;
     let saldoEfectivo = 10000;
     let saldoMercaderia = 10000;
-  
-    const asientos = transaccions.map(transaccion => {
+
+    const asientos = transaccions.map((transaccion) => {
       const detalles = transaccion.ticket.ticketProductos.map((tp: any) => ({
         producto: tp.producto.nombre,
         cantidad: tp.cantidad,
@@ -31,19 +31,23 @@ export const Control: React.FC = () => {
         costo: tp.producto.valor.costo,
         ganancia: tp.producto.valor.precio - tp.producto.valor.costo,
       }));
-  
+
       const debe = ['MP', 'EFECTIVO', 'CRIPTO'].includes(transaccion.tipo)
-        ? detalles.reduce((acc: number, detalle: any) => acc + (detalle.precio * detalle.cantidad), 0)
-        : detalles.reduce((acc: number, detalle: any) => acc + (detalle.costo * detalle.cantidad), 0);
-  
+        ? detalles.reduce((acc: number, detalle: any) => acc + detalle.precio * detalle.cantidad, 0)
+        : detalles.reduce((acc: number, detalle: any) => acc + detalle.costo * detalle.cantidad, 0);
+
       const haber = ['MP', 'EFECTIVO', 'CRIPTO'].includes(transaccion.tipo)
-        ? detalles.reduce((acc: number, detalle: any) => acc + ((detalle.costo + detalle.ganancia) * detalle.cantidad), 0)
-        : detalles.reduce((acc: number, detalle: any) => acc + (detalle.costo * detalle.cantidad), 0);
-  
+        ? detalles.reduce(
+            (acc: number, detalle: any) =>
+              acc + (detalle.costo + detalle.ganancia) * detalle.cantidad,
+            0
+          )
+        : detalles.reduce((acc: number, detalle: any) => acc + detalle.costo * detalle.cantidad, 0);
+
       // Asignar al azar una de las otras cajas si el tipo es 'MERCADERIA'
       const cajas = ['MP', 'EFECTIVO', 'CRIPTO'];
       const cajaRandom = cajas[Math.floor(Math.random() * cajas.length)];
-  
+
       // Actualizar los saldos de las cajas
       if (transaccion.tipo === 'MERCADERIA') {
         saldoMercaderia += debe;
@@ -56,14 +60,8 @@ export const Control: React.FC = () => {
         if (transaccion.tipo === 'EFECTIVO') saldoEfectivo += debe;
         saldoMercaderia -= haber;
       }
-  
-      console.log(
-        'Saldos:',
-        saldoMP,
-        saldoCripto,
-        saldoEfectivo,
-        saldoMercaderia
-      );
+
+      console.log('Saldos:', saldoMP, saldoCripto, saldoEfectivo, saldoMercaderia);
       return {
         id: transaccion.id,
         fecha: transaccion.fecha,
@@ -97,18 +95,14 @@ export const Control: React.FC = () => {
       minute: '2-digit',
       second: '2-digit',
     };
-    return new Intl.DateTimeFormat('es-ES', options).format(
-      new Date(dateString)
-    );
+    return new Intl.DateTimeFormat('es-ES', options).format(new Date(dateString));
   };
 
   const handleTipoChange = (tipo: string) => {
     setSelectedTipo(tipo);
   };
 
-  const handleStartDateChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleStartDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     console.log(event.target.value);
     setStartDate(event.target.value);
   };
@@ -120,9 +114,7 @@ export const Control: React.FC = () => {
 
   const filterByDate = (asiento: any) => {
     const asientoDate = new Date(asiento.fecha).toISOString().split('T')[0]; // Asegura que esté en formato 'YYYY-MM-DD'
-    const start = startDate
-      ? new Date(startDate).toISOString().split('T')[0]
-      : null;
+    const start = startDate ? new Date(startDate).toISOString().split('T')[0] : null;
     const end = endDate ? new Date(endDate).toISOString().split('T')[0] : null;
 
     return (!start || asientoDate >= start) && (!end || asientoDate <= end);
@@ -131,7 +123,7 @@ export const Control: React.FC = () => {
   const [selectedAsiento, setSelectedAsiento] = useState<any | null>(null);
 
   const handleAsientoSelect = (asientoId: string) => {
-    const asiento = asientosContables.find(a => a.id === asientoId);
+    const asiento = asientosContables.find((a) => a.id === asientoId);
     setSelectedAsiento(asiento || null);
   };
 
@@ -139,8 +131,7 @@ export const Control: React.FC = () => {
     setSelectedAsiento(null);
   };
 
-
-  const calcularSaldo = (selectedTipo:string) => {
+  const calcularSaldo = (selectedTipo: string) => {
     return asientosContables.reduce((acc, a) => {
       if (a.tipo === selectedTipo) {
         return acc + a.debe;
@@ -154,28 +145,27 @@ export const Control: React.FC = () => {
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-3xl font-bold mb-4">Control de Asientos Contables</h1>
-      
+
       {/* Mostrar Libro Mayor */}
       <div className="mb-4">
         <h2 className="text-2xl font-semibold pb-4">Libro Mayor</h2>
         <div className="flex justify-center mb-4">
           {/* Botones de selección de tipo */}
-          {['MP', 'EFECTIVO', 'CRIPTO', 'MERCADERIA'].map(tipo => (
+          {['MP', 'EFECTIVO', 'CRIPTO', 'MERCADERIA'].map((tipo) => (
             <button
               key={tipo}
               className={`px-4 py-2 mx-2 rounded ${
                 selectedTipo === tipo ? 'bg-primary text-white' : 'bg-gray-200'
               }`}
-              onClick={() => handleTipoChange(tipo)}>
+              onClick={() => handleTipoChange(tipo)}
+            >
               {tipo}
             </button>
           ))}
         </div>
         {/* Filtros de fecha */}
         <div className="flex justify-center mb-4">
-          <label
-            htmlFor="date-desde"
-            className="text-primary font-bold">
+          <label htmlFor="date-desde" className="text-primary font-bold">
             Desde:{' '}
           </label>
           <input
@@ -185,9 +175,7 @@ export const Control: React.FC = () => {
             onChange={handleStartDateChange}
             className="px-4 py-2 mx-2 border rounded"
           />
-          <label
-            htmlFor="date-hasta"
-            className="text-primary font-bold">
+          <label htmlFor="date-hasta" className="text-primary font-bold">
             Hasta:{' '}
           </label>
           <input
@@ -212,25 +200,20 @@ export const Control: React.FC = () => {
             .reverse()
             // .filter(asiento => asiento.tipo === selectedTipo)
             .filter(filterByDate)
-            .map(asiento =>
+            .map((asiento) =>
               selectedTipo === 'MERCADERIA' ? (
                 <>
                   <div
                     key={asiento.id}
                     className="grid grid-cols-5 place-content-center min-h-12 text-center border-t hover:bg-gray-100 cursor-pointer"
-                    onClick={() => handleAsientoSelect(asiento.id)}>
+                    onClick={() => handleAsientoSelect(asiento.id)}
+                  >
                     <div>{asiento.id}</div>
                     <div>{formatDate(asiento.fecha)}</div>
                     <div>{'MERCADERIA'}</div>
+                    <div>{asiento.tipo === 'MERCADERIA' ? formatCurrency(asiento.debe) : null}</div>
                     <div>
-                      {asiento.tipo === 'MERCADERIA'
-                        ? formatCurrency(asiento.debe)
-                        : null}
-                    </div>
-                    <div>
-                      {asiento.tipo === 'MERCADERIA'
-                        ? null
-                        : formatCurrency(asiento.haber)}
+                      {asiento.tipo === 'MERCADERIA' ? null : formatCurrency(asiento.haber)}
                     </div>
                   </div>
                 </>
@@ -239,62 +222,39 @@ export const Control: React.FC = () => {
                 <div
                   key={asiento.id}
                   className="grid grid-cols-5 place-content-center min-h-12 text-center border-t hover:bg-gray-100 cursor-pointer"
-                  onClick={() => handleAsientoSelect(asiento.id)}>
+                  onClick={() => handleAsientoSelect(asiento.id)}
+                >
                   <div>{asiento.id}</div>
                   <div>{formatDate(asiento.fecha)}</div>
                   <div>{'MP'}</div>
-                  <div>
-                    {asiento.tipo === 'MERCADERIA'
-                      ? null
-                      : formatCurrency(asiento.debe)}
-                  </div>
-                  <div>
-                    {asiento.tipo === 'MERCADERIA'
-                      ? formatCurrency(asiento.haber)
-                      : null}
-                  </div>
+                  <div>{asiento.tipo === 'MERCADERIA' ? null : formatCurrency(asiento.debe)}</div>
+                  <div>{asiento.tipo === 'MERCADERIA' ? formatCurrency(asiento.haber) : null}</div>
                 </div>
-              ) : (asiento.tipo === 'CRIPTO' ||
-                  asiento.cajaAfectada === 'CRIPTO') &&
+              ) : (asiento.tipo === 'CRIPTO' || asiento.cajaAfectada === 'CRIPTO') &&
                 selectedTipo === 'CRIPTO' ? (
                 <div
                   key={asiento.id}
                   className="grid grid-cols-5 place-content-center min-h-12 text-center border-t hover:bg-gray-100 cursor-pointer"
-                  onClick={() => handleAsientoSelect(asiento.id)}>
+                  onClick={() => handleAsientoSelect(asiento.id)}
+                >
                   <div>{asiento.id}</div>
                   <div>{formatDate(asiento.fecha)}</div>
                   <div>{'CRIPTO'}</div>
-                  <div>
-                    {asiento.tipo === 'MERCADERIA'
-                      ? null
-                      : formatCurrency(asiento.debe)}
-                  </div>
-                  <div>
-                    {asiento.tipo === 'MERCADERIA'
-                      ? formatCurrency(asiento.haber)
-                      : null}
-                  </div>
+                  <div>{asiento.tipo === 'MERCADERIA' ? null : formatCurrency(asiento.debe)}</div>
+                  <div>{asiento.tipo === 'MERCADERIA' ? formatCurrency(asiento.haber) : null}</div>
                 </div>
-              ) : (asiento.tipo === 'EFECTIVO' ||
-                  asiento.cajaAfectada === 'EFECTIVO') &&
+              ) : (asiento.tipo === 'EFECTIVO' || asiento.cajaAfectada === 'EFECTIVO') &&
                 selectedTipo === 'EFECTIVO' ? (
                 <div
                   key={asiento.id}
                   className="grid grid-cols-5 place-content-center min-h-12 text-center border-t hover:bg-gray-100 cursor-pointer"
-                  onClick={() => handleAsientoSelect(asiento.id)}>
+                  onClick={() => handleAsientoSelect(asiento.id)}
+                >
                   <div>{asiento.id}</div>
                   <div>{formatDate(asiento.fecha)}</div>
                   <div>{'EFECTIVO'}</div>
-                  <div>
-                    {asiento.tipo === 'MERCADERIA'
-                      ? null
-                      : formatCurrency(asiento.debe)}
-                  </div>
-                  <div>
-                    {asiento.tipo === 'MERCADERIA'
-                      ? formatCurrency(asiento.haber)
-                      : null}
-                  </div>
+                  <div>{asiento.tipo === 'MERCADERIA' ? null : formatCurrency(asiento.debe)}</div>
+                  <div>{asiento.tipo === 'MERCADERIA' ? formatCurrency(asiento.haber) : null}</div>
                 </div>
               ) : null
             )}
@@ -308,32 +268,27 @@ export const Control: React.FC = () => {
       <div className="mb-4">
         <h2 className="text-2xl font-semibold pb-4">Libro Diario</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {asientosContables.map(asiento => (
+          {asientosContables.map((asiento) => (
             <div
               key={asiento.id}
-              className="p-4 border border-gray-300 rounded-lg shadow-md bg-white">
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                Asiento ID: {asiento.id}
-              </h3>
+              className="p-4 border border-gray-300 rounded-lg shadow-md bg-white"
+            >
+              <h3 className="text-xl font-semibold text-gray-700 mb-2">Asiento ID: {asiento.id}</h3>
               <div className="text-lg text-gray-600">
-                <span className="font-medium">Fecha:</span>{' '}
-                {formatDate(asiento.fecha)}
+                <span className="font-medium">Fecha:</span> {formatDate(asiento.fecha)}
               </div>
               <div className="text-lg text-gray-600">
-                <span className="font-medium">Debe:</span>{' '}
-                {formatCurrency(asiento.debe)}
+                <span className="font-medium">Debe:</span> {formatCurrency(asiento.debe)}
               </div>
 
               <div className="text-lg text-gray-600">
                 <span className="pl-4 font-medium">- Caja:</span> {asiento.tipo}
               </div>
               <div className="text-lg text-gray-600">
-                <span className="font-medium">Haber:</span>{' '}
-                {formatCurrency(asiento.haber)}
+                <span className="font-medium">Haber:</span> {formatCurrency(asiento.haber)}
               </div>
               <div className="text-lg text-gray-600">
-                <span className="pl-4 font-medium">- Caja:</span>{' '}
-                {asiento.cajaAfectada}
+                <span className="pl-4 font-medium">- Caja:</span> {asiento.cajaAfectada}
               </div>
             </div>
           ))}
@@ -346,21 +301,20 @@ export const Control: React.FC = () => {
           <div className="relative bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
             <button
               className="absolute font-bold top-2 right-2 text-negro text-xl hover:text-blanco hover:bg-primary rounded-full w-10 h-10"
-              onClick={closeModal}>
+              onClick={closeModal}
+            >
               X
             </button>
             <h3 className="text-xl font-semibold text-gray-700 mb-2">
               Asiento ID: {selectedAsiento.id}
             </h3>
             <div className="text-lg text-gray-600">
-              <span className="font-medium">Fecha:</span>{' '}
-              {formatDate(selectedAsiento.fecha)}
+              <span className="font-medium">Fecha:</span> {formatDate(selectedAsiento.fecha)}
             </div>
             {selectedAsiento.tipo === 'MERCADERIA' ? (
               <>
                 <div className="text-lg text-gray-600">
-                  <span className="font-medium">Debe:</span>{' '}
-                  {formatCurrency(selectedAsiento.debe)}
+                  <span className="font-medium">Debe:</span> {formatCurrency(selectedAsiento.debe)}
                 </div>
                 <div className="text-lg text-gray-600">
                   <span className="pl-4 font-medium">- Caja:</span> MERCADERIA
@@ -373,12 +327,10 @@ export const Control: React.FC = () => {
             ) : (
               <>
                 <div className="text-lg text-gray-600">
-                  <span className="font-medium">Debe:</span>{' '}
-                  {formatCurrency(selectedAsiento.debe)}
+                  <span className="font-medium">Debe:</span> {formatCurrency(selectedAsiento.debe)}
                 </div>
                 <div className="text-lg text-gray-600">
-                  <span className="pl-4 font-medium">- Caja:</span>{' '}
-                  {selectedAsiento.tipo}
+                  <span className="pl-4 font-medium">- Caja:</span> {selectedAsiento.tipo}
                 </div>
                 <div className="text-lg text-gray-600">
                   <span className="font-medium">Haber:</span>{' '}

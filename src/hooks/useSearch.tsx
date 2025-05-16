@@ -31,12 +31,10 @@ export const useSearch = (initialValue: string = '') => {
     } else {
       setFilteredProducts(
         productos.filter(
-          producto =>
+          (producto) =>
             producto.nombre.toLowerCase().includes(query.toLowerCase()) ||
             producto.descripcion?.toLowerCase().includes(query.toLowerCase()) ||
-            producto.categoria.nombre
-              .toLowerCase()
-              .includes(query.toLowerCase())
+            producto.categoria.nombre.toLowerCase().includes(query.toLowerCase())
         )
       );
     }

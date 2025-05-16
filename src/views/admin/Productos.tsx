@@ -101,28 +101,26 @@ export const Productos = () => {
   return (
     <div className="p-4 w-full">
       <h2 className="text-3xl font-bold mb-4">Gestor de Productos</h2>
-      <button
-        onClick={openCreateModal}
-        className="mr-4 bg-primary/90 text-white px-4 py-2 rounded">
+      <button onClick={openCreateModal} className="mr-4 bg-primary/90 text-white px-4 py-2 rounded">
         Crear Producto
       </button>
       {/* Mostrar productos y permitir agregarlos al ticket */}
       <div className="flex flex-col w-full mb-4">
-        {productos.map(producto => (
+        {productos.map((producto) => (
           <>
-            <div
-              key={producto.id}
-              className="p-2 border my-2 flex justify-between items-center">
+            <div key={producto.id} className="p-2 border my-2 flex justify-between items-center">
               <span>{producto.nombre}</span>
               <div className="flex">
                 <button
                   onClick={() => openUpdateModal(producto.id)}
-                  className="bg-blue-500 text-white px-4 py-2 rounded mr-2">
+                  className="bg-blue-500 text-white px-4 py-2 rounded mr-2"
+                >
                   Actualizar
                 </button>
                 <button
                   onClick={toggleModalDelete}
-                  className="bg-red-500 text-white px-4 py-2 rounded">
+                  className="bg-red-500 text-white px-4 py-2 rounded"
+                >
                   Eliminar
                 </button>
               </div>
@@ -152,9 +150,7 @@ export const Productos = () => {
                 placeholder="Ingrese el nombre del producto"
                 className="w-full mb-4 p-2 border"
                 value={productForm.nombre}
-                onChange={e =>
-                  setProductForm({ ...productForm, nombre: e.target.value })
-                }
+                onChange={(e) => setProductForm({ ...productForm, nombre: e.target.value })}
               />
 
               <label className="block text-gray-700 mb-1">Descripción</label>
@@ -163,7 +159,7 @@ export const Productos = () => {
                 placeholder="Ingrese la descripción del producto"
                 className="w-full mb-4 p-2 border"
                 value={productForm.descripcion}
-                onChange={e =>
+                onChange={(e) =>
                   setProductForm({
                     ...productForm,
                     descripcion: e.target.value,
@@ -177,7 +173,7 @@ export const Productos = () => {
                 placeholder="Ingrese el precio"
                 className="w-full mb-4 p-2 border"
                 value={productForm.precio === 0 ? '' : productForm.precio}
-                onChange={e =>
+                onChange={(e) =>
                   setProductForm({
                     ...productForm,
                     precio: parseFloat(e.target.value),
@@ -191,7 +187,7 @@ export const Productos = () => {
                 placeholder="Ingrese el stock"
                 className="w-full mb-4 p-2 border"
                 value={productForm.stock === 0 ? '' : productForm.stock}
-                onChange={e =>
+                onChange={(e) =>
                   setProductForm({
                     ...productForm,
                     stock: parseInt(e.target.value, 10),
@@ -205,7 +201,7 @@ export const Productos = () => {
                 placeholder="Ingrese el costo"
                 className="w-full mb-4 p-2 border"
                 value={productForm.costo === 0 ? '' : productForm.costo}
-                onChange={e =>
+                onChange={(e) =>
                   setProductForm({
                     ...productForm,
                     costo: parseFloat(e.target.value),
@@ -217,17 +213,16 @@ export const Productos = () => {
               <select
                 className="w-full mb-4 p-2 border"
                 value={productForm.categoriaId}
-                onChange={e =>
+                onChange={(e) =>
                   setProductForm({
                     ...productForm,
                     categoriaId: parseInt(e.target.value),
                   })
-                }>
+                }
+              >
                 <option value="">Seleccione una categoría</option>
-                {categorias.map(categoria => (
-                  <option
-                    key={categoria.id}
-                    value={categoria.id}>
+                {categorias.map((categoria) => (
+                  <option key={categoria.id} value={categoria.id}>
                     {categoria.nombre}
                   </option>
                 ))}
@@ -237,12 +232,14 @@ export const Productos = () => {
             <div className="flex justify-end">
               <button
                 onClick={() => setIsProductModalOpen(false)}
-                className="mr-2 bg-gray-300 px-4 py-2 rounded">
+                className="mr-2 bg-gray-300 px-4 py-2 rounded"
+              >
                 Cancelar
               </button>
               <button
                 onClick={handleSaveProduct}
-                className="bg-blue-500 text-white px-4 py-2 rounded">
+                className="bg-blue-500 text-white px-4 py-2 rounded"
+              >
                 Crear
               </button>
             </div>
@@ -261,16 +258,14 @@ export const Productos = () => {
                 type="text"
                 className="w-full mb-2 p-2 border"
                 value={productForm.nombre}
-                onChange={e =>
-                  setProductForm({ ...productForm, nombre: e.target.value })
-                }
+                onChange={(e) => setProductForm({ ...productForm, nombre: e.target.value })}
               />
               <label className="block mb-1">Descripción</label>
               <input
                 type="text"
                 className="w-full mb-2 p-2 border"
                 value={productForm.descripcion}
-                onChange={e =>
+                onChange={(e) =>
                   setProductForm({
                     ...productForm,
                     descripcion: e.target.value,
@@ -282,7 +277,7 @@ export const Productos = () => {
                 type="number"
                 className="w-full mb-2 p-2 border"
                 value={productForm.precio === 0 ? '' : productForm.precio}
-                onChange={e =>
+                onChange={(e) =>
                   setProductForm({
                     ...productForm,
                     precio: parseFloat(e.target.value),
@@ -294,7 +289,7 @@ export const Productos = () => {
                 type="number"
                 className="w-full mb-2 p-2 border"
                 value={productForm.stock === 0 ? '' : productForm.stock}
-                onChange={e =>
+                onChange={(e) =>
                   setProductForm({
                     ...productForm,
                     stock: parseInt(e.target.value, 10),
@@ -306,7 +301,7 @@ export const Productos = () => {
                 type="number"
                 className="w-full mb-2 p-2 border"
                 value={productForm.costo === 0 ? '' : productForm.costo}
-                onChange={e =>
+                onChange={(e) =>
                   setProductForm({
                     ...productForm,
                     costo: parseFloat(e.target.value),
@@ -317,17 +312,16 @@ export const Productos = () => {
               <select
                 className="w-full mb-2 p-2 border"
                 value={productForm.categoriaId}
-                onChange={e =>
+                onChange={(e) =>
                   setProductForm({
                     ...productForm,
                     categoriaId: parseInt(e.target.value),
                   })
-                }>
+                }
+              >
                 <option value="">Seleccione una categoría</option>
-                {categorias.map(categoria => (
-                  <option
-                    key={categoria.id}
-                    value={categoria.id}>
+                {categorias.map((categoria) => (
+                  <option key={categoria.id} value={categoria.id}>
                     {categoria.nombre}
                   </option>
                 ))}
@@ -337,12 +331,14 @@ export const Productos = () => {
             <div className="flex justify-end">
               <button
                 onClick={() => setIsUpdateModalOpen(false)}
-                className="mr-2 bg-gray-300 px-4 py-2 rounded">
+                className="mr-2 bg-gray-300 px-4 py-2 rounded"
+              >
                 Cancelar
               </button>
               <button
                 onClick={handleSaveProduct}
-                className="bg-green-500 text-white px-4 py-2 rounded">
+                className="bg-green-500 text-white px-4 py-2 rounded"
+              >
                 Actualizar
               </button>
             </div>
