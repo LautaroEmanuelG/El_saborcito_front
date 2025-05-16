@@ -14,7 +14,6 @@ import { Reportes } from './views/admin/Reportes.tsx';
 import ProtectedCarrito from './components/utils/ProtectCarrito.tsx';
 import { AppProviders } from './providers/AppProviders.tsx';
 
-
 createRoot(document.getElementById('root')!).render(
   <AppProviders>
   <BrowserRouter>
