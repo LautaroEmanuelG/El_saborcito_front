@@ -25,7 +25,7 @@ const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
   const { carrito, addToCarrito, decreaseFromCart } = carritoContext;
 
   useEffect(() => {
-    const productoEnCarrito = carrito.find(item => item.nombre === producto.nombre); 
+    const productoEnCarrito = carrito.find((item) => item.nombre === producto.nombre);
     if (productoEnCarrito) {
       setQuantity(productoEnCarrito.quantity);
     }
@@ -73,13 +73,15 @@ const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
     <div className="flex items-center justify-between space-x-2 sm:space-x-4 rounded-3xl border-t-gray-300 border-2 sm:w-32">
       <button
         onClick={handleDecrease}
-        className="px-3 py-2 bg-gray-300 text-black rounded-full hover:bg-gray-400">
+        className="px-3 py-2 bg-gray-300 text-black rounded-full hover:bg-gray-400"
+      >
         -
       </button>
       <span className="sm:text-lg font-semibold">{cantProd()}</span>
       <button
         onClick={handleIncrease}
-        className="px-3 py-2 bg-primary text-white rounded-full hover:font-bold hover:bg-primary-dark">
+        className="px-3 py-2 bg-primary text-white rounded-full hover:font-bold hover:bg-primary-dark"
+      >
         +
       </button>
     </div>

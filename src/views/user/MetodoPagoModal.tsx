@@ -15,16 +15,11 @@ declare global {
   }
 }
 
-const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({
-  isOpen,
-  onClose,
-  total,
-}) => {
+const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, total }) => {
   if (!isOpen) return null;
 
   const { carrito, clearCarrito } = useCart();
-  const [selectedPaymentMethod, setSelectedPaymentMethod] =
-    useState<string>('');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
   const [selectedCrypto, setSelectedCrypto] = useState<string>('BTC'); // Default to BTC
   const [loading, setLoading] = useState(false);
   const [conversionRate, setConversionRate] = useState<number | null>(null);
@@ -41,8 +36,7 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({
   };
 
   const monedaId =
-    (selectedCrypto && coinMap[selectedCrypto.toLowerCase()]) ||
-    selectedCrypto.toLowerCase();
+    (selectedCrypto && coinMap[selectedCrypto.toLowerCase()]) || selectedCrypto.toLowerCase();
 
   useEffect(() => {
     const fetchConversionRate = async () => {
@@ -57,9 +51,7 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({
         );
 
         if (!response.ok) {
-          throw new Error(
-            `Error al conectar con la API: ${response.statusText}`
-          );
+          throw new Error(`Error al conectar con la API: ${response.statusText}`);
         }
 
         const data = await response.json();
@@ -80,13 +72,9 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({
   }, [selectedCrypto]);
 
   // Cargando mientras obtenemos la tasa de conversión
-  const totalEnCripto = conversionRate
-    ? (total / conversionRate).toFixed(8)
-    : 'Cargando...';
+  const totalEnCripto = conversionRate ? (total / conversionRate).toFixed(8) : 'Cargando...';
 
-  const handlePaymentMethodChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handlePaymentMethodChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedPaymentMethod(event.target.value);
     setSelectedCrypto(''); // Reset crypto selection if switching payment method
   };
@@ -106,26 +94,23 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({
     try {
       if (selectedPaymentMethod === 'MP') {
         // Mercado Pago Payment
-        const productos = carrito.map(producto => ({
+        const productos = carrito.map((producto) => ({
           productoId: producto.id ?? 0,
           cantidad: producto.quantity,
         }));
 
         await createTicket(productos, selectedPaymentMethod);
-        const response = await fetch(
-          'http://localhost:5252/api/mp/crear-preferencia',
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              total: total,
-              userEmail: 'usuario@example.com',
-              descripcionProducto: 'Compra en ecommerce',
-              cantidad: 1,
-              precioUnitario: total,
-            }),
-          }
-        );
+        const response = await fetch('http://localhost:5252/api/mp/crear-preferencia', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            total: total,
+            userEmail: 'usuario@example.com',
+            descripcionProducto: 'Compra en ecommerce',
+            cantidad: 1,
+            precioUnitario: total,
+          }),
+        });
 
         const { init_point } = await response.json();
         if (init_point) {
@@ -138,7 +123,7 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({
       } else if (selectedPaymentMethod === 'CRIPTO') {
         // Coinbase Commerce Crypto Payment
         // Simulate crypto payment success after 2 seconds
-        const productos = carrito.map(producto => ({
+        const productos = carrito.map((producto) => ({
           productoId: producto.id ?? 0,
           cantidad: producto.quantity,
         }));
@@ -153,7 +138,7 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({
         // window.location.href = url; // Redirección a la página de compra exitosa
       } else {
         // Efectivo or other payment methods
-        const productos = carrito.map(producto => ({
+        const productos = carrito.map((producto) => ({
           productoId: producto.id ?? 0,
           cantidad: producto.quantity,
         }));
@@ -178,12 +163,11 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({
       <div className="bg-white rounded-lg mx-6 shadow-lg p-4 relative">
         <button
           className="absolute font-bold top-2 right-2 sm:top-6 sm:right-8 text-negro sm:text-xl hover:text-blanco hover:bg-primary rounded-full w-6 h-6 sm:w-10 sm:h-10"
-          onClick={onClose}>
+          onClick={onClose}
+        >
           X
         </button>
-        <h2 className="text-2xl font-bold mb-4">
-          Selecciona tu método de pago
-        </h2>
+        <h2 className="text-2xl font-bold mb-4">Selecciona tu método de pago</h2>
 
         <div className="flex flex-col space-y-4">
           <label className="flex items-center text-lg">
@@ -220,25 +204,20 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({
 
         {selectedPaymentMethod === 'CRIPTO' && (
           <div className="mt-6">
-            <label
-              htmlFor="crypto-select"
-              className="block text-lg font-medium mb-2">
+            <label htmlFor="crypto-select" className="block text-lg font-medium mb-2">
               Selecciona la moneda:
             </label>
             <select
               id="crypto-select"
               className="border border-gray-300 rounded-lg p-2 w-full"
               value={selectedCrypto}
-              onChange={handleCryptoChange}>
-              <option
-                value=""
-                disabled>
+              onChange={handleCryptoChange}
+            >
+              <option value="" disabled>
                 Selecciona una opción
               </option>
-              {cryptoOptions.map(crypto => (
-                <option
-                  key={crypto}
-                  value={crypto}>
+              {cryptoOptions.map((crypto) => (
+                <option key={crypto} value={crypto}>
                   {crypto}
                 </option>
               ))}
@@ -267,16 +246,17 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({
               selectedPaymentMethod === 'MP'
                 ? 'btn-mercado-pago'
                 : selectedPaymentMethod === 'EFECTIVO'
-                ? 'btn-efectivo'
-                : selectedPaymentMethod === 'CRIPTO'
-                ? 'btn-cripto'
-                : null
+                  ? 'btn-efectivo'
+                  : selectedPaymentMethod === 'CRIPTO'
+                    ? 'btn-cripto'
+                    : null
             }`}
             onClick={handleConfirmPayment}
             disabled={loading}
             style={{
               visibility: selectedPaymentMethod ? 'visible' : 'hidden',
-            }}>
+            }}
+          >
             {selectedPaymentMethod === 'MP' && (
               <img
                 src="/img/iconoMP/iconMp.png"
@@ -304,18 +284,18 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({
                 {selectedPaymentMethod === 'MP'
                   ? 'Pagar con '
                   : selectedPaymentMethod === 'EFECTIVO'
-                  ? 'Pagar con '
-                  : selectedPaymentMethod === 'CRIPTO'
-                  ? 'Pagar con '
-                  : null}
+                    ? 'Pagar con '
+                    : selectedPaymentMethod === 'CRIPTO'
+                      ? 'Pagar con '
+                      : null}
               </span>
               {selectedPaymentMethod === 'MP'
                 ? 'Mercado Pago'
                 : selectedPaymentMethod === 'EFECTIVO'
-                ? 'Efectivo'
-                : selectedPaymentMethod === 'CRIPTO'
-                ? 'Criptomonedas'
-                : null}
+                  ? 'Efectivo'
+                  : selectedPaymentMethod === 'CRIPTO'
+                    ? 'Criptomonedas'
+                    : null}
             </span>
           </button>
         </div>

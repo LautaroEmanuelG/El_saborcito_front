@@ -9,11 +9,7 @@ type Props = {
   onClose: () => void;
 };
 
-export const ModalProducto: React.FC<Props> = ({
-  product = null,
-  isOpen,
-  onClose,
-}) => {
+export const ModalProducto: React.FC<Props> = ({ product = null, isOpen, onClose }) => {
   if (!isOpen || !product) return null;
   const [cantidadProducto, setCantidadProducto] = useState(1);
 
@@ -29,8 +25,8 @@ export const ModalProducto: React.FC<Props> = ({
                 Array.isArray(product.imagen) && product.imagen.length > 0
                   ? product.imagen[0]
                   : Array.isArray(product.imagen) && product.imagen.length > 1
-                  ? product.imagen[1]
-                  : ''
+                    ? product.imagen[1]
+                    : ''
               }
               alt={product.nombre}
               className="object-cover w-full h-full rounded-lg"
@@ -40,9 +36,7 @@ export const ModalProducto: React.FC<Props> = ({
             {/* Detalles del plato */}
             <div className="pl-6 flex flex-col h-72">
               <h2 className="text-2xl font-semibold">{product.nombre}</h2>
-              <p className="text-xl text-gray-500 mt-2">
-                ${product.valor.precio}
-              </p>
+              <p className="text-xl text-gray-500 mt-2">${product.valor.precio}</p>
               <p className="mt-4 text-gray-600">{product.descripcion}</p>
             </div>
 
@@ -59,7 +53,8 @@ export const ModalProducto: React.FC<Props> = ({
               {/* Botones de acción */}
               <button
                 className="absolute px-4 py-2 bg-[#C2BCBC] text-black rounded-md right-56 bottom-4"
-                onClick={onClose}>
+                onClick={onClose}
+              >
                 Volver
               </button>
               <BtnAgregarCarrito

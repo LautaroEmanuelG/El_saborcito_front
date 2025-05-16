@@ -47,7 +47,8 @@ export const BtnAgregarCarrito: React.FC<BtnAgregarCarritoProps> = ({
         width: '200px',
         height: '50px',
       }}
-      onClick={handleAddToCarrito}>
+      onClick={handleAddToCarrito}
+    >
       Agregar al carrito
     </button>
   );

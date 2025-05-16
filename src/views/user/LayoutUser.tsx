@@ -10,9 +10,7 @@ export const LayoutUser = () => {
   };
   return (
     <div className="flex flex-col min-h-screen">
-      <Header
-        onSearch={handleSearch}
-      />
+      <Header onSearch={handleSearch} />
       <main>
         <Outlet />
       </main>

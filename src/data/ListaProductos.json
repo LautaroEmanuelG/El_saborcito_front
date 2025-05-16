@@ -1,122 +1,149 @@
 [
-    {
-        "id": 1,
-        "categoria": "Pizza",
-        "nombre": "Pizza Margherita",
-        "descripcion": "Pizza clásica con tomate, mozzarella y albahaca.",
-        "precio": 8.99,
-        "stock": 20,
-        "ventas": 0,
-        "imagen": ["/img/productos/pizzas/pizzaMargherita.webp","/img/productos/pizzas/pizzaMargherita.jpg"]
-    },
-    {
-        "id": 2,
-        "categoria": "Pizza",
-        "nombre": "Pizza Pepperoni",
-        "descripcion": "Pizza con pepperoni, queso y salsa de tomate.",
-        "precio": 9.99,
-        "stock": 15,
-        "ventas": 0,
-        "imagen": ["/img/productos/pizzas/pizzaPeperoni.webp","/img/productos/pizzas/pizzaPeperoni.jpg"]
-    },
-    {
-        "id": 3,
-        "categoria": "Pizza",
-        "nombre": "Pizza Cuatro Quesos",
-        "descripcion": "Pizza con mezcla de cuatro quesos: mozzarella, gorgonzola, parmesano y ricotta.",
-        "precio": 10.99,
-        "stock": 10,
-        "ventas": 0,
-        "imagen": ["/img/productos/pizzas/pizzaCuatroQuesos.webp","/img/productos/pizzas/pizzaCuatroQuesos.jpg"]
-    },
-    {
-        "id": 4,
-        "categoria": "Pizza",
-        "nombre": "Pizza Hawaiana",
-        "descripcion": "Pizza con jamón, piña y queso.",
-        "precio": 9.50,
-        "stock": 12,
-        "ventas": 0,
-        "imagen": ["/img/productos/pizzas/pizzaHawaiana.webp","/img/productos/pizzas/pizzaHawaiana.jpg"]
-    },
-    {
-        "id": 5,
-        "categoria": "Bebidas",
-        "nombre": "Coca Cola",
-        "descripcion": "Bebida gaseosa refrescante.",
-        "precio": 1.50,
-        "stock": 50,
-        "ventas": 0,
-        "imagen": ["/img/productos/bebidas/cocaCola.webp","/img/productos/bebidas/cocaCola.jpg"]
-    },
-    {
-        "id": 6,
-        "categoria": "Bebidas",
-        "nombre": "Agua Mineral",
-        "descripcion": "Agua mineral sin gas.",
-        "precio": 1.00,
-        "stock": 30,
-        "ventas": 0,
-        "imagen": ["/img/productos/bebidas/aguaMineral.webp","/img/productos/bebidas/aguaMineral.jpg"]
-    },
-    {
-        "id": 7,
-        "categoria": "Bebidas",
-        "nombre": "Jugo de Naranja",
-        "descripcion": "Jugo de naranja natural.",
-        "precio": 2.00,
-        "stock": 25,
-        "ventas": 0,
-        "imagen": ["/img/productos/bebidas/jugoNaranja.webp","/img/productos/bebidas/jugoNaranja.jpg"]
-    },
-    {
-        "id": 8,
-        "categoria": "Bebidas",
-        "nombre": "Cerveza Artesanal",
-        "descripcion": "Cerveza artesanal estilo IPA.",
-        "precio": 3.50,
-        "stock": 15,
-        "ventas": 0,
-        "imagen": ["/img/productos/bebidas/cervezaArtesanal.webp","/img/productos/bebidas/cervezaArtesanal.jpg"]
-    },
-    {
-        "id": 9,
-        "categoria": "Hamburguesas",
-        "nombre": "Hamburguesa Clásica",
-        "descripcion": "Hamburguesa con carne de res, lechuga, tomate y queso.",
-        "precio": 7.50,
-        "stock": 25,
-        "ventas": 0,
-        "imagen": ["/img/productos/hamburguesas/hamburguesaClasica.webp","/img/productos/hamburguesas/hamburguesaClasica.jpg"]
-    },
-    {
-        "id": 10,
-        "categoria": "Hamburguesas",
-        "nombre": "Hamburguesa con Queso",
-        "descripcion": "Hamburguesa con carne de res, queso cheddar y cebolla.",
-        "precio": 8.00,
-        "stock": 20,
-        "ventas": 0,
-        "imagen": ["/img/productos/hamburguesas/hamburguesaConQueso.webp","/img/productos/hamburguesas/hamburguesaConQueso.jpg"]
-    },
-    {
-        "id": 11,
-        "categoria": "Hamburguesas",
-        "nombre": "Hamburguesa BBQ",
-        "descripcion": "Hamburguesa con carne de res, queso, cebolla caramelizada y salsa BBQ.",
-        "precio": 8.50,
-        "stock": 18,
-        "ventas": 0,
-        "imagen": ["/img/productos/hamburguesas/hamburguesaBbq.webp","/img/productos/hamburguesas/hamburguesaBbq.jpg"]
-    },
-    {
-        "id": 12,
-        "categoria": "Hamburguesas",
-        "nombre": "Hamburguesa Vegetariana",
-        "descripcion": "Hamburguesa con base de garbanzos, lechuga, tomate y guacamole.",
-        "precio": 7.00,
-        "stock": 22,
-        "ventas": 0,
-        "imagen": ["/img/productos/hamburguesas/hamburguesaVegetariana.webp","/img/productos/hamburguesas/hamburguesaVegetariana.jpg"]
-    }
+  {
+    "id": 1,
+    "categoria": "Pizza",
+    "nombre": "Pizza Margherita",
+    "descripcion": "Pizza clásica con tomate, mozzarella y albahaca.",
+    "precio": 8.99,
+    "stock": 20,
+    "ventas": 0,
+    "imagen": [
+      "/img/productos/pizzas/pizzaMargherita.webp",
+      "/img/productos/pizzas/pizzaMargherita.jpg"
+    ]
+  },
+  {
+    "id": 2,
+    "categoria": "Pizza",
+    "nombre": "Pizza Pepperoni",
+    "descripcion": "Pizza con pepperoni, queso y salsa de tomate.",
+    "precio": 9.99,
+    "stock": 15,
+    "ventas": 0,
+    "imagen": [
+      "/img/productos/pizzas/pizzaPeperoni.webp",
+      "/img/productos/pizzas/pizzaPeperoni.jpg"
+    ]
+  },
+  {
+    "id": 3,
+    "categoria": "Pizza",
+    "nombre": "Pizza Cuatro Quesos",
+    "descripcion": "Pizza con mezcla de cuatro quesos: mozzarella, gorgonzola, parmesano y ricotta.",
+    "precio": 10.99,
+    "stock": 10,
+    "ventas": 0,
+    "imagen": [
+      "/img/productos/pizzas/pizzaCuatroQuesos.webp",
+      "/img/productos/pizzas/pizzaCuatroQuesos.jpg"
+    ]
+  },
+  {
+    "id": 4,
+    "categoria": "Pizza",
+    "nombre": "Pizza Hawaiana",
+    "descripcion": "Pizza con jamón, piña y queso.",
+    "precio": 9.5,
+    "stock": 12,
+    "ventas": 0,
+    "imagen": [
+      "/img/productos/pizzas/pizzaHawaiana.webp",
+      "/img/productos/pizzas/pizzaHawaiana.jpg"
+    ]
+  },
+  {
+    "id": 5,
+    "categoria": "Bebidas",
+    "nombre": "Coca Cola",
+    "descripcion": "Bebida gaseosa refrescante.",
+    "precio": 1.5,
+    "stock": 50,
+    "ventas": 0,
+    "imagen": ["/img/productos/bebidas/cocaCola.webp", "/img/productos/bebidas/cocaCola.jpg"]
+  },
+  {
+    "id": 6,
+    "categoria": "Bebidas",
+    "nombre": "Agua Mineral",
+    "descripcion": "Agua mineral sin gas.",
+    "precio": 1.0,
+    "stock": 30,
+    "ventas": 0,
+    "imagen": ["/img/productos/bebidas/aguaMineral.webp", "/img/productos/bebidas/aguaMineral.jpg"]
+  },
+  {
+    "id": 7,
+    "categoria": "Bebidas",
+    "nombre": "Jugo de Naranja",
+    "descripcion": "Jugo de naranja natural.",
+    "precio": 2.0,
+    "stock": 25,
+    "ventas": 0,
+    "imagen": ["/img/productos/bebidas/jugoNaranja.webp", "/img/productos/bebidas/jugoNaranja.jpg"]
+  },
+  {
+    "id": 8,
+    "categoria": "Bebidas",
+    "nombre": "Cerveza Artesanal",
+    "descripcion": "Cerveza artesanal estilo IPA.",
+    "precio": 3.5,
+    "stock": 15,
+    "ventas": 0,
+    "imagen": [
+      "/img/productos/bebidas/cervezaArtesanal.webp",
+      "/img/productos/bebidas/cervezaArtesanal.jpg"
+    ]
+  },
+  {
+    "id": 9,
+    "categoria": "Hamburguesas",
+    "nombre": "Hamburguesa Clásica",
+    "descripcion": "Hamburguesa con carne de res, lechuga, tomate y queso.",
+    "precio": 7.5,
+    "stock": 25,
+    "ventas": 0,
+    "imagen": [
+      "/img/productos/hamburguesas/hamburguesaClasica.webp",
+      "/img/productos/hamburguesas/hamburguesaClasica.jpg"
+    ]
+  },
+  {
+    "id": 10,
+    "categoria": "Hamburguesas",
+    "nombre": "Hamburguesa con Queso",
+    "descripcion": "Hamburguesa con carne de res, queso cheddar y cebolla.",
+    "precio": 8.0,
+    "stock": 20,
+    "ventas": 0,
+    "imagen": [
+      "/img/productos/hamburguesas/hamburguesaConQueso.webp",
+      "/img/productos/hamburguesas/hamburguesaConQueso.jpg"
+    ]
+  },
+  {
+    "id": 11,
+    "categoria": "Hamburguesas",
+    "nombre": "Hamburguesa BBQ",
+    "descripcion": "Hamburguesa con carne de res, queso, cebolla caramelizada y salsa BBQ.",
+    "precio": 8.5,
+    "stock": 18,
+    "ventas": 0,
+    "imagen": [
+      "/img/productos/hamburguesas/hamburguesaBbq.webp",
+      "/img/productos/hamburguesas/hamburguesaBbq.jpg"
+    ]
+  },
+  {
+    "id": 12,
+    "categoria": "Hamburguesas",
+    "nombre": "Hamburguesa Vegetariana",
+    "descripcion": "Hamburguesa con base de garbanzos, lechuga, tomate y guacamole.",
+    "precio": 7.0,
+    "stock": 22,
+    "ventas": 0,
+    "imagen": [
+      "/img/productos/hamburguesas/hamburguesaVegetariana.webp",
+      "/img/productos/hamburguesas/hamburguesaVegetariana.jpg"
+    ]
+  }
 ]

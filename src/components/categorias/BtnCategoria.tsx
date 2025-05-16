@@ -7,12 +7,7 @@ type Props = {
   setTermAnterior: (term: string) => void;
 };
 
-export const BtnCategoria = ({
-  category,
-  onSearch,
-  termAnterior,
-  setTermAnterior,
-}: Props) => {
+export const BtnCategoria = ({ category, onSearch, termAnterior, setTermAnterior }: Props) => {
   const handleCategoryClick = (categoriaNombre: string) => {
     setTermAnterior(categoriaNombre);
     if (categoriaNombre === termAnterior) {
@@ -29,7 +24,8 @@ export const BtnCategoria = ({
     <button
       key={category.id}
       onClick={() => handleCategoryClick(category.nombre)}
-      className="text-lg sm:text-xl font-bold hover:text-primary transition-colors">
+      className="text-lg sm:text-xl font-bold hover:text-primary transition-colors"
+    >
       {category.nombre}
     </button>
   );

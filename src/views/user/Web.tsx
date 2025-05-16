@@ -12,9 +12,7 @@ import { useSearch } from '../../hooks/useSearch';
 
 export const Web = () => {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
-  const [productoModal, setProductoModal] = useState<ProductoValor | null>(
-    null
-  );
+  const [productoModal, setProductoModal] = useState<ProductoValor | null>(null);
   const [isModalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
@@ -47,28 +45,18 @@ export const Web = () => {
   }
   const { carrito } = carritoContext;
   // Calculate total items in the cart
-  const totalItems = carrito.reduce(
-    (total, product) => total + product.quantity,
-    0
-  );
+  const totalItems = carrito.reduce((total, product) => total + product.quantity, 0);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 w-full">
       <Header onSearch={handleSearch} />
       <div className="container mx-auto px-4 md:px-6 py-4 flex flex-col min-h-screen w-full">
-        <ListaCategorias
-          categorias={categorias}
-          onSearch={handleSearch}
-        />
+        <ListaCategorias categorias={categorias} onSearch={handleSearch} />
         {searchTerm && filteredProducts.length === 0 ? (
-          <p className="text-center text-xl">
-            No se encontraron productos para "{searchTerm}"
-          </p>
+          <p className="text-center text-xl">No se encontraron productos para "{searchTerm}"</p>
         ) : (
           <>
-            {searchTerm ? null : (
-              <ActiveSlider setProductoModal={setProductoModal} />
-            )}
+            {searchTerm ? null : <ActiveSlider setProductoModal={setProductoModal} />}
             <ListaProductos
               productos={filteredProducts}
               setProductoModal={setProductoModal}
@@ -81,9 +69,7 @@ export const Web = () => {
           isOpen={isModalOpen}
           onClose={handleCloseModal}
         />
-        {totalItems > 0 ? (
-          <BtnFlotanteCarrito productCount={totalItems} />
-        ) : null}
+        {totalItems > 0 ? <BtnFlotanteCarrito productCount={totalItems} /> : null}
       </div>
     </div>
   );

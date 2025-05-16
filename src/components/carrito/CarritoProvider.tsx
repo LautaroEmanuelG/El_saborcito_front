@@ -28,7 +28,7 @@ const carritoReducer = (state: State, action: any): State => {
   switch (action.type) {
     case 'ADD_TO_CARRITO':
       const existingProductIndex = state.carrito.findIndex(
-        item => item.id === action.payload.producto.id
+        (item) => item.id === action.payload.producto.id
       );
 
       if (existingProductIndex !== -1) {
@@ -47,14 +47,10 @@ const carritoReducer = (state: State, action: any): State => {
     case 'REMOVE_FROM_CARRITO':
       return {
         ...state,
-        carrito: state.carrito.filter(
-          product => product.nombre !== action.payload.nombre
-        ),
+        carrito: state.carrito.filter((product) => product.nombre !== action.payload.nombre),
       };
     case 'DECREASE_FROM_CARRITO':
-      const productIndex = state.carrito.findIndex(
-        product => product.id === action.payload.id
-      );
+      const productIndex = state.carrito.findIndex((product) => product.id === action.payload.id);
       if (productIndex !== -1) {
         const updatedCarrito = [...state.carrito];
         if (updatedCarrito[productIndex].quantity > 1) {
@@ -108,7 +104,8 @@ export const CarritoProvider: React.FC<{ children: ReactNode }> = ({ children })
         removeFromCart,
         decreaseFromCart,
         clearCarrito,
-      }}>
+      }}
+    >
       {children}
     </CarritoContext.Provider>
   );

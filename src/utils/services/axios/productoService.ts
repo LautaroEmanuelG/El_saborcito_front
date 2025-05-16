@@ -1,12 +1,12 @@
-import axiosInstance from './axiosConfig';  // Importar la instancia preconfigurada
+import axiosInstance from './axiosConfig'; // Importar la instancia preconfigurada
 
 const API_BASE_URL = '/productos';
 
 // Función para obtener las rutas de las imágenes en base a la categoría y el nombre del producto
 const addImagesToProduct = (productoNombre: string, productoCategoria: string) => {
   return [
-    `/img/productos/${productoCategoria.toLowerCase()}/${productoNombre.replace(/\s+/g, "").toLowerCase()}.webp`,
-    `/img/productos/${productoCategoria.toLowerCase()}/${productoNombre.replace(/\s+/g, "").toLowerCase()}.jpg`
+    `/img/productos/${productoCategoria.toLowerCase()}/${productoNombre.replace(/\s+/g, '').toLowerCase()}.webp`,
+    `/img/productos/${productoCategoria.toLowerCase()}/${productoNombre.replace(/\s+/g, '').toLowerCase()}.jpg`,
   ];
 };
 
@@ -25,7 +25,9 @@ export const getAllProductos = async () => {
 
 // Método para obtener productos por categoría y añadirles las imágenes
 export const getProductosByCategoria = async (categoriaId: number) => {
-  const response = await axiosInstance.get(`${API_BASE_URL}/categoria`, { params: { id: categoriaId } });
+  const response = await axiosInstance.get(`${API_BASE_URL}/categoria`, {
+    params: { id: categoriaId },
+  });
   const productos = response.data;
 
   // Añadir las rutas de las imágenes a cada producto

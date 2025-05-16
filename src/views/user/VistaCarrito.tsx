@@ -22,32 +22,30 @@ const VistaCarrito = () => {
               {carrito.map((producto, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between border-t border-gray-300 py-4">
+                  className="flex items-center justify-between border-t border-gray-300 py-4"
+                >
                   <div className="flex gap-6">
                     {/* Imagen del producto */}
                     <picture className="hidden md:block w-1/2 h-auto object-cover rounded-lg">
                       <source type="image/webp" />
                       <img
                         src={
-                          Array.isArray(producto.imagen) &&
-                          producto.imagen.length > 0
+                          Array.isArray(producto.imagen) && producto.imagen.length > 0
                             ? producto.imagen[0]
-                            : Array.isArray(producto.imagen) &&
-                              producto.imagen.length > 1
-                            ? producto.imagen[1]
-                            : ''
+                            : Array.isArray(producto.imagen) && producto.imagen.length > 1
+                              ? producto.imagen[1]
+                              : ''
                         }
                         alt={producto.nombre}
                         className=" w-20 h-20 object-cover rounded-lg"
                       />
                     </picture>
                     <div className="w-full">
-                      <h3 className="text-md md:text-xl  font-semibold">
-                        {producto.nombre}
-                      </h3>
+                      <h3 className="text-md md:text-xl  font-semibold">{producto.nombre}</h3>
                       <button
                         className="text-lg md:text-xl  text-primary hover:underline"
-                        onClick={() => removeFromCart(producto)}>
+                        onClick={() => removeFromCart(producto)}
+                      >
                         Eliminar
                       </button>
                     </div>
@@ -71,13 +69,9 @@ const VistaCarrito = () => {
 
             {/* Barra de Envío: Retiro en Local */}
             <div className="flex justify-between items-center py-2 text-primary mt-4">
-              <span className="font-semibold text-black text-lg md:text-xl ">
-                Envío
-              </span>
+              <span className="font-semibold text-black text-lg md:text-xl ">Envío</span>
               <div className="flex items-center w-full ml-4">
-                <span className="mr-2 text-lg md:text-xl  text-primary">
-                  Retiro en Local
-                </span>
+                <span className="mr-2 text-lg md:text-xl  text-primary">Retiro en Local</span>
                 <div className="border-t-4 border-primary flex-grow mx-2"></div>
                 <IconoLocation />
               </div>
@@ -90,19 +84,13 @@ const VistaCarrito = () => {
             <div className="flex-grow">
               <div className="flex justify-between mt-2 text-lg sm:text-2xl">
                 <span>
-                  Productos (
-                  {carrito.reduce(
-                    (total, producto) => total + producto.quantity,
-                    0
-                  )}
-                  )
+                  Productos ({carrito.reduce((total, producto) => total + producto.quantity, 0)})
                 </span>
                 <span>
                   $
                   {carrito
                     .reduce(
-                      (total, producto) =>
-                        total + producto.valor.precio * producto.quantity,
+                      (total, producto) => total + producto.valor.precio * producto.quantity,
                       0
                     )
                     .toFixed(2)}
@@ -118,11 +106,7 @@ const VistaCarrito = () => {
               <span>
                 $
                 {carrito
-                  .reduce(
-                    (total, producto) =>
-                      total + producto.valor.precio * producto.quantity,
-                    0
-                  )
+                  .reduce((total, producto) => total + producto.valor.precio * producto.quantity, 0)
                   .toFixed(2)}
               </span>
             </div>
@@ -130,7 +114,8 @@ const VistaCarrito = () => {
             {carrito.length > 0 && (
               <button
                 onClick={() => setMetodoPagoOpen(true)}
-                className="mt-4 w-full py-2 bg-primary text-lg md:text-xl  font-semibold text-white rounded-lg text-center">
+                className="mt-4 w-full py-2 bg-primary text-lg md:text-xl  font-semibold text-white rounded-lg text-center"
+              >
                 Comprar
               </button>
             )}
@@ -142,8 +127,7 @@ const VistaCarrito = () => {
           isOpen={isMetodoPagoOpen}
           onClose={() => setMetodoPagoOpen(false)}
           total={carrito.reduce(
-            (total, producto) =>
-              total + producto.valor.precio * producto.quantity,
+            (total, producto) => total + producto.valor.precio * producto.quantity,
             0
           )}
         />
