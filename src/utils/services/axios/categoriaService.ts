@@ -3,10 +3,7 @@ import axiosInstance from './axiosConfig'; // Importar la instancia preconfigura
 const API_BASE_URL = '/categorias';
 
 export const saveCategoria = async (categoriaData: any) => {
-  const response = await axiosInstance.post(
-    `${API_BASE_URL}/guardar`,
-    categoriaData
-  );
+  const response = await axiosInstance.post(`${API_BASE_URL}/guardar`, categoriaData);
   return response.data;
 };
 

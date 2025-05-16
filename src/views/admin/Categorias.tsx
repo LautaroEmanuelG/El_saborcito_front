@@ -5,10 +5,7 @@ import {
   deleteCategoria,
 } from '../../utils/services/axios/categoriaService';
 import { Categoria, Producto } from '../../utils/types';
-import {
-  getProductosByCategoria,
-  deleteProduct,
-} from '../../utils/services/axios/productoService';
+import { getProductosByCategoria, deleteProduct } from '../../utils/services/axios/productoService';
 
 export const Categorias = () => {
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
@@ -23,9 +20,7 @@ export const Categorias = () => {
     nombre: '',
     descripcion: '',
   });
-  const [selectedCategoria, setSelectedCategoria] = useState<Categoria | null>(
-    null
-  );
+  const [selectedCategoria, setSelectedCategoria] = useState<Categoria | null>(null);
   const [productos, setProductos] = useState<Producto[]>([]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
@@ -48,9 +43,7 @@ export const Categorias = () => {
   const handleDeleteCategoria = async (id: number) => {
     const productosData = await getProductosByCategoria(id);
     setProductos(productosData);
-    setSelectedCategoria(
-      categorias.find(categoria => categoria.id === id) || null
-    );
+    setSelectedCategoria(categorias.find((categoria) => categoria.id === id) || null);
     setIsDeleteModalOpen(true);
   };
 
@@ -90,27 +83,25 @@ export const Categorias = () => {
     <div className="p-4 w-full">
       <h2 className="text-3xl font-bold mb-4">Gestor de Categorias</h2>
 
-      <button
-        onClick={openCreateModal}
-        className="mr-4 bg-primary/90 text-white px-4 py-2 rounded">
+      <button onClick={openCreateModal} className="mr-4 bg-primary/90 text-white px-4 py-2 rounded">
         Crear Categoría
       </button>
 
       <article className="w-full mb-4">
-        {categorias.map(categoria => (
-          <div
-            key={categoria.id}
-            className="p-2 border my-2 flex justify-between items-center">
+        {categorias.map((categoria) => (
+          <div key={categoria.id} className="p-2 border my-2 flex justify-between items-center">
             <span>{categoria.nombre}</span>
             <div>
               <button
                 onClick={() => openUpdateModal(categoria)}
-                className="bg-blue-500 text-white px-4 py-2 rounded mr-2">
+                className="bg-blue-500 text-white px-4 py-2 rounded mr-2"
+              >
                 Actualizar
               </button>
               <button
                 onClick={() => handleDeleteCategoria(categoria.id ?? 0)}
-                className="bg-red-500 text-white px-4 py-2 rounded">
+                className="bg-red-500 text-white px-4 py-2 rounded"
+              >
                 Eliminar
               </button>
             </div>
@@ -131,16 +122,14 @@ export const Categorias = () => {
                 placeholder="Nombre"
                 className="w-full mb-2 p-2 border"
                 value={categoryForm.nombre}
-                onChange={e =>
-                  setCategoryForm({ ...categoryForm, nombre: e.target.value })
-                }
+                onChange={(e) => setCategoryForm({ ...categoryForm, nombre: e.target.value })}
               />
               <input
                 type="text"
                 placeholder="Descripción"
                 className="w-full mb-2 p-2 border"
                 value={categoryForm.descripcion}
-                onChange={e =>
+                onChange={(e) =>
                   setCategoryForm({
                     ...categoryForm,
                     descripcion: e.target.value,
@@ -154,12 +143,14 @@ export const Categorias = () => {
                   setIsCategoryModalOpen(false);
                   setIsUpdateModalOpen(false);
                 }}
-                className="mr-2 bg-gray-300 px-4 py-2 rounded">
+                className="mr-2 bg-gray-300 px-4 py-2 rounded"
+              >
                 Cancelar
               </button>
               <button
                 onClick={handleSaveCategoria}
-                className="bg-green-500 text-white px-4 py-2 rounded">
+                className="bg-green-500 text-white px-4 py-2 rounded"
+              >
                 {isCategoryModalOpen ? 'Crear' : 'Actualizar'}
               </button>
             </div>
@@ -174,19 +165,21 @@ export const Categorias = () => {
             <h2 className="text-2xl font-bold mb-4">Eliminar Categoría</h2>
             <p>¿Desea eliminar esta categoría y todos sus productos?</p>
             <ul className="list-disc pl-4">
-              {productos.map(producto => (
+              {productos.map((producto) => (
                 <li key={producto.id}>{producto.nombre}</li>
               ))}
             </ul>
             <div className="flex justify-end mt-4">
               <button
                 onClick={() => setIsDeleteModalOpen(false)}
-                className="mr-2 bg-gray-300 px-4 py-2 rounded">
+                className="mr-2 bg-gray-300 px-4 py-2 rounded"
+              >
                 Cancelar
               </button>
               <button
                 onClick={confirmDeleteCategoria}
-                className="bg-red-500 text-white px-4 py-2 rounded">
+                className="bg-red-500 text-white px-4 py-2 rounded"
+              >
                 Eliminar
               </button>
             </div>

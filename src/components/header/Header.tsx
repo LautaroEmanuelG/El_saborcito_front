@@ -23,10 +23,7 @@ export const Header = ({ onSearch }: Props) => {
     throw new Error('Header must be used within a CarritoProvider');
   }
   const { carrito } = carritoContext;
-  const totalItems = carrito.reduce(
-    (total, product) => total + product.quantity,
-    0
-  );
+  const totalItems = carrito.reduce((total, product) => total + product.quantity, 0);
 
   const toggleLoginModal = () => {
     setIsLoginOpen(!isLoginOpen);
@@ -40,11 +37,10 @@ export const Header = ({ onSearch }: Props) => {
     <>
       {/* Ocultar el header cuando el menú está abierto */}
       <header
-        className={`bg-primary sticky top-0 z-50 flex w-full text-primary-foreground py-4 shadow-md `}>
+        className={`bg-primary sticky top-0 z-50 flex w-full text-primary-foreground py-4 shadow-md `}
+      >
         <div className="container mx-auto flex items-center justify-between px-4 md:px-6 gap-12">
-          <Link
-            to="/"
-            className="flex items-center gap-4">
+          <Link to="/" className="flex items-center gap-4">
             <IconoLogoSaborcito />
             <span className="text-2xl font-bold text-white">El Saborcito</span>
           </Link>
@@ -59,7 +55,8 @@ export const Header = ({ onSearch }: Props) => {
               className="relative flex items-center justify-center gap-4 w-10 h-10 rounded-full hover:bg-blanco"
               onMouseEnter={() => setHoverLogin(true)}
               onMouseLeave={() => setHoverLogin(false)}
-              onClick={toggleLoginModal}>
+              onClick={toggleLoginModal}
+            >
               <IconoLoggin color={hoverLogin ? '#E11D48' : 'white'} />
             </button>
 
@@ -68,7 +65,8 @@ export const Header = ({ onSearch }: Props) => {
                 to="/carrito"
                 className="relative flex items-center justify-center gap-4 w-10 h-10 rounded-full hover:bg-blanco"
                 onMouseEnter={() => setHoverCarrito(true)}
-                onMouseLeave={() => setHoverCarrito(false)}>
+                onMouseLeave={() => setHoverCarrito(false)}
+              >
                 <IconoCarrito color={hoverCarrito ? '#E11D48' : 'white'} />
                 <div className="absolute text-blanco -top-3 -right-3 bg-primary text-primary-foreground rounded-full px-2 py-1 text-xs font-bold hover:bg-blanco hover:text-primary ">
                   {totalItems}
@@ -77,55 +75,49 @@ export const Header = ({ onSearch }: Props) => {
             ) : null}
           </div>
 
-          <button
-            onClick={toggleMenu}
-            className="md:hidden focus:outline-none z-20">
+          <button onClick={toggleMenu} className="md:hidden focus:outline-none z-20">
             {menuOpen ? null : <IconoMenuHamburguesa />}
           </button>
         </div>
       </header>
 
-      <LoginModal
-        isOpen={isLoginOpen}
-        onClose={toggleLoginModal}
-      />
+      <LoginModal isOpen={isLoginOpen} onClose={toggleLoginModal} />
 
       <div
         className={`fixed top-0 left-0 h-full bg-primary text-white transition-transform duration-300 ease-in-out z-20 ${
           menuOpen ? 'translate-x-0' : '-translate-x-full'
-        } w-[265px] z-10`}>
+        } w-[265px] z-10`}
+      >
         <div className="flex justify-between items-center p-4">
-          <Link
-            to="/"
-            className="flex items-center gap-4"
-            onClick={toggleMenu}>
+          <Link to="/" className="flex items-center gap-4" onClick={toggleMenu}>
             <IconoLogoSaborcito />
             <span className="text-2xl font-bold text-white">El Saborcito</span>
           </Link>
           <button
             className="absolute font-bold top-2 right-2 text-white text-xl hover:text-blanco hover:bg-primary rounded-full w-10 h-10"
-            onClick={toggleMenu}>
+            onClick={toggleMenu}
+          >
             X
           </button>
         </div>
 
-        <div className="p-4">
-          {onSearch && <Buscador onSearch={onSearch} />}
-        </div>
+        <div className="p-4">{onSearch && <Buscador onSearch={onSearch} />}</div>
 
         {/* Iconos solo se muestran si el menú está abierto */}
         {menuOpen && (
           <div className="p-4 border-t border-white mt-6 flex justify-around">
             <button
               className="relative flex items-center justify-center gap-4 w-10 h-10 rounded-full hover:bg-blanco"
-              onClick={toggleLoginModal}>
+              onClick={toggleLoginModal}
+            >
               <IconoLoggin color="white" />
             </button>
 
             {totalItems > 0 ? (
               <Link
                 to="/carrito"
-                className="relative flex items-center justify-center gap-4 w-10 h-10 rounded-full hover:bg-blanco">
+                className="relative flex items-center justify-center gap-4 w-10 h-10 rounded-full hover:bg-blanco"
+              >
                 <IconoCarrito color="white" />
                 <div className="absolute text-blanco -top-3 -right-3 bg-primary text-primary-foreground rounded-full px-2 py-1 text-xs font-bold hover:bg-blanco hover:text-primary">
                   {totalItems}
@@ -137,9 +129,7 @@ export const Header = ({ onSearch }: Props) => {
       </div>
 
       {menuOpen && (
-        <div
-          onClick={toggleMenu}
-          className="fixed inset-0 bg-black opacity-50 z-10"></div>
+        <div onClick={toggleMenu} className="fixed inset-0 bg-black opacity-50 z-10"></div>
       )}
     </>
   );

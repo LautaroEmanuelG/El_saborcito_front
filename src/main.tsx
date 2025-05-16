@@ -16,84 +16,77 @@ import { AppProviders } from './providers/AppProviders.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <AppProviders>
-  <BrowserRouter>
-    <Routes>
-      <Route
-        path="/"
-        element={
-          <CarritoProvider>
-            <Web />
-          </CarritoProvider>
-        }
-      />
-      <Route
-        path="/carrito"
-        element={
-          <CarritoProvider>
-            <ProtectedCarrito>
-              <VistaCarrito />
-            </ProtectedCarrito>
-          </CarritoProvider>
-        }
-      />
-      <Route
-        path="/admin"
-        element={
-          <ProtectedRoute>
-            <LayoutAdmin />
-          </ProtectedRoute>
-        }>
+    <BrowserRouter>
+      <Routes>
         <Route
-          path="historial"
+          path="/"
           element={
-            <ProtectedRoute>
-              <Historial />
-            </ProtectedRoute>
+            <CarritoProvider>
+              <Web />
+            </CarritoProvider>
           }
         />
         <Route
-          path="productos"
+          path="/carrito"
           element={
-            <ProtectedRoute>
-              <Productos />
-            </ProtectedRoute>
+            <CarritoProvider>
+              <ProtectedCarrito>
+                <VistaCarrito />
+              </ProtectedCarrito>
+            </CarritoProvider>
           }
         />
         <Route
-          path="categorias"
+          path="/admin"
           element={
             <ProtectedRoute>
-              <Categorias />
+              <LayoutAdmin />
             </ProtectedRoute>
           }
-        />
-        <Route
-          path="reportes"
-          element={
-            <ProtectedRoute>
-              <Reportes />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="control"
-          element={
-            <ProtectedRoute>
-              <Control />
-            </ProtectedRoute>
-          }
-        />
-      </Route>
-      <Route
-        path="*"
-        element={
-          <Navigate
-            replace
-            to="/"
+        >
+          <Route
+            path="historial"
+            element={
+              <ProtectedRoute>
+                <Historial />
+              </ProtectedRoute>
+            }
           />
-        }
-      />
-    </Routes>
-  </BrowserRouter>
+          <Route
+            path="productos"
+            element={
+              <ProtectedRoute>
+                <Productos />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="categorias"
+            element={
+              <ProtectedRoute>
+                <Categorias />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="reportes"
+            element={
+              <ProtectedRoute>
+                <Reportes />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="control"
+            element={
+              <ProtectedRoute>
+                <Control />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
+        <Route path="*" element={<Navigate replace to="/" />} />
+      </Routes>
+    </BrowserRouter>
   </AppProviders>
 );

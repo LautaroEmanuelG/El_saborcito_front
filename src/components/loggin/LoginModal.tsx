@@ -70,22 +70,23 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
 
   const sendEmail = () => {
     const templateParams = {
-      to_name: "Profesor",
-      message: "Intentos fallidos de inicio de sesión en la aplicación.",
+      to_name: 'Profesor',
+      message: 'Intentos fallidos de inicio de sesión en la aplicación.',
     };
 
-    emailjs.send(
-      "service_knm7iv4",  // tu service ID
-      "template_8m66sol",  // tu template ID
-      templateParams,
-      "5YeDDYePK2xnzByFN"  // tu public key (user ID)
-    )
-    .then((response) => {
-      console.log("Correo enviado", response);
-    })
-    .catch((error) => {
-      console.error("Error al enviar correo", error);
-    });
+    emailjs
+      .send(
+        'service_knm7iv4', // tu service ID
+        'template_8m66sol', // tu template ID
+        templateParams,
+        '5YeDDYePK2xnzByFN' // tu public key (user ID)
+      )
+      .then((response) => {
+        console.log('Correo enviado', response);
+      })
+      .catch((error) => {
+        console.error('Error al enviar correo', error);
+      });
   };
 
   return (
@@ -93,14 +94,13 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
       <div className="bg-white rounded-lg w-[700px] h-[370px] shadow-lg relative p-8">
         <button
           className="absolute font-bold top-6 right-8 text-negro text-xl hover:text-blanco hover:bg-primary rounded-full w-10 h-10"
-          onClick={onClose}>
+          onClick={onClose}
+        >
           X
         </button>
         <h2 className="text-2xl font-bold mb-6">Iniciar Sesión</h2>
         <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2">
-            Usuario
-          </label>
+          <label className="block text-gray-700 text-sm font-bold mb-2">Usuario</label>
           <input
             type="text"
             placeholder="Ingresa tu usuario"
@@ -111,9 +111,7 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
           />
         </div>
         <div className="mb-6">
-          <label className="block text-gray-700 text-sm font-bold mb-2">
-            Contraseña
-          </label>
+          <label className="block text-gray-700 text-sm font-bold mb-2">Contraseña</label>
           <input
             type="password"
             placeholder="Ingresa tu contraseña"
@@ -127,8 +125,9 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
         <button
           className={`w-full bg-[#E11D48] text-white py-2 rounded-lg cursor-pointer ${isBlocked ? 'opacity-50' : ''}`}
           onClick={handleLogin}
-          disabled={isBlocked}>
-            Ingresar {isBlocked && <span className="text-white mb-4">{blockTime}</span>}
+          disabled={isBlocked}
+        >
+          Ingresar {isBlocked && <span className="text-white mb-4">{blockTime}</span>}
         </button>
       </div>
     </div>
