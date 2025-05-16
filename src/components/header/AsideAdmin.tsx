@@ -1,6 +1,42 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import IconoMenuHamburguesa from '../iconos/IconoMenuHamburguesa';
+import CollapsibleNavItem from './CollapsibleNavItem'; // Importar el nuevo componente
+
+export interface SubItem {
+  to: string;
+  label: string;
+  hasActions?: boolean;
+}
+
+export interface NavItemStructure {
+  title: string;
+  subItems: SubItem[];
+}
+
+// Datos para la navegación del aside
+const NAV_DATA: NavItemStructure[] = [
+  {
+    title: 'Estadística e Informes',
+    subItems: [
+      { to: '/admin/historial', label: 'Control' },
+      { to: '/admin/usuarios', label: 'Usuarios', hasActions: true },
+    ],
+  },
+  {
+    title: 'Gestión de Contenido',
+    subItems: [
+      { to: '/admin/productos', label: 'Productos', hasActions: true },
+      { to: '/admin/categorias', label: 'Categorías', hasActions: true },
+    ],
+  },
+  {
+    title: 'Finanzas',
+    subItems: [
+      { to: '/admin/reportes', label: 'Reportes' },
+      { to: '/admin/control', label: 'Libros Contables' },
+    ],
+  },
+];
 
 export const AsideAdmin = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,44 +52,26 @@ export const AsideAdmin = () => {
   return (
     <>
       <button
-        className="absolute top-3 right-0 md:hidden text-white text-3xl p-4"
+        className="fixed top-4 right-4 md:hidden text-negro text-2xl p-2 z-30 bg-blanco rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-primary"
         onClick={toggleMenu}
+        aria-label="Abrir menú"
+        aria-expanded={isOpen}
       >
         <IconoMenuHamburguesa />
       </button>
-      <nav
-        className={`bg-primary text-white ${
-          isOpen ? 'block' : 'hidden'
-        } md:flex text-2xl font-bold shrink-0 w-[265px]`}
+      <aside
+        className={`bg-primary text-negro transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 transition-transform duration-300 ease-in-out md:flex flex-col shrink-0 w-72 h-full min-h-screen fixed md:sticky top-0 shadow-xl md:shadow-none z-20 p-4 pt-6 overflow-y-auto`}
       >
-        <ul className="space-y-4 p-4 mt-6">
-          <li>
-            <Link to="/admin/historial" onClick={closeMenu}>
-              Control
-            </Link>
-          </li>
-          <li>
-            <Link to="/admin/productos" onClick={closeMenu}>
-              Productos
-            </Link>
-          </li>
-          <li>
-            <Link to="/admin/categorias" onClick={closeMenu}>
-              Categorias
-            </Link>
-          </li>
-          <li>
-            <Link to="/admin/reportes" onClick={closeMenu}>
-              Reportes
-            </Link>
-          </li>
-          <li>
-            <Link to="/admin/control" onClick={closeMenu}>
-              Libros Contables
-            </Link>
-          </li>
+        <ul className="mt-12 md:mt-0">
+          {NAV_DATA.map((navItem) => (
+            <CollapsibleNavItem key={navItem.title} itemData={navItem} onLinkClick={closeMenu} />
+          ))}
         </ul>
-      </nav>
+      </aside>
+      {/* Overlay for mobile menu */}
+      {isOpen && (
+        <div className="fixed inset-0 bg-black opacity-50 md:hidden z-10" onClick={closeMenu}></div>
+      )}
     </>
   );
 };
