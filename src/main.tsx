@@ -13,7 +13,7 @@ import { Categorias } from './views/admin/Categorias.tsx';
 import { Reportes } from './views/admin/Reportes.tsx';
 import ProtectedCarrito from './components/utils/ProtectCarrito.tsx';
 import { AppProviders } from './providers/AppProviders.tsx';
-import CompraExitosa from './views/user/CompraExitosa.tsx';
+
 
 createRoot(document.getElementById('root')!).render(
   <AppProviders>
@@ -85,10 +85,6 @@ createRoot(document.getElementById('root')!).render(
           }
         />
       </Route>
-      <Route
-          path="/compra-exitosa"
-          element={<CompraExitosa />}
-        />
       <Route
         path="*"
         element={
