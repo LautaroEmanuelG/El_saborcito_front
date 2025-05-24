@@ -86,3 +86,4 @@ Asegúrate de mantener tu fork actualizado con la rama principal del repositorio
 git remote add upstream https://github.com/original-repo/nombre-del-repo.git
 git fetch upstream
 git merge upstream/main
+```

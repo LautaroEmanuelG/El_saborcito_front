@@ -4,10 +4,10 @@ import {
   saveProduct,
   deleteProduct,
   getProductById,
-} from '../../utils/services/axios/productoService';
-import { getAllCategorias } from '../../utils/services/axios/categoriaService';
-import { Producto } from '../../utils/types';
-import { ModalConfirm } from '../../components/utils/ModalConfirm';
+} from '../../../shared/services/axios/productoService';
+import { getAllCategorias } from '../../../shared/services/axios/categoriaService';
+import { Producto } from '../../../types/types';
+import { ModalConfirm } from '../../../shared/components/utils/ModalConfirm';
 
 export const Productos = () => {
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);

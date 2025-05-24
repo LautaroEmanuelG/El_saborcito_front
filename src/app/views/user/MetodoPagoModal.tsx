@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useCart } from '../../hooks/useCart';
-import { createTicket } from '../../utils/services/axios/ticketService';
+import { useCart } from '../../../shared/hooks/useCart';
+import { createTicket } from '../../../shared/services/axios/ticketService';
 import '../../styles/styles.css';
 
 interface MetodoPagoModalProps {

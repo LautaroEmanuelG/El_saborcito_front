@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { getAllTickets } from '../../utils/services/axios/ticketService';
+import { getAllTickets } from '../../../shared/services/axios/ticketService';
 import {
   getAllProductos,
   getProductById,
   saveProduct,
-} from '../../utils/services/axios/productoService';
-import type { Producto } from '../../utils/types';
+} from '../../../shared/services/axios/productoService';
+import type { Producto } from '../../../types/types';
 
 export const Historial: React.FC = () => {
   const [tickets, setTickets] = useState<any[]>([]);

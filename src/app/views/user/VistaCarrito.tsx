@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Header } from '../../components/header/Header';
-import { IconoLocation } from '../../components/iconos/IconoLocation';
-import BtnCantidadProducto from '../../components/producto/BtnCantidadProducto';
-import { useCart } from '../../hooks/useCart';
+import { Header } from '../../../shared/components/header/Header';
+import { IconoLocation } from '../../../shared/components/iconos/IconoLocation';
+import BtnCantidadProducto from '../../../shared/components/producto/btnCantidadProducto';
+import { useCart } from '../../../shared/hooks/useCart';
 import MetodoPagoModal from './MetodoPagoModal';
 
 const VistaCarrito = () => {

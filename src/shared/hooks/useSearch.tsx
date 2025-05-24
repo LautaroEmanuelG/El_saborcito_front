@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import type { ProductoValor } from '../utils/types';
-import { getAllProductos } from '../utils/services/axios/productoService';
+import type { ProductoValor } from '../../types/types';
+import { getAllProductos } from '../axios/productoService';
 
 export const useSearch = (initialValue: string = '') => {
   const [searchTerm, setSearchTerm] = useState(initialValue);

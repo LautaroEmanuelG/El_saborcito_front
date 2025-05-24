@@ -12,10 +12,10 @@ import {
   Tooltip,
   Cell,
 } from 'recharts';
-import { getAllCategorias } from '../../utils/services/axios/categoriaService';
-import { getAllProductos } from '../../utils/services/axios/productoService';
-import { getAllTickets } from '../../utils/services/axios/ticketService';
-import { Ticket, type CategoriaVentas, type ProductoValor } from '../../utils/types';
+import { getAllCategorias } from '../../../shared/services/axios/categoriaService';
+import { getAllProductos } from '../../../shared/services/axios/productoService';
+import { getAllTickets } from '../../../shared/services/axios/ticketService';
+import { Ticket, type CategoriaVentas, type ProductoValor } from '../../../types/types';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 

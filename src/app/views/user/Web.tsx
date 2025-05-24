@@ -1,14 +1,14 @@
 import { useContext, useEffect, useState } from 'react';
-import { Header } from '../../components/header/Header';
-import { ListaCategorias } from '../../components/categorias/ListaCategorias';
-import { ListaProductos } from '../../components/producto/ListaProducto';
-import { ModalProducto } from '../../components/producto/ModalProducto';
-import { ActiveSlider } from '../../components/carrusel/ActiveSlider';
-import { Categoria, type ProductoValor } from '../../utils/types';
-import BtnFlotanteCarrito from '../../components/carrito/BtnFlotanteCarrito';
-import { CarritoContext } from '../../components/carrito/CarritoProvider';
-import { getAllCategorias } from '../../utils/services/axios/categoriaService';
-import { useSearch } from '../../hooks/useSearch';
+import { Header } from '../../../shared/components/header/Header';
+import { ListaCategorias } from '../../../shared/components/categorias/ListaCategorias';
+import { ListaProductos } from '../../../shared/components/producto/ListaProducto';
+import { ModalProducto } from '../../../shared/components/producto/ModalProducto';
+import { ActiveSlider } from '../../../shared/components/carrusel/ActiveSlider';
+import { Categoria, type ProductoValor } from '../../../types/types';
+import BtnFlotanteCarrito from '../../../shared/components/carrito/BtnFlotanteCarrito';
+import { CarritoContext } from '../../../shared/components/carrito/CarritoProvider';
+import { getAllCategorias } from '../../../shared/services/axios/categoriaService';
+import { useSearch } from '../../../shared/hooks/useSearch';
 
 export const Web = () => {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
