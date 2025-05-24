@@ -17,10 +17,7 @@ export interface NavItemStructure {
 const NAV_DATA: NavItemStructure[] = [
   {
     title: 'Estadística e Informes',
-    subItems: [
-      { to: '/admin/historial', label: 'Control' },
-      { to: '/admin/usuarios', label: 'Usuarios', hasActions: true },
-    ],
+    subItems: [{ to: '/admin/historial', label: 'Control' }],
   },
   {
     title: 'Gestión de Contenido',
@@ -72,6 +69,7 @@ export const AsideAdmin = () => {
       {isOpen && (
         <div className="fixed inset-0 bg-black opacity-50 md:hidden z-10" onClick={closeMenu}></div>
       )}
+      {/* La selección y expansión de los menús se maneja automáticamente en CollapsibleNavItem según la ruta actual */}
     </>
   );
 };
