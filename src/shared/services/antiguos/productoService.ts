@@ -1,4 +1,4 @@
-import axiosInstance from './axiosConfig'; // Importar la instancia preconfigurada
+import axiosInstance from '../axiosConfig'; // Importar la instancia preconfigurada
 
 const API_BASE_URL = '/productos';
 
@@ -12,7 +12,7 @@ const addImagesToProduct = (productoNombre: string, productoCategoria: string) =
 
 // Método para obtener todos los productos y agregar las rutas de imágenes
 export const getAllProductos = async () => {
-  const response = await axiosInstance.get(`${API_BASE_URL}/all`);
+  const response = await axiosInstance.get(`${API_BASE_URL}`);
   const productos = response.data;
 
   // Añadir las rutas de las imágenes a cada producto

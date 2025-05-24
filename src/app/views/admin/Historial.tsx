@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { getAllTickets } from '../../../shared/services/ticketService';
+import { getAllTickets } from '../../../shared/services/antiguos/ticketService';
 import {
   getAllProductos,
   getProductById,
   saveProduct,
-} from '../../../shared/services/productoService';
+} from '../../../shared/services/antiguos/productoService';
 import type { Producto } from '../../../types/types';
 
 export const Historial: React.FC = () => {

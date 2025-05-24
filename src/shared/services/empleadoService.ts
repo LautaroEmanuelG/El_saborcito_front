@@ -1,23 +1,23 @@
 import axiosInstance from './axiosConfig'; // Importar la instancia preconfigurada
 
-const API_BASE_URL = '/categorias';
+const API_BASE_URL = '/empleados';
 
-export const saveCategoria = async (categoriaData: any) => {
-  const response = await axiosInstance.post(`${API_BASE_URL}/${categoriaData.id}`, categoriaData);
+export const saveEmpleado = async (data: any) => {
+  const response = await axiosInstance.post(`${API_BASE_URL}/${data.id}`, data);
   return response.data;
 };
 
-export const deleteCategoria = async (id: number) => {
+export const deleteEmpleado = async (id: number) => {
   const response = await axiosInstance.delete(`${API_BASE_URL}/${id}`);
   return response.data;
 };
 
-export const getCategoriaById = async (id: number) => {
+export const getEmpleadoById = async (id: number) => {
   const response = await axiosInstance.get(`${API_BASE_URL}/${id}`);
   return response.data;
 };
 
-export const getAllCategorias = async () => {
+export const getAllEmpleados = async () => {
   const response = await axiosInstance.get(`${API_BASE_URL}`);
   return response.data;
 };

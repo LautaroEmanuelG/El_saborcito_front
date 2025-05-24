@@ -12,7 +12,7 @@ const addImagesToProduct = (productoNombre: string, productoCategoria: string) =
 
 // Método para obtener todos los productos y agregar las rutas de imágenes
 export const getAllProductos = async () => {
-  const response = await axiosInstance.get(`${API_BASE_URL}/all`);
+  const response = await axiosInstance.get(`${API_BASE_URL}`);
   const productos = response.data;
 
   // Añadir las rutas de las imágenes a cada producto
@@ -40,26 +40,18 @@ export const getProductosByCategoria = async (categoriaId: number) => {
 
 // Función para guardar un producto en la base de datos
 export const saveProduct = async (productData: any) => {
-  if (!productData.items) {
-    productData.items = [];
-  }
-  const response = await axiosInstance.post(`${API_BASE_URL}/guardar`, productData);
+  const response = await axiosInstance.post(`${API_BASE_URL}/${productData.id}`, productData);
   return response.data;
 };
 
 // Función para eliminar un producto por ID
 export const deleteProduct = async (id: number) => {
-  const response = await axiosInstance.post(`${API_BASE_URL}/eliminar`, null, { params: { id } });
+  const response = await axiosInstance.delete(`${API_BASE_URL}/${id}`);
   return response.data;
 };
 
 // Función para obtener un producto por su ID
 export const getProductById = async (id: number) => {
-  const response = await axiosInstance.get(`${API_BASE_URL}/id`, { params: { id } });
-  const producto = response.data;
-
-  // Añadir las rutas de las imágenes al producto obtenido
-  // producto.imagen = addImagesToProduct(producto.nombre, producto.categoria);
-
-  return producto;
+  const response = await axiosInstance.get(`${API_BASE_URL}/${id}`);
+  return response.data;
 };

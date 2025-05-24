@@ -1,9 +1,11 @@
 // axiosConfig.ts
 import axios from 'axios';
 
+const API_URL = import.meta.env.BACK_API_BASE_URL || 'http://localhost:5252/api'; // URL base de la API
+
 // Crear una instancia de Axios con la configuración base
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:5252/api', // Base URL común para todas las llamadas
+  baseURL: API_URL, // Base URL común para todas las llamadas
   headers: {
     'Content-Type': 'application/json', // Headers comunes
   },

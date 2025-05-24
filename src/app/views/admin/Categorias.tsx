@@ -5,7 +5,10 @@ import {
   deleteCategoria,
 } from '../../../shared/services/categoriaService';
 import { Categoria, Producto } from '../../../types/types';
-import { getProductosByCategoria, deleteProduct } from '../../../shared/services/productoService';
+import {
+  getProductosByCategoria,
+  deleteProduct,
+} from '../../../shared/services/antiguos/productoService';
 
 export const Categorias = () => {
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);

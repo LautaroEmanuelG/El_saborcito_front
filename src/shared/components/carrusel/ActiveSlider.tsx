@@ -7,7 +7,7 @@ import 'swiper/css/pagination';
 import { BtnAgregarCarrito } from '../utils/BtnAgregarCarrito';
 import '../../../app/styles/styles.css';
 import type { ProductoValor } from '../../../types/types';
-import { getAllProductos } from '../../../shared/services/productoService';
+import { getAllProductos } from '../../../shared/services/antiguos/productoService';
 
 interface ActiveSliderProps {
   setProductoModal: (producto: ProductoValor) => void;

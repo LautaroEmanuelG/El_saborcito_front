@@ -4,7 +4,7 @@ import {
   saveProduct,
   deleteProduct,
   getProductById,
-} from '../../../shared/services/productoService';
+} from '../../../shared/services/antiguos/productoService';
 import { getAllCategorias } from '../../../shared/services/categoriaService';
 import { Producto } from '../../../types/types';
 import { ModalConfirm } from '../../../shared/components/utils/ModalConfirm';
