@@ -2,12 +2,14 @@
 import axios from 'axios';
 
 // Crear una instancia de Axios con la configuración base
+const BASE_URL = process.env.BACK_API_BASE_URL ?? 'http://localhost:5252/api';
+
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:5252/api', // Base URL común para todas las llamadas
+  baseURL: BASE_URL,
   headers: {
-    'Content-Type': 'application/json', // Headers comunes
+    'Content-Type': 'application/json',
   },
-  timeout: 10000, // Tiempo de espera opcional
+  timeout: 10000,
 });
 
 // Aquí puedes agregar interceptores si es necesario

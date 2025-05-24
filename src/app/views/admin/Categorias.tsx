@@ -3,12 +3,9 @@ import {
   getAllCategorias,
   saveCategoria,
   deleteCategoria,
-} from '../../../shared/services/axios/categoriaService';
+} from '../../../shared/services/categoriaService';
 import { Categoria, Producto } from '../../../types/types';
-import {
-  getProductosByCategoria,
-  deleteProduct,
-} from '../../../shared/services/axios/productoService';
+import { getProductosByCategoria, deleteProduct } from '../../../shared/services/productoService';
 
 export const Categorias = () => {
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);

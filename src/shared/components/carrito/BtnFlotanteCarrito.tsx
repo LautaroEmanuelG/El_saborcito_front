@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import IconoCarrito from '../iconos/IconoCarrito';
+import IconoCarrito from '../../../assets/svgs/icons/IconoCarrito';
 
 interface BtnFlotanteProps {
   productCount: number;

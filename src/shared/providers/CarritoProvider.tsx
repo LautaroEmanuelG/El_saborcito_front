@@ -1,5 +1,5 @@
 import React, { createContext, useReducer, ReactNode, useEffect } from 'react';
-import type { ProductoCarrito, ProductoValor } from '../../utils/types';
+import type { ProductoCarrito, ProductoValor } from '../../types/types';
 
 // Define the state shape
 interface State {

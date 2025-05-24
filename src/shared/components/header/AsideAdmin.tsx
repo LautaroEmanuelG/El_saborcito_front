@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import IconoMenuHamburguesa from '../iconos/IconoMenuHamburguesa';
+import IconoMenuHamburguesa from '../../../assets/svgs/icons/IconoMenuHamburguesa';
 import CollapsibleNavItem from './CollapsibleNavItem'; // Importar el nuevo componente
 
 export interface SubItem {

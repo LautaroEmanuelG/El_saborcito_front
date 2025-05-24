@@ -1,4 +1,4 @@
-import type { Categoria } from '../../utils/types';
+import type { Categoria } from '../../../types/types';
 
 type Props = {
   category: Categoria;

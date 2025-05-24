@@ -1,12 +1,12 @@
 import { useState, useContext } from 'react';
 import { Buscador } from './Buscador';
-import IconoCarrito from '../iconos/IconoCarrito';
-import IconoLoggin from '../iconos/IconoLoggin';
-import IconoLogoSaborcito from '../iconos/IconoLogoSaborcito';
+import IconoCarrito from '../../../assets/svgs/icons/IconoCarrito';
+import IconoLoggin from '../../../assets/svgs/icons/IconoLoggin';
+import IconoLogoSaborcito from '../../../assets/svgs/icons/IconoLogoSaborcito';
 import { LoginModal } from '../loggin/LoginModal';
-import { CarritoContext } from '../carrito/CarritoProvider';
+import { CarritoContext } from '../../providers/CarritoProvider';
 import { Link } from 'react-router-dom';
-import IconoMenuHamburguesa from '../iconos/IconoMenuHamburguesa';
+import IconoMenuHamburguesa from '../../../assets/svgs/icons/IconoMenuHamburguesa';
 
 type Props = {
   onSearch?: (query: string) => void;

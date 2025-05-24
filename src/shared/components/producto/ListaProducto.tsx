@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { CardProducto } from './CardProducto';
-import type { Categoria, ProductoValor } from '../../utils/types';
-import { getAllCategorias } from '../../utils/services/axios/categoriaService';
+import type { Categoria, ProductoValor } from '../../../types/types';
+import { getAllCategorias } from '../../../shared/services/categoriaService';
 
 type Props = {
   productos: ProductoValor[];

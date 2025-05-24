@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Header } from '../../../shared/components/header/Header';
-import { IconoLocation } from '../../../shared/components/iconos/IconoLocation';
+import { IconoLocation } from '../../../assets/svgs/icons/IconoLocation';
 import BtnCantidadProducto from '../../../shared/components/producto/btnCantidadProducto';
 import { useCart } from '../../../shared/hooks/useCart';
 import MetodoPagoModal from './MetodoPagoModal';

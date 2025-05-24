@@ -1,7 +1,7 @@
 import { Navigate } from 'react-router-dom';
 
 import { ReactNode } from 'react';
-import { useCart } from '../../hooks/useCart';
+import { useCart } from '../../shared/hooks/useCart';
 
 const ProtectedCarrito = ({ children }: { children: ReactNode }) => {
   const { carrito } = useCart();

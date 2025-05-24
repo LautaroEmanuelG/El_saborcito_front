@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getAllTransaccion } from '../../../shared/services/axios/transaccionService';
+import { getAllTransaccion } from '../../../shared/services/transaccionService';
 
 export const Control: React.FC = () => {
   const [asientosContables, setAsientosContables] = useState<any[]>([]);

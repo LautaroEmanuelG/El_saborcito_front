@@ -1,5 +1,5 @@
 import { useSearch } from '../../hooks/useSearch';
-import IconoBuscador from '../iconos/IconoBuscador';
+import IconoBuscador from '../../../assets/svgs/icons/IconoBuscador';
 
 type Props = {
   onSearch: (query: string) => void; // Prop para manejar el evento de búsqueda

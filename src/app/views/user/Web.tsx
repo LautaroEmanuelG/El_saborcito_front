@@ -6,8 +6,8 @@ import { ModalProducto } from '../../../shared/components/producto/ModalProducto
 import { ActiveSlider } from '../../../shared/components/carrusel/ActiveSlider';
 import { Categoria, type ProductoValor } from '../../../types/types';
 import BtnFlotanteCarrito from '../../../shared/components/carrito/BtnFlotanteCarrito';
-import { CarritoContext } from '../../../shared/components/carrito/CarritoProvider';
-import { getAllCategorias } from '../../../shared/services/axios/categoriaService';
+import { CarritoContext } from '../../../shared/providers/CarritoProvider';
+import { getAllCategorias } from '../../../shared/services/categoriaService';
 import { useSearch } from '../../../shared/hooks/useSearch';
 
 export const Web = () => {

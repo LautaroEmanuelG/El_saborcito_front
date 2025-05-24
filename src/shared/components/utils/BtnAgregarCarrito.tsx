@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
-import { CarritoContext } from '../carrito/CarritoProvider';
-import type { ProductoValor } from '../../utils/types';
+import { CarritoContext } from '../../providers/CarritoProvider';
+import type { ProductoValor } from '../../../types/types';
 
 interface BtnAgregarCarritoProps {
   position?: 'left' | 'right';

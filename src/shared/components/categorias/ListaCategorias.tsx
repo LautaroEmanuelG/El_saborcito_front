@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Categoria } from '../../utils/types';
+import type { Categoria } from '../../../types/types';
 import { BtnCategoria } from './BtnCategoria';
 
 interface Props {
