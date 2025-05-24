@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { ProductoValor } from '../../types/types';
-import { getAllProductos } from '../services/productoService';
+import { getAllProductos } from '../services/antiguos/productoService';
 
 export const useSearch = (initialValue: string = '') => {
   const [searchTerm, setSearchTerm] = useState(initialValue);

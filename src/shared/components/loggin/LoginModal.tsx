@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import emailjs from 'emailjs-com';
-import { loginUsuario } from '../../../shared/services/loginService';
+import { loginUsuario } from '../../services/antiguos/loginService';
 
 type LoginModalProps = {
   isOpen: boolean;

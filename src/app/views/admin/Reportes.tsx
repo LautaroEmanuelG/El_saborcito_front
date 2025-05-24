@@ -13,8 +13,8 @@ import {
   Cell,
 } from 'recharts';
 import { getAllCategorias } from '../../../shared/services/categoriaService';
-import { getAllProductos } from '../../../shared/services/productoService';
-import { getAllTickets } from '../../../shared/services/ticketService';
+import { getAllProductos } from '../../../shared/services/antiguos/productoService';
+import { getAllTickets } from '../../../shared/services/antiguos/ticketService';
 import { Ticket, type CategoriaVentas, type ProductoValor } from '../../../types/types';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];

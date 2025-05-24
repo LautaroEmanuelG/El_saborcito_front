@@ -22,6 +22,6 @@ export const getCategoriaById = async (id: number) => {
 };
 
 export const getAllCategorias = async () => {
-  const response = await axiosInstance.get(`${API_BASE_URL}/all`);
+  const response = await axiosInstance.get(`${API_BASE_URL}`);
   return response.data;
 };

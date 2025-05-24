@@ -1,5 +1,5 @@
 // services/ticketService.ts
-import axiosInstance from './axiosConfig'; // Importar la instancia preconfigurada
+import axiosInstance from '../axiosConfig'; // Importar la instancia preconfigurada
 
 const API_BASE_URL = '/ticket';
 
@@ -15,6 +15,6 @@ export const createTicket = async (
 };
 
 export const getAllTickets = async () => {
-  const response = await axiosInstance.get(`${API_BASE_URL}/all`);
+  const response = await axiosInstance.get(`${API_BASE_URL}`);
   return response.data;
 };
