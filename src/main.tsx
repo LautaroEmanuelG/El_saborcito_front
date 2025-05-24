@@ -1,18 +1,18 @@
 import { createRoot } from 'react-dom/client';
-import './index.css';
-import { Web } from './views/user/Web.tsx';
+import './app/styles/index.css';
+import { Web } from './app/views/user/Web.tsx';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import VistaCarrito from './views/user/VistaCarrito.tsx';
-import { CarritoProvider } from './components/carrito/CarritoProvider.tsx';
-import { LayoutAdmin } from './views/admin/LayoutAdmin.tsx';
-import { Historial } from './views/admin/Historial.tsx';
-import { Control } from './views/admin/Control.tsx';
-import { Productos } from './views/admin/Productos.tsx';
-import ProtectedRoute from './components/utils/ProtectedRoute.tsx';
-import { Categorias } from './views/admin/Categorias.tsx';
-import { Reportes } from './views/admin/Reportes.tsx';
-import ProtectedCarrito from './components/utils/ProtectCarrito.tsx';
-import { AppProviders } from './providers/AppProviders.tsx';
+import VistaCarrito from './app/views/user/VistaCarrito.tsx';
+import { CarritoProvider } from './shared/providers/CarritoProvider';
+import { LayoutAdmin } from './app/layout/LayoutAdmin.tsx';
+import { Historial } from './app/views/admin/Historial.tsx';
+import { Control } from './app/views/admin/Control.tsx';
+import { Productos } from './app/views/admin/Productos.tsx';
+import ProtectedRoute from './app/routes/ProtectedRoute.tsx';
+import { Categorias } from './app/views/admin/Categorias.tsx';
+import { Reportes } from './app/views/admin/Reportes.tsx';
+import ProtectedCarrito from './app/routes/ProtectCarrito.tsx';
+import { AppProviders } from './shared/providers/AppProviders.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <AppProviders>
