@@ -5,7 +5,7 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import { BtnAgregarCarrito } from '../utils/BtnAgregarCarrito';
-import '../../styles/styles.css';
+import '../../../app/styles/styles.css';
 import type { ProductoValor } from '../../../types/types';
 import { getAllProductos } from '../../../shared/services/productoService';
 

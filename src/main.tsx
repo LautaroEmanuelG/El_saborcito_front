@@ -1,6 +1,6 @@
 import { createRoot } from 'react-dom/client';
-import './index.css';
-import { Web } from './views/user/Web.tsx';
+import './app/styles/index.css';
+import { Web } from './app/views/user/Web.tsx';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import VistaCarrito from './app/views/user/VistaCarrito.tsx';
 import { CarritoProvider } from './shared/providers/CarritoProvider';
@@ -11,7 +11,7 @@ import { Productos } from './app/views/admin/Productos.tsx';
 import ProtectedRoute from './app/routes/ProtectedRoute.tsx';
 import { Categorias } from './app/views/admin/Categorias.tsx';
 import { Reportes } from './app/views/admin/Reportes.tsx';
-import ProtectedCarrito from './components/utils/ProtectCarrito.tsx';
+import ProtectedCarrito from './app/routes/ProtectCarrito.tsx';
 import { AppProviders } from './shared/providers/AppProviders.tsx';
 
 createRoot(document.getElementById('root')!).render(
