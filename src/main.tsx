@@ -10,9 +10,9 @@ import { Control } from './app/views/admin/Control.tsx';
 import { Productos } from './app/views/admin/Productos.tsx';
 import ProtectedRoute from './app/routes/ProtectedRoute.tsx';
 import { Categorias } from './app/views/admin/Categorias.tsx';
-import { Reportes } from './app/views/admin/Reportes.tsx';
 import ProtectedCarrito from './app/routes/ProtectCarrito.tsx';
 import { AppProviders } from './shared/providers/AppProviders.tsx';
+import { RankingProductos } from './modules/HU26_28_informes/components/RankingProductos.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <AppProviders>
@@ -72,7 +72,7 @@ createRoot(document.getElementById('root')!).render(
             path="reportes"
             element={
               <ProtectedRoute>
-                <Reportes />
+                <RankingProductos />
               </ProtectedRoute>
             }
           />
