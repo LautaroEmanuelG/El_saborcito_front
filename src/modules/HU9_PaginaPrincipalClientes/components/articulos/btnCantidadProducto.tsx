@@ -1,10 +1,10 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { CarritoContext } from '../../../../shared/providers/CarritoProvider';
 import { useLocation } from 'react-router-dom';
-import type { ArticuloManufacturado } from '../../../../types/Articulo';
+import type { ArticuloInsumo, ArticuloManufacturado } from '../../../../types/Articulo';
 
 interface BtnCantidadProductoProps {
-  articulo: ArticuloManufacturado;
+  articulo: ArticuloManufacturado | ArticuloInsumo;
   cantidadProducto: number;
   setCantidadProducto: React.Dispatch<React.SetStateAction<number>>;
 }

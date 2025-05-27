@@ -1,9 +1,9 @@
-import type { ArticuloManufacturado } from '../../../../types/Articulo';
+import type { ArticuloInsumo, ArticuloManufacturado } from '../../../../types/Articulo';
 import { BtnAgregarCarrito } from '../../../HU11_CarritoCompras/components/BtnAgregarCarrito';
 
 type ProductProps = {
-  articulo: ArticuloManufacturado;
-  setProductoModal: (producto: ArticuloManufacturado | null) => void;
+  articulo: ArticuloManufacturado | ArticuloInsumo;
+  setProductoModal: (producto: ArticuloManufacturado | ArticuloInsumo | null) => void;
 };
 
 export const CardProducto = ({ articulo, setProductoModal }: ProductProps) => {

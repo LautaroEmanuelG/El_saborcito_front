@@ -6,13 +6,13 @@ import { ActiveSlider } from './carrusel/ActiveSlider';
 import BtnFlotanteCarrito from '../../HU11_CarritoCompras/components/BtnFlotanteCarrito';
 import { CarritoContext } from '../../../shared/providers/CarritoProvider';
 import { getAllCategorias } from '../../../shared/services/categoriaService';
-import type { ArticuloManufacturado } from '../../../types/Articulo';
+import type { ArticuloInsumo, ArticuloManufacturado } from '../../../types/Articulo';
 import type { Categoria } from '../../../types/Categoria';
 
 interface PaginaPrincipalClientesProps {
   searchTerm: string;
   handleSearch: (term: string) => void;
-  filteredProducts: ArticuloManufacturado[];
+  filteredProducts: (ArticuloManufacturado | ArticuloInsumo)[];
 }
 
 export const PaginaPrincipalClientes = ({
@@ -21,7 +21,9 @@ export const PaginaPrincipalClientes = ({
   filteredProducts,
 }: PaginaPrincipalClientesProps) => {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
-  const [articuloModal, setArticuloModal] = useState<ArticuloManufacturado | null>(null);
+  const [articuloModal, setArticuloModal] = useState<ArticuloManufacturado | ArticuloInsumo | null>(
+    null
+  );
   const [isModalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
@@ -42,7 +44,7 @@ export const PaginaPrincipalClientes = ({
     setModalOpen(false); // Cerrar el modal
   };
 
-  const handleProductClick = (articulo: ArticuloManufacturado) => {
+  const handleProductClick = (articulo: ArticuloManufacturado | ArticuloInsumo) => {
     setArticuloModal(articulo); // Actualizar el producto modal y abrir el modal
   };
 

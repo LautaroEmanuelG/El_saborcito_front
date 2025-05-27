@@ -24,7 +24,7 @@ export interface ArticuloManufacturado extends Articulo {
   descripcion: string;
   tiempoEstimadoMinutos: number;
   preparacion: string;
-  imagen?: Imagen;
+  imagen?: Imagen | null;
   articuloManufacturadoDetalles: ArticuloManufacturadoDetalles[];
 }
 

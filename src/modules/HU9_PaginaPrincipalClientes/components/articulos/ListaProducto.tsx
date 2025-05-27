@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { CardProducto } from './CardProducto';
 import { getAllCategorias } from '../../../../shared/services/categoriaService';
-import type { ArticuloManufacturado } from '../../../../types/Articulo';
+import type { ArticuloInsumo, ArticuloManufacturado } from '../../../../types/Articulo';
 import type { Categoria } from '../../../../types/Categoria';
 
 type Props = {
-  articulos: ArticuloManufacturado[];
-  setArticuloModal: (articulo: ArticuloManufacturado | null) => void;
-  onProductClick: (articulo: ArticuloManufacturado) => void;
+  articulos: (ArticuloManufacturado | ArticuloInsumo)[];
+  setArticuloModal: (articulo: ArticuloManufacturado | ArticuloInsumo | null) => void;
+  onProductClick: (articulo: ArticuloManufacturado | ArticuloInsumo) => void;
 };
 
 export const ListaProductos = ({ articulos, setArticuloModal, onProductClick }: Props) => {
@@ -21,7 +21,7 @@ export const ListaProductos = ({ articulos, setArticuloModal, onProductClick }: 
     fetchCategorias();
   }, []);
 
-  const handleProductClick = (articulo: ArticuloManufacturado) => {
+  const handleProductClick = (articulo: ArticuloManufacturado | ArticuloInsumo) => {
     setArticuloModal(null); // Establecer a null para forzar la actualización
     setTimeout(() => {
       setArticuloModal(articulo); // Actualizar el producto modal y abrir el modal

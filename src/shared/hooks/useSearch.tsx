@@ -1,17 +1,19 @@
 import { useEffect, useState } from 'react';
 import { getAllArticulos } from '../services/articuloService';
-import type { ArticuloManufacturado } from '../../types/Articulo';
+import type { ArticuloInsumo, ArticuloManufacturado } from '../../types/Articulo';
 import { getCategoriaById } from '../services/categoriaService';
 
 export const useSearch = (initialValue: string = '') => {
   const [searchTerm, setSearchTerm] = useState(initialValue);
-  const [filteredProducts, setFilteredProducts] = useState<ArticuloManufacturado[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<
+    (ArticuloManufacturado | ArticuloInsumo)[]
+  >([]);
   const [productos, setProductos] = useState<ArticuloManufacturado[]>([]);
   useEffect(() => {
     async function fetchData() {
       const productosData = await getAllArticulos();
       setProductos(productosData);
-      setFilteredProducts(productosData as ArticuloManufacturado[]);
+      setFilteredProducts(productosData as (ArticuloManufacturado | ArticuloInsumo)[]);
     }
     fetchData();
   }, []);

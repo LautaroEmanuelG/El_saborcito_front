@@ -5,7 +5,7 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import { BtnAgregarCarrito } from '../../../HU11_CarritoCompras/components/BtnAgregarCarrito';
-import { getAllArticulos } from '../../../../shared/services/articuloService';
+import { getAllArticuloManufacturados } from '../../../../shared/services/articuloManufacturadoService';
 import type { ArticuloManufacturado } from '../../../../types/Articulo';
 
 interface ActiveSliderProps {
@@ -19,7 +19,7 @@ export const ActiveSlider: React.FC<ActiveSliderProps> = ({ setArticuloModal }) 
   };
   useEffect(() => {
     const fetchArticulos = async () => {
-      const data = await getAllArticulos();
+      const data = await getAllArticuloManufacturados();
       setArticulos(data);
     };
     fetchArticulos();
@@ -52,14 +52,8 @@ export const ActiveSlider: React.FC<ActiveSliderProps> = ({ setArticuloModal }) 
           <picture>
             <source type="image/webp" />
             <img
-              src={
-                Array.isArray(articulo.imagen) && articulo.imagen.length > 0
-                  ? articulo.imagen[0]
-                  : Array.isArray(articulo.imagen) && articulo.imagen.length > 1
-                    ? articulo.imagen[1]
-                    : ''
-              }
-              alt={articulo.denominacion}
+              src={articulo?.imagen?.url ?? ''}
+              alt={articulo?.denominacion ?? ''}
               className="object-cover w-full h-full rounded-xl"
             />
           </picture>

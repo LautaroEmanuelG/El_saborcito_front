@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { BtnAgregarCarrito } from '../../../HU11_CarritoCompras/components/BtnAgregarCarrito';
 import BtnCantidadProducto from './btnCantidadProducto';
-import type { ArticuloManufacturado } from '../../../../types/Articulo';
+import type { ArticuloInsumo, ArticuloManufacturado } from '../../../../types/Articulo';
 
 type Props = {
-  articulo: ArticuloManufacturado | null;
+  articulo: ArticuloManufacturado | ArticuloInsumo | null;
   isOpen: boolean;
   onClose: () => void;
 };
@@ -37,7 +37,9 @@ export const ModalProducto: React.FC<Props> = ({ articulo = null, isOpen, onClos
             <div className="pl-6 flex flex-col h-72">
               <h2 className="text-2xl font-semibold">{articulo.denominacion}</h2>
               <p className="text-xl text-gray-500 mt-2">${articulo.precioVenta}</p>
-              <p className="mt-4 text-gray-600">{articulo.descripcion}</p>
+              <p className="mt-4 text-gray-600">
+                {'descripcion' in articulo ? (articulo.descripcion ?? '') : ''}
+              </p>
             </div>
 
             <div className="absolute bottom-0 right-0">

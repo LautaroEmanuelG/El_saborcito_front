@@ -1,6 +1,6 @@
 import axiosInstance from './axiosConfig'; // Importar la instancia preconfigurada
 
-const API_BASE_URL = '/articulo-manufacturados';
+const API_BASE_URL = '/manufacturados';
 
 export const saveArticuloManufacturado = async (data: any) => {
   const response = await axiosInstance.post(`${API_BASE_URL}/${data.id}`, data);
