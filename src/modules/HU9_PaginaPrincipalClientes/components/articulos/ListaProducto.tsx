@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { CardProducto } from './CardProducto';
-import type { Categoria, ProductoValor } from '../../../types/types';
-import { getAllCategorias } from '../../../shared/services/categoriaService';
+import type { Categoria, ProductoValor } from '../../../../types/types';
+import { getAllCategorias } from '../../../../shared/services/categoriaService';
 
 type Props = {
   productos: ProductoValor[];
@@ -15,6 +15,7 @@ export const ListaProductos = ({ productos, setProductoModal }: Props) => {
   useEffect(() => {
     async function fetchCategorias() {
       const categoriasData = await getAllCategorias();
+      console.log('categorias', categoriasData);
       setCategorias(categoriasData);
     }
     fetchCategorias();

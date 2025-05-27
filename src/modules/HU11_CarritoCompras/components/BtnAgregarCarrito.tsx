@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { CarritoContext } from '../../providers/CarritoProvider';
+import { CarritoContext } from '../../../shared/providers/CarritoProvider';
 import type { ProductoValor } from '../../../types/types';
 
 interface BtnAgregarCarritoProps {

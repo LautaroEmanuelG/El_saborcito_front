@@ -1,5 +1,5 @@
-import type { ProductoValor } from '../../../types/types';
-import { BtnAgregarCarrito } from '../utils/BtnAgregarCarrito';
+import type { ProductoValor } from '../../../../types/types';
+import { BtnAgregarCarrito } from '../../../HU11_CarritoCompras/components/BtnAgregarCarrito';
 
 type ProductProps = {
   product: ProductoValor;

@@ -4,27 +4,26 @@ import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
-import { BtnAgregarCarrito } from '../utils/BtnAgregarCarrito';
-import '../../../app/styles/styles.css';
-import type { ProductoValor } from '../../../types/types';
-import { getAllProductos } from '../../../shared/services/antiguos/productoService';
+import { BtnAgregarCarrito } from '../../../HU11_CarritoCompras/components/BtnAgregarCarrito';
+import type { ProductoValor } from '../../../../types/types';
+import { getAllArticulos } from '../../../../shared/services/articuloService';
 
 interface ActiveSliderProps {
   setProductoModal: (producto: ProductoValor) => void;
 }
 
 export const ActiveSlider: React.FC<ActiveSliderProps> = ({ setProductoModal }) => {
-  const [products, setProducts] = React.useState<ProductoValor[]>([]);
+  const [articulos, setArticulos] = React.useState<ProductoValor[]>([]);
   const handleProductClick = (product: ProductoValor) => {
     setProductoModal(product);
   };
   useEffect(() => {
-    const fetchProducts = async () => {
-      const data = await getAllProductos();
-      setProducts(data);
+    const fetchArticulos = async () => {
+      const data = await getAllArticulos();
+      setArticulos(data);
     };
-    fetchProducts();
-  });
+    fetchArticulos();
+  }, []);
   return (
     <Swiper
       spaceBetween={30}
@@ -37,11 +36,11 @@ export const ActiveSlider: React.FC<ActiveSliderProps> = ({ setProductoModal }) 
       modules={[Autoplay, Pagination, Navigation]}
       className="w-full h-[400px]"
     >
-      {products.map((product, index) => (
+      {articulos.map((articulo, index) => (
         <SwiperSlide
           onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
             e.stopPropagation();
-            handleProductClick(product);
+            handleProductClick(articulo);
           }}
           key={index}
           /* Efecto oscuro sobre la imagen */
@@ -54,26 +53,26 @@ export const ActiveSlider: React.FC<ActiveSliderProps> = ({ setProductoModal }) 
             <source type="image/webp" />
             <img
               src={
-                Array.isArray(product.imagen) && product.imagen.length > 0
-                  ? product.imagen[0]
-                  : Array.isArray(product.imagen) && product.imagen.length > 1
-                    ? product.imagen[1]
+                Array.isArray(articulo.imagen) && articulo.imagen.length > 0
+                  ? articulo.imagen[0]
+                  : Array.isArray(articulo.imagen) && articulo.imagen.length > 1
+                    ? articulo.imagen[1]
                     : ''
               }
-              alt={product.nombre}
+              alt={articulo.nombre}
               className="object-cover w-full h-full rounded-xl"
             />
           </picture>
           <div className="absolute bottom-10 left-0 p-4 mb-3 text-white w-full rounded-b-xl flex flex-col items-start">
-            <h3 className="text-2xl font-semibold">{product.nombre}</h3>
-            <p className="text-xl font">${product.valor.precio.toFixed(2)}</p>
+            <h3 className="text-2xl font-semibold">{articulo.nombre}</h3>
+            <p className="text-xl font">${articulo.valor.precio.toFixed(2)}</p>
           </div>
 
           {/* Botón "Agregar al carrito" */}
           <div className="absolute bottom-0 left-0 p-4 ">
             <BtnAgregarCarrito
               position="left"
-              product={product}
+              product={articulo}
               cantidadProducto={1}
               setCantidadProducto={() => 1}
               onClose={() => {}}

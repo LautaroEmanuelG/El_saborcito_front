@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { ProductoValor } from '../../types/types';
-import { getAllProductos } from '../services/antiguos/productoService';
+import { getAllArticulos } from '../services/articuloService';
 
 export const useSearch = (initialValue: string = '') => {
   const [searchTerm, setSearchTerm] = useState(initialValue);
@@ -8,7 +8,8 @@ export const useSearch = (initialValue: string = '') => {
   const [productos, setProductos] = useState<ProductoValor[]>([]);
   useEffect(() => {
     async function fetchData() {
-      const productosData = await getAllProductos();
+      const productosData = await getAllArticulos();
+      console.log('productosData', productosData);
       setProductos(productosData);
       setFilteredProducts(productosData as ProductoValor[]);
     }

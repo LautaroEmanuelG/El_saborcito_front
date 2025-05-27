@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { getAllTickets } from '../../../shared/services/antiguos/ticketService';
 import {
-  getAllProductos,
-  getProductById,
-  saveProduct,
-} from '../../../shared/services/antiguos/productoService';
+  getAllArticulos,
+  getArticuloById,
+  saveArticulo,
+} from '../../../shared/services/articuloService';
 import type { Producto } from '../../../types/types';
 
 export const Historial: React.FC = () => {
   const [tickets, setTickets] = useState<any[]>([]);
-  const [productos, setProductos] = useState<any[]>([]);
+  const [articulos, setArticulos] = useState<any[]>([]);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-  const [productForm, setProductForm] = useState<Producto>({
+  const [articuloForm, setArticuloForm] = useState<Producto>({
     nombre: '',
     descripcion: '',
     stock: 0,
@@ -27,9 +27,9 @@ export const Historial: React.FC = () => {
 
   const fetchInitialData = async () => {
     const ticketsData = await getAllTickets();
-    const productosData = await getAllProductos();
+    const articulosData = await getAllArticulos();
     setTickets(ticketsData);
-    setProductos(productosData);
+    setArticulos(articulosData);
     console.log('tickets', tickets);
   };
 
@@ -53,41 +53,41 @@ export const Historial: React.FC = () => {
   };
 
   const getStockAlerts = () => {
-    return productos.filter((producto) => producto.stock < 10);
+    return articulos.filter((articulo) => articulo.stock < 10);
   };
 
   const openUpdateModal = async (id: number) => {
-    const product = await getProductById(id);
-    setProductForm({
-      id: product.id,
-      nombre: product.nombre,
-      descripcion: product.descripcion,
-      precio: product.valor.precio,
-      stock: product.stock,
-      costo: product.valor.costo,
-      categoriaId: product.categoria.id,
+    const articulo = await getArticuloById(id);
+    setArticuloForm({
+      id: articulo.id,
+      nombre: articulo.nombre,
+      descripcion: articulo.descripcion,
+      precio: articulo.valor.precio,
+      stock: articulo.stock,
+      costo: articulo.valor.costo,
+      categoriaId: articulo.categoria.id,
     });
     setIsUpdateModalOpen(true);
   };
 
-  const handleSaveProduct = async () => {
+  const handleSaveArticulo = async () => {
     if (
-      !productForm.nombre ||
-      productForm.precio <= 0 ||
-      productForm.stock <= 0 ||
-      productForm.costo <= 0 ||
-      productForm.categoriaId === 0
+      !articuloForm.nombre ||
+      articuloForm.precio <= 0 ||
+      articuloForm.stock <= 0 ||
+      articuloForm.costo <= 0 ||
+      articuloForm.categoriaId === 0
     ) {
       setFormError('Todos los campos son obligatorios y deben ser válidos.');
       return;
     }
 
-    const productData = {
-      ...productForm,
-      categoria: { id: productForm.categoriaId },
-      valor: { precio: productForm.precio, costo: productForm.costo },
+    const articuloData = {
+      ...articuloForm,
+      categoria: { id: articuloForm.categoriaId },
+      valor: { precio: articuloForm.precio, costo: articuloForm.costo },
     };
-    await saveProduct(productData);
+    await saveArticulo(articuloData);
     setIsUpdateModalOpen(false); // Cierra el modal de actualización
     fetchInitialData(); // Refresca los datos después de la creación/actualización
     setFormError(null); // Resetea el error del formulario
@@ -160,17 +160,17 @@ export const Historial: React.FC = () => {
               <input
                 type="text"
                 className="w-full mb-2 p-2 border"
-                value={productForm.nombre}
-                onChange={(e) => setProductForm({ ...productForm, nombre: e.target.value })}
+                value={articuloForm.nombre}
+                onChange={(e) => setArticuloForm({ ...articuloForm, nombre: e.target.value })}
               />
               <label className="block mb-1">Descripción</label>
               <input
                 type="text"
                 className="w-full mb-2 p-2 border"
-                value={productForm.descripcion}
+                value={articuloForm.descripcion}
                 onChange={(e) =>
-                  setProductForm({
-                    ...productForm,
+                  setArticuloForm({
+                    ...articuloForm,
                     descripcion: e.target.value,
                   })
                 }
@@ -179,10 +179,10 @@ export const Historial: React.FC = () => {
               <input
                 type="number"
                 className="w-full mb-2 p-2 border"
-                value={productForm.precio || ''}
+                value={articuloForm.precio || ''}
                 onChange={(e) =>
-                  setProductForm({
-                    ...productForm,
+                  setArticuloForm({
+                    ...articuloForm,
                     precio: parseFloat(e.target.value),
                   })
                 }
@@ -191,10 +191,10 @@ export const Historial: React.FC = () => {
               <input
                 type="number"
                 className="w-full mb-2 p-2 border"
-                value={productForm.stock || ''}
+                value={articuloForm.stock || ''}
                 onChange={(e) =>
-                  setProductForm({
-                    ...productForm,
+                  setArticuloForm({
+                    ...articuloForm,
                     stock: parseInt(e.target.value, 10),
                   })
                 }
@@ -203,10 +203,10 @@ export const Historial: React.FC = () => {
               <input
                 type="number"
                 className="w-full mb-2 p-2 border"
-                value={productForm.costo || ''}
+                value={articuloForm.costo || ''}
                 onChange={(e) =>
-                  setProductForm({
-                    ...productForm,
+                  setArticuloForm({
+                    ...articuloForm,
                     costo: parseFloat(e.target.value),
                   })
                 }
@@ -221,7 +221,7 @@ export const Historial: React.FC = () => {
                 Cancelar
               </button>
               <button
-                onClick={handleSaveProduct}
+                onClick={handleSaveArticulo}
                 className="bg-green-500 text-white px-4 py-2 rounded"
               >
                 Actualizar

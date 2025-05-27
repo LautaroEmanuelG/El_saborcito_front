@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import type { ProductoValor } from '../../../types/types';
-import { BtnAgregarCarrito } from '../utils/BtnAgregarCarrito';
+import type { ProductoValor } from '../../../../types/types';
+import { BtnAgregarCarrito } from '../../../HU11_CarritoCompras/components/BtnAgregarCarrito';
 import BtnCantidadProducto from './btnCantidadProducto';
 
 type Props = {

@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { Header } from '../../../shared/components/header/Header';
+import { Header } from '../../../app/views/user/header/Header';
 import { IconoLocation } from '../../../assets/svgs/icons/IconoLocation';
-import BtnCantidadProducto from '../../../shared/components/producto/btnCantidadProducto';
+import BtnCantidadProducto from '../../HU9_PaginaPrincipalClientes/components/articulos/btnCantidadProducto';
 import { useCart } from '../../../shared/hooks/useCart';
 import MetodoPagoModal from './MetodoPagoModal';
 
-const VistaCarrito = () => {
+export const VistaCarrito = () => {
   const { carrito, removeFromCart } = useCart();
   const [isMetodoPagoOpen, setMetodoPagoOpen] = useState(false);
 
@@ -135,5 +135,3 @@ const VistaCarrito = () => {
     </>
   );
 };
-
-export default VistaCarrito;

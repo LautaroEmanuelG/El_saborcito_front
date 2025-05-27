@@ -19,5 +19,16 @@ export const getArticuloById = async (id: number) => {
 
 export const getAllArticulos = async () => {
   const response = await axiosInstance.get(`${API_BASE_URL}`);
+  console.log('response.data Articulos', response.data);
   return response.data;
+};
+
+export const getArticulosByCategoria = async (categoriaId: number) => {
+  const response = await axiosInstance.get(`${API_BASE_URL}`);
+  // Filtrar los artículos cuya categoriaId coincida con el parámetro recibido
+  return (
+    response.data?.filter?.(
+      (articulo: { categoriaId?: number }) => articulo.categoriaId === categoriaId
+    ) ?? []
+  );
 };
