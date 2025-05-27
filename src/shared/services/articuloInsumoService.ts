@@ -31,3 +31,8 @@ export const getAllArticuloInsumoNoEsParaElaborar = async () => {
   const response = await axiosInstance.get(`${API_BASE_URL}/no-es-para-elaborar`);
   return response.data;
 };
+
+export const getAllArticuloInsumoByCategoria = async (id: number) => {
+  const response = await axiosInstance.get(`${API_BASE_URL}/categoria/${id}`);
+  return response.data;
+};

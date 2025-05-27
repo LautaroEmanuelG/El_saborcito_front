@@ -21,3 +21,8 @@ export const getAllArticuloManufacturados = async () => {
   const response = await axiosInstance.get(`${API_BASE_URL}`);
   return response.data;
 };
+
+export const getAllArticuloManufacturadosByCategoria = async (id: number) => {
+  const response = await axiosInstance.get(`${API_BASE_URL}/categoria/${id}`);
+  return response.data;
+};
