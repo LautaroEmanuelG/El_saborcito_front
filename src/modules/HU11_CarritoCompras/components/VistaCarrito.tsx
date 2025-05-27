@@ -36,12 +36,12 @@ export const VistaCarrito = () => {
                               ? producto.imagen[1]
                               : ''
                         }
-                        alt={producto.nombre}
+                        alt={producto.denominacion}
                         className=" w-20 h-20 object-cover rounded-lg"
                       />
                     </picture>
                     <div className="w-full">
-                      <h3 className="text-md md:text-xl  font-semibold">{producto.nombre}</h3>
+                      <h3 className="text-md md:text-xl  font-semibold">{producto.denominacion}</h3>
                       <button
                         className="text-lg md:text-xl  text-primary hover:underline"
                         onClick={() => removeFromCart(producto)}
@@ -53,14 +53,14 @@ export const VistaCarrito = () => {
 
                   <div className="flex items-center">
                     <BtnCantidadProducto
-                      producto={producto}
+                      articulo={producto}
                       cantidadProducto={1}
                       setCantidadProducto={() => {
                         /* enviamos nada */
                       }}
                     />
                     <p className="ml-6 sm:text-xl font-semibold flex justify-end">
-                      ${(producto.valor.precio * producto.quantity).toFixed(2)}
+                      ${(producto.precioVenta * producto.cantidad).toFixed(2)}
                     </p>
                   </div>
                 </div>
@@ -84,13 +84,13 @@ export const VistaCarrito = () => {
             <div className="flex-grow">
               <div className="flex justify-between mt-2 text-lg sm:text-2xl">
                 <span>
-                  Productos ({carrito.reduce((total, producto) => total + producto.quantity, 0)})
+                  Productos ({carrito.reduce((total, producto) => total + producto.cantidad, 0)})
                 </span>
                 <span>
                   $
                   {carrito
                     .reduce(
-                      (total, producto) => total + producto.valor.precio * producto.quantity,
+                      (total, producto) => total + producto.precioVenta * producto.cantidad,
                       0
                     )
                     .toFixed(2)}
@@ -106,7 +106,7 @@ export const VistaCarrito = () => {
               <span>
                 $
                 {carrito
-                  .reduce((total, producto) => total + producto.valor.precio * producto.quantity, 0)
+                  .reduce((total, producto) => total + producto.precioVenta * producto.cantidad, 0)
                   .toFixed(2)}
               </span>
             </div>
@@ -127,7 +127,7 @@ export const VistaCarrito = () => {
           isOpen={isMetodoPagoOpen}
           onClose={() => setMetodoPagoOpen(false)}
           total={carrito.reduce(
-            (total, producto) => total + producto.valor.precio * producto.quantity,
+            (total, producto) => total + producto.precioVenta * producto.cantidad,
             0
           )}
         />

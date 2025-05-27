@@ -1,17 +1,18 @@
 import { useEffect, useState } from 'react';
-import type { ProductoValor } from '../../types/types';
 import { getAllArticulos } from '../services/articuloService';
+import type { ArticuloManufacturado } from '../../types/Articulo';
+import { getCategoriaById } from '../services/categoriaService';
 
 export const useSearch = (initialValue: string = '') => {
   const [searchTerm, setSearchTerm] = useState(initialValue);
-  const [filteredProducts, setFilteredProducts] = useState<ProductoValor[]>([]);
-  const [productos, setProductos] = useState<ProductoValor[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<ArticuloManufacturado[]>([]);
+  const [productos, setProductos] = useState<ArticuloManufacturado[]>([]);
   useEffect(() => {
     async function fetchData() {
       const productosData = await getAllArticulos();
       console.log('productosData', productosData);
       setProductos(productosData);
-      setFilteredProducts(productosData as ProductoValor[]);
+      setFilteredProducts(productosData as ArticuloManufacturado[]);
     }
     fetchData();
   }, []);
@@ -30,14 +31,34 @@ export const useSearch = (initialValue: string = '') => {
     if (query === '') {
       setFilteredProducts(productos); // Mostrar todos los productos si el término de búsqueda está vacío
     } else {
-      setFilteredProducts(
-        productos.filter(
-          (producto) =>
-            producto.nombre.toLowerCase().includes(query.toLowerCase()) ||
-            producto.descripcion?.toLowerCase().includes(query.toLowerCase()) ||
-            producto.categoria.nombre.toLowerCase().includes(query.toLowerCase())
-        )
-      );
+      const fetchFilteredProducts = async () => {
+        const filtered = await Promise.all(
+          productos.map(async (producto) => {
+            const matchesDenominacion = producto.denominacion
+              ?.toLowerCase()
+              .includes(query.toLowerCase());
+            const matchesDescripcion = producto.descripcion
+              ?.toLowerCase()
+              .includes(query.toLowerCase());
+            let matchesCategoria = false;
+            if (producto.categoriaId) {
+              try {
+                const categoria = await getCategoriaById?.(producto.categoriaId);
+                matchesCategoria =
+                  categoria?.nombre?.toLowerCase().includes(query.toLowerCase()) ?? false;
+              } catch {
+                matchesCategoria = false;
+              }
+            }
+            if (matchesDenominacion || matchesDescripcion || matchesCategoria) {
+              return producto;
+            }
+            return null;
+          })
+        );
+        setFilteredProducts(filtered.filter((p): p is ArticuloManufacturado => p !== null));
+      };
+      fetchFilteredProducts();
     }
   };
   return {

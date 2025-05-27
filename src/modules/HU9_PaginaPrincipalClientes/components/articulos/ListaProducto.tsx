@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react';
 import { CardProducto } from './CardProducto';
-import type { Categoria, ProductoValor } from '../../../../types/types';
 import { getAllCategorias } from '../../../../shared/services/categoriaService';
+import type { ArticuloManufacturado } from '../../../../types/Articulo';
+import type { Categoria } from '../../../../types/Categoria';
 
 type Props = {
-  productos: ProductoValor[];
-  onProductClick: (producto: ProductoValor) => void;
-  setProductoModal: (producto: ProductoValor | null) => void;
+  articulos: ArticuloManufacturado[];
+  setArticuloModal: (articulo: ArticuloManufacturado | null) => void;
+  onProductClick: (articulo: ArticuloManufacturado) => void;
 };
 
-export const ListaProductos = ({ productos, setProductoModal }: Props) => {
+export const ListaProductos = ({ articulos, setArticuloModal, onProductClick }: Props) => {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
 
   useEffect(() => {
@@ -21,28 +22,28 @@ export const ListaProductos = ({ productos, setProductoModal }: Props) => {
     fetchCategorias();
   }, []);
 
-  const handleProductClick = (producto: ProductoValor) => {
-    setProductoModal(null); // Establecer a null para forzar la actualización
+  const handleProductClick = (articulo: ArticuloManufacturado) => {
+    setArticuloModal(null); // Establecer a null para forzar la actualización
     setTimeout(() => {
-      setProductoModal(producto); // Actualizar el producto modal y abrir el modal
+      setArticuloModal(articulo); // Actualizar el producto modal y abrir el modal
     }, 0);
   };
 
   return (
     <nav className="flex gap-4 md:gap-6 mb-6 flex-wrap">
       {categorias.map((categoria) => {
-        const productosFiltrados = productos.filter(
-          (producto) => producto.categoria.id === categoria.id
+        const productosFiltrados = articulos.filter(
+          (articulo) => articulo.categoriaId === categoria.id
         );
         return productosFiltrados.length > 0 ? (
           <div key={categoria.id} className="w-full mt-4">
             <span className="w-full flex justify-between pb-4">
-              <h2 className="text-lg sm:text-2xl font-bold">{categoria.nombre}</h2>
+              <h2 className="text-lg sm:text-2xl font-bold">{categoria.denominacion}</h2>
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 flex-wrap">
-              {productosFiltrados.map((producto) => (
-                <div className="" onClick={() => handleProductClick(producto)} key={producto.id}>
-                  <CardProducto setProductoModal={setProductoModal} product={producto} />
+              {productosFiltrados.map((articulo) => (
+                <div className="" onClick={() => handleProductClick(articulo)} key={articulo.id}>
+                  <CardProducto setProductoModal={setArticuloModal} articulo={articulo} />
                 </div>
               ))}
             </div>

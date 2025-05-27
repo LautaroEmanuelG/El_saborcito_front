@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { BtnCategoria } from './BtnCategoria';
-import type { Categoria } from '../../../../types/types';
+import type { Categoria } from '../../../../types/Categoria';
 
 interface Props {
   categorias: Categoria[];

@@ -1,4 +1,4 @@
-import type { Categoria } from '../../../../types/types';
+import type { Categoria } from '../../../../types/Categoria';
 
 type Props = {
   category: Categoria;
@@ -23,10 +23,10 @@ export const BtnCategoria = ({ category, onSearch, termAnterior, setTermAnterior
   return (
     <button
       key={category.id}
-      onClick={() => handleCategoryClick(category.nombre)}
+      onClick={() => handleCategoryClick(category.denominacion)}
       className="text-lg sm:text-xl font-bold hover:text-primary transition-colors"
     >
-      {category.nombre}
+      {category.denominacion}
     </button>
   );
 };

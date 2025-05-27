@@ -5,17 +5,17 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import { BtnAgregarCarrito } from '../../../HU11_CarritoCompras/components/BtnAgregarCarrito';
-import type { ProductoValor } from '../../../../types/types';
 import { getAllArticulos } from '../../../../shared/services/articuloService';
+import type { ArticuloManufacturado } from '../../../../types/Articulo';
 
 interface ActiveSliderProps {
-  setProductoModal: (producto: ProductoValor) => void;
+  setArticuloModal: (articulo: ArticuloManufacturado) => void;
 }
 
-export const ActiveSlider: React.FC<ActiveSliderProps> = ({ setProductoModal }) => {
-  const [articulos, setArticulos] = React.useState<ProductoValor[]>([]);
-  const handleProductClick = (product: ProductoValor) => {
-    setProductoModal(product);
+export const ActiveSlider: React.FC<ActiveSliderProps> = ({ setArticuloModal }) => {
+  const [articulos, setArticulos] = React.useState<ArticuloManufacturado[]>([]);
+  const handleProductClick = (articulo: ArticuloManufacturado) => {
+    setArticuloModal(articulo);
   };
   useEffect(() => {
     const fetchArticulos = async () => {
@@ -59,20 +59,20 @@ export const ActiveSlider: React.FC<ActiveSliderProps> = ({ setProductoModal }) 
                     ? articulo.imagen[1]
                     : ''
               }
-              alt={articulo.nombre}
+              alt={articulo.denominacion}
               className="object-cover w-full h-full rounded-xl"
             />
           </picture>
           <div className="absolute bottom-10 left-0 p-4 mb-3 text-white w-full rounded-b-xl flex flex-col items-start">
-            <h3 className="text-2xl font-semibold">{articulo.nombre}</h3>
-            <p className="text-xl font">${articulo.valor.precio.toFixed(2)}</p>
+            <h3 className="text-2xl font-semibold">{articulo.denominacion}</h3>
+            <p className="text-xl font">${articulo.precioVenta.toFixed(2)}</p>
           </div>
 
           {/* Botón "Agregar al carrito" */}
           <div className="absolute bottom-0 left-0 p-4 ">
             <BtnAgregarCarrito
               position="left"
-              product={articulo}
+              articulo={articulo}
               cantidadProducto={1}
               setCantidadProducto={() => 1}
               onClose={() => {}}

@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
-import type { ProductoValor } from '../../../../types/types';
 import { BtnAgregarCarrito } from '../../../HU11_CarritoCompras/components/BtnAgregarCarrito';
 import BtnCantidadProducto from './btnCantidadProducto';
+import type { ArticuloManufacturado } from '../../../../types/Articulo';
 
 type Props = {
-  product: ProductoValor | null;
+  articulo: ArticuloManufacturado | null;
   isOpen: boolean;
   onClose: () => void;
 };
 
-export const ModalProducto: React.FC<Props> = ({ product = null, isOpen, onClose }) => {
-  if (!isOpen || !product) return null;
+export const ModalProducto: React.FC<Props> = ({ articulo = null, isOpen, onClose }) => {
+  if (!isOpen || !articulo) return null;
   const [cantidadProducto, setCantidadProducto] = useState(1);
 
   return (
@@ -22,29 +22,29 @@ export const ModalProducto: React.FC<Props> = ({ product = null, isOpen, onClose
             <source type="image/webp" />
             <img
               src={
-                Array.isArray(product.imagen) && product.imagen.length > 0
-                  ? product.imagen[0]
-                  : Array.isArray(product.imagen) && product.imagen.length > 1
-                    ? product.imagen[1]
+                Array.isArray(articulo.imagen) && articulo.imagen.length > 0
+                  ? articulo.imagen[0]
+                  : Array.isArray(articulo.imagen) && articulo.imagen.length > 1
+                    ? articulo.imagen[1]
                     : ''
               }
-              alt={product.nombre}
+              alt={articulo.denominacion}
               className="object-cover w-full h-full rounded-lg"
             />
           </picture>
           <aside className="relative w-1/2 h-auto">
             {/* Detalles del plato */}
             <div className="pl-6 flex flex-col h-72">
-              <h2 className="text-2xl font-semibold">{product.nombre}</h2>
-              <p className="text-xl text-gray-500 mt-2">${product.valor.precio}</p>
-              <p className="mt-4 text-gray-600">{product.descripcion}</p>
+              <h2 className="text-2xl font-semibold">{articulo.denominacion}</h2>
+              <p className="text-xl text-gray-500 mt-2">${articulo.precioVenta}</p>
+              <p className="mt-4 text-gray-600">{articulo.descripcion}</p>
             </div>
 
             <div className="absolute bottom-0 right-0">
               {/* Controles de cantidad */}
               <div className="absolute bottom-20 right-4">
                 <BtnCantidadProducto
-                  producto={product}
+                  articulo={articulo}
                   cantidadProducto={cantidadProducto}
                   setCantidadProducto={setCantidadProducto}
                 />
@@ -58,7 +58,7 @@ export const ModalProducto: React.FC<Props> = ({ product = null, isOpen, onClose
                 Volver
               </button>
               <BtnAgregarCarrito
-                product={product}
+                articulo={articulo}
                 cantidadProducto={cantidadProducto}
                 setCantidadProducto={setCantidadProducto}
                 onClose={onClose}

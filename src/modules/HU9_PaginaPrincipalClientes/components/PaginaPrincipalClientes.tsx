@@ -6,12 +6,13 @@ import { ActiveSlider } from './carrusel/ActiveSlider';
 import BtnFlotanteCarrito from '../../HU11_CarritoCompras/components/BtnFlotanteCarrito';
 import { CarritoContext } from '../../../shared/providers/CarritoProvider';
 import { getAllCategorias } from '../../../shared/services/categoriaService';
-import type { Categoria, ProductoValor } from '../../../types/types';
+import type { ArticuloManufacturado } from '../../../types/Articulo';
+import type { Categoria } from '../../../types/Categoria';
 
 interface PaginaPrincipalClientesProps {
   searchTerm: string;
   handleSearch: (term: string) => void;
-  filteredProducts: ProductoValor[];
+  filteredProducts: ArticuloManufacturado[];
 }
 
 export const PaginaPrincipalClientes = ({
@@ -20,7 +21,7 @@ export const PaginaPrincipalClientes = ({
   filteredProducts,
 }: PaginaPrincipalClientesProps) => {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
-  const [productoModal, setProductoModal] = useState<ProductoValor | null>(null);
+  const [articuloModal, setArticuloModal] = useState<ArticuloManufacturado | null>(null);
   const [isModalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
@@ -32,17 +33,17 @@ export const PaginaPrincipalClientes = ({
   }, []);
 
   useEffect(() => {
-    if (productoModal) {
-      setModalOpen(true); // Abrir el modal cuando se cambia el producto
+    if (articuloModal) {
+      setModalOpen(true); // Abrir el modal cuando se cambia el artículo
     }
-  }, [productoModal]);
+  }, [articuloModal]);
 
   const handleCloseModal = () => {
     setModalOpen(false); // Cerrar el modal
   };
 
-  const handleProductClick = (producto: ProductoValor) => {
-    setProductoModal(producto); // Actualizar el producto modal y abrir el modal
+  const handleProductClick = (articulo: ArticuloManufacturado) => {
+    setArticuloModal(articulo); // Actualizar el producto modal y abrir el modal
   };
 
   const carritoContext = useContext(CarritoContext);
@@ -51,7 +52,7 @@ export const PaginaPrincipalClientes = ({
   }
   const { carrito } = carritoContext;
   // Calculate total items in the cart
-  const totalItems = carrito.reduce((total, product) => total + product.quantity, 0);
+  const totalItems = carrito.reduce((total, articulo) => total + articulo.cantidad, 0);
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-4 flex flex-col min-h-screen w-full">
@@ -60,16 +61,16 @@ export const PaginaPrincipalClientes = ({
         <p className="text-center text-xl">No se encontraron productos para "{searchTerm}"</p>
       ) : (
         <>
-          {searchTerm ? null : <ActiveSlider setProductoModal={setProductoModal} />}
+          {searchTerm ? null : <ActiveSlider setArticuloModal={setArticuloModal} />}
           <ListaProductos
-            productos={filteredProducts}
-            setProductoModal={setProductoModal}
+            articulos={filteredProducts}
+            setArticuloModal={setArticuloModal}
             onProductClick={handleProductClick}
           />
         </>
       )}
       <ModalProducto
-        product={productoModal ?? null}
+        articulo={articuloModal ?? null}
         isOpen={isModalOpen}
         onClose={handleCloseModal}
       />
