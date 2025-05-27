@@ -1,6 +1,6 @@
 import { Outlet } from 'react-router-dom';
-import { HeaderAdmin } from '../../shared/components/header/HeaderAdmin';
-import { AsideAdmin } from '../../shared/components/header/AsideAdmin';
+import { HeaderAdmin } from '../views/user/header/HeaderAdmin';
+import { AsideAdmin } from '../views/user/header/AsideAdmin';
 
 export const LayoutAdmin: React.FC = () => {
   return (

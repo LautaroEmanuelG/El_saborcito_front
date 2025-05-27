@@ -61,7 +61,6 @@ export const Control: React.FC = () => {
         saldoMercaderia -= haber;
       }
 
-      console.log('Saldos:', saldoMP, saldoCripto, saldoEfectivo, saldoMercaderia);
       return {
         id: transaccion.id,
         fecha: transaccion.fecha,
@@ -103,12 +102,10 @@ export const Control: React.FC = () => {
   };
 
   const handleStartDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(event.target.value);
     setStartDate(event.target.value);
   };
 
   const handleEndDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(event.target.value);
     setEndDate(event.target.value);
   };
 

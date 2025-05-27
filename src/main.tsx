@@ -2,7 +2,7 @@ import { createRoot } from 'react-dom/client';
 import './app/styles/index.css';
 import { Web } from './app/views/user/Web.tsx';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import VistaCarrito from './app/views/user/VistaCarrito.tsx';
+import { VistaCarrito } from './modules/HU11_CarritoCompras/components/VistaCarrito.tsx';
 import { CarritoProvider } from './shared/providers/CarritoProvider';
 import { LayoutAdmin } from './app/layout/LayoutAdmin.tsx';
 import { Historial } from './app/views/admin/Historial.tsx';

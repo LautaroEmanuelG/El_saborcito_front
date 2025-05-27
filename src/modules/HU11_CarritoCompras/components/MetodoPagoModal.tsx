@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../../../shared/hooks/useCart';
 import { createTicket } from '../../../shared/services/antiguos/ticketService';
-import '../../styles/styles.css';
 
 interface MetodoPagoModalProps {
   isOpen: boolean;
@@ -96,7 +95,7 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
         // Mercado Pago Payment
         const productos = carrito.map((producto) => ({
           productoId: producto.id ?? 0,
-          cantidad: producto.quantity,
+          cantidad: producto.cantidad,
         }));
 
         await createTicket(productos, selectedPaymentMethod);
@@ -125,7 +124,7 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
         // Simulate crypto payment success after 2 seconds
         const productos = carrito.map((producto) => ({
           productoId: producto.id ?? 0,
-          cantidad: producto.quantity,
+          cantidad: producto.cantidad,
         }));
 
         await createTicket(productos, selectedPaymentMethod);
@@ -140,7 +139,7 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
         // Efectivo or other payment methods
         const productos = carrito.map((producto) => ({
           productoId: producto.id ?? 0,
-          cantidad: producto.quantity,
+          cantidad: producto.cantidad,
         }));
         await createTicket(productos, selectedPaymentMethod);
         clearCarrito();

@@ -14,7 +14,7 @@ import {
   Cell,
 } from 'recharts';
 import { getAllCategorias } from '../../../shared/services/categoriaService';
-import { getAllProductos } from '../../../shared/services/antiguos/productoService';
+import { getAllProductos } from '../../../shared/services/antiguos/articuloService';
 import { getAllTickets } from '../../../shared/services/antiguos/ticketService';
 import { Ticket, type CategoriaVentas, type ProductoValor } from '../../../types/types';
 

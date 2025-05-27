@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router-dom';
-import { Header } from '../../shared/components/header/Header';
+import { Header } from '../views/user/header/Header';
 import { useState } from 'react';
 
 export const LayoutUser = () => {

@@ -5,7 +5,6 @@ import { useCart } from '../../shared/hooks/useCart';
 
 const ProtectedCarrito = ({ children }: { children: ReactNode }) => {
   const { carrito } = useCart();
-  console.log('carrito', carrito);
   return carrito.length > 0 ? children : <Navigate to="/" />;
 };
 
