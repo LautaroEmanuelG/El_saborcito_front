@@ -23,14 +23,8 @@ export const CardProducto = ({ articulo, setProductoModal }: ProductProps) => {
           <picture>
             <source type="image/webp" />
             <img
-              src={
-                Array.isArray(articulo.imagen) && articulo.imagen.length > 0
-                  ? articulo.imagen[0]
-                  : Array.isArray(articulo.imagen) && articulo.imagen.length > 1
-                    ? articulo.imagen[1]
-                    : ''
-              }
-              alt={articulo.denominacion}
+              src={articulo?.imagen?.url ?? ''}
+              alt={articulo?.denominacion ?? ''}
               className="object-cover w-full h-full"
             />
           </picture>

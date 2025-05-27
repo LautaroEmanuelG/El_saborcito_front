@@ -8,6 +8,7 @@ export interface Articulo {
   denominacion: string;
   precioVenta: number;
   unidadMedidaId: UnidadMedida;
+  imagen?: Imagen | null;
 }
 
 export interface ArticuloInsumo extends Articulo {
@@ -15,7 +16,6 @@ export interface ArticuloInsumo extends Articulo {
   stockActual: number;
   stockMaximo: number;
   esParaElaborar: boolean;
-  imagen?: string[]; // Assuming ImagenDTO is represented as string[] or adapt as needed
   categoria: Categoria;
   unidadMedidaId: UnidadMedida;
 }
@@ -24,7 +24,6 @@ export interface ArticuloManufacturado extends Articulo {
   descripcion: string;
   tiempoEstimadoMinutos: number;
   preparacion: string;
-  imagen?: Imagen | null;
   articuloManufacturadoDetalles: ArticuloManufacturadoDetalles[];
 }
 
