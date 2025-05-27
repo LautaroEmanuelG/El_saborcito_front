@@ -40,7 +40,6 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
   const handleLogin = async () => {
     try {
       const response = await loginUsuario(email, contraseña);
-      console.log('Login exitoso:', response);
 
       // Extraer el rol del usuario de la respuesta
       const rolMatch = response.match(/Rol: (\w+)/);

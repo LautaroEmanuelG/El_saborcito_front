@@ -12,11 +12,9 @@ export const BtnCategoria = ({ category, onSearch, termAnterior, setTermAnterior
     setTermAnterior(categoriaNombre);
     if (categoriaNombre === termAnterior) {
       onSearch('');
-      console.log('borrado el nombre');
       setTermAnterior('');
     } else {
       onSearch(categoriaNombre);
-      console.log('colocado el nombre');
     }
   };
 

@@ -16,7 +16,6 @@ export const ListaProductos = ({ articulos, setArticuloModal, onProductClick }: 
   useEffect(() => {
     async function fetchCategorias() {
       const categoriasData = await getAllCategorias();
-      console.log('categorias', categoriasData);
       setCategorias(categoriasData);
     }
     fetchCategorias();

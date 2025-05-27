@@ -5,13 +5,12 @@ import {
   getArticuloById,
   saveArticulo,
 } from '../../../shared/services/articuloService';
-import type { Producto } from '../../../types/types';
 
 export const Historial: React.FC = () => {
   const [tickets, setTickets] = useState<any[]>([]);
   const [articulos, setArticulos] = useState<any[]>([]);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-  const [articuloForm, setArticuloForm] = useState<Producto>({
+  const [articuloForm, setArticuloForm] = useState<any>({
     nombre: '',
     descripcion: '',
     stock: 0,
@@ -30,7 +29,6 @@ export const Historial: React.FC = () => {
     const articulosData = await getAllArticulos();
     setTickets(ticketsData);
     setArticulos(articulosData);
-    console.log('tickets', tickets);
   };
 
   const formatCurrency = (amount: number) => {

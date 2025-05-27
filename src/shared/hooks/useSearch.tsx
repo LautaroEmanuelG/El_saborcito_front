@@ -10,7 +10,6 @@ export const useSearch = (initialValue: string = '') => {
   useEffect(() => {
     async function fetchData() {
       const productosData = await getAllArticulos();
-      console.log('productosData', productosData);
       setProductos(productosData);
       setFilteredProducts(productosData as ArticuloManufacturado[]);
     }

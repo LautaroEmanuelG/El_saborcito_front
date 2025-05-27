@@ -19,7 +19,6 @@ export const getArticuloById = async (id: number) => {
 
 export const getAllArticulos = async () => {
   const response = await axiosInstance.get(`${API_BASE_URL}`);
-  console.log('response.data Articulos', response.data);
   return response.data;
 };
 
