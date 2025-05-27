@@ -71,8 +71,8 @@ export const ActiveSlider: React.FC<ActiveSliderProps> = ({ setArticuloModal }) 
           <picture>
             <source type="image/png" />
             <img
-              src={articulo?.imagen?.url ?? ''}
-              alt={articulo?.denominacion ?? ''}
+              src={articulo?.imagen?.url ?? '/img/Banner.png'}
+              alt={articulo?.denominacion ?? 'Banner el Saborcito'}
               className="object-cover w-full h-full rounded-xl"
             />
           </picture>

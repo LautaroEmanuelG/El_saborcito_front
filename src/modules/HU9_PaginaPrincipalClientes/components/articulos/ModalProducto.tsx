@@ -21,14 +21,8 @@ export const ModalProducto: React.FC<Props> = ({ articulo = null, isOpen, onClos
           <picture className="w-1/2 h-auto object-cover rounded-lg">
             <source type="image/webp" />
             <img
-              src={
-                Array.isArray(articulo.imagen) && articulo.imagen.length > 0
-                  ? articulo.imagen[0]
-                  : Array.isArray(articulo.imagen) && articulo.imagen.length > 1
-                    ? articulo.imagen[1]
-                    : ''
-              }
-              alt={articulo.denominacion}
+              src={articulo?.imagen?.url ?? '/img/Default.png'}
+              alt={articulo?.denominacion ?? 'Imagen por default el Saborcito'}
               className="object-cover w-full h-full rounded-lg"
             />
           </picture>
@@ -43,15 +37,6 @@ export const ModalProducto: React.FC<Props> = ({ articulo = null, isOpen, onClos
             </div>
 
             <div className="absolute bottom-0 right-0">
-              {/* Controles de cantidad */}
-              <div className="absolute bottom-20 right-4">
-                <BtnCantidadProducto
-                  articulo={articulo}
-                  cantidadProducto={cantidadProducto}
-                  setCantidadProducto={setCantidadProducto}
-                />
-              </div>
-
               {/* Botones de acción */}
               <button
                 className="absolute px-4 py-2 bg-[#C2BCBC] text-black rounded-md right-56 bottom-4"
