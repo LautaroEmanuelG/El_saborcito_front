@@ -1,3 +1,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Estilos para las flechas de Swiper */
+.swiper-button-next::after,
+.swiper-button-prev::after {
+  color: #ffffff;
+  /* Color primario de Tailwind */
+}

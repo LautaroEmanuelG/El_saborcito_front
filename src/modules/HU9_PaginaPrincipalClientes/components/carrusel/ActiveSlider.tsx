@@ -30,19 +30,38 @@ export const ActiveSlider: React.FC<ActiveSliderProps> = ({ setArticuloModal }) 
       centeredSlides={true}
       autoplay={{
         delay: 2500,
-        disableOnInteraction: false,
+        disableOnInteraction: true,
       }}
       navigation={true}
       modules={[Autoplay, Pagination, Navigation]}
-      className="w-full h-[400px]"
+      className="w-full h-[400px] rounded-xl"
     >
+      <SwiperSlide
+        key={0}
+        /* Efecto oscuro sobre la imagen */
+        className="relative flex flex-col items-center justify-center cursor-pointer rounded-xl overflow-hidden"
+      >
+        <picture>
+          <source type="image/png" />
+          <img
+            src="/img/Banner.png"
+            alt="Banner el Saborcito"
+            className="object-contain w-full h-full rounded-xl"
+          />
+        </picture>
+        <div className="absolute bottom-10 left-0 p-4 mb-3 text-white w-full rounded-b-xl flex flex-col items-start">
+          <h3 className="text-3xl font-semibold w-full justify-center flex pb-6">
+            Los mejores sabores, amplia variedad
+          </h3>
+        </div>
+      </SwiperSlide>
       {articulos.map((articulo, index) => (
         <SwiperSlide
           onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
             e.stopPropagation();
             handleProductClick(articulo);
           }}
-          key={index}
+          key={index + 1}
           /* Efecto oscuro sobre la imagen */
           className="relative flex flex-col items-center justify-center cursor-pointer rounded-xl overflow-hidden"
         >
@@ -50,7 +69,7 @@ export const ActiveSlider: React.FC<ActiveSliderProps> = ({ setArticuloModal }) 
 
           {/* Elemento picture para cargar imágenes en diferentes formatos */}
           <picture>
-            <source type="image/webp" />
+            <source type="image/png" />
             <img
               src={articulo?.imagen?.url ?? ''}
               alt={articulo?.denominacion ?? ''}
