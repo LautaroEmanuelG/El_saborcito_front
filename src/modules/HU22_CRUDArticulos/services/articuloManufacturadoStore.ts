@@ -29,7 +29,7 @@ export const useArticuloManufacturadoStore = create<ArticuloManufacturadoState>(
   addArticulo: async (data) => {
     set({ loading: true, error: null });
     try {
-      await service.saveArticuloManufacturado(data);
+      await service.createArticuloManufacturado(data);
       await useArticuloManufacturadoStore.getState().fetchArticulos();
     } catch (error) {
       set({ error: (error as Error)?.message ?? 'Error al agregar artículo', loading: false });
@@ -38,7 +38,7 @@ export const useArticuloManufacturadoStore = create<ArticuloManufacturadoState>(
   updateArticulo: async (data) => {
     set({ loading: true, error: null });
     try {
-      await service.saveArticuloManufacturado(data);
+      await service.updateArticuloManufacturado(data);
       await useArticuloManufacturadoStore.getState().fetchArticulos();
     } catch (error) {
       set({ error: (error as Error)?.message ?? 'Error al actualizar artículo', loading: false });
