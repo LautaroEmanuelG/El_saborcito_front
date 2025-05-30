@@ -1,7 +1,9 @@
-import axiosInstance from './axiosConfig'; // Importar la instancia preconfigurada
+import axiosInstance from './axiosConfig';
 import type { ArticuloManufacturado } from '../../types/Articulo';
 
 const API_BASE_URL = '/manufacturados';
+
+// 🆕 **SERVICIOS ADAPTADOS PARA ELIMINACIÓN LÓGICA (SOFT DELETE)**
 
 // Función para crear un nuevo artículo manufacturado (POST sin ID)
 export const createArticuloManufacturado = async (data: Partial<ArticuloManufacturado>) => {
@@ -45,21 +47,46 @@ export const saveArticuloManufacturado = async (data: Partial<ArticuloManufactur
   }
 };
 
+// 🗑️ **MÉTODOS DE ELIMINACIÓN**
+
+// Eliminación lógica (soft delete) - RECOMENDADO
 export const deleteArticuloManufacturado = async (id: number) => {
   const response = await axiosInstance.delete(`${API_BASE_URL}/${id}`);
   return response.data;
 };
+
+// Restaurar artículo eliminado lógicamente
+export const restoreArticuloManufacturado = async (id: number) => {
+  const response = await axiosInstance.post(`${API_BASE_URL}/deleted/${id}/restore`);
+  return response.data;
+};
+
+// 📖 **MÉTODOS DE CONSULTA**
 
 export const getArticuloManufacturadoById = async (id: number) => {
   const response = await axiosInstance.get(`${API_BASE_URL}/${id}`);
   return response.data;
 };
 
+// Obtener todos los artículos manufacturados ACTIVOS (excluye eliminados)
 export const getAllArticuloManufacturados = async () => {
   const response = await axiosInstance.get(`${API_BASE_URL}`);
   return response.data;
 };
 
+// Obtener solo artículos manufacturados ELIMINADOS
+export const getDeletedArticuloManufacturados = async () => {
+  const response = await axiosInstance.get(`${API_BASE_URL}/deleted`);
+  return response.data;
+};
+
+// Obtener un artículo eliminado específico por ID
+export const getDeletedArticuloManufacturadoById = async (id: number) => {
+  const response = await axiosInstance.get(`${API_BASE_URL}/deleted/${id}`);
+  return response.data;
+};
+
+// Obtener artículos manufacturados activos por categoría
 export const getAllArticuloManufacturadosByCategoria = async (id: number) => {
   const response = await axiosInstance.get(`${API_BASE_URL}/categoria/${id}`);
   return response.data;

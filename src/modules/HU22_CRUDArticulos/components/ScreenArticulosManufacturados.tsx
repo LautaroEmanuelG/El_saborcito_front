@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useArticuloManufacturadoStore } from '../services/articuloManufacturadoStore';
 import { ARTICULO_COLUMNS } from '../model';
 import { TableGeneric } from '../../../shared/components/abmGenerica/components/TableGeneric/TableGeneric';
+import { ButtonsTable } from '../../../shared/components/abmGenerica/components/ButtonsTable/ButtonsTable';
 import ModalArticuloManufacturadoForm from './ModalArticuloManufacturadoForm';
 import type { ArticuloManufacturado } from '../../../types/Articulo';
 import type { Categoria } from '../../../types/Categoria';
@@ -17,8 +18,19 @@ const getInitialValues = (): Partial<ArticuloManufacturado> => ({
 });
 
 const ScreenArticulosManufacturados = () => {
-  const { articulos, loading, error, fetchArticulos, addArticulo, updateArticulo, deleteArticulo } =
-    useArticuloManufacturadoStore();
+  const {
+    articulos,
+    deletedArticulos,
+    loading,
+    error,
+    showDeleted,
+    fetchArticulos,
+    addArticulo,
+    updateArticulo,
+    deleteArticulo,
+    restoreArticulo,
+    toggleShowDeleted,
+  } = useArticuloManufacturadoStore();
 
   const [openModal, setOpenModal] = useState(false);
   const [selectedArticulo, setSelectedArticulo] = useState<Partial<ArticuloManufacturado> | null>(
@@ -54,7 +66,8 @@ const ScreenArticulosManufacturados = () => {
   };
 
   // Transformar los datos para mostrar en la tabla
-  const transformedArticulos = articulos.map((articulo) => {
+  const currentArticulos = showDeleted ? deletedArticulos : articulos;
+  const transformedArticulos = currentArticulos.map((articulo) => {
     const { categoria, subcategoria } = getCategoryInfo(articulo.categoriaId);
     return {
       ...articulo,
@@ -69,20 +82,12 @@ const ScreenArticulosManufacturados = () => {
     setOpenModal(true);
   };
 
-  const handleEdit = (item: ArticuloManufacturado) => {
-    setSelectedArticulo(item);
-    setModalMode('edit');
-    setOpenModal(true);
-  };
-
-  const handleView = (item: ArticuloManufacturado) => {
-    setSelectedArticulo(item);
-    setModalMode('view');
-    setOpenModal(true);
-  };
-
   const handleDelete = (id: number) => {
     deleteArticulo(id);
+  };
+
+  const handleRestore = (id: number) => {
+    restoreArticulo(id);
   };
 
   const handleSubmit = (values: Partial<ArticuloManufacturado>) => {
@@ -104,54 +109,52 @@ const ScreenArticulosManufacturados = () => {
     {
       label: 'Acciones',
       key: 'acciones',
-      render: (row: ArticuloManufacturado) => (
-        <div className="flex gap-2 justify-center">
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded"
-            onClick={() => handleView(row)}
-            title="Ver artículo"
-          >
-            <span className="material-symbols-outlined">visibility</span>
-          </button>
-          <button
-            className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded"
-            onClick={() => handleEdit(row)}
-            title="Editar artículo"
-          >
-            <span className="material-symbols-outlined">edit</span>
-          </button>
-          <button
-            className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded"
-            onClick={() => handleDelete(row.id)}
-            title="Eliminar artículo"
-          >
-            <span className="material-symbols-outlined">delete_forever</span>
-          </button>
-        </div>
-      ),
+      render: (row: ArticuloManufacturado & { eliminado?: boolean }) => {
+        // Ahora usamos el componente ButtonsTable con sus nuevas características
+        return (
+          <ButtonsTable
+            el={row}
+            handleDelete={handleDelete}
+            setOpenModal={setOpenModal}
+            setSelectedItem={setSelectedArticulo}
+            handleRestore={handleRestore}
+          />
+        );
+      },
     },
   ];
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-        🛠️ Artículos Manufacturados
-      </h2>
-      <div className="flex justify-end mb-2">
+    <div className="container mx-auto p-4">
+      <div className="flex justify-between items-center mb-6">
         <button
-          className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+          className="bg-primary hover:bg-primarydark text-white font-bold py-2 px-4 rounded-lg shadow-lg transition-all duration-200 transform hover:scale-105"
           onClick={handleAdd}
+          disabled={showDeleted}
+          title={
+            showDeleted
+              ? 'No se pueden agregar artículos en vista con eliminados'
+              : 'Agregar nuevo artículo'
+          }
         >
           Agregar Artículo
         </button>
       </div>
+
       <TableGeneric
         columns={columns}
         handleDelete={handleDelete}
         setOpenModal={setOpenModal}
         setSelectedItem={setSelectedArticulo}
         rows={transformedArticulos}
+        showSearchBar={true}
+        showCategoryFilter={true}
+        categories={categorias}
+        onToggleDeleted={toggleShowDeleted}
+        showDeleted={showDeleted}
+        searchPlaceholder="🔍 Buscar artículos por nombre..."
       />
+
       <ModalArticuloManufacturadoForm
         open={openModal}
         onClose={() => setOpenModal(false)}
@@ -159,8 +162,19 @@ const ScreenArticulosManufacturados = () => {
         onSubmit={handleSubmit}
         mode={modalMode}
       />
-      {loading && <p>Cargando...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+
+      {loading && (
+        <div className="flex justify-center items-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          <span className="ml-2 text-gray-600">🔄 Cargando...</span>
+        </div>
+      )}
+
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mt-4">
+          ❌ {error}
+        </div>
+      )}
     </div>
   );
 };
