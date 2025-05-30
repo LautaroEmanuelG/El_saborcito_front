@@ -2,12 +2,11 @@ import type { Categoria } from './Categoria';
 import type { Imagen } from './Imagen';
 import type { UnidadMedida } from './UnidadMedida';
 
+// Artículo base reutilizable
 export interface Articulo {
-  id?: number;
-  categoriaId: number;
+  id: number;
   denominacion: string;
   precioVenta: number;
-  unidadMedidaId: UnidadMedida;
   imagen?: Imagen | null;
 }
 
@@ -17,18 +16,21 @@ export interface ArticuloInsumo extends Articulo {
   stockMaximo: number;
   esParaElaborar: boolean;
   categoria: Categoria;
-  unidadMedidaId: UnidadMedida;
+  unidadMedida: UnidadMedida;
 }
 
-export interface ArticuloManufacturado extends Articulo {
-  descripcion: string;
-  tiempoEstimadoMinutos: number;
-  preparacion: string;
-  articuloManufacturadoDetalles: ArticuloManufacturadoDetalles[];
-}
-
-export interface ArticuloManufacturadoDetalles {
+export interface ArticuloManufacturadoDetalle {
   id?: number;
   cantidad: number;
   articuloInsumo: ArticuloInsumo;
+}
+
+export interface ArticuloManufacturado extends Articulo {
+  categoriaId: number;
+  categoria?: Categoria; // Opcional para cuando viene poblado del backend
+  unidadMedida?: UnidadMedida | null; // Opcional para cuando viene poblado del backend
+  descripcion: string;
+  tiempoEstimadoMinutos: number;
+  preparacion?: string | null; // Campo del backend que no usamos
+  articuloManufacturadoDetalles: ArticuloManufacturadoDetalle[];
 }
