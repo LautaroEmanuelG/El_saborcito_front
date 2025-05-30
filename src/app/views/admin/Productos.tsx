@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import {
-  getAllProductos,
-  saveProduct,
-  deleteProduct,
-  getProductById,
-} from '../../../shared/services/antiguos/productoService';
+  getAllArticulos,
+  saveArticulo,
+  deleteArticulo,
+  getArticuloById,
+} from '../../../shared/services/articuloService';
 import { getAllCategorias } from '../../../shared/services/categoriaService';
 import { Producto } from '../../../types/types';
 import { ModalConfirm } from '../../../shared/components/utils/ModalConfirm';
@@ -31,7 +31,7 @@ export const Productos = () => {
   }, []);
 
   const fetchInitialData = async () => {
-    const productosData = await getAllProductos();
+    const productosData = await getAllArticulos();
     const categoriasData = await getAllCategorias();
 
     setCategorias(categoriasData);
@@ -56,28 +56,28 @@ export const Productos = () => {
       categoria: { id: productForm.categoriaId },
       valor: { precio: productForm.precio, costo: productForm.costo },
     };
-    await saveProduct(productData);
+    await saveArticulo(productData);
     setIsProductModalOpen(false); // Cierra el modal
     setIsUpdateModalOpen(false); // Cierra el modal de actualización
     fetchInitialData(); // Refresca los datos después de la creación/actualización
     setFormError(null); // Resetea el error del formulario
   };
 
-  const handleDeleteProduct = async (id: number) => {
-    await deleteProduct(id);
+  const handleDeleteArticulo = async (id: number) => {
+    await deleteArticulo(id);
     fetchInitialData(); // Refresca los datos después de la eliminación
   };
 
   const openUpdateModal = async (id: number) => {
-    const product = await getProductById(id);
+    const articulo = await getArticuloById(id);
     setProductForm({
-      id: product.id,
-      nombre: product.nombre,
-      descripcion: product.descripcion,
-      precio: product.valor.precio,
-      stock: product.stock,
-      costo: product.valor.costo,
-      categoriaId: product.categoria.id,
+      id: articulo.id,
+      nombre: articulo.nombre,
+      descripcion: articulo.descripcion,
+      precio: articulo.valor.precio,
+      stock: articulo.stock,
+      costo: articulo.valor.costo,
+      categoriaId: articulo.categoria.id,
     });
     setIsUpdateModalOpen(true);
   };
@@ -129,7 +129,7 @@ export const Productos = () => {
             <ModalConfirm
               isOpen={isModalDelete}
               setIsOpen={setIsModalDelete}
-              onConfirm={() => handleDeleteProduct(producto.id)}
+              onConfirm={() => handleDeleteArticulo(producto.id)}
               title={`Desea eliminar ${producto.nombre}`}
               message="¿Estás seguro que deseas eliminar?"
               confirmText="Eliminar"

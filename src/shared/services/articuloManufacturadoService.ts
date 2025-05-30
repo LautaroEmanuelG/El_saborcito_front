@@ -1,6 +1,6 @@
 import axiosInstance from './axiosConfig'; // Importar la instancia preconfigurada
 
-const API_BASE_URL = '/articulo-manufacturados';
+const API_BASE_URL = '/manufacturados';
 
 export const saveArticuloManufacturado = async (data: any) => {
   const response = await axiosInstance.post(`${API_BASE_URL}/${data.id}`, data);
@@ -19,5 +19,10 @@ export const getArticuloManufacturadoById = async (id: number) => {
 
 export const getAllArticuloManufacturados = async () => {
   const response = await axiosInstance.get(`${API_BASE_URL}`);
+  return response.data;
+};
+
+export const getAllArticuloManufacturadosByCategoria = async (id: number) => {
+  const response = await axiosInstance.get(`${API_BASE_URL}/categoria/${id}`);
   return response.data;
 };

@@ -1,18 +1,24 @@
 /* Estilos personalizados para Swiper */
 .swiper-button-next,
 .swiper-button-prev {
-  color: white; /* Cambia el color a blanco */
+  color: white;
+  /* Cambia el color a blanco */
 }
 
 .swiper-pagination-bullet {
-  background: white; /* Cambia el color de los puntos a blanco */
+  background: white;
+  /* Cambia el color de los puntos a blanco */
 }
 
 .swiper-pagination.swiper-pagination-clickable.swiper-pagination-bullets.swiper-pagination-horizontal {
-  width: auto; /* Ajuste automático al contenido */
-  left: 50%; /* Centra el contenedor */
-  transform: translateX(-50%); /* Asegura que esté bien centrado */
-  max-width: 60%; /* Limita el ancho máximo */
+  width: auto;
+  /* Ajuste automático al contenido */
+  left: 50%;
+  /* Centra el contenedor */
+  transform: translateX(-50%);
+  /* Asegura que esté bien centrado */
+  max-width: 60%;
+  /* Limita el ancho máximo */
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -29,7 +35,8 @@
 
 /* Estilo para el botón de Efectivo */
 .btn-efectivo {
-  background-color: #4caf50; /* Color verde para efectivo */
+  background-color: #4caf50;
+  /* Color verde para efectivo */
   color: white;
   display: flex;
   align-items: center;
@@ -40,7 +47,8 @@
 
 /* Estilo para el botón de Criptomonedas */
 .btn-cripto {
-  background-color: #f7931a; /* Color naranja para criptomonedas */
+  background-color: #f7931a;
+  /* Color naranja para criptomonedas */
   color: white;
   display: flex;
   align-items: center;

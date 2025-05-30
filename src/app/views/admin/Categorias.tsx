@@ -5,10 +5,7 @@ import {
   deleteCategoria,
 } from '../../../shared/services/categoriaService';
 import { Categoria, Producto } from '../../../types/types';
-import {
-  getProductosByCategoria,
-  deleteProduct,
-} from '../../../shared/services/antiguos/productoService';
+import { getArticulosByCategoria, deleteArticulo } from '../../../shared/services/articuloService';
 
 export const Categorias = () => {
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
@@ -24,7 +21,7 @@ export const Categorias = () => {
     descripcion: '',
   });
   const [selectedCategoria, setSelectedCategoria] = useState<Categoria | null>(null);
-  const [productos, setProductos] = useState<Producto[]>([]);
+  const [articulos, setArticulos] = useState<Producto[]>([]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   useEffect(() => {
@@ -44,17 +41,17 @@ export const Categorias = () => {
   };
 
   const handleDeleteCategoria = async (id: number) => {
-    const productosData = await getProductosByCategoria(id);
-    setProductos(productosData);
+    const articulosData = await getArticulosByCategoria(id);
+    setArticulos(articulosData);
     setSelectedCategoria(categorias.find((categoria) => categoria.id === id) || null);
     setIsDeleteModalOpen(true);
   };
 
   const confirmDeleteCategoria = async () => {
     if (selectedCategoria) {
-      for (const producto of productos) {
-        if (producto.id !== undefined) {
-          await deleteProduct(producto.id);
+      for (const articulo of articulos) {
+        if (articulo.id !== undefined) {
+          await deleteArticulo(articulo.id);
         }
       }
       await deleteCategoria(selectedCategoria.id ?? 0);
@@ -166,10 +163,10 @@ export const Categorias = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-8 rounded-lg w-96">
             <h2 className="text-2xl font-bold mb-4">Eliminar Categoría</h2>
-            <p>¿Desea eliminar esta categoría y todos sus productos?</p>
+            <p>¿Desea eliminar esta categoría y todos sus artículos?</p>
             <ul className="list-disc pl-4">
-              {productos.map((producto) => (
-                <li key={producto.id}>{producto.nombre}</li>
+              {articulos.map((articulo) => (
+                <li key={articulo.id}>{articulo.nombre}</li>
               ))}
             </ul>
             <div className="flex justify-end mt-4">

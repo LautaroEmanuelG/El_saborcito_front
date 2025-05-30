@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import IconoLogoSaborcito from '../../../assets/svgs/icons/IconoLogoSaborcito';
 import { Link, useNavigate } from 'react-router-dom';
-import { ModalConfirm } from '../utils/ModalConfirm';
-import { IconoCerrar } from '../../../assets/svgs/icons/IconoCerrar';
+import IconoLogoSaborcito from '../../../../assets/svgs/icons/IconoLogoSaborcito';
+import { IconoCerrar } from '../../../../assets/svgs/icons/IconoCerrar';
+import { ModalConfirm } from '../../../../shared/components/utils/ModalConfirm';
 
 export const HeaderAdmin = () => {
   const [hoverLogin, setHoverLogin] = useState(false);

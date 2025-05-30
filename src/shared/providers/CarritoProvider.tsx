@@ -1,26 +1,29 @@
 import React, { createContext, useReducer, ReactNode, useEffect } from 'react';
-import type { ProductoCarrito, ProductoValor } from '../../types/types';
+import type { Articulo, ArticuloManufacturado } from '../../types/Articulo';
 
 // Define the state shape
+interface ArticuloContext extends ArticuloManufacturado {
+  cantidad: number;
+}
+
 interface State {
-  carrito: ProductoCarrito[];
+  carrito: ArticuloContext[];
 }
 
 // Define the context value shape
 interface CarritoContextValue {
-  carrito: ProductoCarrito[];
-  addToCarrito: (producto: ProductoValor, cantidad: number) => void;
-  removeFromCart: (producto: { nombre: string }) => void;
-  decreaseFromCart: (producto: { id: number }) => void;
+  carrito: ArticuloContext[];
+  addToCarrito: (articulo: Articulo, cantidad: number) => void;
+  removeFromCart: (articulo: { denominacion: string }) => void;
+  decreaseFromCart: (articulo: { id: number }) => void;
   clearCarrito: () => void;
 }
-
 // Create the context
 export const CarritoContext = createContext<CarritoContextValue | undefined>(undefined);
 
 // Define the initial state
 const initialState: State = {
-  carrito: JSON.parse(localStorage.getItem('carrito') || '[]'),
+  carrito: JSON.parse(localStorage.getItem('carrito') || '[]') as ArticuloContext[],
 };
 
 // Define the reducer
@@ -28,12 +31,13 @@ const carritoReducer = (state: State, action: any): State => {
   switch (action.type) {
     case 'ADD_TO_CARRITO':
       const existingProductIndex = state.carrito.findIndex(
-        (item) => item.id === action.payload.producto.id
+        (item) => item.id === action.payload.articulo.id
       );
 
       if (existingProductIndex !== -1) {
         const updatedCarrito = [...state.carrito];
-        updatedCarrito[existingProductIndex].quantity += action.payload.cantidad;
+        updatedCarrito[existingProductIndex].cantidad =
+          (updatedCarrito[existingProductIndex].cantidad ?? 1) + (action.payload.cantidad ?? 1);
         return { ...state, carrito: updatedCarrito };
       }
 
@@ -41,22 +45,26 @@ const carritoReducer = (state: State, action: any): State => {
         ...state,
         carrito: [
           ...state.carrito,
-          { ...action.payload.producto, quantity: action.payload.cantidad },
+          { ...action.payload.articulo, cantidad: action.payload.cantidad ?? 1 },
         ],
       };
     case 'REMOVE_FROM_CARRITO':
       return {
         ...state,
-        carrito: state.carrito.filter((product) => product.nombre !== action.payload.nombre),
+        carrito: state.carrito.filter(
+          (articulo) => articulo.denominacion !== action.payload.nombre
+        ),
       };
     case 'DECREASE_FROM_CARRITO':
-      const productIndex = state.carrito.findIndex((product) => product.id === action.payload.id);
-      if (productIndex !== -1) {
+      const articuloIndex = state.carrito.findIndex(
+        (articulo) => articulo.id === action.payload.id
+      );
+      if (articuloIndex !== -1) {
         const updatedCarrito = [...state.carrito];
-        if (updatedCarrito[productIndex].quantity > 1) {
-          updatedCarrito[productIndex].quantity -= 1;
+        if (updatedCarrito[articuloIndex].cantidad > 1) {
+          updatedCarrito[articuloIndex].cantidad -= 1;
         } else {
-          updatedCarrito.splice(productIndex, 1);
+          updatedCarrito.splice(articuloIndex, 1);
         }
         return {
           ...state,
@@ -79,16 +87,16 @@ export const CarritoProvider: React.FC<{ children: ReactNode }> = ({ children })
     localStorage.setItem('carrito', JSON.stringify(state.carrito));
   }, [state.carrito]);
 
-  const addToCarrito = (producto: ProductoValor, cantidad: number = 1) => {
-    dispatch({ type: 'ADD_TO_CARRITO', payload: { producto, cantidad } });
+  const addToCarrito = (articulo: Articulo, cantidad: number = 1) => {
+    dispatch({ type: 'ADD_TO_CARRITO', payload: { articulo, cantidad } });
   };
 
-  const removeFromCart = (producto: { nombre: string }) => {
-    dispatch({ type: 'REMOVE_FROM_CARRITO', payload: producto });
+  const removeFromCart = (articulo: { denominacion: string }) => {
+    dispatch({ type: 'REMOVE_FROM_CARRITO', payload: articulo });
   };
 
-  const decreaseFromCart = (producto: { id: number }) => {
-    dispatch({ type: 'DECREASE_FROM_CARRITO', payload: producto });
+  const decreaseFromCart = (articulo: { id: number }) => {
+    dispatch({ type: 'DECREASE_FROM_CARRITO', payload: articulo });
   };
 
   const clearCarrito = () => {

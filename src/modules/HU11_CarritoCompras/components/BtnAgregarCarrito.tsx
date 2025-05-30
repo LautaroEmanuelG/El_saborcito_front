@@ -1,10 +1,10 @@
 import React, { useContext } from 'react';
-import { CarritoContext } from '../../providers/CarritoProvider';
-import type { ProductoValor } from '../../../types/types';
+import { CarritoContext } from '../../../shared/providers/CarritoProvider';
+import type { Articulo } from '../../../types/Articulo';
 
 interface BtnAgregarCarritoProps {
   position?: 'left' | 'right';
-  product: ProductoValor;
+  articulo: Articulo;
   cantidadProducto: number;
   setCantidadProducto: React.Dispatch<React.SetStateAction<number>>;
   onClose: () => void;
@@ -13,7 +13,7 @@ interface BtnAgregarCarritoProps {
 
 export const BtnAgregarCarrito: React.FC<BtnAgregarCarritoProps> = ({
   position = 'right',
-  product,
+  articulo,
   cantidadProducto,
   setCantidadProducto,
   onClose,
@@ -30,7 +30,7 @@ export const BtnAgregarCarrito: React.FC<BtnAgregarCarritoProps> = ({
   const handleAddToCarrito = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
-    addToCarrito(product, cantidadProducto || 1);
+    addToCarrito(articulo, cantidadProducto || 1);
     setCantidadProducto(1);
     onClose();
     if (onClick) {
