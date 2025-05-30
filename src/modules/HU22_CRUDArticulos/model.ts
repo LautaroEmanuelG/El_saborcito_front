@@ -14,9 +14,10 @@ export const ARTICULO_COLUMNS = [
   { field: 'id', headerName: 'ID', width: 70 },
   { field: 'denominacion', headerName: 'Denominación', width: 200 },
   { field: 'precioVenta', headerName: 'Precio Venta', width: 120 },
+  { field: 'descripcion', headerName: 'Descripción', width: 200 },
+  { field: 'tiempoEstimadoMinutos', headerName: 'Tiempo (min)', width: 120 },
   { field: 'categoria', headerName: 'Categoría', width: 150 },
-  { field: 'unidadMedida', headerName: 'Unidad de Medida', width: 150 },
-  // Agrega aquí las columnas adicionales necesarias
+  { field: 'subcategoria', headerName: 'Subcategoría', width: 150 },
 ];
 
 // Configuración de validaciones y campos editables

@@ -7,8 +7,8 @@ interface ArticuloManufacturadoState {
   loading: boolean;
   error: string | null;
   fetchArticulos: () => Promise<void>;
-  addArticulo: (data: ArticuloManufacturado) => Promise<void>;
-  updateArticulo: (data: ArticuloManufacturado) => Promise<void>;
+  addArticulo: (data: Partial<ArticuloManufacturado>) => Promise<void>;
+  updateArticulo: (data: Partial<ArticuloManufacturado>) => Promise<void>;
   deleteArticulo: (id: number) => Promise<void>;
 }
 

@@ -5,6 +5,7 @@ interface FieldConfig {
   label: string;
   type: string;
   required?: boolean;
+  disabled?: boolean;
   options?: Array<{ label: string; value: string | number }>;
 }
 
@@ -15,6 +16,7 @@ interface ModalFormProps<T> {
   fields: FieldConfig[];
   initialValues: T;
   onSubmit: (values: T) => void;
+  readonly?: boolean;
 }
 
 const ModalForm = <T extends Record<string, unknown>>({
@@ -24,6 +26,7 @@ const ModalForm = <T extends Record<string, unknown>>({
   fields,
   initialValues,
   onSubmit,
+  readonly = false,
 }: ModalFormProps<T>) => {
   const [form, setForm] = React.useState<T>(initialValues);
 
@@ -72,6 +75,7 @@ const ModalForm = <T extends Record<string, unknown>>({
                   onChange={handleChange}
                   className="w-full border rounded px-3 py-2"
                   required={field.required}
+                  disabled={field.disabled || readonly}
                 >
                   <option value="">Seleccione...</option>
                   {field.options?.map((opt) => (
@@ -89,6 +93,7 @@ const ModalForm = <T extends Record<string, unknown>>({
                   onChange={handleChange}
                   className="w-full border rounded px-3 py-2"
                   required={field.required}
+                  disabled={field.disabled || readonly}
                 />
               )}
             </div>
@@ -99,14 +104,16 @@ const ModalForm = <T extends Record<string, unknown>>({
               className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
               onClick={onClose}
             >
-              Cancelar
+              {readonly ? 'Cerrar' : 'Cancelar'}
             </button>
-            <button
-              type="submit"
-              className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-            >
-              Guardar
-            </button>
+            {!readonly && (
+              <button
+                type="submit"
+                className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Guardar
+              </button>
+            )}
           </div>
         </form>
       </div>

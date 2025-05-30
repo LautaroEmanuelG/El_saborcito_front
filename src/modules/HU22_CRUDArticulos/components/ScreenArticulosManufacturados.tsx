@@ -1,28 +1,67 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useArticuloManufacturadoStore } from '../services/articuloManufacturadoStore';
-import { ARTICULO_COLUMNS, ARTICULO_FIELDS } from '../model';
+import { ARTICULO_COLUMNS } from '../model';
 import { TableGeneric } from '../../../shared/components/abmGenerica/components/TableGeneric/TableGeneric';
-import ModalForm from '../../../shared/components/abmGenerica/components/modals/ModalForm';
+import ModalArticuloManufacturadoForm from './ModalArticuloManufacturadoForm';
+import type { ArticuloManufacturado } from '../../../types/Articulo';
+import type { Categoria } from '../../../types/Categoria';
+import * as categoriaService from '../../../shared/services/categoriaService';
 
-const getInitialValues = () => {
-  const values: Record<string, any> = {};
-  ARTICULO_FIELDS.forEach((f) => {
-    values[f.name] = f.type === 'number' ? 0 : '';
-  });
-  return values;
-};
+const getInitialValues = (): Partial<ArticuloManufacturado> => ({
+  denominacion: '',
+  precioVenta: 0,
+  descripcion: '',
+  tiempoEstimadoMinutos: 0,
+  categoriaId: 0,
+  articuloManufacturadoDetalles: [],
+});
 
 const ScreenArticulosManufacturados = () => {
   const { articulos, loading, error, fetchArticulos, addArticulo, updateArticulo, deleteArticulo } =
     useArticuloManufacturadoStore();
 
   const [openModal, setOpenModal] = useState(false);
-  const [selectedArticulo, setSelectedArticulo] = useState<any | null>(null);
-  const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
+  const [selectedArticulo, setSelectedArticulo] = useState<Partial<ArticuloManufacturado> | null>(
+    null
+  );
+  const [modalMode, setModalMode] = useState<'add' | 'edit' | 'view'>('add');
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
 
   useEffect(() => {
     fetchArticulos();
+    categoriaService.getAllCategorias().then(setCategorias);
   }, [fetchArticulos]);
+
+  // Función para obtener información de categoría y subcategoría
+  const getCategoryInfo = (categoriaId: number): { categoria: string; subcategoria: string } => {
+    const categoria = categorias.find((cat) => cat.id === categoriaId);
+
+    if (!categoria) {
+      return { categoria: 'Sin categoría', subcategoria: '-' };
+    }
+
+    // Si tipoCategoria es null, es una categoría padre
+    if (categoria.tipoCategoria === null) {
+      return { categoria: categoria.denominacion, subcategoria: '-' };
+    }
+
+    // Si tipoCategoria tiene valor, es una subcategoría
+    const categoriaPadre = categorias.find((cat) => cat.id === categoria.tipoCategoria?.id);
+    return {
+      categoria: categoriaPadre?.denominacion ?? 'Sin categoría padre',
+      subcategoria: categoria.denominacion,
+    };
+  };
+
+  // Transformar los datos para mostrar en la tabla
+  const transformedArticulos = articulos.map((articulo) => {
+    const { categoria, subcategoria } = getCategoryInfo(articulo.categoriaId);
+    return {
+      ...articulo,
+      categoria,
+      subcategoria,
+    };
+  }) as Array<ArticuloManufacturado & { categoria: string; subcategoria: string }>;
 
   const handleAdd = () => {
     setSelectedArticulo(getInitialValues());
@@ -30,9 +69,15 @@ const ScreenArticulosManufacturados = () => {
     setOpenModal(true);
   };
 
-  const handleEdit = (item: any) => {
+  const handleEdit = (item: ArticuloManufacturado) => {
     setSelectedArticulo(item);
     setModalMode('edit');
+    setOpenModal(true);
+  };
+
+  const handleView = (item: ArticuloManufacturado) => {
+    setSelectedArticulo(item);
+    setModalMode('view');
     setOpenModal(true);
   };
 
@@ -40,12 +85,13 @@ const ScreenArticulosManufacturados = () => {
     deleteArticulo(id);
   };
 
-  const handleSubmit = (values: any) => {
+  const handleSubmit = (values: Partial<ArticuloManufacturado>) => {
     if (modalMode === 'add') {
       addArticulo(values);
-    } else {
+    } else if (modalMode === 'edit') {
       updateArticulo(values);
     }
+    // En modo 'view' no se hace nada, solo se cierra el modal
     setOpenModal(false);
   };
 
@@ -58,17 +104,26 @@ const ScreenArticulosManufacturados = () => {
     {
       label: 'Acciones',
       key: 'acciones',
-      render: (row: any) => (
+      render: (row: ArticuloManufacturado) => (
         <div className="flex gap-2 justify-center">
           <button
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded"
+            onClick={() => handleView(row)}
+            title="Ver artículo"
+          >
+            <span className="material-symbols-outlined">visibility</span>
+          </button>
+          <button
+            className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded"
             onClick={() => handleEdit(row)}
+            title="Editar artículo"
           >
             <span className="material-symbols-outlined">edit</span>
           </button>
           <button
             className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded"
             onClick={() => handleDelete(row.id)}
+            title="Eliminar artículo"
           >
             <span className="material-symbols-outlined">delete_forever</span>
           </button>
@@ -95,17 +150,14 @@ const ScreenArticulosManufacturados = () => {
         handleDelete={handleDelete}
         setOpenModal={setOpenModal}
         setSelectedItem={setSelectedArticulo}
-        rows={articulos}
+        rows={transformedArticulos}
       />
-      <ModalForm
+      <ModalArticuloManufacturadoForm
         open={openModal}
         onClose={() => setOpenModal(false)}
-        title={
-          modalMode === 'add' ? 'Agregar Artículo Manufacturado' : 'Editar Artículo Manufacturado'
-        }
-        fields={ARTICULO_FIELDS}
         initialValues={selectedArticulo ?? getInitialValues()}
         onSubmit={handleSubmit}
+        mode={modalMode}
       />
       {loading && <p>Cargando...</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}

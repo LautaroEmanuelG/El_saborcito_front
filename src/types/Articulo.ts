@@ -26,10 +26,12 @@ export interface ArticuloManufacturadoDetalle {
 }
 
 export interface ArticuloManufacturado extends Articulo {
-  categoria: Categoria;
-  unidadMedida: UnidadMedida | null;
+  categoriaId: number;
+  categoria?: Categoria; // Opcional para cuando viene poblado del backend
+  unidadMedidaId?: number | null; // Campo del backend que no usamos
+  unidadMedida?: UnidadMedida | null; // Opcional para cuando viene poblado del backend
   descripcion: string;
   tiempoEstimadoMinutos: number;
-  preparacion: string | null;
+  preparacion?: string | null; // Campo del backend que no usamos
   articuloManufacturadoDetalles: ArticuloManufacturadoDetalle[];
 }
