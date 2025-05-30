@@ -68,7 +68,8 @@ export const useArticuloManufacturadoStore = create<ArticuloManufacturadoState>(
   addArticulo: async (data) => {
     set({ loading: true, error: null });
     try {
-      await service.createArticuloManufacturado(data);
+      // Usamos save para crear con id:0 y preparar payload correctamente
+      await service.saveArticuloManufacturado(data);
       const { fetchArticulos } = useArticuloManufacturadoStore.getState();
       await fetchArticulos();
     } catch (error) {
@@ -79,7 +80,8 @@ export const useArticuloManufacturadoStore = create<ArticuloManufacturadoState>(
   updateArticulo: async (data) => {
     set({ loading: true, error: null });
     try {
-      await service.updateArticuloManufacturado(data);
+      // Usamos save para actualizar según el id existente
+      await service.saveArticuloManufacturado(data);
       const { fetchArticulos } = useArticuloManufacturadoStore.getState();
       await fetchArticulos();
     } catch (error) {

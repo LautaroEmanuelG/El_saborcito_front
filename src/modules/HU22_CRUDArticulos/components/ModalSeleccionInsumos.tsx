@@ -73,8 +73,24 @@ const ModalSeleccionInsumos: React.FC<ModalSeleccionInsumosProps> = ({
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="🥗 Agregar Insumo">
-      <div className="space-y-4 max-h-96 overflow-y-auto">
+    <Modal open={open} onClose={onClose} title="🍲 Seleccionar Insumos">
+      <div className="space-y-4 max-h-[600px] overflow-y-auto">
+        {/* Vista previa de insumos seleccionados */}
+        {selectedInsumo && (
+          <div className="bg-blue-50 p-3 rounded border">
+            <h4 className="font-medium text-blue-800 mb-1">Insumo seleccionado:</h4>
+            <div className="text-sm">
+              <div>
+                <strong>{selectedInsumo.denominacion}</strong>
+              </div>
+              <div>
+                Cantidad: {cantidad} {selectedInsumo.unidadMedida?.denominacion ?? ''}
+              </div>
+              <div>Stock disponible: {selectedInsumo.stockActual}</div>
+            </div>
+          </div>
+        )}
+
         {/* Búsqueda */}
         <div>
           <label className="block text-sm font-medium mb-1">Buscar insumo</label>
@@ -100,7 +116,6 @@ const ModalSeleccionInsumos: React.FC<ModalSeleccionInsumosProps> = ({
             </div>
           ) : (
             <div className="max-h-48 overflow-y-auto border rounded p-2 space-y-1">
-              {' '}
               {filteredInsumos.map((insumo) => {
                 const yaSeleccionado = insumosExistentes.some(
                   (existing) => existing.id === insumo.id
@@ -160,22 +175,6 @@ const ModalSeleccionInsumos: React.FC<ModalSeleccionInsumosProps> = ({
               className="w-full border rounded px-3 py-2"
               placeholder="Ingrese la cantidad"
             />
-          </div>
-        )}
-
-        {/* Insumo seleccionado preview */}
-        {selectedInsumo && (
-          <div className="bg-blue-50 p-3 rounded border">
-            <h4 className="font-medium text-blue-800 mb-1">Insumo seleccionado:</h4>
-            <div className="text-sm">
-              <div>
-                <strong>{selectedInsumo.denominacion}</strong>
-              </div>
-              <div>
-                Cantidad: {cantidad} {selectedInsumo.unidadMedida?.denominacion ?? ''}
-              </div>
-              <div>Stock disponible: {selectedInsumo.stockActual}</div>
-            </div>
           </div>
         )}
 

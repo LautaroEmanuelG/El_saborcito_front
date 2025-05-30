@@ -88,9 +88,9 @@ export const TableGeneric = <
   }, [rows, filters, showDeleted]);
 
   return (
-    <div className="w-full flex flex-col justify-center items-center space-y-4">
+    <div className="w-full flex flex-col justify-center items-center space-y-2">
       {/* Barra de filtros */}
-      <div className="w-11/12 bg-white rounded-lg shadow-sm border p-4 space-y-4">
+      <div className="w-full bg-white rounded-lg shadow-sm border p-4 space-y-4">
         <div className="flex flex-col md:flex-row gap-4 items-center">
           {/* Buscador */}
           {showSearchBar && (
@@ -128,7 +128,7 @@ export const TableGeneric = <
                 value={filters.categoryId || ''}
                 onChange={handleCategoryChange}
               >
-                <option value="">📂 Todas las categorías</option>
+                <option value="">Todas las categorías</option>
                 {categories.map((category) => (
                   <option key={category.id || 0} value={category.id || ''}>
                     {category.denominacion}
@@ -155,7 +155,7 @@ export const TableGeneric = <
                 />
               </button>
               <span className="text-sm text-gray-600">
-                {showDeleted ? '👁️ Mostrar eliminados' : '🚫 Ocultar eliminados'}
+                {showDeleted ? 'Mostrar eliminados' : 'Ocultar eliminados'}
               </span>
             </div>
           )}
@@ -163,13 +163,13 @@ export const TableGeneric = <
 
         {/* Contador de resultados */}
         <div className="text-sm text-gray-500">
-          📊 Mostrando {filteredRows.length} de {rows.length} elementos
+          Mostrando {filteredRows.length} de {rows.length} elementos
         </div>
       </div>
 
       {/* Tabla */}
-      <div className="w-11/12 bg-white rounded-lg shadow-sm border overflow-hidden">
-        <div className="overflow-x-auto max-h-96 overflow-y-auto">
+      <div className="w-full bg-white rounded-lg shadow-sm border overflow-hidden">
+        <div className="overflow-x-auto max-h-[60vh] overflow-y-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gradient-to-r from-gray-50 to-gray-100 sticky top-0 z-10">
               <tr>

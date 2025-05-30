@@ -11,13 +11,13 @@ export interface ArticuloView {
 }
 
 export const ARTICULO_COLUMNS = [
-  { field: 'id', headerName: 'ID', width: 70 },
-  { field: 'denominacion', headerName: 'Denominación', width: 200 },
+  { field: 'id', headerName: 'ID', width: 30 },
+  { field: 'denominacion', headerName: 'Denominación', width: 120 },
   { field: 'precioVenta', headerName: 'Precio Venta', width: 120 },
-  { field: 'descripcion', headerName: 'Descripción', width: 200 },
+  { field: 'descripcion', headerName: 'Descripción', width: 120 },
   { field: 'tiempoEstimadoMinutos', headerName: 'Tiempo (min)', width: 120 },
-  { field: 'categoria', headerName: 'Categoría', width: 150 },
-  { field: 'subcategoria', headerName: 'Subcategoría', width: 150 },
+  { field: 'categoria', headerName: 'Categoría', width: 80 },
+  { field: 'subcategoria', headerName: 'Subcategoría', width: 80 },
 ];
 
 // Configuración de validaciones y campos editables

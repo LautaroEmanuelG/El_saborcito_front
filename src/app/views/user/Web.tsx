@@ -6,7 +6,7 @@ export const Web = () => {
   const { searchTerm, handleSearch, filteredProducts } = useSearch(''); // Estado para el término de búsqueda
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 w-full">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 max-w-full">
       <Header onSearch={handleSearch} />
       <PaginaPrincipalClientes
         searchTerm={searchTerm}

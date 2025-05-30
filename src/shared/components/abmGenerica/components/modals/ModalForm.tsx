@@ -109,7 +109,7 @@ const ModalForm = <T extends Record<string, unknown>>({
             {!readonly && (
               <button
                 type="submit"
-                className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                className="bg-primary hover:bg-primarydark text-white font-bold py-2 px-4 rounded"
               >
                 Guardar
               </button>

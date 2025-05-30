@@ -8,6 +8,8 @@ interface IButtonsTable<T> {
   setOpenModal: (state: boolean) => void; // Función para manejar la apertura del modal
   setSelectedItem: (item: T) => void; // Función para establecer el elemento seleccionado
   handleRestore?: (id: number) => void; // Función opcional para restaurar elementos eliminados
+  onView?: (item: T) => void; // Función para manejar la vista del elemento
+  onEdit?: (item: T) => void; // Función para manejar la edición del elemento
 }
 
 export const ButtonsTable = <T extends { id: number; denominacion?: string; eliminado?: boolean }>({
@@ -16,14 +18,32 @@ export const ButtonsTable = <T extends { id: number; denominacion?: string; elim
   setOpenModal,
   setSelectedItem,
   handleRestore,
+  onView,
+  onEdit,
 }: IButtonsTable<T>) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showRestoreModal, setShowRestoreModal] = useState(false);
 
-  // Función para manejar la selección del modal para editar
-  const handleModalSelected = () => {
-    setSelectedItem(el); // Establecer el elemento seleccionado
-    setOpenModal(true); // Mostrar el modal para editar el elemento
+  // Función para manejar la vista del elemento
+  const handleView = () => {
+    if (onView) {
+      onView(el);
+    } else {
+      // Fallback al comportamiento anterior
+      setSelectedItem(el);
+      setOpenModal(true);
+    }
+  };
+
+  // Función para manejar la edición del elemento
+  const handleEdit = () => {
+    if (onEdit) {
+      onEdit(el);
+    } else {
+      // Fallback al comportamiento anterior
+      setSelectedItem(el);
+      setOpenModal(true);
+    }
   };
 
   // Función para mostrar el modal de confirmación de eliminación
@@ -64,7 +84,7 @@ export const ButtonsTable = <T extends { id: number; denominacion?: string; elim
         {/* Botón para ver el elemento - siempre visible */}
         <button
           className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-2 rounded"
-          onClick={handleModalSelected}
+          onClick={handleView}
           title="Ver detalles"
         >
           <svg
@@ -112,7 +132,7 @@ export const ButtonsTable = <T extends { id: number; denominacion?: string; elim
             {/* Botón para editar si no está eliminado */}
             <button
               className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded"
-              onClick={handleModalSelected}
+              onClick={handleEdit}
               title="Editar elemento"
             >
               <svg
@@ -164,10 +184,10 @@ export const ButtonsTable = <T extends { id: number; denominacion?: string; elim
         open={showDeleteModal}
         onClose={handleCancelDelete}
         onConfirm={handleConfirmDelete}
-        title="🗑️ Confirmar eliminación"
+        title="Confirmar eliminación"
         description={`¿Estás seguro de que deseas eliminar ${el.denominacion ? `"${el.denominacion}"` : 'este elemento'}? Esta acción no se puede deshacer.`}
-        confirmText="✅ Sí, eliminar"
-        cancelText="❌ Cancelar"
+        confirmText="Eliminar"
+        cancelText="Cancelar"
       />
 
       {/* Modal de confirmación para restauración */}
@@ -176,10 +196,10 @@ export const ButtonsTable = <T extends { id: number; denominacion?: string; elim
           open={showRestoreModal}
           onClose={handleCancelRestore}
           onConfirm={handleConfirmRestore}
-          title="♻️ Confirmar restauración"
+          title="Confirmar restauración"
           description={`¿Estás seguro de que deseas restaurar ${el.denominacion ? `"${el.denominacion}"` : 'este elemento'}?`}
-          confirmText="✅ Sí, restaurar"
-          cancelText="❌ Cancelar"
+          confirmText="Restaurar"
+          cancelText="Cancelar"
         />
       )}
     </>

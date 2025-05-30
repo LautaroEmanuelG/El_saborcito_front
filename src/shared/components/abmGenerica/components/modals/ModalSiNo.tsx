@@ -41,7 +41,7 @@ const ModalSiNo: React.FC<ModalSiNoProps> = ({
             {cancelText}
           </button>
           <button
-            className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+            className="bg-primary hover:bg-primarydark text-white font-bold py-2 px-4 rounded"
             onClick={onConfirm}
           >
             {confirmText}

@@ -82,6 +82,18 @@ const ScreenArticulosManufacturados = () => {
     setOpenModal(true);
   };
 
+  const handleView = (articulo: ArticuloManufacturado) => {
+    setSelectedArticulo(articulo);
+    setModalMode('view');
+    setOpenModal(true);
+  };
+
+  const handleEdit = (articulo: ArticuloManufacturado) => {
+    setSelectedArticulo(articulo);
+    setModalMode('edit');
+    setOpenModal(true);
+  };
+
   const handleDelete = (id: number) => {
     deleteArticulo(id);
   };
@@ -118,6 +130,8 @@ const ScreenArticulosManufacturados = () => {
             setOpenModal={setOpenModal}
             setSelectedItem={setSelectedArticulo}
             handleRestore={handleRestore}
+            onView={handleView}
+            onEdit={handleEdit}
           />
         );
       },
@@ -125,8 +139,8 @@ const ScreenArticulosManufacturados = () => {
   ];
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-6">
+    <div className="container w-full mx-auto p-4">
+      <div className="flex w-full justify-end items-center mb-6">
         <button
           className="bg-primary hover:bg-primarydark text-white font-bold py-2 px-4 rounded-lg shadow-lg transition-all duration-200 transform hover:scale-105"
           onClick={handleAdd}
@@ -152,7 +166,7 @@ const ScreenArticulosManufacturados = () => {
         categories={categorias}
         onToggleDeleted={toggleShowDeleted}
         showDeleted={showDeleted}
-        searchPlaceholder="🔍 Buscar artículos por nombre..."
+        searchPlaceholder="Buscar artículos por nombre..."
       />
 
       <ModalArticuloManufacturadoForm
