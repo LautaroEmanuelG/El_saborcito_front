@@ -1,8 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import type { ArticuloManufacturado } from '../../../types/Articulo';
+import type {
+  ArticuloManufacturado,
+  ArticuloInsumo,
+  ArticuloManufacturadoDetalle,
+} from '../../../types/Articulo';
 import type { Categoria } from '../../../types/Categoria';
 import * as categoriaService from '../../../shared/services/categoriaService';
 import Modal from '../../../shared/components/abmGenerica/components/modals/Modal';
+import ModalSeleccionInsumos from './ModalSeleccionInsumos';
 
 interface ModalArticuloManufacturadoFormProps {
   open: boolean;
@@ -14,8 +19,21 @@ interface ModalArticuloManufacturadoFormProps {
 
 const buildInitialFormValues = (
   form: Partial<ArticuloManufacturado>,
-  categorias: Categoria[]
+  categorias: Categoria[],
+  mode: 'add' | 'edit' | 'view'
 ): Record<string, string | number> => {
+  // Si es modo "add", devolver valores vacíos
+  if (mode === 'add') {
+    return {
+      denominacion: '',
+      precioVenta: 0,
+      descripcion: '',
+      tiempoEstimadoMinutos: 0,
+      categoria: '',
+      subcategoria: '',
+    };
+  }
+
   // Determinar si la categoría del artículo es una categoría padre o subcategoría
   const categoriaActual = categorias.find((cat) => cat.id === form.categoriaId);
 
@@ -57,13 +75,34 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
   const [imagenPreview, setImagenPreview] = useState<string | null>(null);
   const [selectedCategoriaId, setSelectedCategoriaId] = useState<number | null>(null);
   const [selectedSubcategoriaId, setSelectedSubcategoriaId] = useState<number | null>(null);
-
+  const [formValues, setFormValues] = useState<Record<string, string | number>>({});
+  const [detalles, setDetalles] = useState<ArticuloManufacturadoDetalle[]>([]);
+  const [openModalInsumos, setOpenModalInsumos] = useState(false);
   useEffect(() => {
     setForm(initialValues);
     // Mostrar imagen si existe
     setImagenPreview(initialValues.imagen?.url ?? null);
 
-    // Determinar categoría y subcategoría actuales
+    // Construir valores del formulario usando la función existente
+    const newFormValues = buildInitialFormValues(initialValues, categorias, mode);
+    setFormValues(newFormValues);
+
+    // Inicializar detalles con los datos existentes
+    setDetalles(initialValues.articuloManufacturadoDetalles ?? []);
+
+    // Limpiar estados si es modo "add" o si no hay categoriaId
+    if (mode === 'add' || !initialValues.categoriaId) {
+      setSelectedCategoriaId(null);
+      setSelectedSubcategoriaId(null);
+      setSubcategorias([]);
+      // Limpiar detalles solo si es modo "add"
+      if (mode === 'add') {
+        setDetalles([]);
+      }
+      return;
+    }
+
+    // Determinar categoría y subcategoría actuales solo si hay categorias cargadas
     if (initialValues.categoriaId && categorias.length > 0) {
       const categoriaActual = categorias.find((cat) => cat.id === initialValues.categoriaId);
 
@@ -79,7 +118,7 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
         }
       }
     }
-  }, [initialValues, open, categorias]);
+  }, [initialValues, open, categorias, mode]);
 
   useEffect(() => {
     categoriaService.getAllCategorias().then(setCategorias);
@@ -192,11 +231,59 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
     options?: Array<{ label: string; value: string | number }>;
   }>;
 
-  // Adaptar los valores iniciales para el ModalForm
-  const initialFormValues = buildInitialFormValues(form, categorias);
+  // Función para manejar cambios en los inputs
+  const handleInputChange = (name: string, value: string | number) => {
+    setFormValues((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  // Función para agregar un insumo a la lista de detalles
+  const handleAddInsumo = (insumo: ArticuloInsumo, cantidad: number) => {
+    // Verificar si el insumo ya existe en la lista
+    const insumoExistente = detalles.find((detalle) => detalle.articuloInsumo?.id === insumo.id);
+
+    if (insumoExistente) {
+      // Si existe, actualizar la cantidad
+      const index = detalles.findIndex((detalle) => detalle.articuloInsumo?.id === insumo.id);
+      handleEditCantidad(index, insumoExistente.cantidad + cantidad);
+    } else {
+      // Si no existe, agregar nuevo detalle
+      const nuevoDetalle: ArticuloManufacturadoDetalle = {
+        cantidad,
+        articuloInsumo: insumo,
+      };
+      setDetalles((prev) => [...prev, nuevoDetalle]);
+    }
+  };
+
+  // Función para eliminar un insumo de la lista
+  const handleRemoveInsumo = (index: number) => {
+    setDetalles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Función para editar la cantidad de un insumo
+  const handleEditCantidad = (index: number, nuevaCantidad: number) => {
+    if (nuevaCantidad <= 0) return;
+    setDetalles((prev) =>
+      prev.map((detalle, i) => (i === index ? { ...detalle, cantidad: nuevaCantidad } : detalle))
+    );
+  };
+
+  // Calcular el costo estimado total de los insumos
+  const calcularCostoEstimado = (): number => {
+    return detalles.reduce((total, detalle) => {
+      const precioUnitario = detalle.articuloInsumo?.precioCompra ?? 0;
+      return total + precioUnitario * detalle.cantidad;
+    }, 0);
+  };
 
   const handleSubmit = (values: Record<string, string | number>) => {
     if (mode === 'view') return; // No enviar en modo vista
+
+    // Usar los valores del estado actual en lugar de los del formulario
+    const currentValues = { ...formValues, ...values };
 
     // Determinar el categoriaId final basado en la selección
     let finalCategoriaId: number;
@@ -209,20 +296,20 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
       finalCategoriaId = selectedCategoriaId;
     } else {
       // Fallback: usar valores del formulario
-      finalCategoriaId = Number(values.categoria);
+      finalCategoriaId = Number(currentValues.categoria);
     }
 
     onSubmit({
       ...form,
-      denominacion: String(values.denominacion),
-      precioVenta: Number(values.precioVenta),
-      descripcion: String(values.descripcion),
-      tiempoEstimadoMinutos: Number(values.tiempoEstimadoMinutos),
+      denominacion: String(currentValues.denominacion),
+      precioVenta: Number(currentValues.precioVenta),
+      descripcion: String(currentValues.descripcion),
+      tiempoEstimadoMinutos: Number(currentValues.tiempoEstimadoMinutos),
       categoriaId: finalCategoriaId,
       // Mantener la imagen actual si existe
       imagen: form.imagen,
       // Mantener los detalles actuales
-      articuloManufacturadoDetalles: form.articuloManufacturadoDetalles ?? [],
+      articuloManufacturadoDetalles: detalles,
     });
   };
 
@@ -277,7 +364,7 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
                       ? (selectedCategoriaId ?? '')
                       : field.name === 'subcategoria'
                         ? (selectedSubcategoriaId ?? '')
-                        : initialFormValues[field.name]
+                        : (formValues[field.name] ?? '')
                   }
                   className="w-full border rounded px-3 py-2"
                   required={field.required}
@@ -290,6 +377,7 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
                     } else if (field.name === 'subcategoria') {
                       setSelectedSubcategoriaId(Number(e.target.value) || null);
                     }
+                    handleInputChange(field.name, e.target.value);
                   }}
                 >
                   <option value="">Seleccione...</option>
@@ -304,10 +392,11 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
                   id={field.name}
                   name={field.name}
                   type={field.type}
-                  defaultValue={initialFormValues[field.name]}
+                  value={formValues[field.name] ?? ''}
                   className="w-full border rounded px-3 py-2"
                   required={field.required}
                   disabled={field.disabled || mode === 'view'}
+                  onChange={(e) => handleInputChange(field.name, e.target.value)}
                 />
               )}
             </div>
@@ -335,30 +424,113 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
 
         {/* Detalles de preparación */}
         <div>
-          <h3 className="font-bold mb-2">🍳 Detalles de preparación</h3>
-          <div className="bg-gray-50 p-3 rounded">
-            {Array.isArray(form.articuloManufacturadoDetalles) &&
-            form.articuloManufacturadoDetalles.length > 0 ? (
-              <ul className="space-y-1">
-                {form.articuloManufacturadoDetalles.map(
-                  (detalle: (typeof form.articuloManufacturadoDetalles)[number], idx: number) => (
-                    <li key={detalle?.id ?? idx} className="flex justify-between items-center">
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="font-bold">🍳 Insumos para elaboración</h3>
+            {mode !== 'view' && (
+              <button
+                type="button"
+                className="bg-blue-500 hover:bg-blue-600 text-white text-sm px-3 py-1 rounded"
+                onClick={() => setOpenModalInsumos(true)}
+              >
+                + Agregar Insumo
+              </button>
+            )}
+          </div>
+
+          {/* Estadísticas de costos */}
+          {detalles.length > 0 && (
+            <div className="bg-blue-50 p-2 rounded mb-2 text-sm">
+              <div className="flex justify-between">
+                <span>📊 Total insumos: {detalles.length}</span>
+                <span className="font-semibold">
+                  💰 Costo estimado: ${calcularCostoEstimado().toFixed(2)}
+                </span>
+              </div>
+            </div>
+          )}
+
+          <div className="bg-gray-50 p-3 rounded border min-h-24">
+            {detalles.length > 0 ? (
+              <div className="space-y-2">
+                {detalles.map((detalle, index) => (
+                  <div
+                    key={index}
+                    className="flex justify-between items-center bg-white p-3 rounded border shadow-sm"
+                  >
+                    <div className="flex-1">
                       <span className="font-medium">
-                        {detalle?.articuloInsumo?.denominacion ?? 'Insumo desconocido'}
+                        {detalle.articuloInsumo?.denominacion ?? 'Insumo desconocido'}
                       </span>
-                      <span className="text-gray-600">
-                        {detalle?.cantidad ?? 0}{' '}
-                        {detalle?.articuloInsumo?.unidadMedida?.denominacion ?? ''}
-                      </span>
-                    </li>
-                  )
-                )}
-              </ul>
+                      <div className="text-sm text-gray-600">
+                        📂 {detalle.articuloInsumo?.categoria?.denominacion ?? 'Sin categoría'}
+                      </div>
+                      <div className="text-sm text-green-600">
+                        💵 ${detalle.articuloInsumo?.precioCompra ?? 0} por{' '}
+                        {detalle.articuloInsumo?.unidadMedida?.denominacion ?? 'unidad'}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        {mode !== 'view' ? (
+                          <input
+                            type="number"
+                            value={detalle.cantidad}
+                            onChange={(e) => handleEditCantidad(index, Number(e.target.value))}
+                            min="0.01"
+                            step="0.01"
+                            className="w-20 text-center border rounded px-2 py-1 text-sm"
+                          />
+                        ) : (
+                          <span className="w-20 text-center text-sm font-medium block">
+                            {detalle.cantidad}
+                          </span>
+                        )}
+                        <div className="text-xs text-gray-500 mt-1">
+                          {detalle.articuloInsumo?.unidadMedida?.denominacion ?? ''}
+                        </div>
+                      </div>
+                      <div className="text-right text-sm">
+                        <div className="font-semibold text-green-700">
+                          $
+                          {((detalle.articuloInsumo?.precioCompra ?? 0) * detalle.cantidad).toFixed(
+                            2
+                          )}
+                        </div>
+                        <div className="text-xs text-gray-500">subtotal</div>
+                      </div>
+                      {mode !== 'view' && (
+                        <button
+                          type="button"
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1 rounded transition-colors"
+                          onClick={() => handleRemoveInsumo(index)}
+                          title="Eliminar insumo"
+                        >
+                          🗑️
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : (
-              <p className="text-gray-500 italic">No hay detalles de preparación</p>
+              <p className="text-gray-500 italic text-center py-4">
+                {mode === 'view'
+                  ? 'No hay insumos configurados'
+                  : 'No hay insumos agregados. Haz clic en "Agregar Insumo" para comenzar.'}
+              </p>
             )}
           </div>
         </div>
+
+        {/* Modal para selección de insumos */}
+        <ModalSeleccionInsumos
+          open={openModalInsumos}
+          onClose={() => setOpenModalInsumos(false)}
+          onAddInsumo={handleAddInsumo}
+          insumosExistentes={
+            detalles.map((d) => d.articuloInsumo).filter(Boolean) as ArticuloInsumo[]
+          }
+        />
       </div>
     </Modal>
   );
