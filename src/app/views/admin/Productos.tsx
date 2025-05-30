@@ -6,7 +6,6 @@ import {
   getArticuloById,
 } from '../../../shared/services/articuloService';
 import { getAllCategorias } from '../../../shared/services/categoriaService';
-import { Producto } from '../../../types/types';
 import { ModalConfirm } from '../../../shared/components/utils/ModalConfirm';
 
 export const Productos = () => {
@@ -17,7 +16,7 @@ export const Productos = () => {
   const [formError, setFormError] = useState<string | null>(null);
   const [isModalDelete, setIsModalDelete] = useState(false);
 
-  const [productForm, setProductForm] = useState<Producto>({
+  const [productForm, setProductForm] = useState<Articulos>({
     nombre: '',
     descripcion: '',
     stock: 0,

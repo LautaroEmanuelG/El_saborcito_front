@@ -9,7 +9,7 @@ export const LayoutUser = () => {
     setSearchTerm(query); // Actualizar el término de búsqueda
   };
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen max-w-full py-4">
       <Header onSearch={handleSearch} />
       <main>
         <Outlet />
