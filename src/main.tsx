@@ -14,6 +14,7 @@ import ProtectedCarrito from './app/routes/ProtectCarrito.tsx';
 import { AppProviders } from './shared/providers/AppProviders.tsx';
 import { RankingProductos } from './modules/HU26_28_informes/components/RankingProductos.tsx';
 import ScreenArticulosManufacturados from './modules/HU22_CRUDArticulos/components/ScreenArticulosManufacturados.tsx';
+import { MovimientosMonetarios } from './modules/HU26_28_informes/components/MovimientosMonetarios.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <AppProviders>
@@ -82,6 +83,14 @@ createRoot(document.getElementById('root')!).render(
             element={
               <ProtectedRoute>
                 <RankingProductos />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="movimientos"
+            element={
+              <ProtectedRoute>
+                <MovimientosMonetarios />
               </ProtectedRoute>
             }
           />
