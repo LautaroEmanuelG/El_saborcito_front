@@ -32,7 +32,7 @@ const ModalSiNo: React.FC<ModalSiNoProps> = ({
           ×
         </button>
         <h2 className="text-lg font-bold mb-2">{title}</h2>
-        <p className="mb-4 text-gray-700">{description}</p>
+        <p className="mb-4 text-gray-700 text-wrap">{description}</p>
         <div className="flex justify-end gap-2">
           <button
             className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
