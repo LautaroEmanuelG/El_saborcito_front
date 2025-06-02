@@ -1,0 +1,152 @@
+/* src/modules/HU26_28_informes/informes/components/RankingCliente.css */
+
+.ranking-container {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ranking-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.ranking-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.ranking-fecha {
+  font-size: 0.9rem;
+  color: #555;
+  background-color: #f4f4f4;
+  padding: 6px 12px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ranking-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
+}
+
+.ranking-table thead {
+  border-bottom: 2px solid black;
+}
+
+.ranking-table th {
+  text-align: left;
+  padding: 0.75rem;
+  font-weight: 600;
+  color: #d60047; /* rojo personalizado */
+}
+
+.ranking-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #ccc;
+}
+
+.ranking-table td:last-child {
+  text-align: right;
+}
+
+.ver-pedidos-icon {
+  cursor: pointer;
+  color: black;
+  transition: color 0.2s ease;
+}
+
+.ver-pedidos-icon:hover {
+  color: #d60047;
+}
+
+.boton-ver-mas {
+  background-color: #d60047;
+  color: white;
+  padding: 0.5rem 2rem;
+  border-radius: 10px;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.boton-ver-mas:hover {
+  background-color: #b0003a;
+}
+
+.boton-exportar {
+  background-color: #12b31a;
+  color: white;
+  padding: 0.5rem 2rem;
+  border-radius: 10px;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.boton-exportar:hover {
+  background-color: #0f9215;
+}
+
+.botones-ranking {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Modal estilos */
+
+.modal-detalle {
+  background-color: #f5f5f5;
+  padding: 2rem;
+  border-radius: 12px;
+  min-width: 400px;
+  max-width: 500px;
+}
+
+.modal-detalle h2 {
+  font-size: 1.4rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.modal-detalle table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 2rem;
+}
+
+.modal-detalle th {
+  text-align: left;
+  padding: 0.5rem;
+  color: #d60047;
+  border-bottom: 1px solid black;
+}
+
+.modal-detalle td {
+  padding: 0.5rem;
+  border-bottom: 1px solid #ccc;
+}
+
+.boton-cerrar {
+  background-color: #d60047;
+  color: white;
+  padding: 0.5rem 1.5rem;
+  font-weight: bold;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.boton-cerrar:hover {
+  background-color: #b0003a;
+}
