@@ -11,7 +11,7 @@ import type { Categoria } from '../../../types/Categoria';
 
 interface PaginaPrincipalClientesProps {
   searchTerm: string;
-  handleSearch: (term: string) => void;
+  handleSearch: (term: string | string[]) => void; // Modificado para aceptar string o string[]
   filteredProducts: (ArticuloManufacturado | ArticuloInsumo)[];
 }
 
@@ -29,6 +29,7 @@ export const PaginaPrincipalClientes = ({
   useEffect(() => {
     async function fetchData() {
       const categoriasData = await getAllCategorias();
+      console.log('categoriasData :>> ', categoriasData);
       setCategorias(categoriasData);
     }
     fetchData();
@@ -44,7 +45,7 @@ export const PaginaPrincipalClientes = ({
     setModalOpen(false); // Cerrar el modal
   };
 
-  const handleProductClick = (articulo: ArticuloManufacturado | ArticuloInsumo) => {
+  const handleProductClick = (articulo: ArticuloManufacturado | ArticuloInsumo | null) => {
     setArticuloModal(articulo); // Actualizar el producto modal y abrir el modal
   };
 
@@ -58,17 +59,13 @@ export const PaginaPrincipalClientes = ({
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-4 flex flex-col min-h-screen w-full">
+      {searchTerm ? null : <ActiveSlider setArticuloModal={setArticuloModal} />}
       <ListaCategorias categorias={categorias} onSearch={handleSearch} />
       {searchTerm && filteredProducts.length === 0 ? (
         <p className="text-center text-xl">No se encontraron productos para "{searchTerm}"</p>
       ) : (
         <>
-          {searchTerm ? null : <ActiveSlider setArticuloModal={setArticuloModal} />}
-          <ListaProductos
-            articulos={filteredProducts}
-            setArticuloModal={setArticuloModal}
-            onProductClick={handleProductClick}
-          />
+          <ListaProductos articulos={filteredProducts} onProductClick={handleProductClick} />
         </>
       )}
       <ModalProducto

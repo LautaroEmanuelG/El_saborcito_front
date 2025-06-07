@@ -9,7 +9,7 @@ import IconoMenuHamburguesa from '../../../../assets/svgs/icons/IconoMenuHamburg
 import { LoginModal } from '../../../../shared/components/loggin/LoginModal';
 
 type Props = {
-  onSearch?: (query: string) => void;
+  onSearch?: (query: string | string[]) => void; // Modificado para aceptar string o string[]
 };
 
 export const Header = ({ onSearch }: Props) => {
@@ -33,6 +33,17 @@ export const Header = ({ onSearch }: Props) => {
     setMenuOpen(!menuOpen);
   };
 
+  const handleLogoClick = () => {
+    if (onSearch) {
+      onSearch(''); // Limpiar búsqueda
+    }
+  };
+
+  const handleLogoClickAndToggleMenu = () => {
+    handleLogoClick(); // Limpiar búsqueda
+    toggleMenu(); // Cerrar menú
+  };
+
   return (
     <>
       {/* Ocultar el header cuando el menú está abierto */}
@@ -40,7 +51,7 @@ export const Header = ({ onSearch }: Props) => {
         className={`bg-primary sticky top-0 z-50 flex w-full text-primary-foreground py-4 shadow-md `}
       >
         <div className="container mx-auto flex items-center justify-between px-4 md:px-6 gap-12">
-          <Link to="/" className="flex items-center gap-4">
+          <Link to="/" className="flex items-center gap-4" onClick={handleLogoClick}>
             <IconoLogoSaborcito />
             <span className="text-2xl font-bold text-white">El Saborcito</span>
           </Link>
@@ -89,7 +100,7 @@ export const Header = ({ onSearch }: Props) => {
         } w-[265px] z-10`}
       >
         <div className="flex justify-between items-center p-4">
-          <Link to="/" className="flex items-center gap-4" onClick={toggleMenu}>
+          <Link to="/" className="flex items-center gap-4" onClick={handleLogoClickAndToggleMenu}>
             <IconoLogoSaborcito />
             <span className="text-2xl font-bold text-white">El Saborcito</span>
           </Link>
