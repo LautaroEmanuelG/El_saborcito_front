@@ -4,7 +4,13 @@ export interface ProductoRanking {
   id: number;
   denominacion: string;
   cantidadVendida: number;
-  tipo: 'MANUFACTURADO' | 'INSUMO';
+  tipoProducto: 'MANUFACTURADO' | 'INSUMO';
+}
+
+export interface ProductoRankingResponse {
+  productos: ProductoRanking[];
+  totalManufacturados: number;
+  totalInsumos: number;
 }
 
 // src/modules/HU26_28_informes/informes/model.ts
