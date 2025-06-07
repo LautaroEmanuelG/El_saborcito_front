@@ -2,15 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { ClienteRanking } from '../model';
-import {
-  getRankingClientes,
-  exportarRankingClientesExcel,
-  getDetallePedidosCliente,
-} from '../service/informesService';
+
 import './RankingCliente.css';
 import { format } from 'date-fns';
 import { FaEye } from 'react-icons/fa';
 import { DetallePedidoDTO } from '../model';
+import {
+  exportarRankingClientesExcel,
+  getDetallePedidosCliente,
+  getRankingClientes,
+} from '../../../shared/services/clientesInformes';
 
 export const RankingCliente = () => {
   const [clientes, setClientes] = useState<ClienteRanking[]>([]);

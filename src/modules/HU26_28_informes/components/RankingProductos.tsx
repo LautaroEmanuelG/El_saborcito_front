@@ -9,8 +9,11 @@ import {
   Legend,
 } from 'chart.js';
 import { format } from 'date-fns';
-import { getRankingProductos, exportarRankingExcel } from '../service/informesService';
 import { ProductoRanking } from '../model';
+import {
+  exportarRankingExcel,
+  getRankingProductos,
+} from '../../../shared/services/productoInformes';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 

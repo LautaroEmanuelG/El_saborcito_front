@@ -2,8 +2,11 @@ import { useEffect, useState } from 'react';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { format } from 'date-fns';
-import { getMovimientosMonetarios, exportarMovimientosExcel } from '../service/informesService';
 import './MovimientosMonetarios.css';
+import {
+  exportarMovimientosExcel,
+  getMovimientosMonetarios,
+} from '../../../shared/services/movimientosInforme';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
