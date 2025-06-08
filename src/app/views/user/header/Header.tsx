@@ -1,6 +1,7 @@
 import { useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { CarritoContext } from '../../../../shared/providers/CarritoProvider';
+import { useProductStore } from '../../../../shared/providers/ProductProvider';
 import IconoLogoSaborcito from '../../../../assets/svgs/icons/IconoLogoSaborcito';
 import IconoLoggin from '../../../../assets/svgs/icons/IconoLoggin';
 import IconoCarrito from '../../../../assets/svgs/icons/IconoCarrito';
@@ -33,10 +34,16 @@ export const Header = ({ onSearch }: Props) => {
     setMenuOpen(!menuOpen);
   };
 
+  // Acceder al resetFilters desde el store
+  const { resetFilters } = useProductStore();
+
   const handleLogoClick = () => {
+    // Limpiar búsqueda y resetear los filtros cuando se hace clic en el logo
     if (onSearch) {
-      onSearch(''); // Limpiar búsqueda
+      onSearch('');
     }
+    // También resetear los filtros directamente en el store global
+    resetFilters();
   };
 
   const handleLogoClickAndToggleMenu = () => {

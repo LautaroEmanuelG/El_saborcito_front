@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import type { Categoria } from '../../../../types/Categoria';
 import { IconoArrowDown } from '../../../../assets/svgs/icons/IconoArrowDown';
+import { useProductStore } from '../../../../shared/providers/ProductProvider';
 
 interface BtnCategoriaProps {
   category: Categoria;
@@ -37,77 +38,104 @@ export const BtnCategoria = ({
     };
   }, []);
 
-  const esTermAnteriorIgual = (actual: string | string[]): boolean => {
-    if (Array.isArray(actual) && Array.isArray(termAnterior)) {
-      if (actual.length !== termAnterior.length) return false;
-      const sortedActual = [...actual].sort();
-      const sortedTermAnterior = [...termAnterior].sort();
-      return sortedActual.every((val, index) => val === sortedTermAnterior[index]);
-    }
-    return actual === termAnterior;
-  };
+  // Ya no necesitamos esta función porque usamos activeCategory directamente del store
+
+  // Acceder directamente a handleCategoryFilter para manipulaciones internas
+  const { handleCategoryFilter: globalHandleCategoryFilter } = useProductStore();
 
   const handleClickPadre = () => {
-    let searchTermForSearch: string[];
-    searchTermForSearch = subCategorias.map((sub) => sub.denominacion);
+    const searchTermForSearch = subCategorias.map((sub) => sub.denominacion);
+    const { activeCategory } = useProductStore.getState();
 
-    if (esTermAnteriorIgual(searchTermForSearch)) {
-      // Si hay un filtro de categoría disponible, úsalo
+    // Comprobar si esta categoría ya está activa
+    const isCurrentlyActive =
+      Array.isArray(activeCategory) &&
+      activeCategory.length === searchTermForSearch.length &&
+      [...activeCategory].sort().every((val, idx) => val === [...searchTermForSearch].sort()[idx]);
+
+    if (isCurrentlyActive) {
+      // Desactivar la categoría
       if (onCategoryFilter) {
         onCategoryFilter('');
       } else {
-        // Compatibilidad: usar onSearch si onCategoryFilter no está disponible
         onSearch('');
       }
+      // También actualizar el estado global directamente
+      globalHandleCategoryFilter('');
       setTermAnterior('');
     } else {
+      // Activar la categoría
       if (onCategoryFilter) {
         onCategoryFilter(searchTermForSearch);
       } else {
         onSearch(searchTermForSearch);
       }
+      // También actualizar el estado global directamente
+      globalHandleCategoryFilter(searchTermForSearch);
       setTermAnterior(searchTermForSearch);
     }
+
     setShowSubcategoriasDropdown(false);
     clearHoverTimeout();
   };
 
   const handleClickHijoOSolo = () => {
-    if (esTermAnteriorIgual(category.denominacion)) {
+    const { activeCategory } = useProductStore.getState();
+    const isCurrentlyActive = activeCategory === category.denominacion;
+
+    if (isCurrentlyActive) {
+      // Desactivar la categoría
       if (onCategoryFilter) {
         onCategoryFilter('');
       } else {
         onSearch('');
       }
+      // También actualizar el estado global directamente
+      globalHandleCategoryFilter('');
       setTermAnterior('');
     } else {
+      // Activar la categoría
       if (onCategoryFilter) {
         onCategoryFilter(category.denominacion);
       } else {
         onSearch(category.denominacion);
       }
+      // También actualizar el estado global directamente
+      globalHandleCategoryFilter(category.denominacion);
       setTermAnterior(category.denominacion);
     }
+
     clearHoverTimeout();
   };
 
   const handleSubCategoriaClick = (subCategoriaDenominacion: string, event: React.MouseEvent) => {
     event.stopPropagation();
-    if (esTermAnteriorIgual(subCategoriaDenominacion)) {
+
+    const { activeCategory } = useProductStore.getState();
+    const isCurrentlyActive = activeCategory === subCategoriaDenominacion;
+
+    if (isCurrentlyActive) {
+      // Desactivar la categoría
       if (onCategoryFilter) {
         onCategoryFilter('');
       } else {
         onSearch('');
       }
+      // También actualizar el estado global directamente
+      globalHandleCategoryFilter('');
       setTermAnterior('');
     } else {
+      // Activar la categoría
       if (onCategoryFilter) {
         onCategoryFilter(subCategoriaDenominacion);
       } else {
         onSearch(subCategoriaDenominacion);
       }
+      // También actualizar el estado global directamente
+      globalHandleCategoryFilter(subCategoriaDenominacion);
       setTermAnterior(subCategoriaDenominacion);
     }
+
     setShowSubcategoriasDropdown(false);
     clearHoverTimeout();
   };
@@ -126,34 +154,41 @@ export const BtnCategoria = ({
     }, 200);
   };
 
+  // Obtener directamente del estado global si la categoría está activa
+  const { activeCategory } = useProductStore();
+
+  // Determinar si esta categoría está activa basándose en el estado global de activeCategory
   const isActive = useMemo(() => {
-    // Caso 1: termAnterior es un string (una única categoría está seleccionada)
-    if (typeof termAnterior === 'string' && termAnterior !== '') {
-      // Si el botón de la categoría actual coincide con el término seleccionado
-      if (category.denominacion === termAnterior) {
+    // Si no hay categoría activa
+    if (!activeCategory) return false;
+
+    // Caso 1: activeCategory es un string (una única categoría está seleccionada)
+    if (typeof activeCategory === 'string') {
+      // Si el botón de la categoría actual coincide con la categoría activa
+      if (category.denominacion === activeCategory) {
         return true;
       }
-      // Si la categoría actual es un padre, y una de sus subcategorías coincide con el término seleccionado
-      if (esPadreConHijos && subCategorias.some((sub) => sub.denominacion === termAnterior)) {
+      // Si la categoría actual es un padre, y una de sus subcategorías coincide con la categoría activa
+      if (esPadreConHijos && subCategorias.some((sub) => sub.denominacion === activeCategory)) {
         return true;
       }
     }
-    // Caso 2: termAnterior es un array (se hizo clic en una categoría padre para mostrar todos sus hijos)
-    else if (Array.isArray(termAnterior) && esPadreConHijos) {
+    // Caso 2: activeCategory es un array (se hizo clic en una categoría padre para mostrar todos sus hijos)
+    else if (Array.isArray(activeCategory) && esPadreConHijos) {
       const currentCategorysChildrenDenominations = subCategorias.map((sub) => sub.denominacion);
-      // Comprueba si termAnterior (array de hijos activos) coincide con los hijos de este padre
-      if (termAnterior.length === currentCategorysChildrenDenominations.length) {
-        const sortedTermAnterior = [...termAnterior].sort();
+      // Comprueba si activeCategory (array de hijos activos) coincide con los hijos de este padre
+      if (activeCategory.length === currentCategorysChildrenDenominations.length) {
+        const sortedActiveCategory = [...activeCategory].sort();
         const sortedCurrentCategorysChildren = [...currentCategorysChildrenDenominations].sort();
         if (
-          sortedTermAnterior.every((val, index) => val === sortedCurrentCategorysChildren[index])
+          sortedActiveCategory.every((val, index) => val === sortedCurrentCategorysChildren[index])
         ) {
           return true; // Esta categoría padre está activa
         }
       }
     }
     return false;
-  }, [termAnterior, category.denominacion, subCategorias, esPadreConHijos]);
+  }, [activeCategory, category.denominacion, subCategorias, esPadreConHijos]);
 
   const handleClick = () => {
     if (esPadreConHijos) {

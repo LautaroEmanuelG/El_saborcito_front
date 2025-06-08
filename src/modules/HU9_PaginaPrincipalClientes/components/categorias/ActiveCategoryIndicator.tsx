@@ -17,7 +17,12 @@ export const ActiveCategoryIndicator = () => {
       <div className="inline-flex items-center px-3 py-1 bg-primary/10 text-primary rounded-lg">
         <span className="mr-2 font-medium">Categoría activa: {categoryLabel}</span>
         <button
-          onClick={resetFilters}
+          onClick={() => {
+            // Limpiar filtros y asegurarnos de que la categoría activa se resetee
+            resetFilters();
+            // Para asegurar que se actualice la UI correctamente, también llamamos a handleCategoryFilter
+            useProductStore.getState().handleCategoryFilter('');
+          }}
           className="text-sm bg-primary text-white px-2 py-1 rounded hover:bg-primarydark transition-colors"
         >
           Limpiar
