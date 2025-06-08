@@ -4,12 +4,14 @@ import type { Categoria } from '../../../../types/Categoria';
 
 interface Props {
   categorias: Categoria[];
-  onSearch: (query: string | string[]) => void; // Modificado para aceptar un array de queries para categorías padre
+  onSearch: (query: string | string[]) => void; // Se mantiene para compatibilidad
+  onCategoryFilter?: (query: string | string[]) => void; // Nueva prop para filtrar por categoría sin afectar el search term
   categoriasConProductosIds: Set<number>; // Agregamos esta prop
 }
 
 export const ListaCategorias = ({
   onSearch,
+  onCategoryFilter,
   categorias: todasCategorias,
   categoriasConProductosIds,
 }: Props) => {
@@ -39,23 +41,13 @@ export const ListaCategorias = ({
       }
     });
 
-    // En el caso de que estemos en una vista filtrada (búsqueda, etc.), solo mostramos categorías relevantes
+    // Mostrar todas las categorías padre que tengan productos o que sean relevantes
     const padres = todasLasCategoriasPadre.filter((padre) => {
       if (padre.id === undefined) return false;
 
-      // Siempre mostrar un padre si:
-      // 1. Tiene productos directamente, o
-      // 2. Al menos uno de sus hijos tiene productos, o
-      // 3. Tiene subcategorías (siempre mostrar categorías padre como Sandwiches, Lomos, etc.)
-      const tieneHijos = todasLasCategoriasHijas.some(
-        (hijo) => hijo.tipoCategoria && hijo.tipoCategoria.id === padre.id
-      );
-
-      return (
-        categoriasConProductosIds.has(padre.id) || // El padre tiene productos directamente
-        padresDeHijosConProductos.has(padre.id) || // Algún hijo tiene productos
-        tieneHijos // Tiene hijos (subcategorías)
-      );
+      // Siempre mostrar todas las categorías padre, sin importar si tienen hijos o no
+      // Esto corrige el problema donde categorías como "Pizza" no se mostraban
+      return true;
     });
 
     // Organizamos las subcategorías por padre
@@ -63,18 +55,14 @@ export const ListaCategorias = ({
     todasLasCategoriasHijas.forEach((hijo) => {
       if (hijo.id === undefined || !hijo.tipoCategoria?.id) return;
 
-      // Solo incluimos esta subcategoría si:
-      // 1. Su padre es relevante (ya lo filtramos en el paso anterior), o
-      // 2. Esta subcategoría específica tiene productos
+      // Incluimos todas las subcategorías para todos los padres
+      // Sin filtrar por si tienen productos o no
       const padreId = hijo.tipoCategoria.id;
-      const padreEsRelevante = padres.some((p) => p.id === padreId);
 
-      if (padreEsRelevante || categoriasConProductosIds.has(hijo.id)) {
-        if (!hijosPorPadre[padreId]) {
-          hijosPorPadre[padreId] = [];
-        }
-        hijosPorPadre[padreId].push(hijo);
+      if (!hijosPorPadre[padreId]) {
+        hijosPorPadre[padreId] = [];
       }
+      hijosPorPadre[padreId].push(hijo);
     });
 
     return { padres, hijosPorPadre };
@@ -96,6 +84,7 @@ export const ListaCategorias = ({
             setTermAnterior={setTermAnterior}
             key={categoriaPadre.id}
             onSearch={onSearch}
+            onCategoryFilter={onCategoryFilter}
             category={categoriaPadre}
             subCategorias={subCategoriasConProductos}
           />

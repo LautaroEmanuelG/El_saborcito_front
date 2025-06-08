@@ -3,6 +3,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { base } from 'wagmi/chains'; // add baseSepolia for testing
 import { type ReactNode, useState } from 'react';
 import { type State, WagmiProvider } from 'wagmi';
+import { ProductProvider } from './ProductProvider';
+import { CarritoProvider } from './CarritoProvider';
 
 import { getConfig } from '../../wagmi'; // your import path may vary
 
@@ -17,7 +19,9 @@ export function AppProviders(props: { children: ReactNode; initialState?: State 
           apiKey={import.meta.env.VITE_PUBLIC_ONCHAINKIT_API_KEY}
           chain={base} // add baseSepolia for testing
         >
-          {props.children}
+          <ProductProvider>
+            <CarritoProvider>{props.children}</CarritoProvider>
+          </ProductProvider>
         </OnchainKitProvider>
       </QueryClientProvider>
     </WagmiProvider>

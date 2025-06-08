@@ -1,6 +1,9 @@
 import { useMemo } from 'react';
 import { ArticuloManufacturado, ArticuloInsumo } from '../../../../types/Articulo';
-import { useProductStore, getArticuloCategoriaId } from '../../../../shared/store/useProductStore';
+import {
+  useProductStore,
+  getArticuloCategoriaId,
+} from '../../../../shared/providers/ProductProvider';
 import { CardProducto } from './CardProducto';
 
 interface Props {

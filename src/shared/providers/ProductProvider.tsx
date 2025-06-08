@@ -1,3 +1,4 @@
+import { ReactNode, createContext, useContext, useEffect } from 'react';
 import { create } from 'zustand';
 import type { ArticuloManufacturado, ArticuloInsumo } from '../../types/Articulo';
 import type { Categoria } from '../../types/Categoria';
@@ -23,12 +24,14 @@ export const getArticuloCategoriaId = (
   return undefined;
 };
 
+// Definición del tipo de estado para el store
 type ProductState = {
   // Estados
   allProducts: (ArticuloManufacturado | ArticuloInsumo)[];
   filteredProducts: (ArticuloManufacturado | ArticuloInsumo)[];
   allCategorias: Categoria[];
   searchTerm: string;
+  activeCategory: string | string[] | null; // Nueva propiedad para almacenar la categoría activa
   isLoading: boolean;
   error: string | null;
 
@@ -36,21 +39,26 @@ type ProductState = {
   fetchAllData: () => Promise<void>;
   setSearchTerm: (term: string) => void;
   handleSearch: (query: string | string[]) => void;
-  // Añadimos getArticuloCategoriaId como parte de la interfaz del store
+  handleCategoryFilter: (category: string | string[]) => void; // Nueva acción para filtrar por categoría sin afectar el searchTerm
+  resetFilters: () => void;
+  // Para exponer el helper a través del store
   getArticuloCategoriaId: (articulo: ArticuloManufacturado | ArticuloInsumo) => number | undefined;
 };
 
+// Creación del store de Zustand
 export const useProductStore = create<ProductState>((set, get) => ({
   // Estados iniciales
   allProducts: [],
   filteredProducts: [],
   allCategorias: [],
   searchTerm: '',
+  activeCategory: null,
   isLoading: false,
   error: null,
 
   // Incluimos la función en el store
   getArticuloCategoriaId,
+
   // Acción para cargar todos los datos
   fetchAllData: async () => {
     try {
@@ -66,15 +74,6 @@ export const useProductStore = create<ProductState>((set, get) => ({
         | ArticuloManufacturado
         | ArticuloInsumo
       )[];
-
-      // Extraer IDs de categoría únicos de los productos cargados
-      const categoriaIdsEnProductos = new Set<number>();
-      combinedProducts.forEach((producto) => {
-        const catId = getArticuloCategoriaId(producto);
-        if (catId !== undefined) {
-          categoriaIdsEnProductos.add(catId);
-        }
-      });
 
       // Construir un mapa para identificar fácilmente la relación hijo -> padre
       const categoriaIdMap = new Map<number, Categoria>();
@@ -98,6 +97,15 @@ export const useProductStore = create<ProductState>((set, get) => ({
             padresACategorias.set(padreId, []);
           }
           padresACategorias.get(padreId)?.push(cat.id);
+        }
+      });
+
+      // Extraer IDs de categoría únicos de los productos cargados
+      const categoriaIdsEnProductos = new Set<number>();
+      combinedProducts.forEach((producto) => {
+        const catId = getArticuloCategoriaId(producto);
+        if (catId !== undefined) {
+          categoriaIdsEnProductos.add(catId);
         }
       });
 
@@ -143,13 +151,89 @@ export const useProductStore = create<ProductState>((set, get) => ({
   setSearchTerm: (term) => {
     set({ searchTerm: term });
   },
+  // Resetear filtros para mostrar todos los productos
+  resetFilters: () => {
+    const { allProducts } = get();
+    set({
+      filteredProducts: allProducts,
+      searchTerm: '',
+      activeCategory: null,
+    });
+  },
 
-  // Manejar la búsqueda (por texto o por categoría)
+  // Nueva función para filtrar por categorías sin modificar el searchTerm
+  handleCategoryFilter: (category) => {
+    const { allProducts, allCategorias } = get();
+
+    // Guardar la categoría activa
+    set({ activeCategory: category });
+
+    // Si la categoría está vacía, mostrar todos los productos
+    if (category === '' || (Array.isArray(category) && category.length === 0)) {
+      set({ filteredProducts: allProducts });
+      return;
+    }
+
+    let newFilteredList: (ArticuloManufacturado | ArticuloInsumo)[] = [];
+
+    // Lógica de filtrado similar a handleSearch pero sin modificar searchTerm
+    if (Array.isArray(category)) {
+      // Categoría padre (múltiples subcategorías)
+      const lowerCaseCategoriasDenominaciones = category.map((c) => c.toLowerCase().trim());
+
+      const categoriaIdsHijas = allCategorias
+        .filter(
+          (cat) =>
+            cat.id !== undefined &&
+            lowerCaseCategoriasDenominaciones.includes(cat.denominacion.toLowerCase())
+        )
+        .map((cat) => cat.id!);
+
+      if (categoriaIdsHijas.length > 0) {
+        newFilteredList = allProducts.filter((producto) => {
+          const productoCatId = getArticuloCategoriaId(producto);
+          return productoCatId !== undefined && categoriaIdsHijas.includes(productoCatId);
+        });
+      }
+    } else {
+      // Categoría individual
+      const lowerCaseCategory = category.toLowerCase().trim();
+
+      const categoriaSeleccionada = allCategorias.find(
+        (cat) => cat.denominacion.toLowerCase() === lowerCaseCategory
+      );
+
+      if (categoriaSeleccionada?.id) {
+        // Preparamos para almacenar todos los IDs de categoría relevantes
+        const categoriasRelevantesIds = new Set<number>();
+        categoriasRelevantesIds.add(categoriaSeleccionada.id);
+
+        // Buscar si esta categoría es padre de otras categorías
+        const subcategoriasIds = allCategorias
+          .filter((cat) => cat.tipoCategoria && cat.tipoCategoria.id === categoriaSeleccionada.id)
+          .map((cat) => cat.id)
+          .filter((id): id is number => id !== undefined);
+
+        // Añadir subcategorías encontradas al conjunto de IDs
+        subcategoriasIds.forEach((id) => categoriasRelevantesIds.add(id));
+
+        // Filtrar productos por todas las categorías relevantes
+        newFilteredList = allProducts.filter((producto) => {
+          const productoCatId = getArticuloCategoriaId(producto);
+          return productoCatId !== undefined && categoriasRelevantesIds.has(productoCatId);
+        });
+      }
+    }
+
+    set({ filteredProducts: newFilteredList });
+  },
+
+  // Manejar la búsqueda (por texto)
   handleSearch: (query) => {
     const { allProducts, allCategorias } = get();
 
-    const currentSearchTermDisplay = Array.isArray(query) ? query.join(', ') : query;
-    set({ searchTerm: currentSearchTermDisplay });
+    // Actualizar el término de búsqueda visible
+    set({ searchTerm: query.toString(), activeCategory: null });
 
     // Si la query está vacía, mostrar todos los productos
     if (query === '' || (Array.isArray(query) && query.length === 0)) {
@@ -177,7 +261,8 @@ export const useProductStore = create<ProductState>((set, get) => ({
           return productoCatId !== undefined && categoriaIdsHijas.includes(productoCatId);
         });
       }
-    } // Caso 2: Búsqueda por texto o categoría individual
+    }
+    // Caso 2: Búsqueda por texto o categoría individual
     else {
       const lowerCaseQuery = query.toLowerCase().trim();
 
@@ -223,3 +308,36 @@ export const useProductStore = create<ProductState>((set, get) => ({
     set({ filteredProducts: newFilteredList });
   },
 }));
+
+// Crear contexto para el Provider
+type ProductContextType = {
+  store: typeof useProductStore;
+};
+
+const ProductContext = createContext<ProductContextType | null>(null);
+
+// Props para el Provider
+interface ProductProviderProps {
+  children: ReactNode;
+}
+
+// Provider Component
+export const ProductProvider = ({ children }: ProductProviderProps) => {
+  // Cargar datos cuando se monte el componente
+  useEffect(() => {
+    useProductStore.getState().fetchAllData();
+  }, []);
+
+  return (
+    <ProductContext.Provider value={{ store: useProductStore }}>{children}</ProductContext.Provider>
+  );
+};
+
+// Hook personalizado para usar el contexto
+export const useProductContext = () => {
+  const context = useContext(ProductContext);
+  if (!context) {
+    throw new Error('useProductContext must be used within a ProductProvider');
+  }
+  return context;
+};

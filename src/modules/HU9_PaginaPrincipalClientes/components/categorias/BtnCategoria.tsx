@@ -4,7 +4,8 @@ import type { Categoria } from '../../../../types/Categoria';
 interface BtnCategoriaProps {
   category: Categoria;
   subCategorias?: Categoria[];
-  onSearch: (query: string | string[]) => void;
+  onSearch: (query: string | string[]) => void; // Se mantiene por compatibilidad
+  onCategoryFilter?: (query: string | string[]) => void; // Nuevo método para filtrar categorías
   termAnterior: string | string[];
   setTermAnterior: (term: string | string[]) => void;
 }
@@ -13,6 +14,7 @@ export const BtnCategoria = ({
   category,
   subCategorias = [],
   onSearch,
+  onCategoryFilter,
   termAnterior,
   setTermAnterior,
 }: BtnCategoriaProps) => {
@@ -49,10 +51,20 @@ export const BtnCategoria = ({
     searchTermForSearch = subCategorias.map((sub) => sub.denominacion);
 
     if (esTermAnteriorIgual(searchTermForSearch)) {
-      onSearch('');
+      // Si hay un filtro de categoría disponible, úsalo
+      if (onCategoryFilter) {
+        onCategoryFilter('');
+      } else {
+        // Compatibilidad: usar onSearch si onCategoryFilter no está disponible
+        onSearch('');
+      }
       setTermAnterior('');
     } else {
-      onSearch(searchTermForSearch);
+      if (onCategoryFilter) {
+        onCategoryFilter(searchTermForSearch);
+      } else {
+        onSearch(searchTermForSearch);
+      }
       setTermAnterior(searchTermForSearch);
     }
     setShowSubcategoriasDropdown(false);
@@ -61,10 +73,18 @@ export const BtnCategoria = ({
 
   const handleClickHijoOSolo = () => {
     if (esTermAnteriorIgual(category.denominacion)) {
-      onSearch('');
+      if (onCategoryFilter) {
+        onCategoryFilter('');
+      } else {
+        onSearch('');
+      }
       setTermAnterior('');
     } else {
-      onSearch(category.denominacion);
+      if (onCategoryFilter) {
+        onCategoryFilter(category.denominacion);
+      } else {
+        onSearch(category.denominacion);
+      }
       setTermAnterior(category.denominacion);
     }
     clearHoverTimeout();
@@ -73,10 +93,18 @@ export const BtnCategoria = ({
   const handleSubCategoriaClick = (subCategoriaDenominacion: string, event: React.MouseEvent) => {
     event.stopPropagation();
     if (esTermAnteriorIgual(subCategoriaDenominacion)) {
-      onSearch('');
+      if (onCategoryFilter) {
+        onCategoryFilter('');
+      } else {
+        onSearch('');
+      }
       setTermAnterior('');
     } else {
-      onSearch(subCategoriaDenominacion);
+      if (onCategoryFilter) {
+        onCategoryFilter(subCategoriaDenominacion);
+      } else {
+        onSearch(subCategoriaDenominacion);
+      }
       setTermAnterior(subCategoriaDenominacion);
     }
     setShowSubcategoriasDropdown(false);

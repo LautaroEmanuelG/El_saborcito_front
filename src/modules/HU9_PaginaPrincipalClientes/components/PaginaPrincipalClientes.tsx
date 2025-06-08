@@ -3,20 +3,23 @@ import { ListaCategorias } from '../../HU9_PaginaPrincipalClientes/components/ca
 import { ListaProductos } from './articulos/ListaProducto';
 import { ModalProducto } from './articulos/ModalProducto';
 import { ActiveSlider } from './carrusel/ActiveSlider';
+import { ActiveCategoryIndicator } from './categorias/ActiveCategoryIndicator';
 import BtnFlotanteCarrito from '../../HU11_CarritoCompras/components/BtnFlotanteCarrito';
 import { CarritoContext } from '../../../shared/providers/CarritoProvider';
-import { useProductStore, getArticuloCategoriaId } from '../../../shared/store/useProductStore';
+import { useProductStore, getArticuloCategoriaId } from '../../../shared/providers/ProductProvider';
 import type { ArticuloInsumo, ArticuloManufacturado } from '../../../types/Articulo';
 
 interface PaginaPrincipalClientesProps {
   searchTerm: string;
   handleSearch: (term: string | string[]) => void; // Modificado para aceptar string o string[]
+  handleCategoryFilter?: (category: string | string[]) => void; // Nueva prop para filtrar por categoría
   filteredProducts: (ArticuloManufacturado | ArticuloInsumo)[];
 }
 
 export const PaginaPrincipalClientes = ({
   searchTerm,
   handleSearch,
+  handleCategoryFilter,
   filteredProducts,
 }: PaginaPrincipalClientesProps) => {
   const { allCategorias } = useProductStore(); // Obtenemos categorías del store
@@ -106,20 +109,31 @@ export const PaginaPrincipalClientes = ({
   // Calculate total items in the cart
   const totalItems = carrito.reduce((total, articulo) => total + articulo.cantidad, 0);
 
+  // Obtenemos la categoría activa para saber si mostrar o no el slider
+  const { activeCategory } = useProductStore();
+  const showSlider = !searchTerm && !activeCategory;
+  const noResults = filteredProducts.length === 0;
+
   return (
     <div className="container mx-auto px-4 md:px-6 py-4 flex flex-col min-h-screen w-full">
-      {searchTerm ? null : <ActiveSlider setArticuloModal={setArticuloModal} />}
+      {showSlider && <ActiveSlider setArticuloModal={setArticuloModal} />}
       <ListaCategorias
         categorias={allCategorias}
         onSearch={handleSearch}
+        onCategoryFilter={handleCategoryFilter}
         categoriasConProductosIds={categoriasConProductos}
       />
-      {searchTerm && filteredProducts.length === 0 ? (
-        <p className="text-center text-xl">No se encontraron productos para "{searchTerm}"</p>
+      <ActiveCategoryIndicator />
+      {noResults ? (
+        <p className="text-center text-xl mt-8">
+          {searchTerm
+            ? `No se encontraron productos para "${searchTerm}"`
+            : activeCategory
+              ? `No hay productos disponibles en esta categoría`
+              : null}
+        </p>
       ) : (
-        <>
-          <ListaProductos articulos={filteredProducts} onProductClick={handleProductClick} />
-        </>
+        <ListaProductos articulos={filteredProducts} onProductClick={handleProductClick} />
       )}
       <ModalProducto
         articulo={articuloModal ?? null}

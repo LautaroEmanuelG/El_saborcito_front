@@ -7,6 +7,8 @@ Desarrollo de un sistema web para un restaurante que permita gestionar ventas y 
 ## 📑 Documentación Técnica Adicional
 
 - [Gestión de Categorías](./docs/CATEGORY_MANAGEMENT.md) - Mejoras en la visualización jerárquica de categorías
+- [Búsqueda y Filtrado](./docs/SEARCH_FUNCTIONALITY.md) - Arquitectura de búsqueda con Zustand
+- [Cambios Recientes](./docs/CAMBIOS_RECIENTES.md) - Últimas mejoras y correcciones
 - [Contribución](./docs/CONTRIBUTING.md) - Guía para contribuir al proyecto
 - [Cómo Funciona](./docs/HowWork.md) - Explicación del funcionamiento general
 - [Soft Delete](./docs/SOFT_DELETE_IMPLEMENTATION.md) - Implementación de borrado lógico

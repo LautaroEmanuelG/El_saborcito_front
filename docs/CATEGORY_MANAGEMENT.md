@@ -6,7 +6,15 @@ Se identificó un problema donde categorías importantes como **Sandwiches**, **
 
 ## 🛠️ Soluciones Implementadas
 
-### 1. Mejora en la carga de categorías en `useProductStore.ts`
+### 1. Migración a un Provider con Zustand
+
+Se migró la lógica de gestión de productos y categorías a un `ProductProvider` usando **Zustand** para el manejo del estado global. Este cambio mejora:
+
+- **Arquitectura modular**: Un punto único para gestionar todo el estado de productos
+- **Mejor rendimiento**: Reducción de renderizaciones innecesarias gracias a Zustand
+- **Accesibilidad global**: Cualquier componente puede acceder a productos y categorías sin prop drilling
+
+### 2. Mejora en la carga de categorías en `ProductProvider.tsx` (antes `useProductStore.ts`)
 
 Se modificó la función `fetchAllData` para asegurar que se incluyan todas las categorías padre relevantes, incluso cuando solo sus subcategorías tienen productos asociados. Esto se logró mediante:
 
@@ -36,6 +44,14 @@ Se modificó el componente `ListaCategorias` para mostrar categorías padre siem
 - La estructura jerárquica de categorías se mantiene intacta y funcional
 - La navegación por categorías es más intuitiva y completa para los usuarios
 - La búsqueda por categoría ahora devuelve resultados más coherentes y completos
+- **Mejor arquitectura de código** gracias al uso de Providers y Zustand
+
+## 🔄 Hooks Refactorizados
+
+Se han refactorizado los hooks para usar el nuevo provider:
+
+- **useProductSearch**: Hook principal que conecta con el estado global de Zustand
+- **useSearch**: Mantenido por compatibilidad, redirige a useProductSearch
 
 ## 🧪 Pruebas Realizadas
 
@@ -45,7 +61,15 @@ Se verificó manualmente el funcionamiento de la aplicación, comprobando:
 - El funcionamiento adecuado de la navegación por categorías padre e hijas
 - La correcta visualización de productos al seleccionar distintas categorías
 - El manejo adecuado de la búsqueda por texto y por categoría
+- La correcta integración del ProductProvider en la aplicación
 
 ## 📝 Notas Adicionales
 
-Esta solución respeta la modularidad actual del código y mantiene la compatibilidad con el resto de funcionalidades de la aplicación. Las mejoras implementadas son robustas ante cambios en los datos de categorías y productos.
+Esta solución mejora significativamente la arquitectura del código manteniendo la compatibilidad con las funcionalidades existentes. Las mejoras implementadas incluyen:
+
+1. **Mejor organización de código**: Se centraliza la lógica de productos en un provider
+2. **Mejor rendimiento**: Zustand ofrece un sistema de suscripciones más eficiente
+3. **Menor prop drilling**: Los componentes pueden acceder directamente al estado global
+4. **Mejor mantenibilidad**: Los cambios futuros serán más fáciles de implementar
+
+La aplicación ahora sigue un patrón más moderno de desarrollo React utilizando el state management de Zustand.
