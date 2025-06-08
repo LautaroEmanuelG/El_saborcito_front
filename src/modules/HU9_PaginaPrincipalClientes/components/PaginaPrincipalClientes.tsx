@@ -1,13 +1,12 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { ListaCategorias } from '../../HU9_PaginaPrincipalClientes/components/categorias/ListaCategorias';
 import { ListaProductos } from './articulos/ListaProducto';
 import { ModalProducto } from './articulos/ModalProducto';
 import { ActiveSlider } from './carrusel/ActiveSlider';
 import BtnFlotanteCarrito from '../../HU11_CarritoCompras/components/BtnFlotanteCarrito';
 import { CarritoContext } from '../../../shared/providers/CarritoProvider';
-import { getAllCategorias } from '../../../shared/services/categoriaService';
+import { useProductStore, getArticuloCategoriaId } from '../../../shared/store/useProductStore';
 import type { ArticuloInsumo, ArticuloManufacturado } from '../../../types/Articulo';
-import type { Categoria } from '../../../types/Categoria';
 
 interface PaginaPrincipalClientesProps {
   searchTerm: string;
@@ -20,20 +19,70 @@ export const PaginaPrincipalClientes = ({
   handleSearch,
   filteredProducts,
 }: PaginaPrincipalClientesProps) => {
-  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const { allCategorias } = useProductStore(); // Obtenemos categorías del store
   const [articuloModal, setArticuloModal] = useState<ArticuloManufacturado | ArticuloInsumo | null>(
     null
   );
   const [isModalOpen, setModalOpen] = useState(false);
 
-  useEffect(() => {
-    async function fetchData() {
-      const categoriasData = await getAllCategorias();
-      console.log('categoriasData :>> ', categoriasData);
-      setCategorias(categoriasData);
+  // Calcular las categorías que tienen productos
+  const categoriasConProductos = useMemo(() => {
+    const ids = new Set<number>();
+
+    // Si hay un término de búsqueda activo que es una categoría, mostraremos todas las categorías
+    // para que el usuario pueda cambiar fácilmente entre ellas
+    if (searchTerm && allCategorias.some((cat) => cat.denominacion === searchTerm)) {
+      // Si estamos filtrando por una categoría específica, incluir todas las categorías
+      allCategorias.forEach((cat) => {
+        if (cat.id !== undefined) {
+          ids.add(cat.id);
+        }
+      });
+      return ids;
     }
-    fetchData();
-  }, []);
+
+    // Caso 1: Añade IDs de categorías que tienen productos directamente
+    filteredProducts.forEach((producto) => {
+      const categoriaId = getArticuloCategoriaId(producto);
+      if (categoriaId !== undefined) {
+        ids.add(categoriaId);
+      }
+    });
+
+    // Caso 2: También incluye las categorías padre de las categorías que tienen productos
+    // Esto asegura que categorías como "Sandwiches" aparezcan incluso si solo sus hijas tienen productos
+    const categoriasHijo = new Set<number>();
+    const categoriasPadre = new Map<number, number>(); // Map de hijo->padre
+
+    // Construimos un mapa de relaciones hijo->padre
+    allCategorias.forEach((cat) => {
+      if (cat.id !== undefined && cat.tipoCategoria && cat.tipoCategoria.id !== undefined) {
+        categoriasHijo.add(cat.id);
+        categoriasPadre.set(cat.id, cat.tipoCategoria.id);
+      }
+    });
+
+    // Ahora añadimos todos los IDs de padres para cada categoría con productos
+    ids.forEach((id) => {
+      if (categoriasHijo.has(id) && categoriasPadre.has(id)) {
+        ids.add(categoriasPadre.get(id)!);
+      }
+    });
+
+    // Si no hay filtros aplicados o estamos en la vista inicial, mostrar todas las categorías
+    if (
+      filteredProducts.length === 0 ||
+      filteredProducts.length === useProductStore.getState().allProducts.length
+    ) {
+      allCategorias.forEach((cat) => {
+        if (cat.id !== undefined) {
+          ids.add(cat.id);
+        }
+      });
+    }
+
+    return ids;
+  }, [filteredProducts, searchTerm, allCategorias]);
 
   useEffect(() => {
     if (articuloModal) {
@@ -60,7 +109,11 @@ export const PaginaPrincipalClientes = ({
   return (
     <div className="container mx-auto px-4 md:px-6 py-4 flex flex-col min-h-screen w-full">
       {searchTerm ? null : <ActiveSlider setArticuloModal={setArticuloModal} />}
-      <ListaCategorias categorias={categorias} onSearch={handleSearch} />
+      <ListaCategorias
+        categorias={allCategorias}
+        onSearch={handleSearch}
+        categoriasConProductosIds={categoriasConProductos}
+      />
       {searchTerm && filteredProducts.length === 0 ? (
         <p className="text-center text-xl">No se encontraron productos para "{searchTerm}"</p>
       ) : (

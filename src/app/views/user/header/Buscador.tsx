@@ -1,15 +1,15 @@
 import IconoBuscador from '../../../../assets/svgs/icons/IconoBuscador';
-import { useSearch } from '../../../../shared/hooks/useSearch';
+import { useProductSearch } from '../../../../shared/hooks/useProductSearch';
 
 type Props = {
   onSearch: (query: string) => void; // Prop para manejar el evento de búsqueda
 };
 
 export const Buscador = ({ onSearch }: Props) => {
-  const { searchTerm, handleSearchChange } = useSearch('');
+  const { searchTerm, handleSearchInputChange } = useProductSearch(''); // Usamos el nuevo hook
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    handleSearchChange(event);
+    handleSearchInputChange(event);
     onSearch(event.target.value); // Llamar a la función de búsqueda con el término actual
   };
 

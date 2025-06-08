@@ -4,6 +4,13 @@
 
 Desarrollo de un sistema web para un restaurante que permita gestionar ventas y administrar finanzas de manera eficiente. Los clientes podrán realizar compras de comida utilizando diversos medios de pago como Mercado Pago y criptomonedas. Además, los administradores tendrán acceso a estadísticas y finanzas de la empresa, gestionando inventarios y realizando registros contables básicos.
 
+## 📑 Documentación Técnica Adicional
+
+- [Gestión de Categorías](./docs/CATEGORY_MANAGEMENT.md) - Mejoras en la visualización jerárquica de categorías
+- [Contribución](./docs/CONTRIBUTING.md) - Guía para contribuir al proyecto
+- [Cómo Funciona](./docs/HowWork.md) - Explicación del funcionamiento general
+- [Soft Delete](./docs/SOFT_DELETE_IMPLEMENTATION.md) - Implementación de borrado lógico
+
 ## 🔍 Objetivos Principales
 
 - **Venta de Comidas**: Permitir a los clientes comprar comidas a través de una interfaz intuitiva con un carrito de compras y opciones de pago diversificadas.

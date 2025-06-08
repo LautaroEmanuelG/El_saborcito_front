@@ -1,47 +1,23 @@
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { ArticuloManufacturado, ArticuloInsumo } from '../../../../types/Articulo';
-import { Categoria } from '../../../../types/Categoria';
-import { getAllCategorias } from '../../../../shared/services/categoriaService'; // Corregido
+import { useProductStore, getArticuloCategoriaId } from '../../../../shared/store/useProductStore';
 import { CardProducto } from './CardProducto';
 
 interface Props {
   articulos: (ArticuloManufacturado | ArticuloInsumo)[];
-  onProductClick: (articulo: ArticuloManufacturado | ArticuloInsumo | null) => void; // Modificado para aceptar null
+  onProductClick: (articulo: ArticuloManufacturado | ArticuloInsumo | null) => void;
 }
 
 export const ListaProductos = ({ articulos, onProductClick }: Props) => {
-  const [todasLasCategorias, setTodasLasCategorias] = useState<Categoria[]>([]);
+  // Usar el store para obtener las categorías
+  const { allCategorias } = useProductStore();
 
-  const getArticuloCategoriaId = (
-    articulo: ArticuloManufacturado | ArticuloInsumo
-  ): number | undefined => {
-    if ('categoriaId' in articulo && typeof articulo.categoriaId === 'number') {
-      return articulo.categoriaId;
-    } else if (
-      'categoria' in articulo &&
-      articulo.categoria &&
-      typeof articulo.categoria.id === 'number'
-    ) {
-      return articulo.categoria.id;
-    }
-    return undefined;
-  };
-
-  useEffect(() => {
-    const fetchCategorias = async () => {
-      try {
-        const data = await getAllCategorias();
-        setTodasLasCategorias(data);
-      } catch (error) {
-        console.error('Error fetching categorias:', error);
-      }
-    };
-    fetchCategorias();
-  }, []);
-
-  const categoriasConProductos = todasLasCategorias.filter((categoria) =>
-    articulos.some((articulo) => getArticuloCategoriaId(articulo) === categoria.id)
-  );
+  // Filtrar categorías que tienen productos en la lista actual
+  const categoriasConProductos = useMemo(() => {
+    return allCategorias.filter((categoria) =>
+      articulos.some((articulo) => getArticuloCategoriaId(articulo) === categoria.id)
+    );
+  }, [articulos, allCategorias]);
 
   if (articulos.length === 0) {
     return (
@@ -59,7 +35,7 @@ export const ListaProductos = ({ articulos, onProductClick }: Props) => {
             getArticuloCategoriaId(articulo) === categoria.id
         );
         return productosFiltrados.length > 0 ? (
-          <div key={categoria.id} className="mb-12">
+          <div key={categoria.id} className="mb-12 w-full">
             <h2 className="text-3xl font-bold mb-6 text-negro border-b-2 border-primary pb-2">
               {categoria.denominacion}
             </h2>
@@ -68,7 +44,7 @@ export const ListaProductos = ({ articulos, onProductClick }: Props) => {
                 <CardProducto
                   key={articulo.id}
                   articulo={articulo}
-                  setProductoModal={onProductClick} // onProductClick ahora es compatible
+                  setProductoModal={onProductClick}
                 />
               ))}
             </div>

@@ -36,18 +36,35 @@ export const useSearch = (initialValue: string = '') => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [manufacturadosData, insumosData, categoriasData] = await Promise.all([
-          getAllArticuloManufacturados(),
-          getAllArticuloInsumoNoEsParaElaborar(),
-          getAllCategorias(),
-        ]);
+        const [manufacturadosData, insumosData, todasLasCategoriasDesdeServicio] =
+          await Promise.all([
+            getAllArticuloManufacturados(),
+            getAllArticuloInsumoNoEsParaElaborar(),
+            getAllCategorias(), // Obtenemos todas las categorías una vez
+          ]);
         const combinedProducts = [...manufacturadosData, ...insumosData] as (
           | ArticuloManufacturado
           | ArticuloInsumo
         )[];
         setAllProducts(combinedProducts);
-        setFilteredProducts(combinedProducts);
-        setAllCategorias(categoriasData);
+        setFilteredProducts(combinedProducts); // Inicialmente muestra todos los productos
+
+        // Extraer IDs de categoría únicos de los productos cargados
+        const categoriaIdsEnProductos = new Set<number>();
+        combinedProducts.forEach((producto) => {
+          const catId = getArticuloCategoriaId(producto);
+          if (catId !== undefined) {
+            categoriaIdsEnProductos.add(catId);
+          }
+        });
+
+        // Filtrar todasLasCategoriasDesdeServicio para incluir solo aquellas presentes en los productos
+        const categoriasRelevantes = todasLasCategoriasDesdeServicio.filter(
+          (
+            categoria: Categoria // Añadido tipo explícito
+          ) => categoria.id !== undefined && categoriaIdsEnProductos.has(categoria.id)
+        );
+        setAllCategorias(categoriasRelevantes);
       } catch (error) {
         console.error('Error al cargar datos iniciales en useSearch:', error);
         setAllProducts([]);
