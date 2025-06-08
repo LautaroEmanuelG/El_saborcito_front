@@ -1,5 +1,4 @@
 import { useState, useContext } from 'react';
-import { Buscador } from './Buscador';
 import { Link } from 'react-router-dom';
 import { CarritoContext } from '../../../../shared/providers/CarritoProvider';
 import IconoLogoSaborcito from '../../../../assets/svgs/icons/IconoLogoSaborcito';
@@ -7,6 +6,7 @@ import IconoLoggin from '../../../../assets/svgs/icons/IconoLoggin';
 import IconoCarrito from '../../../../assets/svgs/icons/IconoCarrito';
 import IconoMenuHamburguesa from '../../../../assets/svgs/icons/IconoMenuHamburguesa';
 import { LoginModal } from '../../../../shared/components/loggin/LoginModal';
+import { Buscador } from '../../../../modules/HU10_BusquedaProductos/components/Buscador';
 
 type Props = {
   onSearch?: (query: string | string[]) => void; // Modificado para aceptar string o string[]
