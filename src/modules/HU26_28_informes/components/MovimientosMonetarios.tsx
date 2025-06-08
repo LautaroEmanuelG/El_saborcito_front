@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { format } from 'date-fns';
-import './MovimientosMonetarios.css';
 import {
   exportarMovimientosExcel,
   getMovimientosMonetarios,
@@ -42,76 +41,67 @@ export const MovimientosMonetarios = () => {
     datasets: [
       {
         data: [datos.ingresos, datos.costos, datos.ganancias],
-        backgroundColor: ['green', 'red', 'blue'],
-      },
-    ],
-  };
-
-  const pieDataCostos = {
-    labels: ['Materia Prima', 'Salarios', 'Servicios', 'Otros'],
-    datasets: [
-      {
-        data: [42, 34, 7, 17], // Mockeado
-        backgroundColor: ['#e6194b', '#f58231', '#911eb4', '#ffe119'],
+        backgroundColor: ['#16a34a', '#dc2626', '#2563eb'], // verde, rojo, azul
       },
     ],
   };
 
   return (
-    <div className="movimientos-container">
-      <div className="movimientos-header">
-        <h2>Movimientos monetarios</h2>
-      </div>
-
-      <div className="flex gap-4 mb-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Desde:</label>
-          <input
-            type="date"
-            value={desde}
-            onChange={(e) => setDesde(e.target.value)}
-            className="border border-gray-300 rounded px-2 py-1 shadow-sm"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Hasta:</label>
-          <input
-            type="date"
-            value={hasta}
-            onChange={(e) => setHasta(e.target.value)}
-            className="border border-gray-300 rounded px-2 py-1 shadow-sm"
-          />
-        </div>
-      </div>
-
-      <div className="movimientos-tabla">
-        <div>
-          <strong>Ingresos</strong>
-          <p>$ {datos.ingresos.toLocaleString()}</p>
-        </div>
-        <div>
-          <strong>Costos</strong>
-          <p>$ {datos.costos.toLocaleString()}</p>
-        </div>
-        <div>
-          <strong>Total Ganancias</strong>
-          <p className="ganancia">$ {datos.ganancias.toLocaleString()}</p>
+    <div className="bg-white p-8 rounded-xl shadow-md max-w-full overflow-x-auto">
+      <div className="flex items-center justify-between border-b-2 border-negro pb-4 mb-8 flex-wrap">
+        <h2 className="text-2xl font-bold text-negro mr-6">Movimientos monetarios</h2>{' '}
+        {/* 📌 Se agregó mr-6 para separarlo del grupo de fechas */}
+        <div className="flex gap-6 bg-secondary text-black p-2 rounded-lg items-center">
+          <div>
+            <label className="block text-sm text-negro font-medium mb-1">Desde:</label>
+            <input
+              type="date"
+              value={desde}
+              onChange={(e) => setDesde(e.target.value)}
+              className="border border-gray-300 px-2 py-1 rounded"
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-negro font-medium mb-1">Hasta:</label>
+            <input
+              type="date"
+              value={hasta}
+              onChange={(e) => setHasta(e.target.value)}
+              className="border border-gray-300 px-2 py-1 rounded"
+            />
+          </div>
         </div>
       </div>
 
-      <div className="movimientos-graficos">
+      <div className="grid grid-cols-3 text-center font-semibold border-b-2 border-negro pb-2 mb-4">
         <div>
-          <h4>Distribución de Ingresos, Costos y Ganancias</h4>
-          <Pie data={pieDataIngresos} />
+          <p className="text-negro">Ingresos</p>
+          <p className="text-lg font-bold text-negro">${datos.ingresos.toLocaleString()}</p>
         </div>
         <div>
-          <h4>Distribución de Costos</h4>
-          <Pie data={pieDataCostos} />
+          <p className="text-negro">Costos</p>
+          <p className="text-lg font-bold text-negro">${datos.costos.toLocaleString()}</p>
+        </div>
+        <div>
+          <p className="text-negro">Total Ganancias</p>
+          <p className="text-lg font-bold text-green-600">${datos.ganancias.toLocaleString()}</p>
         </div>
       </div>
 
-      <div className="movimientos-exportar">
-        <button onClick={handleExportar}>Exportada Excel</button>
+      <div className="w-full max-w-[450px] mx-auto">
+        <h4 className="text-center font-semibold mb-2">
+          Distribución de Ingresos, Costos y Ganancias
+        </h4>
+        <Pie data={pieDataIngresos} />
+      </div>
+
+      <div className="flex justify-end mt-8">
+        <button
+          onClick={handleExportar}
+          className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg shadow font-bold"
+        >
+          Exportar a Excel
+        </button>
       </div>
     </div>
   );
