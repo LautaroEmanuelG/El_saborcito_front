@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import type { Categoria } from '../../../../types/Categoria';
+import { IconoArrowDown } from '../../../../assets/svgs/icons/IconoArrowDown';
 
 interface BtnCategoriaProps {
   category: Categoria;
@@ -170,15 +171,15 @@ export const BtnCategoria = ({
     >
       <button
         onClick={handleClick}
-        className={`px-3 py-1.5 md:px-4 md:py-2 rounded-md text-lg font-bold sm:text-md hover:text-primary transition-colors whitespace-nowrap
+        className={`px-3 py-1.5 flex gap-2 items-center md:px-4 md:py-2 rounded-md text-xl font-bold sm:text-md hover:text-negro hover:scale-105 transition-all whitespace-nowrap
                     ${
                       isActive
                         ? 'bg-primary text-blanco shadow-lg transform scale-105 hover:text-negro'
-                        : 'bg-blanco text-negro hover:bg-blanco/80'
+                        : 'bg-blanco text-negro hover:text-blanco hover:bg-blanco/80'
                     }`}
       >
         {category.denominacion}
-        {esPadreConHijos ? <span className="ml-1 text-xs">▼</span> : ''}
+        {esPadreConHijos ? <IconoArrowDown /> : ''}
       </button>
       {esPadreConHijos && showSubcategoriasDropdown && (
         <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 min-w-[160px] bg-blanco border border-gray-300 rounded-md shadow-xl z-20 py-1">

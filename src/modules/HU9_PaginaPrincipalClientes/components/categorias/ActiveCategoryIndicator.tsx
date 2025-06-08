@@ -13,7 +13,7 @@ export const ActiveCategoryIndicator = () => {
   const categoryLabel = Array.isArray(activeCategory) ? activeCategory.join(', ') : activeCategory;
 
   return (
-    <div className="flex items-center justify-center w-full my-2">
+    <div className="flex items-center justify-start w-full my-2">
       <div className="inline-flex items-center px-3 py-1 bg-primary/10 text-primary rounded-lg">
         <span className="mr-2 font-medium">Categoría activa: {categoryLabel}</span>
         <button

@@ -69,7 +69,7 @@ export const ListaCategorias = ({
   }, [todasCategorias, categoriasConProductosIds]);
 
   return (
-    <div className="container mx-auto gap-2 sm:gap-6 py-4 flex w-full flex-wrap justify-center items-start">
+    <div className="container gap-2 sm:gap-6 py-4 flex w-full flex-wrap justify-start items-start">
       {categoriasOrganizadas.padres.map((categoriaPadre) => {
         // Asegurarse de que categoriaPadre.id exista antes de usarlo
         if (categoriaPadre.id === undefined) return null;

@@ -49,10 +49,8 @@ export const ActiveSlider: React.FC<ActiveSliderProps> = ({ setArticuloModal }) 
             className="object-contain w-full h-full rounded-xl"
           />
         </picture>
-        <div className="absolute bottom-10 left-0 p-4 mb-3 text-white w-full rounded-b-xl flex flex-col items-start">
-          <h3 className="text-3xl font-semibold w-full justify-center flex pb-6">
-            Los mejores sabores, amplia variedad
-          </h3>
+        <div className="absolute bottom-4 left-0 p-4 mb-3 text-primary font-bold w-full rounded-b-xl flex flex-col items-start">
+          <h3 className="text-3xl w-full justify-center flex pb-6">Los mejores sabores</h3>
         </div>
       </SwiperSlide>
       {articulos.map((articulo, index) => (
