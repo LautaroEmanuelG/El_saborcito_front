@@ -66,7 +66,14 @@ const ScreenArticulosManufacturados = () => {
   };
 
   // Transformar los datos para mostrar en la tabla
-  const currentArticulos = showDeleted ? deletedArticulos : articulos;
+  let currentArticulos: ArticuloManufacturado[] = [];
+  if (showDeleted) {
+    // Mostrar activos primero y luego eliminados (sin duplicados)
+    const activos = articulos.filter((a) => !deletedArticulos.some((d) => d.id === a.id));
+    currentArticulos = [...activos, ...deletedArticulos];
+  } else {
+    currentArticulos = articulos;
+  }
   const transformedArticulos = currentArticulos.map((articulo) => {
     const { categoria, subcategoria } = getCategoryInfo(articulo.categoriaId);
     return {
@@ -122,7 +129,8 @@ const ScreenArticulosManufacturados = () => {
       label: 'Acciones',
       key: 'acciones',
       render: (row: ArticuloManufacturado & { eliminado?: boolean }) => {
-        // Ahora usamos el componente ButtonsTable con sus nuevas características
+        // Si estamos mostrando eliminados y el producto no está eliminado, solo mostrar el botón de ver
+        const soloVer = showDeleted && !row.eliminado;
         return (
           <ButtonsTable
             el={row}
@@ -132,6 +140,7 @@ const ScreenArticulosManufacturados = () => {
             handleRestore={handleRestore}
             onView={handleView}
             onEdit={handleEdit}
+            soloVer={soloVer}
           />
         );
       },
