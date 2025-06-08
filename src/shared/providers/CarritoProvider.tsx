@@ -1,5 +1,6 @@
-import React, { createContext, useReducer, ReactNode, useEffect } from 'react';
+import React, { createContext, useReducer, ReactNode, useEffect, useCallback } from 'react';
 import type { Articulo, ArticuloManufacturado } from '../../types/Articulo';
+import { useProductAvailability } from '../hooks/useProductAvailability';
 
 // Define the state shape
 interface ArticuloContext extends ArticuloManufacturado {
@@ -13,10 +14,11 @@ interface State {
 // Define the context value shape
 interface CarritoContextValue {
   carrito: ArticuloContext[];
-  addToCarrito: (articulo: Articulo, cantidad: number) => void;
+  addToCarrito: (articulo: Articulo, cantidad: number) => Promise<boolean>; // Devuelve true si se pudo agregar, false si no
   removeFromCart: (articulo: { denominacion: string }) => void;
   decreaseFromCart: (articulo: { id: number }) => void;
   clearCarrito: () => void;
+  isProductAvailable: (articulo: Articulo) => Promise<boolean>; // Nueva función para verificar disponibilidad
 }
 // Create the context
 export const CarritoContext = createContext<CarritoContextValue | undefined>(undefined);
@@ -82,27 +84,53 @@ const carritoReducer = (state: State, action: any): State => {
 // Define the provider component
 export const CarritoProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(carritoReducer, initialState);
+  const { checkAvailability, isArticuloManufacturado } = useProductAvailability();
 
   useEffect(() => {
     localStorage.setItem('carrito', JSON.stringify(state.carrito));
   }, [state.carrito]);
 
-  const addToCarrito = (articulo: Articulo, cantidad: number = 1) => {
-    dispatch({ type: 'ADD_TO_CARRITO', payload: { articulo, cantidad } });
-  };
+  // Función para verificar disponibilidad de un producto
+  const isProductAvailable = useCallback(
+    async (articulo: Articulo): Promise<boolean> => {
+      // Solo verificamos disponibilidad para artículos manufacturados
+      if (!isArticuloManufacturado(articulo)) {
+        return true; // Los artículos que no son manufacturados siempre están disponibles
+      }
+      return await checkAvailability(articulo);
+    },
+    [checkAvailability, isArticuloManufacturado]
+  );
 
-  const removeFromCart = (articulo: { denominacion: string }) => {
+  // Modificamos addToCarrito para que devuelva una promesa con el resultado
+  const addToCarrito = useCallback(
+    async (articulo: Articulo, cantidad: number = 1): Promise<boolean> => {
+      // Verificar disponibilidad antes de agregar al carrito
+      const available = await isProductAvailable(articulo);
+
+      if (!available) {
+        return false; // No se pudo agregar al carrito
+      }
+
+      // Si está disponible, agregarlo al carrito
+      dispatch({ type: 'ADD_TO_CARRITO', payload: { articulo, cantidad } });
+      return true; // Se agregó correctamente
+    },
+    [isProductAvailable]
+  );
+
+  const removeFromCart = useCallback((articulo: { denominacion: string }) => {
     dispatch({ type: 'REMOVE_FROM_CARRITO', payload: articulo });
-  };
+  }, []);
 
-  const decreaseFromCart = (articulo: { id: number }) => {
+  const decreaseFromCart = useCallback((articulo: { id: number }) => {
     dispatch({ type: 'DECREASE_FROM_CARRITO', payload: articulo });
-  };
+  }, []);
 
-  const clearCarrito = () => {
+  const clearCarrito = useCallback(() => {
     dispatch({ type: 'CLEAR_CARRITO' });
     localStorage.removeItem('carrito');
-  };
+  }, []);
 
   return (
     <CarritoContext.Provider
@@ -112,6 +140,7 @@ export const CarritoProvider: React.FC<{ children: ReactNode }> = ({ children })
         removeFromCart,
         decreaseFromCart,
         clearCarrito,
+        isProductAvailable,
       }}
     >
       {children}

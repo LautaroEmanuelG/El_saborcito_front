@@ -206,11 +206,11 @@ export const BtnCategoria = ({
     >
       <button
         onClick={handleClick}
-        className={`px-3 py-1.5 flex gap-2 items-center md:px-4 md:py-2 rounded-md text-xl font-bold sm:text-md hover:text-negro hover:scale-105 transition-all whitespace-nowrap
+        className={`px-3 py-1.5 flex gap-2 items-center md:px-4 md:py-2 rounded-md text-xl font-bold sm:text-md hover:scale-105 transition-all whitespace-nowrap
                     ${
                       isActive
-                        ? 'bg-primary text-blanco shadow-lg transform scale-105 hover:text-negro'
-                        : 'bg-blanco text-negro hover:text-blanco hover:bg-blanco/80'
+                        ? 'bg-primary text-blanco shadow-lg transform scale-105'
+                        : 'bg-blanco text-negro hover:bg-blanco/80'
                     }`}
       >
         {category.denominacion}

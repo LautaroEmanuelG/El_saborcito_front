@@ -5,6 +5,7 @@ import { type ReactNode, useState } from 'react';
 import { type State, WagmiProvider } from 'wagmi';
 import { ProductProvider } from './ProductProvider';
 import { CarritoProvider } from './CarritoProvider';
+import { NotificacionProvider } from './NotificacionProvider';
 
 import { getConfig } from '../../wagmi'; // your import path may vary
 
@@ -19,9 +20,11 @@ export function AppProviders(props: { children: ReactNode; initialState?: State 
           apiKey={import.meta.env.VITE_PUBLIC_ONCHAINKIT_API_KEY}
           chain={base} // add baseSepolia for testing
         >
-          <ProductProvider>
-            <CarritoProvider>{props.children}</CarritoProvider>
-          </ProductProvider>
+          <NotificacionProvider>
+            <ProductProvider>
+              <CarritoProvider>{props.children}</CarritoProvider>
+            </ProductProvider>
+          </NotificacionProvider>
         </OnchainKitProvider>
       </QueryClientProvider>
     </WagmiProvider>

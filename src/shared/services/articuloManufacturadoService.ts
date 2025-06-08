@@ -91,3 +91,9 @@ export const getAllArticuloManufacturadosByCategoria = async (id: number) => {
   const response = await axiosInstance.get(`${API_BASE_URL}/categoria/${id}`);
   return response.data;
 };
+
+// Consultar si un artículo manufacturado puede fabricarse (tiene insumos suficientes)
+export const canBeManufactured = async (id: number): Promise<boolean> => {
+  const response = await axiosInstance.get<boolean>(`${API_BASE_URL}/${id}/can-be-manufactured`);
+  return response.data ?? false;
+};
