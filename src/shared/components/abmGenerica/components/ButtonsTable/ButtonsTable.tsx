@@ -10,6 +10,7 @@ interface IButtonsTable<T> {
   handleRestore?: (id: number) => void; // Función opcional para restaurar elementos eliminados
   onView?: (item: T) => void; // Función para manejar la vista del elemento
   onEdit?: (item: T) => void; // Función para manejar la edición del elemento
+  soloVer?: boolean; // Si es true, solo mostrar el botón de ver
 }
 
 export const ButtonsTable = <T extends { id: number; denominacion?: string; eliminado?: boolean }>({
@@ -20,6 +21,7 @@ export const ButtonsTable = <T extends { id: number; denominacion?: string; elim
   handleRestore,
   onView,
   onEdit,
+  soloVer, // Nueva prop para mostrar solo el botón de ver
 }: IButtonsTable<T>) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showRestoreModal, setShowRestoreModal] = useState(false);
@@ -103,78 +105,83 @@ export const ButtonsTable = <T extends { id: number; denominacion?: string; elim
           </svg>
         </button>
 
-        {/* Mostrar botones según el estado eliminado */}
-        {el.eliminado ? (
-          /* Botón para restaurar si está eliminado */
-          <button
-            className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded"
-            onClick={handleShowRestoreModal}
-            title="Restaurar elemento"
-            disabled={!handleRestore}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" />
-              <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" />
-            </svg>
-          </button>
-        ) : (
+        {/* Si soloVer está activo, no mostrar editar/eliminar/restaurar */}
+        {!soloVer && (
           <>
-            {/* Botón para editar si no está eliminado */}
-            <button
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded"
-              onClick={handleEdit}
-              title="Editar elemento"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+            {/* Mostrar botones según el estado eliminado */}
+            {el.eliminado ? (
+              /* Botón para restaurar si está eliminado */
+              <button
+                className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded"
+                onClick={handleShowRestoreModal}
+                title="Restaurar elemento"
+                disabled={!handleRestore}
               >
-                <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
-                <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" />
-                <path d="M16 5l3 3" />
-              </svg>
-            </button>
-            {/* Botón para eliminar si no está eliminado */}
-            <button
-              className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded"
-              onClick={handleShowDeleteModal}
-              title="Eliminar elemento"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M4 7h16" />
-                <path d="M10 11v6" />
-                <path d="M14 11v6" />
-                <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
-                <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
-              </svg>
-            </button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" />
+                  <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" />
+                </svg>
+              </button>
+            ) : (
+              <>
+                {/* Botón para editar si no está eliminado */}
+                <button
+                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded"
+                  onClick={handleEdit}
+                  title="Editar elemento"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
+                    <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" />
+                    <path d="M16 5l3 3" />
+                  </svg>
+                </button>
+                {/* Botón para eliminar si no está eliminado */}
+                <button
+                  className="bg-primary hover:bg-primarydark text-white font-bold py-1 px-2 rounded"
+                  onClick={handleShowDeleteModal}
+                  title="Eliminar elemento"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M3 6h18" />
+                    <path d="M8 6v-2a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+                    <path d="M10 11v6" />
+                    <path d="M14 11v6" />
+                  </svg>
+                </button>
+              </>
+            )}
           </>
         )}
       </div>

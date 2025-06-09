@@ -8,6 +8,7 @@ import type { Categoria } from '../../../types/Categoria';
 import * as categoriaService from '../../../shared/services/categoriaService';
 import Modal from '../../../shared/components/abmGenerica/components/modals/Modal';
 import ModalSeleccionInsumos from './ModalSeleccionInsumos';
+import ModalEditarCantidadInsumo from './ModalEditarCantidadInsumo';
 
 interface ModalArticuloManufacturadoFormProps {
   open: boolean;
@@ -33,6 +34,11 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
   const [formValues, setFormValues] = useState<Record<string, string | number>>({});
   const [detalles, setDetalles] = useState<ArticuloManufacturadoDetalle[]>([]);
   const [openModalInsumos, setOpenModalInsumos] = useState(false);
+  const [modalEditar, setModalEditar] = useState<{ open: boolean; index: number | null }>({
+    open: false,
+    index: null,
+  });
+  const [isDisponible, setIsDisponible] = useState<boolean>(true);
 
   // Cargar categorías al montar
   useEffect(() => {
@@ -75,6 +81,7 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
           : (categoriaActual?.tipoCategoria?.id ?? ''),
       subcategoria: categoriaActual?.tipoCategoria !== null ? (categoriaActual?.id ?? '') : '',
     });
+    setIsDisponible(initialValues.eliminado === undefined ? true : !initialValues.eliminado);
   }, [open, initialValues, categorias]);
 
   // Cuando cambia la categoría seleccionada, actualizar subcategorías y limpiar subcategoría
@@ -183,6 +190,7 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
       categoriaId: finalCategoriaId ?? undefined,
       imagen: form.imagen,
       articuloManufacturadoDetalles: detalles,
+      eliminado: !isDisponible, // true si está eliminado, false si está disponible
     });
   };
 
@@ -255,7 +263,7 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
               )}
             </div>
           </div>
-          <div className="flex justify-end gap-2 p-4 border-t">
+          <div className="flex justify-center gap-2 p-4 border-t">
             <button
               type="button"
               className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
@@ -369,6 +377,35 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
                   onChange={(e) => handleInputChange('tiempoEstimadoMinutos', e.target.value)}
                 />
               </div>
+              {/* El botón solo se muestra en modo add/edit, nunca en view */}
+              {(mode === 'add' || mode === 'edit') && (
+                <>
+                  <div className="flex justify-center mt-4">
+                    <button
+                      type="button"
+                      className="bg-primary hover:bg-primarydark text-white text-sm px-3 py-1 rounded"
+                      onClick={() => setOpenModalInsumos(true)}
+                    >
+                      + Agregar Insumo
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-center mt-2">
+                    <input
+                      id="disponibleCheck"
+                      type="checkbox"
+                      className="mr-2"
+                      checked={isDisponible}
+                      onChange={() => setIsDisponible((prev) => !prev)}
+                    />
+                    <label
+                      htmlFor="disponibleCheck"
+                      className="text-base select-none cursor-pointer"
+                    >
+                      Habilitado
+                    </label>
+                  </div>
+                </>
+              )}
             </div>
             {/* Columna derecha: Lista de insumos */}
             <div className="flex-1 p-4 max-h-96 overflow-y-auto border-l">
@@ -385,17 +422,58 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
                       {detalle.articuloInsumo?.unidadMedida?.denominacion ?? ''}
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    {(mode === 'edit' || mode === 'add') && (
+                  {(mode === 'edit' || mode === 'add') && (
+                    <div className="flex gap-2">
+                      {/* Botón editar con icono y estilos consistentes */}
                       <button
                         type="button"
-                        className="text-red-500 hover:text-red-700"
-                        onClick={() => handleRemoveInsumo(index)}
+                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded"
+                        onClick={() => setModalEditar({ open: true, index })}
+                        title="Editar cantidad"
                       >
-                        Eliminar
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
+                          <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" />
+                          <path d="M16 5l3 3" />
+                        </svg>
                       </button>
-                    )}
-                  </div>
+                      {/* Botón eliminar con icono y estilos consistentes */}
+                      <button
+                        type="button"
+                        className="bg-primary hover:bg-primarydark text-white font-bold py-1 px-2 rounded"
+                        onClick={() => handleRemoveInsumo(index)}
+                        title="Eliminar insumo"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M3 6h18" />
+                          <path d="M8 6v-2a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+                          <path d="M10 11v6" />
+                          <path d="M14 11v6" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
               {detalles.length === 0 && (
@@ -403,20 +481,10 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
                   No hay insumos agregados. Haz clic en "Agregar Insumo" para comenzar.
                 </p>
               )}
-              {/* El botón solo se muestra en modo add/edit, nunca en view */}
-              {(mode === 'add' || mode === 'edit') && (
-                <button
-                  type="button"
-                  className="bg-blue-500 hover:bg-blue-600 text-white text-sm px-3 py-1 rounded mt-2"
-                  onClick={() => setOpenModalInsumos(true)}
-                >
-                  + Agregar Insumo
-                </button>
-              )}
             </div>
           </div>
           {/* Botones */}
-          <div className="flex justify-end gap-2 p-4 border-t">
+          <div className="flex justify-center gap-2 p-4 border-t">
             <button
               type="button"
               className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
@@ -426,7 +494,7 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
             </button>
             <button
               type="submit"
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              className="bg-primary hover:bg-primarydark text-white font-bold py-2 px-4 rounded"
             >
               {mode === 'add' ? 'Crear' : 'Guardar'}
             </button>
@@ -442,6 +510,16 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
           detalles.map((d) => d.articuloInsumo).filter(Boolean) as ArticuloInsumo[]
         }
       />
+      {/* Modal para editar cantidad de insumo */}
+      {modalEditar.open && modalEditar.index !== null && detalles[modalEditar.index] && (
+        <ModalEditarCantidadInsumo
+          open={modalEditar.open}
+          onClose={() => setModalEditar({ open: false, index: null })}
+          nombre={detalles[modalEditar.index].articuloInsumo?.denominacion || ''}
+          cantidad={detalles[modalEditar.index].cantidad}
+          onSave={(nuevaCantidad) => handleEditCantidad(modalEditar.index!, nuevaCantidad)}
+        />
+      )}
     </Modal>
   );
 };
