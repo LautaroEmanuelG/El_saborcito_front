@@ -8,6 +8,7 @@ import type { Categoria } from '../../../types/Categoria';
 import * as categoriaService from '../../../shared/services/categoriaService';
 import Modal from '../../../shared/components/abmGenerica/components/modals/Modal';
 import ModalSeleccionInsumos from './ModalSeleccionInsumos';
+import ModalEditarCantidadInsumo from './ModalEditarCantidadInsumo';
 
 interface ModalArticuloManufacturadoFormProps {
   open: boolean;
@@ -33,6 +34,10 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
   const [formValues, setFormValues] = useState<Record<string, string | number>>({});
   const [detalles, setDetalles] = useState<ArticuloManufacturadoDetalle[]>([]);
   const [openModalInsumos, setOpenModalInsumos] = useState(false);
+  const [modalEditar, setModalEditar] = useState<{ open: boolean; index: number | null }>({
+    open: false,
+    index: null,
+  });
 
   // Cargar categorías al montar
   useEffect(() => {
@@ -391,19 +396,7 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
                       <button
                         type="button"
                         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded"
-                        onClick={() => {
-                          const nuevaCantidad = prompt(
-                            'Editar cantidad',
-                            detalle.cantidad.toString()
-                          );
-                          if (
-                            nuevaCantidad !== null &&
-                            !isNaN(Number(nuevaCantidad)) &&
-                            Number(nuevaCantidad) > 0
-                          ) {
-                            handleEditCantidad(index, Number(nuevaCantidad));
-                          }
-                        }}
+                        onClick={() => setModalEditar({ open: true, index })}
                         title="Editar cantidad"
                       >
                         <svg
@@ -495,6 +488,16 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
           detalles.map((d) => d.articuloInsumo).filter(Boolean) as ArticuloInsumo[]
         }
       />
+      {/* Modal para editar cantidad de insumo */}
+      {modalEditar.open && modalEditar.index !== null && detalles[modalEditar.index] && (
+        <ModalEditarCantidadInsumo
+          open={modalEditar.open}
+          onClose={() => setModalEditar({ open: false, index: null })}
+          nombre={detalles[modalEditar.index].articuloInsumo?.denominacion || ''}
+          cantidad={detalles[modalEditar.index].cantidad}
+          onSave={(nuevaCantidad) => handleEditCantidad(modalEditar.index!, nuevaCantidad)}
+        />
+      )}
     </Modal>
   );
 };
