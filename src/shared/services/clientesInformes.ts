@@ -1,17 +1,14 @@
 import axios from 'axios';
 import { ClienteRanking, DetallePedidoDTO } from '../../modules/HU26_28_informes/model';
 
-const API_URL = 'http://localhost:5252/api/sucursales';
-
 export const getDetallePedidosCliente = async (
   clienteId: number,
   desde: string,
   hasta: string
 ): Promise<DetallePedidoDTO[]> => {
-  const response = await axios.get(`${API_URL}/pedidos-cliente`, {
-    params: { clienteId, desde, hasta },
-  });
-  return response.data;
+  const url = `/api/sucursales/pedidos-cliente?clienteId=${clienteId}&desde=${desde}&hasta=${hasta}`;
+  const res = await axios.get(url);
+  return res.data;
 };
 
 export const getRankingClientes = async (
