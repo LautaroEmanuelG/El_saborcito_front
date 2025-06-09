@@ -6,7 +6,7 @@ import {
   getDetallePedidosCliente,
 } from '../../../shared/services/clientesInformes';
 import type { ClienteRanking, DetallePedidoDTO } from '../model';
-import { IconEye } from '@tabler/icons-react';
+import IconoVer from '../../../assets/svgs/icons/IconoVer';
 
 export const RankingCliente = () => {
   const [clientes, setClientes] = useState<ClienteRanking[]>([]);
@@ -81,13 +81,16 @@ export const RankingCliente = () => {
           </tr>
         </thead>
         <tbody>
-          {clientes.map((c) => (
-            <tr key={c.id} className="border-b border-gray-200 hover:bg-blanco transition">
+          {clientes.map((c, index) => (
+            <tr
+              key={c.id ?? `cliente-${index}`}
+              className="border-b border-gray-200 hover:bg-blanco transition"
+            >
               <td className="py-2">{c.nombreCompleto}</td>
               <td className="py-2 text-primary">{c.cantidadPedidos}</td>
               <td className="py-2">${c.totalImporte.toLocaleString()}</td>
               <td className="py-2">
-                <IconEye
+                <IconoVer
                   className="w-5 h-5 cursor-pointer text-negro hover:text-primary transition"
                   onClick={async () => {
                     try {
