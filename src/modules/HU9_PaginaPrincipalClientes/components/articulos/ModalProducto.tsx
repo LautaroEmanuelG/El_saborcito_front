@@ -67,7 +67,7 @@ export const ModalProducto: React.FC<Props> = ({ articulo = null, isOpen, onClos
                 Volver
               </button>{' '}
               {isArticuloManufacturado(articulo) && !isAvailable && !isChecking && (
-                <div className="bg-black/70 text-white text-xs px-3 py-1 rounded absolute bottom-16 right-0">
+                <div className="bg-negro/80 text-white text-nowrap text-xs px-3 py-1 rounded absolute bottom-16 right-3">
                   Sin stock de insumos
                 </div>
               )}
