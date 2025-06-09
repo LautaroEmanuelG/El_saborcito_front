@@ -1,23 +1,31 @@
 import { useEffect, useState } from 'react';
-import { Bar } from 'react-chartjs-2';
+import { Bar, Pie } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
   BarElement,
+  ArcElement,
   Tooltip,
   Legend,
 } from 'chart.js';
 import { format } from 'date-fns';
-import { getRankingProductos, exportarRankingExcel } from '../service/informesService';
-import { ProductoRanking } from '../model';
+import {
+  getRankingProductos,
+  exportarRankingExcel,
+} from '../../../shared/services/productoInformes';
+import type { ProductoRankingResponse } from '../model';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend);
 
 export const RankingProductos = () => {
   const [desde, setDesde] = useState(() => format(new Date(), 'yyyy-01-01'));
   const [hasta, setHasta] = useState(() => format(new Date(), 'yyyy-MM-dd'));
-  const [productos, setProductos] = useState<ProductoRanking[]>([]);
+  const [rankingData, setRankingData] = useState<ProductoRankingResponse>({
+    productos: [],
+    totalManufacturados: 0,
+    totalInsumos: 0,
+  });
 
   useEffect(() => {
     fetchData();
@@ -26,8 +34,7 @@ export const RankingProductos = () => {
   const fetchData = async () => {
     try {
       const data = await getRankingProductos(desde, hasta);
-      if (Array.isArray(data)) setProductos(data);
-      else setProductos([]);
+      setRankingData(data);
     } catch (err) {
       console.error('Error cargando ranking:', err);
     }
@@ -43,12 +50,24 @@ export const RankingProductos = () => {
   };
 
   const barChartData = {
-    labels: productos.map((p) => p.denominacion),
+    labels: rankingData.productos.map((p) => p.denominacion),
     datasets: [
       {
         label: 'Cantidad Vendida',
-        data: productos.map((p) => p.cantidadVendida),
-        backgroundColor: productos.map((p) => (p.tipo === 'MANUFACTURADO' ? '#FF0000' : '#0000FF')),
+        data: rankingData.productos.map((p) => p.cantidadVendida),
+        backgroundColor: rankingData.productos.map((p) =>
+          p.tipoProducto === 'MANUFACTURADO' ? '#FF0000' : '#0000FF'
+        ),
+      },
+    ],
+  };
+
+  const pieChartData = {
+    labels: ['Cocina', 'Bebidas'],
+    datasets: [
+      {
+        data: [rankingData.totalManufacturados, rankingData.totalInsumos],
+        backgroundColor: ['#FF0000', '#0000FF'],
       },
     ],
   };
@@ -78,18 +97,17 @@ export const RankingProductos = () => {
   };
 
   return (
-    <div className="bg-white p-8 rounded-lg shadow-md">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+    <div className="bg-white p-8 rounded-xl shadow-md max-w-full overflow-x-auto">
+      <div className="flex justify-between items-center border-b-2 border-black pb-4 mb-8 flex-wrap">
         <h2 className="text-2xl font-bold">Productos más vendidos</h2>
-
-        <div className="flex gap-4">
+        <div className="flex gap-4 bg-gray-200 p-2 rounded-lg items-center">
           <div>
             <label className="block text-sm text-gray-600 font-medium mb-1">Desde:</label>
             <input
               type="date"
               value={desde}
               onChange={(e) => setDesde(e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1 shadow-sm"
+              className="border border-gray-300 px-2 py-1 rounded"
             />
           </div>
           <div>
@@ -98,52 +116,45 @@ export const RankingProductos = () => {
               type="date"
               value={hasta}
               onChange={(e) => setHasta(e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1 shadow-sm"
+              className="border border-gray-300 px-2 py-1 rounded"
             />
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-8">
-        <div className="w-full lg:w-2/3">
+      <div className="flex flex-wrap gap-8 justify-evenly items-start">
+        <div className="flex-1 min-w-[600px]">
           <h3 className="text-center font-semibold mb-2">Ranking de Productos Más Vendidos</h3>
           <Bar data={barChartData} options={chartOptions} height={300} />
         </div>
 
-        <div className="w-full lg:w-1/3 flex items-center justify-center">
+        <div className="flex-1 max-w-[350px]">
           <div className="bg-white border border-gray-200 shadow p-6 rounded">
             <h4 className="text-center text-lg font-bold mb-4">
               Distribución de Ventas entre Cocina y Bebidas
             </h4>
-            <div className="w-40 h-40">
-              <Bar
-                data={{
-                  labels: ['Cocina', 'Bebidas'],
-                  datasets: [
-                    {
-                      data: [
-                        productos.filter((p) => p.tipo === 'MANUFACTURADO').length,
-                        productos.filter((p) => p.tipo === 'INSUMO').length,
-                      ],
-                      backgroundColor: ['#FF0000', '#0000FF'],
-                    },
-                  ],
-                }}
-                options={{
-                  indexAxis: 'y',
-                  plugins: { legend: { display: false } },
-                  scales: { x: { beginAtZero: true } },
-                }}
-              />
+            <div className="w-40 h-40 mx-auto">
+              <Pie data={pieChartData} />
             </div>
           </div>
+        </div>
+      </div>
+
+      <div className="flex justify-center gap-6 mt-4">
+        <div className="flex items-center">
+          <span className="inline-block w-4 h-4 rounded bg-red-600 mr-2"></span>
+          Cocina
+        </div>
+        <div className="flex items-center">
+          <span className="inline-block w-4 h-4 rounded bg-blue-600 mr-2"></span>
+          Bebidas
         </div>
       </div>
 
       <div className="flex justify-end mt-8">
         <button
           onClick={handleExportar}
-          className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded shadow"
+          className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg shadow font-bold"
         >
           Exportar a Excel
         </button>

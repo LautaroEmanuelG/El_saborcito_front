@@ -17,6 +17,8 @@ import ScreenArticulosManufacturados from './modules/HU22_CRUDArticulos/componen
 import { Reportes } from './app/views/admin/Reportes.tsx';
 import { Cocina } from './app/views/admin/Cocina.tsx';
 import { HistorialCocina } from './app/views/admin/HistorialCocina.tsx';
+import { MovimientosMonetarios } from './modules/HU26_28_informes/components/MovimientosMonetarios.tsx';
+import { RankingCliente } from './modules/HU26_28_informes/components/RankingCliente.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <AppProviders>
@@ -88,6 +90,23 @@ createRoot(document.getElementById('root')!).render(
               </ProtectedRoute>
             }
           />
+          <Route
+            path="movimientos"
+            element={
+              <ProtectedRoute>
+                <MovimientosMonetarios />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="ranking-clientes"
+            element={
+              <ProtectedRoute>
+                <RankingCliente />
+              </ProtectedRoute>
+            }
+          />
+
           <Route
             path="control"
             element={
