@@ -33,4 +33,5 @@ export interface ArticuloManufacturado extends Articulo {
   tiempoEstimadoMinutos: number;
   preparacion?: string | null; // Campo del backend que no usamos
   articuloManufacturadoDetalles: ArticuloManufacturadoDetalle[];
+  eliminado?: boolean; // Indica si el artículo está dado de baja lógica
 }

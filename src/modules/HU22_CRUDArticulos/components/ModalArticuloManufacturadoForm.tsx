@@ -38,6 +38,7 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
     open: false,
     index: null,
   });
+  const [isDisponible, setIsDisponible] = useState<boolean>(true);
 
   // Cargar categorías al montar
   useEffect(() => {
@@ -80,6 +81,7 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
           : (categoriaActual?.tipoCategoria?.id ?? ''),
       subcategoria: categoriaActual?.tipoCategoria !== null ? (categoriaActual?.id ?? '') : '',
     });
+    setIsDisponible(initialValues.eliminado === undefined ? true : !initialValues.eliminado);
   }, [open, initialValues, categorias]);
 
   // Cuando cambia la categoría seleccionada, actualizar subcategorías y limpiar subcategoría
@@ -188,6 +190,7 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
       categoriaId: finalCategoriaId ?? undefined,
       imagen: form.imagen,
       articuloManufacturadoDetalles: detalles,
+      eliminado: !isDisponible, // true si está eliminado, false si está disponible
     });
   };
 
@@ -376,15 +379,32 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
               </div>
               {/* El botón solo se muestra en modo add/edit, nunca en view */}
               {(mode === 'add' || mode === 'edit') && (
-                <div className="flex justify-center mt-4">
-                  <button
-                    type="button"
-                    className="bg-primary hover:bg-primarydark text-white text-sm px-3 py-1 rounded"
-                    onClick={() => setOpenModalInsumos(true)}
-                  >
-                    + Agregar Insumo
-                  </button>
-                </div>
+                <>
+                  <div className="flex justify-center mt-4">
+                    <button
+                      type="button"
+                      className="bg-primary hover:bg-primarydark text-white text-sm px-3 py-1 rounded"
+                      onClick={() => setOpenModalInsumos(true)}
+                    >
+                      + Agregar Insumo
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-center mt-2">
+                    <input
+                      id="disponibleCheck"
+                      type="checkbox"
+                      className="mr-2"
+                      checked={isDisponible}
+                      onChange={() => setIsDisponible((prev) => !prev)}
+                    />
+                    <label
+                      htmlFor="disponibleCheck"
+                      className="text-base select-none cursor-pointer"
+                    >
+                      Habilitado
+                    </label>
+                  </div>
+                </>
               )}
             </div>
             {/* Columna derecha: Lista de insumos */}

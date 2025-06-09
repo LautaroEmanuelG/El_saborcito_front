@@ -113,9 +113,23 @@ const ScreenArticulosManufacturados = () => {
     if (modalMode === 'add') {
       addArticulo(values);
     } else if (modalMode === 'edit') {
-      updateArticulo(values);
+      // Lógica de soft delete/restaurar
+      if (
+        typeof values.id === 'number' &&
+        selectedArticulo &&
+        selectedArticulo.eliminado !== values.eliminado
+      ) {
+        if (values.eliminado) {
+          // Se deshabilitó → eliminar lógicamente
+          deleteArticulo(values.id);
+        } else {
+          // Se habilitó → restaurar
+          restoreArticulo(values.id);
+        }
+      } else {
+        updateArticulo(values);
+      }
     }
-    // En modo 'view' no se hace nada, solo se cierra el modal
     setOpenModal(false);
   };
 
