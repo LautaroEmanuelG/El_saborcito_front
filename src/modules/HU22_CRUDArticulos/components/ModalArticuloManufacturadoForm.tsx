@@ -260,7 +260,7 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
               )}
             </div>
           </div>
-          <div className="flex justify-end gap-2 p-4 border-t">
+          <div className="flex justify-center gap-2 p-4 border-t">
             <button
               type="button"
               className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
@@ -374,6 +374,17 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
                   onChange={(e) => handleInputChange('tiempoEstimadoMinutos', e.target.value)}
                 />
               </div>
+              {(mode === 'add' || mode === 'edit') && (
+                <div className="flex justify-center mt-4">
+                  <button
+                    type="button"
+                    className="bg-blue-500 hover:bg-blue-600 text-white text-sm px-3 py-1 rounded"
+                    onClick={() => setOpenModalInsumos(true)}
+                  >
+                    + Agregar Insumo
+                  </button>
+                </div>
+              )}
             </div>
             {/* Columna derecha: Lista de insumos */}
             <div className="flex-1 p-4 max-h-96 overflow-y-auto border-l">
@@ -449,20 +460,10 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
                   No hay insumos agregados. Haz clic en "Agregar Insumo" para comenzar.
                 </p>
               )}
-              {/* El botón solo se muestra en modo add/edit, nunca en view */}
-              {(mode === 'add' || mode === 'edit') && (
-                <button
-                  type="button"
-                  className="bg-blue-500 hover:bg-blue-600 text-white text-sm px-3 py-1 rounded mt-2"
-                  onClick={() => setOpenModalInsumos(true)}
-                >
-                  + Agregar Insumo
-                </button>
-              )}
             </div>
           </div>
           {/* Botones */}
-          <div className="flex justify-end gap-2 p-4 border-t">
+          <div className="flex justify-center gap-2 p-4 border-t">
             <button
               type="button"
               className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"

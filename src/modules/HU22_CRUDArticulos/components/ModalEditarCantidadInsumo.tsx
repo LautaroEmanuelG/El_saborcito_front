@@ -50,7 +50,7 @@ const ModalEditarCantidadInsumo: React.FC<ModalEditarCantidadInsumoProps> = ({
             autoFocus
           />
         </div>
-        <div className="flex justify-end gap-3 mt-4">
+        <div className="flex justify-center gap-3 mt-4">
           <button
             type="button"
             className="bg-gray-300 hover:bg-gray-400 text-negro font-bold py-1 px-4 rounded text-base"

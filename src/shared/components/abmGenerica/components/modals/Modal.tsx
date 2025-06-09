@@ -23,7 +23,9 @@ const Modal: React.FC<ModalProps> = ({ open, onClose, title, children, maxWidth 
         >
           ×
         </button>
-        <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-negro">{title}</h2>
+        <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-negro justify-center text-center">
+          {title}
+        </h2>
         <div>{children}</div>
       </div>
     </div>
