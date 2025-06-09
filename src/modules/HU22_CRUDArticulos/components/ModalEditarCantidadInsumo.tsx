@@ -38,7 +38,7 @@ const ModalEditarCantidadInsumo: React.FC<ModalEditarCantidadInsumoProps> = ({
         </div>
         <div>
           <label className="block text-base font-medium mb-1" htmlFor="cantidadInput">
-            Cantidad
+            Cantidad en gramos
           </label>
           <input
             id="cantidadInput"
@@ -60,7 +60,7 @@ const ModalEditarCantidadInsumo: React.FC<ModalEditarCantidadInsumoProps> = ({
           </button>
           <button
             type="button"
-            className="bg-blue-600 hover:bg-blue-700 text-blanco font-bold py-1 px-4 rounded text-base"
+            className="bg-primary hover:bg-primarydark text-blanco font-bold py-1 px-4 rounded text-base"
             onClick={handleGuardar}
             disabled={valor <= 0}
           >
