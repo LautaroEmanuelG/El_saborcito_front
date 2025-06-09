@@ -73,7 +73,7 @@ const ModalSeleccionInsumos: React.FC<ModalSeleccionInsumosProps> = ({
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="🍲 Seleccionar Insumos">
+    <Modal open={open} onClose={onClose} title="🍲 Seleccionar Insumos" maxWidth="max-w-md">
       <div className="space-y-4 max-h-[600px] overflow-y-auto">
         {/* Vista previa de insumos seleccionados */}
         {selectedInsumo && (
@@ -179,7 +179,7 @@ const ModalSeleccionInsumos: React.FC<ModalSeleccionInsumosProps> = ({
         )}
 
         {/* Botones */}
-        <div className="flex justify-end gap-2 pt-2 border-t">
+        <div className="flex justify-center gap-2 pt-2 border-t">
           <button
             type="button"
             className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
@@ -189,10 +189,8 @@ const ModalSeleccionInsumos: React.FC<ModalSeleccionInsumosProps> = ({
           </button>
           <button
             type="button"
-            className={`font-bold py-2 px-4 rounded ${
-              selectedInsumo && cantidad > 0
-                ? 'bg-green-600 hover:bg-green-700 text-white'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            className={`font-bold py-2 px-4 rounded bg-primary hover:bg-primarydark text-white ${
+              !(selectedInsumo && cantidad > 0) ? 'opacity-60 cursor-not-allowed' : ''
             }`}
             onClick={handleAddInsumo}
             disabled={!selectedInsumo || cantidad <= 0}

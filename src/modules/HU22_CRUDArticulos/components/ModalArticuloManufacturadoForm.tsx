@@ -374,11 +374,12 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
                   onChange={(e) => handleInputChange('tiempoEstimadoMinutos', e.target.value)}
                 />
               </div>
+              {/* El botón solo se muestra en modo add/edit, nunca en view */}
               {(mode === 'add' || mode === 'edit') && (
                 <div className="flex justify-center mt-4">
                   <button
                     type="button"
-                    className="bg-blue-500 hover:bg-blue-600 text-white text-sm px-3 py-1 rounded"
+                    className="bg-primary hover:bg-primarydark text-white text-sm px-3 py-1 rounded"
                     onClick={() => setOpenModalInsumos(true)}
                   >
                     + Agregar Insumo
@@ -473,7 +474,7 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
             </button>
             <button
               type="submit"
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              className="bg-primary hover:bg-primarydark text-white font-bold py-2 px-4 rounded"
             >
               {mode === 'add' ? 'Crear' : 'Guardar'}
             </button>
