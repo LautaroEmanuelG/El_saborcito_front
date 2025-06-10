@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@coinbase/onchainkit": "^0.35.5",
+    "@dnd-kit/core": "^6.3.1",
     "@mercadopago/sdk-react": "^0.0.19",
     "axios": "^1.7.7",
     "chart.js": "^4.4.9",

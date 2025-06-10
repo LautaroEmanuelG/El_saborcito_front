@@ -15,6 +15,10 @@ import { AppProviders } from './shared/providers/AppProviders.tsx';
 import { RankingProductos } from './modules/HU26_28_informes/components/RankingProductos.tsx';
 import ScreenArticulosManufacturados from './modules/HU22_CRUDArticulos/components/ScreenArticulosManufacturados.tsx';
 import ScreenInsumos from './modules/HU23_CRUDInsumos/components/ScreenInsumos';
+import { Cocina } from './app/views/admin/Cocina.tsx';
+import { HistorialCocina } from './app/views/admin/HistorialCocina.tsx';
+import { MovimientosMonetarios } from './modules/HU26_28_informes/components/MovimientosMonetarios.tsx';
+import { RankingCliente } from './modules/HU26_28_informes/components/RankingCliente.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <AppProviders>
@@ -87,6 +91,23 @@ createRoot(document.getElementById('root')!).render(
             }
           />
           <Route
+            path="movimientos"
+            element={
+              <ProtectedRoute>
+                <MovimientosMonetarios />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="ranking-clientes"
+            element={
+              <ProtectedRoute>
+                <RankingCliente />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
             path="control"
             element={
               <ProtectedRoute>
@@ -99,6 +120,22 @@ createRoot(document.getElementById('root')!).render(
             element={
               <ProtectedRoute>
                 <ScreenInsumos />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="cocina"
+            element={
+              <ProtectedRoute>
+                <Cocina />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="historial-cocina"
+            element={
+              <ProtectedRoute>
+                <HistorialCocina />
               </ProtectedRoute>
             }
           />

@@ -28,6 +28,13 @@ const NAV_DATA: NavItemStructure[] = [
     ],
   },
   {
+    title: 'Cocina',
+    subItems: [
+      { to: '/admin/cocina', label: 'Administrar Cocina' },
+      { to: '/admin/historial-cocina', label: 'Historial' },
+    ],
+  },
+  {
     title: 'Finanzas',
     subItems: [
       { to: '/admin/reportes', label: 'Reportes' },
