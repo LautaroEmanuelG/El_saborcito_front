@@ -105,7 +105,30 @@ createRoot(document.getElementById('root')!).render(
               </ProtectedRoute>
             }
           />
-
+          <Route
+            path="informes/ranking-productos"
+            element={
+              <ProtectedRoute>
+                <RankingProductos />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="informes/ranking-clientes"
+            element={
+              <ProtectedRoute>
+                <RankingCliente />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="informes/movimientos-monetarios"
+            element={
+              <ProtectedRoute>
+                <MovimientosMonetarios />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="control"
             element={

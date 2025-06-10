@@ -1,14 +1,26 @@
 import axios from 'axios';
-import { ClienteRanking, DetallePedidoDTO } from '../../modules/HU26_28_informes/model';
+import {
+  ClienteRanking,
+  DetallePedidoDTO,
+  PedidoResumenPorCliente,
+} from '../../modules/HU26_28_informes/model';
 
 export const getDetallePedidosCliente = async (
   clienteId: number,
   desde: string,
   hasta: string
-): Promise<DetallePedidoDTO[]> => {
-  const url = `/api/sucursales/pedidos-cliente?clienteId=${clienteId}&desde=${desde}&hasta=${hasta}`;
-  const res = await axios.get(url);
-  return res.data;
+): Promise<PedidoResumenPorCliente[]> => {
+  const url = `http://localhost:5252/api/sucursales/pedidos-cliente?clienteId=${clienteId}&desde=${desde}&hasta=${hasta}`;
+  console.log('🔍 Llamando a pedidos-cliente:', url);
+
+  try {
+    const res = await axios.get(url);
+    console.log('✅ Respuesta pedidos-cliente:', res.data);
+    return res.data;
+  } catch (error) {
+    console.error('❌ Error en pedidos-cliente:', error);
+    throw error;
+  }
 };
 
 export const getRankingClientes = async (
@@ -16,11 +28,29 @@ export const getRankingClientes = async (
   hasta: string,
   ordenarPor: string
 ): Promise<ClienteRanking[]> => {
-  const res = await fetch(
-    `http://localhost:5252/api/sucursales/ranking-clientes?desde=${desde}&hasta=${hasta}&ordenarPor=${ordenarPor}`
-  );
-  if (!res.ok) throw new Error('Error al obtener ranking de clientes');
-  return await res.json();
+  const url = `http://localhost:5252/api/sucursales/ranking-clientes?desde=${desde}&hasta=${hasta}&ordenarPor=${ordenarPor}`;
+  console.log('🔍 Llamando a ranking-clientes:', url);
+
+  try {
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!res.ok) {
+      console.error('❌ Error en respuesta ranking-clientes:', res.status, res.statusText);
+      throw new Error(`Error al obtener ranking de clientes: ${res.status} ${res.statusText}`);
+    }
+
+    const data = await res.json();
+    console.log('✅ Respuesta ranking-clientes:', data);
+    return data;
+  } catch (error) {
+    console.error('❌ Error en ranking-clientes:', error);
+    throw error;
+  }
 };
 
 export const exportarRankingClientesExcel = async (
@@ -28,22 +58,35 @@ export const exportarRankingClientesExcel = async (
   hasta: string,
   ordenarPor: string
 ): Promise<void> => {
-  const res = await fetch(
-    `http://localhost:5252/api/sucursales/exportar-ranking-clientes-excel?desde=${desde}&hasta=${hasta}&ordenarPor=${ordenarPor}`,
-    {
+  const url = `http://localhost:5252/api/sucursales/exportar-ranking-clientes-excel?desde=${desde}&hasta=${hasta}&ordenarPor=${ordenarPor}`;
+  console.log('🔍 Llamando a exportar-excel:', url);
+
+  try {
+    const res = await fetch(url, {
       method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!res.ok) {
+      console.error('❌ Error en respuesta exportar-excel:', res.status, res.statusText);
+      throw new Error(`Error al exportar Excel de clientes: ${res.status} ${res.statusText}`);
     }
-  );
 
-  if (!res.ok) throw new Error('Error al exportar Excel de clientes');
+    const blob = await res.blob();
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = 'ranking-clientes.xlsx';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(downloadUrl);
 
-  const blob = await res.blob();
-  const url = window.URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'ranking-clientes.xlsx';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  window.URL.revokeObjectURL(url);
+    console.log('✅ Excel descargado exitosamente');
+  } catch (error) {
+    console.error('❌ Error en exportar-excel:', error);
+    throw error;
+  }
 };
