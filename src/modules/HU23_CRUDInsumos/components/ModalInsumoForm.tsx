@@ -135,6 +135,22 @@ export const ModalInsumoForm = ({
             />
           </div>
           <div>
+            <label className="block text-sm font-medium mb-1" htmlFor="precioVenta">
+              Precio Venta<span className="text-red-500">*</span>
+            </label>
+            <input
+              id="precioVenta"
+              name="precioVenta"
+              type="number"
+              value={form.precioVenta ?? 0}
+              onChange={handleChange}
+              disabled={mode === 'view'}
+              className="w-full border rounded px-3 py-2"
+              required
+              min={0}
+            />
+          </div>
+          <div>
             <label className="block text-sm font-medium mb-1" htmlFor="stockActual">
               Stock Actual<span className="text-red-500">*</span>
             </label>

@@ -84,6 +84,7 @@ export const ScreenInsumos = () => {
   const INSUMO_COLUMNS = [
     { label: 'Denominación', key: 'denominacion' },
     { label: 'Precio Compra', key: 'precioCompra' },
+    { label: 'Precio Venta', key: 'precioVenta' },
     { label: 'Stock Actual', key: 'stockActual' },
     { label: 'Stock Máximo', key: 'stockMaximo' },
     {
