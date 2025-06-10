@@ -240,6 +240,21 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
                   {formValues.tiempoEstimadoMinutos}
                 </div>
               </div>
+              <div className="flex items-center justify-center mt-2">
+                <input
+                  id="disponibleCheckView"
+                  type="checkbox"
+                  className="mr-2"
+                  checked={isDisponible}
+                  disabled
+                />
+                <label
+                  htmlFor="disponibleCheckView"
+                  className="text-base select-none cursor-default"
+                >
+                  Habilitado
+                </label>
+              </div>
             </div>
             <div className="flex-1 p-4 max-h-96 overflow-y-auto border-l">
               <h3 className="text-lg font-medium mb-2">Ingredientes</h3>

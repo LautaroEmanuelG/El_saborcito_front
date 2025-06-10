@@ -71,7 +71,10 @@ export const useInsumoStore = create<InsumoState>((set) => ({
     set({ loading: true, error: null });
     try {
       await service.saveArticuloInsumo(data);
-      await useInsumoStore.getState().fetchInsumos();
+      await Promise.all([
+        useInsumoStore.getState().fetchInsumos(),
+        useInsumoStore.getState().fetchDeletedInsumos(),
+      ]);
     } catch (error) {
       set({ error: (error as Error)?.message ?? 'Error al actualizar insumo', loading: false });
     }

@@ -83,11 +83,11 @@ export const ModalInsumoForm = ({
       return;
     }
     const { eliminado, categoria, ...rest } = form;
-    // Si está en modo edición y se desmarca habilitado, forzar eliminado true
-    const isEditAndDeshabilitado = mode === 'edit' && !isHabilitado;
+    // Asegurar que el id esté presente en el payload si existe
     const payload = {
       ...rest,
-      eliminado: !isHabilitado || isEditAndDeshabilitado,
+      id: form.id, // importante para update
+      eliminado: !isHabilitado,
       categoriaId: form.categoria.id,
       unidadMedida: form.unidadMedida,
     };
