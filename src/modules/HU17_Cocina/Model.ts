@@ -20,6 +20,46 @@ export interface Pedido {
   detalles: DetallePedido[];
 }
 
+// Interfaces para el Historial de Cocina
+export interface PedidoDTO {
+  id: number;
+  fechaPedido: string;
+  cliente: {
+    nombre: string;
+    apellido: string;
+  };
+  detalles: {
+    cantidad: number;
+    articulo: {
+      denominacion: string;
+    };
+  }[];
+  estado: {
+    nombre: string;
+  };
+  horasEstimadaFinalizacion: string;
+}
+
+export interface IngredienteDTO {
+  nombre: string;
+  cantidad: number;
+  unidadMedida: string;
+}
+
+export interface DetalleConRecetaDTO {
+  articuloNombre: string;
+  cantidad: number;
+  esManufacturado: boolean;
+  receta: IngredienteDTO[];
+}
+
+export interface PedidoConRecetasDTO {
+  id: number;
+  fecha: string;
+  cliente: string;
+  detalles: DetalleConRecetaDTO[];
+}
+
 // Constantes de estados y colores para el Kanban
 export const ESTADOS: { id: EstadoNombre; title: string; color: string }[] = [
   { id: 'PENDIENTE', title: 'Pendiente', color: '#334FFF' },

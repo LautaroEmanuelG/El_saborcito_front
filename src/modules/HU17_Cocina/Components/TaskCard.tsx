@@ -8,12 +8,26 @@ import IconoTimeDuration15 from '../../../assets/svgs/icons/IconoTimeDuration15'
 interface TaskCardProps {
   task: Pedido;
   isAnimating?: 'en-proceso' | 'demorado';
+  onVerDetalle?: (id: number) => void;
+  onCompletarPedido?: (id: number) => void;
 }
 
-export function TaskCard({ task, isAnimating }: TaskCardProps) {
+export function TaskCard({ task, isAnimating, onVerDetalle, onCompletarPedido }: TaskCardProps) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: task.id,
   });
+
+  // Crear listeners personalizados que ignoren clicks en botones
+  const customListeners = {
+    ...listeners,
+    onPointerDown: (e: React.PointerEvent) => {
+      // Si el click es en un botón, no iniciar drag
+      if ((e.target as HTMLElement).closest('button')) {
+        return;
+      }
+      listeners?.onPointerDown?.(e);
+    },
+  };
 
   const style = transform
     ? {
@@ -27,7 +41,7 @@ export function TaskCard({ task, isAnimating }: TaskCardProps) {
       return 'animate-pulse bg-yellow-200 scale-105';
     }
     if (isAnimating === 'demorado') {
-      return 'animate-bounce bg-red-300 scale-110';
+      return 'animate-bounce bg-red-400 scale-110';
     }
     return '';
   };
@@ -41,20 +55,43 @@ export function TaskCard({ task, isAnimating }: TaskCardProps) {
             <button className="p-1 hover:bg-gray-200 rounded transition" title="Añadir más tiempo">
               <IconoTimeDuration15 width={16} height={16} className="text-gray-600" />
             </button>
-            <button className="p-1 hover:bg-gray-200 rounded transition" title="Completar pedido">
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onCompletarPedido?.(task.id);
+              }}
+              className="p-1 hover:bg-gray-200 rounded transition"
+              title="Completar pedido"
+            >
               <IconoChecks width={16} height={16} className="text-green-600" />
             </button>
           </div>
         );
       case 'DEMORADO':
         return (
-          <button className="p-1 hover:bg-gray-200 rounded transition" title="Completar pedido">
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onCompletarPedido?.(task.id);
+            }}
+            className="p-1 hover:bg-gray-200 rounded transition"
+            title="Completar pedido"
+          >
             <IconoChecks width={16} height={16} className="text-green-600" />
           </button>
         );
       default:
         return (
-          <button className="text-xs text-gray-700 border border-gray-400 rounded px-2 py-0.5 hover:bg-gray-100 transition flex items-center gap-1">
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onVerDetalle?.(task.id);
+            }}
+            className="text-xs text-gray-700 border border-gray-400 rounded px-2 py-0.5 hover:bg-gray-100 transition flex items-center gap-1 z-10 relative pointer-events-auto"
+          >
             <IconoVer width={12} height={12} />
             Ver detalle
           </button>
@@ -65,7 +102,7 @@ export function TaskCard({ task, isAnimating }: TaskCardProps) {
   return (
     <div
       ref={setNodeRef}
-      {...listeners}
+      {...customListeners}
       {...attributes}
       className={`cursor-grab rounded-md border border-gray-300 bg-white p-3 shadow flex flex-col gap-2 min-h-[90px] hover:shadow-md transition-all duration-300 ${getAnimationClasses()}`}
       style={style}

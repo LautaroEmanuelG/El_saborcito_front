@@ -9,9 +9,17 @@ interface ColumnProps {
   column: { id: EstadoNombre; title: string; color: string };
   tasks: Pedido[];
   animatingPedidos: { [key: number]: 'en-proceso' | 'demorado' };
+  onVerDetalle?: (id: number) => void;
+  onCompletarPedido?: (id: number) => void;
 }
 
-export function Column({ column, tasks, animatingPedidos }: ColumnProps) {
+export function Column({
+  column,
+  tasks,
+  animatingPedidos,
+  onVerDetalle,
+  onCompletarPedido,
+}: ColumnProps) {
   const { setNodeRef } = useDroppable({
     id: column.id,
   });
@@ -70,7 +78,13 @@ export function Column({ column, tasks, animatingPedidos }: ColumnProps) {
         {(isExpanded || !isListoColumn) && (
           <div className="space-y-3">
             {tasks.map((task) => (
-              <TaskCard key={task.id} task={task} isAnimating={animatingPedidos[task.id]} />
+              <TaskCard
+                key={task.id}
+                task={task}
+                isAnimating={animatingPedidos[task.id]}
+                onVerDetalle={onVerDetalle}
+                onCompletarPedido={onCompletarPedido}
+              />
             ))}
           </div>
         )}
