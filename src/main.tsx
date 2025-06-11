@@ -14,6 +14,7 @@ import ProtectedCarrito from './app/routes/ProtectCarrito.tsx';
 import { AppProviders } from './shared/providers/AppProviders.tsx';
 import { RankingProductos } from './modules/HU26_28_informes/components/RankingProductos.tsx';
 import ScreenArticulosManufacturados from './modules/HU22_CRUDArticulos/components/ScreenArticulosManufacturados.tsx';
+import ScreenInsumos from './modules/HU23_CRUDInsumos/components/ScreenInsumos';
 import { Cocina } from './app/views/admin/Cocina.tsx';
 import { HistorialCocina } from './app/views/admin/HistorialCocina.tsx';
 import { MovimientosMonetarios } from './modules/HU26_28_informes/components/MovimientosMonetarios.tsx';
@@ -111,6 +112,14 @@ createRoot(document.getElementById('root')!).render(
             element={
               <ProtectedRoute>
                 <Control />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="insumos"
+            element={
+              <ProtectedRoute>
+                <ScreenInsumos />
               </ProtectedRoute>
             }
           />
