@@ -97,8 +97,8 @@ export const ModalInsumoForm = ({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+    <div className="fixed inset-0 bg-negro bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-blanco p-6 rounded-lg shadow-lg w-full max-w-md">
         <h2 className="text-xl font-bold mb-4 text-center">
           {mode === 'add' ? 'Agregar Insumo' : mode === 'edit' ? 'Editar Insumo' : 'Ver Insumo'}
         </h2>
@@ -255,7 +255,7 @@ export const ModalInsumoForm = ({
               Cancelar
             </button>
             {mode !== 'view' && (
-              <button type="submit" className="bg-primary text-white px-4 py-2 rounded">
+              <button type="submit" className="bg-primary text-blanco px-4 py-2 rounded">
                 {mode === 'add' ? 'Crear' : 'Guardar'}
               </button>
             )}
