@@ -205,7 +205,7 @@ export const RankingCliente = () => {
       {/* MODAL MEJORADO */}
       {modalVisible && clienteSeleccionado && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white rounded-lg p-6 shadow-lg w-full max-w-4xl max-h-[80vh] overflow-y-auto relative">
+          <div className="bg-white rounded-lg p-6 shadow-lg w-full max-w-4xl max-h-[80dvh] overflow-y-auto relative">
             <div className="flex justify-between items-center border-b pb-2 mb-4">
               <div>
                 <h2 className="text-xl font-bold text-negro">

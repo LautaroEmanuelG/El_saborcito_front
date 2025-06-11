@@ -11,14 +11,11 @@ export const getDetallePedidosCliente = async (
   hasta: string
 ): Promise<PedidoResumenPorCliente[]> => {
   const url = `http://localhost:5252/api/sucursales/pedidos-cliente?clienteId=${clienteId}&desde=${desde}&hasta=${hasta}`;
-  console.log('🔍 Llamando a pedidos-cliente:', url);
 
   try {
     const res = await axios.get(url);
-    console.log('✅ Respuesta pedidos-cliente:', res.data);
     return res.data;
   } catch (error) {
-    console.error('❌ Error en pedidos-cliente:', error);
     throw error;
   }
 };
@@ -29,7 +26,6 @@ export const getRankingClientes = async (
   ordenarPor: string
 ): Promise<ClienteRanking[]> => {
   const url = `http://localhost:5252/api/sucursales/ranking-clientes?desde=${desde}&hasta=${hasta}&ordenarPor=${ordenarPor}`;
-  console.log('🔍 Llamando a ranking-clientes:', url);
 
   try {
     const res = await fetch(url, {
@@ -40,15 +36,12 @@ export const getRankingClientes = async (
     });
 
     if (!res.ok) {
-      console.error('❌ Error en respuesta ranking-clientes:', res.status, res.statusText);
       throw new Error(`Error al obtener ranking de clientes: ${res.status} ${res.statusText}`);
     }
 
     const data = await res.json();
-    console.log('✅ Respuesta ranking-clientes:', data);
     return data;
   } catch (error) {
-    console.error('❌ Error en ranking-clientes:', error);
     throw error;
   }
 };
@@ -59,7 +52,6 @@ export const exportarRankingClientesExcel = async (
   ordenarPor: string
 ): Promise<void> => {
   const url = `http://localhost:5252/api/sucursales/exportar-ranking-clientes-excel?desde=${desde}&hasta=${hasta}&ordenarPor=${ordenarPor}`;
-  console.log('🔍 Llamando a exportar-excel:', url);
 
   try {
     const res = await fetch(url, {
@@ -70,7 +62,6 @@ export const exportarRankingClientesExcel = async (
     });
 
     if (!res.ok) {
-      console.error('❌ Error en respuesta exportar-excel:', res.status, res.statusText);
       throw new Error(`Error al exportar Excel de clientes: ${res.status} ${res.statusText}`);
     }
 
@@ -83,10 +74,7 @@ export const exportarRankingClientesExcel = async (
     link.click();
     document.body.removeChild(link);
     window.URL.revokeObjectURL(downloadUrl);
-
-    console.log('✅ Excel descargado exitosamente');
   } catch (error) {
-    console.error('❌ Error en exportar-excel:', error);
     throw error;
   }
 };
