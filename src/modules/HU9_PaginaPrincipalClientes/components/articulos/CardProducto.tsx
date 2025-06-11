@@ -1,32 +1,26 @@
-import { useState, useEffect } from 'react';
 import type { ArticuloInsumo, ArticuloManufacturado } from '../../../../types/Articulo';
 import { BtnAgregarCarrito } from '../../../HU11_CarritoCompras/components/BtnAgregarCarrito';
-import { useProductAvailability } from '../../../../shared/hooks/useProductAvailability';
+import { useProductStore } from '../../../../shared/providers/ProductProvider';
 
 type ProductProps = {
   articulo: ArticuloManufacturado | ArticuloInsumo;
   setProductoModal: (producto: ArticuloManufacturado | ArticuloInsumo | null) => void;
 };
 
+/**
+ * Determina si un artículo es de tipo ArticuloManufacturado
+ */
+const isArticuloManufacturado = (
+  articulo: ArticuloInsumo | ArticuloManufacturado
+): articulo is ArticuloManufacturado => {
+  return 'categoriaId' in articulo && 'descripcion' in articulo;
+};
+
 export const CardProducto = ({ articulo, setProductoModal }: ProductProps) => {
-  const { checkAvailability, isArticuloManufacturado } = useProductAvailability();
-  const [isAvailable, setIsAvailable] = useState<boolean>(true);
-  const [isChecking, setIsChecking] = useState<boolean>(false);
+  const productAvailability = useProductStore((state) => state.productAvailability);
 
-  // Verificar disponibilidad al cargar el componente
-  useEffect(() => {
-    const checkProductAvailability = async () => {
-      // Solo verificamos artículos manufacturados
-      if (!isArticuloManufacturado(articulo)) return;
-
-      setIsChecking(true);
-      const available = await checkAvailability(articulo);
-      setIsAvailable(available);
-      setIsChecking(false);
-    };
-
-    checkProductAvailability();
-  }, [articulo, checkAvailability, isArticuloManufacturado]);
+  // Obtener disponibilidad del estado centralizado
+  const isAvailable = productAvailability[articulo.id] ?? true;
 
   //Handle Producto modal
   const handleProductoModal = (event: React.MouseEvent<HTMLDivElement>) => {
@@ -49,8 +43,8 @@ export const CardProducto = ({ articulo, setProductoModal }: ProductProps) => {
               alt={articulo?.denominacion ?? ''}
               className="object-cover w-full h-full"
             />
-          </picture>
-          {isArticuloManufacturado(articulo) && !isAvailable && !isChecking && (
+          </picture>{' '}
+          {isArticuloManufacturado(articulo) && !isAvailable && (
             <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
               Sin stock de insumos
             </div>
@@ -62,7 +56,7 @@ export const CardProducto = ({ articulo, setProductoModal }: ProductProps) => {
           cantidadProducto={1}
           setCantidadProducto={() => {}}
           onClose={() => {}}
-          disabledOverride={isArticuloManufacturado(articulo) && (!isAvailable || isChecking)}
+          disabledOverride={isArticuloManufacturado(articulo) && !isAvailable}
         />
       </div>
       <div className="p-4 text-left">

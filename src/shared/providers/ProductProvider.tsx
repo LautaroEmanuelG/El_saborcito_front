@@ -3,7 +3,10 @@ import { create } from 'zustand';
 import type { ArticuloManufacturado, ArticuloInsumo } from '../../types/Articulo';
 import type { Categoria } from '../../types/Categoria';
 import { getAllCategorias } from '../services/categoriaService';
-import { getAllArticuloManufacturados } from '../services/articuloManufacturadoService';
+import {
+  getAllArticuloManufacturados,
+  canBeManufactured,
+} from '../services/articuloManufacturadoService';
 import { getAllArticuloInsumoNoEsParaElaborar } from '../services/articuloInsumoService';
 
 // Helper para obtener el ID de categoría de manera consistente
@@ -31,17 +34,21 @@ type ProductState = {
   filteredProducts: (ArticuloManufacturado | ArticuloInsumo)[];
   allCategorias: Categoria[];
   searchTerm: string;
-  activeCategory: string | string[] | null; // Nueva propiedad para almacenar la categoría activa
+  activeCategory: string | string[] | null;
   isLoading: boolean;
   error: string | null;
+  // Nuevo: Estado de disponibilidad centralizado
+  productAvailability: Record<number, boolean>;
 
   // Acciones
   fetchAllData: () => Promise<void>;
   setSearchTerm: (term: string) => void;
   handleSearch: (query: string | string[]) => void;
-  handleCategoryFilter: (category: string | string[]) => void; // Nueva acción para filtrar por categoría sin afectar el searchTerm
+  handleCategoryFilter: (category: string | string[]) => void;
   resetFilters: () => void;
-  // Para exponer el helper a través del store
+  // Nuevas acciones para manejar disponibilidad
+  updateProductAvailability: (productId: number, available: boolean) => void;
+  checkSingleProductAvailability: (productId: number) => Promise<void>;
   getArticuloCategoriaId: (articulo: ArticuloManufacturado | ArticuloInsumo) => number | undefined;
 };
 
@@ -55,10 +62,32 @@ export const useProductStore = create<ProductState>((set, get) => ({
   activeCategory: null,
   isLoading: false,
   error: null,
+  productAvailability: {},
 
   // Incluimos la función en el store
   getArticuloCategoriaId,
 
+  // Nueva función para actualizar disponibilidad de un producto específico
+  updateProductAvailability: (productId: number, available: boolean) => {
+    set((state) => ({
+      productAvailability: {
+        ...state.productAvailability,
+        [productId]: available,
+      },
+    }));
+  },
+
+  // Nueva función para verificar disponibilidad de un producto específico en background
+  checkSingleProductAvailability: async (productId: number) => {
+    try {
+      const available = await canBeManufactured(productId);
+      get().updateProductAvailability(productId, available);
+    } catch (error) {
+      console.error(`Error checking availability for product ${productId}:`, error);
+      // En caso de error, marcamos como no disponible
+      get().updateProductAvailability(productId, false);
+    }
+  },
   // Acción para cargar todos los datos
   fetchAllData: async () => {
     try {
@@ -74,6 +103,46 @@ export const useProductStore = create<ProductState>((set, get) => ({
         | ArticuloManufacturado
         | ArticuloInsumo
       )[];
+
+      // Verificar disponibilidad inicial para todos los productos manufacturados
+      const initialAvailability: Record<number, boolean> = {};
+      // Primero marcamos todos los insumos como disponibles
+      insumosData.forEach((insumo: ArticuloInsumo) => {
+        if (insumo.id) {
+          initialAvailability[insumo.id] = true;
+        }
+      });
+
+      // Verificar disponibilidad de manufacturados en paralelo
+      const manufacturadosChecks = manufacturadosData.map(
+        async (manufacturado: ArticuloManufacturado) => {
+          if (manufacturado.id) {
+            try {
+              const available = await canBeManufactured(manufacturado.id);
+              initialAvailability[manufacturado.id] = available;
+            } catch (error) {
+              console.error(`Error checking availability for product ${manufacturado.id}:`, error);
+              initialAvailability[manufacturado.id] = false;
+            }
+          }
+        }
+      );
+
+      // Esperar todas las verificaciones
+      await Promise.all(manufacturadosChecks); // Ordenar productos por disponibilidad dentro de cada categoría
+      const sortedProducts = [...combinedProducts].sort((a, b) => {
+        const catA = getArticuloCategoriaId(a);
+        const catB = getArticuloCategoriaId(b);
+
+        // Solo ordenar dentro de la misma categoría
+        if (catA !== catB) return 0;
+
+        const availableA = initialAvailability[a.id] ? 1 : 0;
+        const availableB = initialAvailability[b.id] ? 1 : 0;
+
+        // Productos disponibles primero
+        return availableB - availableA;
+      });
 
       // Construir un mapa para identificar fácilmente la relación hijo -> padre
       const categoriaIdMap = new Map<number, Categoria>();
@@ -134,11 +203,11 @@ export const useProductStore = create<ProductState>((set, get) => ({
             // O la categoría es padre de otra categoría que tiene productos
             todasLasCategoriasRelevantesIds.has(categoria.id))
       );
-
       set({
-        allProducts: combinedProducts,
-        filteredProducts: combinedProducts, // Inicialmente mostrar todos los productos
+        allProducts: sortedProducts,
+        filteredProducts: sortedProducts, // Inicialmente mostrar todos los productos
         allCategorias: categoriasRelevantes, // Ahora incluye padres de categorías con productos
+        productAvailability: initialAvailability,
         isLoading: false,
       });
     } catch (error) {

@@ -1,8 +1,8 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import { CarritoContext } from '../../../shared/providers/CarritoProvider';
+import { useProductStore } from '../../../shared/providers/ProductProvider';
 import type { Articulo } from '../../../types/Articulo';
-import { useProductAvailability } from '../../../shared/hooks/useProductAvailability';
-import { useNotificacionContext } from '../../../shared/providers/NotificacionProvider';
+import { useNotificacion } from '../../../shared/hooks/useNotificacion';
 
 interface BtnAgregarCarritoProps {
   position?: 'left' | 'right';
@@ -20,13 +20,12 @@ export const BtnAgregarCarrito: React.FC<BtnAgregarCarritoProps> = ({
   cantidadProducto,
   setCantidadProducto,
   onClose,
-  onClick, // Destructure onClick
+  onClick,
   disabledOverride,
 }) => {
   const carritoContext = useContext(CarritoContext);
-  const { checkAvailability } = useProductAvailability();
-  const [isAvailable, setIsAvailable] = useState<boolean>(true);
-  const [isChecking, setIsChecking] = useState<boolean>(false);
+  const productAvailability = useProductStore((state) => state.productAvailability);
+  const { mostrarNotificacion } = useNotificacion();
 
   if (!carritoContext) {
     throw new Error('BtnAgregarCarrito must be used within a CarritoProvider');
@@ -34,27 +33,14 @@ export const BtnAgregarCarrito: React.FC<BtnAgregarCarritoProps> = ({
 
   const { addToCarrito } = carritoContext;
 
-  // Verificar disponibilidad al cargar el componente
-  useEffect(() => {
-    const checkProductAvailability = async () => {
-      setIsChecking(true);
-      const available = await checkAvailability(articulo);
-      setIsAvailable(available);
-      setIsChecking(false);
-    };
-
-    checkProductAvailability();
-  }, [articulo, checkAvailability]);
-  const { mostrarNotificacion } = useNotificacionContext();
-
+  // Obtener disponibilidad del estado centralizado
+  const isAvailable = productAvailability[articulo.id] ?? true; // Por defecto disponible si no está en el estado
   const handleAddToCarrito = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
 
-    // Volver a verificar disponibilidad antes de agregar al carrito
-    setIsChecking(true);
+    // Agregar al carrito directamente, la validación ya se hace en el CarritoProvider
     const success = await addToCarrito(articulo, cantidadProducto || 1);
-    setIsChecking(false);
 
     if (!success) {
       mostrarNotificacion(
@@ -70,12 +56,12 @@ export const BtnAgregarCarrito: React.FC<BtnAgregarCarritoProps> = ({
     setCantidadProducto(1);
     onClose();
     if (onClick) {
-      onClick(event); // Call onClick if it is provided
+      onClick(event);
     }
   };
 
   // Determinar si el botón debe estar deshabilitado
-  const isDisabled = disabledOverride || !isAvailable || isChecking;
+  const isDisabled = disabledOverride || !isAvailable;
 
   return (
     <button
@@ -98,7 +84,7 @@ export const BtnAgregarCarrito: React.FC<BtnAgregarCarritoProps> = ({
         isDisabled ? 'No hay suficientes insumos para fabricar este producto' : 'Agregar al carrito'
       }
     >
-      {isChecking ? 'Verificando...' : 'Agregar al carrito'}
+      Agregar al carrito
     </button>
   );
 };

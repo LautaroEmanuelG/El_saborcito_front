@@ -1,6 +1,6 @@
 import React, { createContext, useReducer, ReactNode, useEffect, useCallback } from 'react';
 import type { Articulo, ArticuloManufacturado } from '../../types/Articulo';
-import { useProductAvailability } from '../hooks/useProductAvailability';
+import { useProductStore } from './ProductProvider';
 
 // Define the state shape
 interface ArticuloContext extends ArticuloManufacturado {
@@ -81,25 +81,46 @@ const carritoReducer = (state: State, action: any): State => {
   }
 };
 
+/**
+ * Determina si un artículo es de tipo ArticuloManufacturado
+ */
+const isArticuloManufacturado = (articulo: Articulo): articulo is ArticuloManufacturado => {
+  return 'categoriaId' in articulo && 'descripcion' in articulo;
+};
+
 // Define the provider component
 export const CarritoProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(carritoReducer, initialState);
-  const { checkAvailability, isArticuloManufacturado } = useProductAvailability();
+  const productAvailability = useProductStore((state) => state.productAvailability);
+  const checkSingleProductAvailability = useProductStore(
+    (state) => state.checkSingleProductAvailability
+  );
 
   useEffect(() => {
     localStorage.setItem('carrito', JSON.stringify(state.carrito));
   }, [state.carrito]);
-
   // Función para verificar disponibilidad de un producto
   const isProductAvailable = useCallback(
     async (articulo: Articulo): Promise<boolean> => {
       // Solo verificamos disponibilidad para artículos manufacturados
-      if (!isArticuloManufacturado(articulo)) {
+      if (!isArticuloManufacturado(articulo) || !articulo.id) {
         return true; // Los artículos que no son manufacturados siempre están disponibles
       }
-      return await checkAvailability(articulo);
+
+      // Verificar en el estado centralizado primero
+      const cachedAvailability = productAvailability[articulo.id];
+      if (cachedAvailability !== undefined) {
+        return cachedAvailability;
+      }
+
+      // Si no está en el caché, verificar y actualizar
+      await checkSingleProductAvailability(articulo.id);
+
+      // Obtener el resultado actualizado
+      const updatedAvailability = useProductStore.getState().productAvailability[articulo.id];
+      return updatedAvailability ?? false;
     },
-    [checkAvailability, isArticuloManufacturado]
+    [productAvailability, checkSingleProductAvailability]
   );
 
   // Modificamos addToCarrito para que devuelva una promesa con el resultado

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BtnAgregarCarrito } from '../../../HU11_CarritoCompras/components/BtnAgregarCarrito';
-import BtnCantidadProducto from './btnCantidadProducto';
 import type { ArticuloInsumo, ArticuloManufacturado } from '../../../../types/Articulo';
-import { useProductAvailability } from '../../../../shared/hooks/useProductAvailability';
+import { useProductStore } from '../../../../shared/providers/ProductProvider';
 
 type Props = {
   articulo: ArticuloManufacturado | ArticuloInsumo | null;
@@ -10,30 +9,34 @@ type Props = {
   onClose: () => void;
 };
 
+/**
+ * Determina si un artículo es de tipo ArticuloManufacturado
+ */
+const isArticuloManufacturado = (
+  articulo: ArticuloInsumo | ArticuloManufacturado
+): articulo is ArticuloManufacturado => {
+  return 'categoriaId' in articulo && 'descripcion' in articulo;
+};
+
 export const ModalProducto: React.FC<Props> = ({ articulo = null, isOpen, onClose }) => {
   if (!isOpen || !articulo) return null;
 
   const [cantidadProducto, setCantidadProducto] = useState(1);
-  const { checkAvailability, isArticuloManufacturado } = useProductAvailability();
-  const [isAvailable, setIsAvailable] = useState<boolean>(true);
-  const [isChecking, setIsChecking] = useState<boolean>(false);
+  const productAvailability = useProductStore((state) => state.productAvailability);
+  const checkSingleProductAvailability = useProductStore(
+    (state) => state.checkSingleProductAvailability
+  );
 
-  // Verificar disponibilidad al abrir el modal
+  // Verificar disponibilidad en background al abrir el modal
   useEffect(() => {
-    if (!articulo) return;
+    if (!articulo?.id || !isArticuloManufacturado(articulo)) return;
 
-    const checkProductAvailability = async () => {
-      // Solo verificamos artículos manufacturados
-      if (!isArticuloManufacturado(articulo)) return;
+    // Verificar en background sin mostrar estado de carga
+    checkSingleProductAvailability(articulo.id);
+  }, [articulo, checkSingleProductAvailability]);
 
-      setIsChecking(true);
-      const available = await checkAvailability(articulo);
-      setIsAvailable(available);
-      setIsChecking(false);
-    };
-
-    checkProductAvailability();
-  }, [articulo, checkAvailability, isArticuloManufacturado]);
+  // Obtener disponibilidad del estado centralizado
+  const isAvailable = productAvailability[articulo.id] ?? true;
 
   return (
     <section className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
@@ -66,7 +69,7 @@ export const ModalProducto: React.FC<Props> = ({ articulo = null, isOpen, onClos
               >
                 Volver
               </button>{' '}
-              {isArticuloManufacturado(articulo) && !isAvailable && !isChecking && (
+              {isArticuloManufacturado(articulo) && !isAvailable && (
                 <div className="bg-negro/80 text-white text-nowrap text-xs px-3 py-1 rounded absolute bottom-16 right-3">
                   Sin stock de insumos
                 </div>
@@ -76,7 +79,7 @@ export const ModalProducto: React.FC<Props> = ({ articulo = null, isOpen, onClos
                 cantidadProducto={cantidadProducto}
                 setCantidadProducto={setCantidadProducto}
                 onClose={onClose}
-                disabledOverride={isArticuloManufacturado(articulo) && (!isAvailable || isChecking)}
+                disabledOverride={isArticuloManufacturado(articulo) && !isAvailable}
               />
             </div>
           </aside>
