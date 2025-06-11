@@ -1,9 +1,17 @@
-import React, { createContext, useReducer, ReactNode, useEffect, useCallback } from 'react';
+import React, {
+  createContext,
+  useReducer,
+  ReactNode,
+  useEffect,
+  useCallback,
+  useState,
+} from 'react';
 import type { Articulo, ArticuloManufacturado } from '../../types/Articulo';
 import { useProductStore } from './ProductProvider';
+import { useNotificacion } from '../hooks/useNotificacion';
 
-// Define the state shape
-interface ArticuloContext extends ArticuloManufacturado {
+// Define the state shape - El carrito puede contener cualquier tipo de artículo
+interface ArticuloContext extends Articulo {
   cantidad: number;
 }
 
@@ -19,13 +27,41 @@ interface CarritoContextValue {
   decreaseFromCart: (articulo: { id: number }) => void;
   clearCarrito: () => void;
   isProductAvailable: (articulo: Articulo) => Promise<boolean>; // Nueva función para verificar disponibilidad
+  isProcessingInBackground: boolean; // Flag para saber si hay procesos en segundo plano
 }
 // Create the context
 export const CarritoContext = createContext<CarritoContextValue | undefined>(undefined);
 
+// Función para limpiar carrito con productos de estructura antigua
+const limpiarCarritoAntiguo = (): ArticuloContext[] => {
+  try {
+    const carritoGuardado = localStorage.getItem('carrito');
+    if (!carritoGuardado) return [];
+
+    const carrito = JSON.parse(carritoGuardado) as any[];
+
+    // Filtrar productos que tienen la estructura correcta
+    const carritoLimpio = carrito.filter((item) => {
+      // Verificar que tiene las propiedades básicas necesarias
+      return (
+        item.id &&
+        item.denominacion &&
+        item.precioVenta &&
+        typeof item.cantidad === 'number' &&
+        !item.nombre
+      ); // Excluir productos con estructura antigua que tienen 'nombre' en lugar de 'denominacion'
+    });
+
+    return carritoLimpio;
+  } catch (error) {
+    console.error('Error al limpiar carrito:', error);
+    return [];
+  }
+};
+
 // Define the initial state
 const initialState: State = {
-  carrito: JSON.parse(localStorage.getItem('carrito') || '[]') as ArticuloContext[],
+  carrito: limpiarCarritoAntiguo(),
 };
 
 // Define the reducer
@@ -38,8 +74,10 @@ const carritoReducer = (state: State, action: any): State => {
 
       if (existingProductIndex !== -1) {
         const updatedCarrito = [...state.carrito];
-        updatedCarrito[existingProductIndex].cantidad =
-          (updatedCarrito[existingProductIndex].cantidad ?? 1) + (action.payload.cantidad ?? 1);
+        updatedCarrito[existingProductIndex] = {
+          ...updatedCarrito[existingProductIndex],
+          cantidad: updatedCarrito[existingProductIndex].cantidad + (action.payload.cantidad ?? 1),
+        };
         return { ...state, carrito: updatedCarrito };
       }
 
@@ -64,7 +102,10 @@ const carritoReducer = (state: State, action: any): State => {
       if (articuloIndex !== -1) {
         const updatedCarrito = [...state.carrito];
         if (updatedCarrito[articuloIndex].cantidad > 1) {
-          updatedCarrito[articuloIndex].cantidad -= 1;
+          updatedCarrito[articuloIndex] = {
+            ...updatedCarrito[articuloIndex],
+            cantidad: updatedCarrito[articuloIndex].cantidad - 1,
+          };
         } else {
           updatedCarrito.splice(articuloIndex, 1);
         }
@@ -91,14 +132,17 @@ const isArticuloManufacturado = (articulo: Articulo): articulo is ArticuloManufa
 // Define the provider component
 export const CarritoProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(carritoReducer, initialState);
+  const [isProcessingInBackground, setIsProcessingInBackground] = useState(false);
   const productAvailability = useProductStore((state) => state.productAvailability);
   const checkSingleProductAvailability = useProductStore(
     (state) => state.checkSingleProductAvailability
   );
+  const { mostrarNotificacion } = useNotificacion();
 
   useEffect(() => {
     localStorage.setItem('carrito', JSON.stringify(state.carrito));
   }, [state.carrito]);
+
   // Función para verificar disponibilidad de un producto
   const isProductAvailable = useCallback(
     async (articulo: Articulo): Promise<boolean> => {
@@ -114,34 +158,68 @@ export const CarritoProvider: React.FC<{ children: ReactNode }> = ({ children })
       }
 
       // Si no está en el caché, verificar y actualizar
-      await checkSingleProductAvailability(articulo.id);
-
-      // Obtener el resultado actualizado
-      const updatedAvailability = useProductStore.getState().productAvailability[articulo.id];
-      return updatedAvailability ?? false;
+      setIsProcessingInBackground(true);
+      try {
+        await checkSingleProductAvailability(articulo.id);
+        // Obtener el resultado actualizado
+        const updatedAvailability = useProductStore.getState().productAvailability[articulo.id];
+        return updatedAvailability ?? false;
+      } finally {
+        setIsProcessingInBackground(false);
+      }
     },
     [productAvailability, checkSingleProductAvailability]
+  );
+
+  // Función para verificar disponibilidad en background y notificar si no hay stock
+  const verifyAvailabilityInBackground = useCallback(
+    async (articulo: Articulo): Promise<void> => {
+      if (!isArticuloManufacturado(articulo) || !articulo.id) return;
+
+      setIsProcessingInBackground(true);
+      try {
+        await checkSingleProductAvailability(articulo.id);
+        const updatedAvailability = useProductStore.getState().productAvailability[articulo.id];
+
+        if (!updatedAvailability) {
+          // Si no hay disponibilidad, quitar del carrito y notificar
+          mostrarNotificacion(
+            `No hay suficientes insumos para ${articulo.denominacion}. Se ha removido del carrito.`,
+            'error',
+            5000
+          );
+
+          // Remover del carrito
+          dispatch({
+            type: 'REMOVE_FROM_CARRITO',
+            payload: { nombre: articulo.denominacion },
+          });
+        }
+      } catch (error) {
+        console.error('Error verificando disponibilidad en background:', error);
+      } finally {
+        setIsProcessingInBackground(false);
+      }
+    },
+    [checkSingleProductAvailability, mostrarNotificacion]
   );
 
   // Modificamos addToCarrito para que devuelva una promesa con el resultado
   const addToCarrito = useCallback(
     async (articulo: Articulo, cantidad: number = 1): Promise<boolean> => {
-      // Verificar disponibilidad antes de agregar al carrito
-      const available = await isProductAvailable(articulo);
-
-      if (!available) {
-        return false; // No se pudo agregar al carrito
-      }
-
-      // Si está disponible, agregarlo al carrito
+      // Agregar al carrito inmediatamente (estrategia optimista)
       dispatch({ type: 'ADD_TO_CARRITO', payload: { articulo, cantidad } });
-      return true; // Se agregó correctamente
+
+      // Verificar disponibilidad en segundo plano
+      verifyAvailabilityInBackground(articulo);
+
+      return true; // Siempre retornamos true para la estrategia optimista
     },
-    [isProductAvailable]
+    [verifyAvailabilityInBackground]
   );
 
   const removeFromCart = useCallback((articulo: { denominacion: string }) => {
-    dispatch({ type: 'REMOVE_FROM_CARRITO', payload: articulo });
+    dispatch({ type: 'REMOVE_FROM_CARRITO', payload: { nombre: articulo.denominacion } });
   }, []);
 
   const decreaseFromCart = useCallback((articulo: { id: number }) => {
@@ -162,6 +240,7 @@ export const CarritoProvider: React.FC<{ children: ReactNode }> = ({ children })
         decreaseFromCart,
         clearCarrito,
         isProductAvailable,
+        isProcessingInBackground,
       }}
     >
       {children}

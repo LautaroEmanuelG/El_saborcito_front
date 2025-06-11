@@ -39,18 +39,12 @@ export const BtnAgregarCarrito: React.FC<BtnAgregarCarritoProps> = ({
     event.preventDefault();
     event.stopPropagation();
 
-    // Agregar al carrito directamente, la validación ya se hace en el CarritoProvider
-    const success = await addToCarrito(articulo, cantidadProducto || 1);
+    // Agregar al carrito directamente usando la estrategia optimista
+    // El CarritoProvider se encarga de verificar en segundo plano
+    await addToCarrito(articulo, cantidadProducto || 1);
 
-    if (!success) {
-      mostrarNotificacion(
-        `No hay suficientes insumos para fabricar ${articulo.denominacion}`,
-        'error',
-        5000
-      );
-      return;
-    }
-
+    // Como usamos estrategia optimista, siempre mostramos el mensaje de éxito
+    // Si hay problemas, el CarritoProvider se encarga de notificar y quitar el producto
     mostrarNotificacion(`${articulo.denominacion} añadido al carrito`, 'success', 2000);
 
     setCantidadProducto(1);

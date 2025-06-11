@@ -26,18 +26,17 @@ export const VistaCarrito = () => {
                 >
                   <div className="flex gap-6">
                     {/* Imagen del producto */}
-                    <picture className="hidden md:block w-1/2 h-auto object-cover rounded-lg">
+                    <picture className="hidden md:block w-40 h-auto object-cover rounded-lg">
                       <source type="image/webp" />
                       <img
                         src={
-                          Array.isArray(producto.imagen) && producto.imagen.length > 0
+                          producto.imagen?.url ||
+                          (Array.isArray(producto.imagen) && producto.imagen.length > 0
                             ? producto.imagen[0]
-                            : Array.isArray(producto.imagen) && producto.imagen.length > 1
-                              ? producto.imagen[1]
-                              : ''
+                            : '/img/Default.png')
                         }
                         alt={producto.denominacion}
-                        className=" w-20 h-20 object-cover rounded-lg"
+                        className="w-20 h-20 object-cover rounded-lg"
                       />
                     </picture>
                     <div className="w-full">
@@ -49,14 +48,13 @@ export const VistaCarrito = () => {
                         Eliminar
                       </button>
                     </div>
-                  </div>
-
+                  </div>{' '}
                   <div className="flex items-center">
                     <BtnCantidadProducto
                       articulo={producto}
-                      cantidadProducto={1}
+                      cantidadProducto={producto.cantidad}
                       setCantidadProducto={() => {
-                        /* enviamos nada */
+                        /* No se usa en vista carrito */
                       }}
                     />
                     <p className="ml-6 sm:text-xl font-semibold flex justify-end">

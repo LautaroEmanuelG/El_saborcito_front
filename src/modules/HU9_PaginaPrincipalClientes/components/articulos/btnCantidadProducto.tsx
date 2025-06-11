@@ -1,10 +1,10 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { CarritoContext } from '../../../../shared/providers/CarritoProvider';
 import { useLocation } from 'react-router-dom';
-import type { ArticuloInsumo, ArticuloManufacturado } from '../../../../types/Articulo';
+import type { Articulo } from '../../../../types/Articulo';
 
 interface BtnCantidadProductoProps {
-  articulo: ArticuloManufacturado | ArticuloInsumo;
+  articulo: Articulo;
   cantidadProducto: number;
   setCantidadProducto: React.Dispatch<React.SetStateAction<number>>;
 }
@@ -23,19 +23,20 @@ const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
   }
 
   const { carrito, addToCarrito, decreaseFromCart } = carritoContext;
-
   useEffect(() => {
     const productoEnCarrito = carrito.find((item) => item.denominacion === articulo.denominacion);
     if (productoEnCarrito) {
       setQuantity(productoEnCarrito.cantidad);
+    } else {
+      setQuantity(cantidadProducto);
     }
-  }, [carrito, articulo.denominacion]);
-
-  const handleIncrease = (event: React.MouseEvent<HTMLButtonElement>) => {
+  }, [carrito, articulo.denominacion, cantidadProducto]);
+  const handleIncrease = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     event.preventDefault();
     if (location.pathname === '/carrito') {
-      addToCarrito(articulo, 1);
+      // En la vista de carrito, agregar al carrito usa la nueva lógica optimista
+      await addToCarrito(articulo, 1);
     } else {
       setCantidadProducto(cantidadProducto + 1);
     }
@@ -47,14 +48,14 @@ const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
     if (quantity > 1) {
       setQuantity(quantity - 1);
       if (location.pathname === '/carrito') {
-        decreaseFromCart({ id: articulo.id! });
+        decreaseFromCart({ id: articulo.id ?? 0 });
       } else {
         setCantidadProducto(quantity - 1);
       }
     } else {
       // Si la cantidad es 1 y estamos en /carrito, elimina el producto del carrito
       if (location.pathname === '/carrito') {
-        decreaseFromCart({ id: articulo.id! });
+        decreaseFromCart({ id: articulo.id ?? 0 });
       } else {
         setCantidadProducto(1);
       }

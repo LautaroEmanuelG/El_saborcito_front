@@ -86,7 +86,6 @@ export const PaginaPrincipalClientes = ({
 
     return ids;
   }, [filteredProducts, searchTerm, allCategorias]);
-
   useEffect(() => {
     if (articuloModal) {
       setModalOpen(true); // Abrir el modal cuando se cambia el artículo
@@ -95,6 +94,7 @@ export const PaginaPrincipalClientes = ({
 
   const handleCloseModal = () => {
     setModalOpen(false); // Cerrar el modal
+    setArticuloModal(null); // Resetear el artículo modal para permitir abrir el mismo producto nuevamente
   };
 
   const handleProductClick = (articulo: ArticuloManufacturado | ArticuloInsumo | null) => {

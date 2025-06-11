@@ -5,14 +5,13 @@ import { type ReactNode, useState } from 'react';
 import { type State, WagmiProvider } from 'wagmi';
 import { ProductProvider } from './ProductProvider';
 import { CarritoProvider } from './CarritoProvider';
-import { NotificacionProvider } from './NotificacionProvider';
+import NotificacionWrapper from '../components/utils/NotificacionWrapper';
 
 import { getConfig } from '../../wagmi'; // your import path may vary
 
 export function AppProviders(props: { children: ReactNode; initialState?: State }) {
   const [config] = useState(() => getConfig());
   const [queryClient] = useState(() => new QueryClient());
-
   return (
     <WagmiProvider config={config} initialState={props.initialState}>
       <QueryClientProvider client={queryClient}>
@@ -20,11 +19,12 @@ export function AppProviders(props: { children: ReactNode; initialState?: State 
           apiKey={import.meta.env.VITE_PUBLIC_ONCHAINKIT_API_KEY}
           chain={base} // add baseSepolia for testing
         >
-          <NotificacionProvider>
-            <ProductProvider>
-              <CarritoProvider>{props.children}</CarritoProvider>
-            </ProductProvider>
-          </NotificacionProvider>
+          <ProductProvider>
+            <CarritoProvider>
+              {props.children}
+              <NotificacionWrapper />
+            </CarritoProvider>
+          </ProductProvider>
         </OnchainKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
