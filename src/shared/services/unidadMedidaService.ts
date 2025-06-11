@@ -1,6 +1,7 @@
 import axiosInstance from './axiosConfig'; // Importar la instancia preconfigurada
 
-const API_BASE_URL = '/unidad-medidas';
+// Cambia la URL base para que coincida con el endpoint del backend
+const API_BASE_URL = '/unidades';
 
 export const saveUnidadMedida = async (data: any) => {
   const response = await axiosInstance.post(`${API_BASE_URL}/${data.id}`, data);
