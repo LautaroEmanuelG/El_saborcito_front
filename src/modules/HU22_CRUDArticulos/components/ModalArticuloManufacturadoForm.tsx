@@ -240,6 +240,21 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
                   {formValues.tiempoEstimadoMinutos}
                 </div>
               </div>
+              <div className="flex items-center justify-center mt-2">
+                <input
+                  id="disponibleCheckView"
+                  type="checkbox"
+                  className="mr-2"
+                  checked={isDisponible}
+                  disabled
+                />
+                <label
+                  htmlFor="disponibleCheckView"
+                  className="text-base select-none cursor-default"
+                >
+                  Habilitado
+                </label>
+              </div>
             </div>
             <div className="flex-1 p-4 max-h-96 overflow-y-auto border-l">
               <h3 className="text-lg font-medium mb-2">Ingredientes</h3>
@@ -263,6 +278,17 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
               )}
             </div>
           </div>
+          {/* Imagen centrada en modo view debajo de las columnas */}
+          {mode === 'view' && imagenPreview && (
+            <div className="flex flex-col items-center mt-4">
+              <label className="block text-sm font-medium mb-1">Imagen</label>
+              <img
+                src={imagenPreview}
+                alt="Imagen del artículo"
+                className="mb-2 rounded max-h-32 object-contain border"
+              />
+            </div>
+          )}
           <div className="flex justify-center gap-2 p-4 border-t">
             <button
               type="button"
@@ -483,6 +509,33 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
               )}
             </div>
           </div>
+          {/* Imagen: carga y preview (debajo de las columnas, centrado) */}
+          {(mode === 'add' || mode === 'edit') && (
+            <div className="flex flex-col items-center mt-4">
+              <label className="block text-sm font-medium mb-1">Imagen</label>
+              {imagenPreview && (
+                <img
+                  src={imagenPreview}
+                  alt="Preview"
+                  className="mb-2 rounded max-h-32 object-contain border"
+                />
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                className="mb-2"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onloadend = () => {
+                    setImagenPreview(reader.result as string);
+                  };
+                  reader.readAsDataURL(file);
+                }}
+              />
+            </div>
+          )}
           {/* Botones */}
           <div className="flex justify-center gap-2 p-4 border-t">
             <button
