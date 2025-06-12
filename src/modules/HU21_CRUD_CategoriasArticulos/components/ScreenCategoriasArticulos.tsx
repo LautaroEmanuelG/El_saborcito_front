@@ -42,12 +42,22 @@ const ScreenCategoriasArticulos = () => {
     // eslint-disable-next-line
   }, [showDeleted]);
 
+  // Filtrar categorías: excluir la categoría 'insumo' o 'insumos' en todos los usos (mayúsculas/minúsculas/plural)
+  const categoriasFiltradas = categorias.filter(
+    (cat) => !['insumo', 'insumos'].includes(cat.denominacion.trim().toLowerCase())
+  );
+  const deletedCategoriasFiltradas = deletedCategorias.filter(
+    (cat) => !['insumo', 'insumos'].includes(cat.denominacion.trim().toLowerCase())
+  );
+
   let currentCategorias: Categoria[] = showDeleted
     ? [
-        ...categorias.filter((a) => !deletedCategorias.some((d) => d.id === a.id)),
-        ...deletedCategorias,
+        ...categoriasFiltradas.filter(
+          (a) => !deletedCategoriasFiltradas.some((d) => d.id === a.id)
+        ),
+        ...deletedCategoriasFiltradas,
       ]
-    : categorias;
+    : categoriasFiltradas;
 
   // Agrupar: por cada categoría padre, mostrar una fila por cada hija (subcategoría)
   const categoriasPadre = currentCategorias.filter((cat) => !cat.tipoCategoria);
@@ -155,7 +165,7 @@ const ScreenCategoriasArticulos = () => {
             key: 'acciones',
             render: (row: CategoriaTable) => {
               // Buscar la subcategoría real (hija) por id
-              const subcategoriaReal = categorias.find((c) => c.id === row.id);
+              const subcategoriaReal = categoriasFiltradas.find((c) => c.id === row.id);
               // Adaptar el objeto para que siempre tenga id: number y denominacion: string
               const el =
                 subcategoriaReal && typeof subcategoriaReal.id === 'number'
@@ -192,8 +202,8 @@ const ScreenCategoriasArticulos = () => {
         rows={transformedCategorias}
         showSearchBar={true}
         showCategoryFilter={true}
-        // Solo categorías padre en el filtro
-        categories={categorias
+        // Solo categorías padre en el filtro, excluyendo 'insumo'
+        categories={categoriasFiltradas
           .filter((c) => !c.tipoCategoria)
           .map((c) => ({ id: c.id!, denominacion: c.denominacion }))}
         onToggleDeleted={toggleShowDeleted}
