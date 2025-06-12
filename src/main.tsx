@@ -19,6 +19,7 @@ import { HistorialCocina } from './app/views/admin/HistorialCocina.tsx';
 import { MovimientosMonetarios } from './modules/HU26_28_informes/components/MovimientosMonetarios.tsx';
 import { RankingCliente } from './modules/HU26_28_informes/components/RankingCliente.tsx';
 import ScreenCategoriasArticulos from './modules/HU21_CRUD_CategoriasArticulos/components/ScreenCategoriasArticulos';
+import ScreenCategoriaPadreArticulo from './modules/HU21_CRUD_CategoriasPadresArticulos/components/ScreenCategoriaPadreArticulo';
 
 createRoot(document.getElementById('root')!).render(
   <AppProviders>
@@ -159,6 +160,14 @@ createRoot(document.getElementById('root')!).render(
             element={
               <ProtectedRoute>
                 <HistorialCocina />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="categorias-articulos"
+            element={
+              <ProtectedRoute>
+                <ScreenCategoriaPadreArticulo />
               </ProtectedRoute>
             }
           />
