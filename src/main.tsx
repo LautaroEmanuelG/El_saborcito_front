@@ -75,7 +75,7 @@ createRoot(document.getElementById('root')!).render(
             }
           />
           <Route
-            path="categorias-articulos"
+            path="subcategoria-articulos"
             element={
               <ProtectedRoute>
                 <ScreenCategoriasArticulos />
