@@ -7,7 +7,7 @@ import IconoLoggin from '../../../../assets/svgs/icons/IconoLoggin';
 import IconoCarrito from '../../../../assets/svgs/icons/IconoCarrito';
 import IconoMenuHamburguesa from '../../../../assets/svgs/icons/IconoMenuHamburguesa';
 import { LoginModal } from '../../../../shared/components/loggin/LoginModal';
-import { Buscador } from '../../../../modules/HU10_BusquedaProductos/components/Buscador';
+import { Buscador } from '../../../../modules/HU9_PaginaPrincipalClientes/components/Buscador';
 
 type Props = {
   onSearch?: (query: string | string[]) => void; // Modificado para aceptar string o string[]

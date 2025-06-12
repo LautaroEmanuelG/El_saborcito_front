@@ -31,7 +31,7 @@ export const ListaProductos = ({ articulos, onProductClick }: Props) => {
   }
 
   return (
-    <div className="container mx-auto p-4 px-0 flex flex-wrap md:gap-6 mb-6">
+    <div className="container pt-0 mx-auto p-4 px-0 flex flex-wrap md:gap-6 mb-6">
       {categoriasConProductos.map((categoria) => {
         const productosFiltrados = articulos.filter(
           (articulo: ArticuloManufacturado | ArticuloInsumo) =>
@@ -39,7 +39,7 @@ export const ListaProductos = ({ articulos, onProductClick }: Props) => {
         );
         return productosFiltrados.length > 0 ? (
           <div key={categoria.id} className="mb-4 w-full">
-            <h2 className="text-3xl font-bold mb-4 text-negro border-b-2 border-primary pb-2">
+            <h2 className="text-2xl font-bold mb-4 text-negro border-b-2 border-primary pb-2">
               {categoria.denominacion}
             </h2>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-5 md:gap-6 flex-wrap">
