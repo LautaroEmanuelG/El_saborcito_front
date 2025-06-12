@@ -51,9 +51,9 @@ export const MovimientosMonetarios = () => {
       <div className="flex items-center justify-between border-b-2 border-negro pb-4 mb-8 flex-wrap">
         <h2 className="text-2xl font-bold text-negro mr-6">Movimientos monetarios</h2>{' '}
         {/* 📌 Se agregó mr-6 para separarlo del grupo de fechas */}
-        <div className="flex gap-6 bg-secondary text-black p-2 rounded-lg items-center">
+        <div className="flex gap-6 bg-gray-200 text-black p-2 rounded-lg items-center">
           <div>
-            <label className="block text-sm text-negro font-medium mb-1">Desde:</label>
+            <label className="block text-sm text-gray-600 font-medium mb-1">Desde:</label>
             <input
               type="date"
               value={desde}
@@ -62,7 +62,7 @@ export const MovimientosMonetarios = () => {
             />
           </div>
           <div>
-            <label className="block text-sm text-negro font-medium mb-1">Hasta:</label>
+            <label className="block text-sm text-gray-600 font-medium mb-1">Hasta:</label>
             <input
               type="date"
               value={hasta}
