@@ -24,7 +24,7 @@ const NAV_DATA: NavItemStructure[] = [
     subItems: [
       { to: '/admin/articulos', label: 'Artículos Manufacturados', hasActions: true },
       { to: '/admin/insumos', label: 'Insumos', hasActions: true },
-      { to: '/admin/categorias', label: 'Categorías', hasActions: true },
+      { to: '/admin/categorias-articulos', label: 'Categorías Artículos', hasActions: true },
     ],
   },
   {
@@ -77,7 +77,8 @@ export const AsideAdmin = () => {
       {isOpen && (
         <div className="fixed inset-0 bg-black opacity-50 md:hidden z-10" onClick={closeMenu}></div>
       )}
-      {/* La selección y expansión de los menús se maneja automáticamente en CollapsibleNavItem según la ruta actual */}
+      {/* No renderices la tabla aquí, solo deja el menú y navegación */}
+      {/* El AsideAdmin ya está correcto, solo muestra el menú y navega por rutas */}
     </>
   );
 };

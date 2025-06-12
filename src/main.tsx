@@ -9,7 +9,6 @@ import { Historial } from './app/views/admin/Historial.tsx';
 import { Control } from './app/views/admin/Control.tsx';
 import { Productos } from './app/views/admin/Productos.tsx';
 import ProtectedRoute from './app/routes/ProtectedRoute.tsx';
-import { Categorias } from './app/views/admin/Categorias.tsx';
 import ProtectedCarrito from './app/routes/ProtectCarrito.tsx';
 import { AppProviders } from './shared/providers/AppProviders.tsx';
 import { RankingProductos } from './modules/HU26_28_informes/components/RankingProductos.tsx';
@@ -19,6 +18,7 @@ import { Cocina } from './app/views/admin/Cocina.tsx';
 import { HistorialCocina } from './app/views/admin/HistorialCocina.tsx';
 import { MovimientosMonetarios } from './modules/HU26_28_informes/components/MovimientosMonetarios.tsx';
 import { RankingCliente } from './modules/HU26_28_informes/components/RankingCliente.tsx';
+import ScreenCategoriasArticulos from './modules/HU21_CRUD_CategoriasArticulos/components/ScreenCategoriasArticulos';
 
 createRoot(document.getElementById('root')!).render(
   <AppProviders>
@@ -75,10 +75,10 @@ createRoot(document.getElementById('root')!).render(
             }
           />
           <Route
-            path="categorias"
+            path="categorias-articulos"
             element={
               <ProtectedRoute>
-                <Categorias />
+                <ScreenCategoriasArticulos />
               </ProtectedRoute>
             }
           />
