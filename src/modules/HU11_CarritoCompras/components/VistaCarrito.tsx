@@ -80,7 +80,7 @@ export const VistaCarrito = () => {
           {/* Productos */}
           <div className="bg-blanco min-h-full p-4 rounded-xl shadow-lg shadow-gray-300 w-full mr-4 flex flex-col justify-between">
             <div>
-              <h2 className="text-3xl font-semibold mb-4">Productos</h2>
+              <h2 className="text-3xl font-bold mb-4">Carrito</h2>
               {carrito.map((producto, index) => (
                 <div
                   key={index}
@@ -145,13 +145,13 @@ export const VistaCarrito = () => {
 
           {/* Resumen de compra */}
           <div className="bg-blanco p-4 rounded-xl shadow-lg shadow-gray-300 max-w-80 min-h-96 flex flex-col">
-            <h3 className="text-lg md:text-xl font-semibold">Resumen Compra</h3>
+            <h3 className="text-xl md:text-2xl font-semibold">Resumen Compra</h3>
             <div className="flex-grow">
-              <div className="flex justify-between mt-2 text-lg sm:text-2xl">
-                <span>
+              <div className="flex justify-between mt-2 text-lg sm:text-xl">
+                <span className="text-nowrap">
                   Productos ({carrito.reduce((total, producto) => total + producto.cantidad, 0)})
                 </span>
-                <span>
+                <span className="pl-4 text-negro font-bold">
                   $
                   {carrito
                     .reduce(
@@ -161,12 +161,12 @@ export const VistaCarrito = () => {
                     .toFixed(2)}
                 </span>
               </div>
-              <div className="flex justify-between mt-2 text-lg sm:text-2xl">
+              <div className="flex justify-between mt-2 text-lg sm:text-xl">
                 <span>Envío</span>
                 <span className="text-primary">Gratis</span>
               </div>
             </div>
-            <div className="flex justify-between mt-auto text-2xl sm:text-3xl font-bold">
+            <div className="flex justify-between mt-auto text-xl sm:text-2xl font-bold">
               <span>Total</span>
               <span>
                 $
