@@ -41,7 +41,7 @@ export function TaskCard({ task, isAnimating, onVerDetalle, onCompletarPedido }:
       return 'animate-pulse bg-yellow-200 scale-105';
     }
     if (isAnimating === 'demorado') {
-      return 'animate-bounce bg-red-400 scale-110';
+      return 'animate-bounce bg-red-200 scale-110';
     }
     return '';
   };
