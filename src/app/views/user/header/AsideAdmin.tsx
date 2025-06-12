@@ -22,9 +22,9 @@ const NAV_DATA: NavItemStructure[] = [
   {
     title: 'Gestión de Contenido',
     subItems: [
-      { to: '/admin/articulos', label: 'Artículos Manufacturados', hasActions: true },
-      { to: '/admin/insumos', label: 'Insumos', hasActions: true },
-      { to: '/admin/categorias-articulos', label: 'Categorías Artículos', hasActions: true },
+      { to: '/admin/articulos', label: 'Artículos Manufacturados' },
+      { to: '/admin/insumos', label: 'Insumos' },
+      { to: '/admin/subcategorias-articulos', label: 'Subcategorias Artículos' },
     ],
   },
   {
