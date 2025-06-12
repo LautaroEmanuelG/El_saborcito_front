@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { format } from 'date-fns';
 import {
   getRankingClientes,
   exportarRankingClientesExcel,
@@ -14,10 +13,18 @@ import {
   calcularSubtotal,
   obtenerTextoOrdenamiento,
 } from '../logic';
+import { TableGeneric } from '../../../shared/components/abmGenerica/components/TableGeneric/TableGeneric';
 import IconoVer from '../../../assets/svgs/icons/IconoVer';
 
+// Extender ClienteRanking para que sea compatible con TableGeneric
+interface ClienteRankingExtended extends ClienteRanking {
+  id: number;
+  denominacion: string;
+  eliminado?: boolean;
+}
+
 export const RankingCliente = () => {
-  const [clientes, setClientes] = useState<ClienteRanking[]>([]);
+  const [clientes, setClientes] = useState<ClienteRankingExtended[]>([]);
   const fechasPorDefecto = obtenerFechasPorDefecto();
   const [desde, setDesde] = useState(fechasPorDefecto.desde);
   const [hasta, setHasta] = useState(fechasPorDefecto.hasta);
@@ -42,7 +49,16 @@ export const RankingCliente = () => {
       setLoading(true);
       setError(null);
       const data = await getRankingClientes(desde, hasta, ordenarPor);
-      setClientes(data);
+
+      // Adaptar datos para TableGeneric
+      const clientesAdaptados: ClienteRankingExtended[] = data.map((cliente) => ({
+        ...cliente,
+        id: cliente.idCliente,
+        denominacion: cliente.nombreCompleto,
+        eliminado: false,
+      }));
+
+      setClientes(clientesAdaptados);
     } catch (error) {
       console.error('Error al obtener ranking de clientes', error);
       setError('Error al cargar el ranking de clientes');
@@ -68,7 +84,7 @@ export const RankingCliente = () => {
     }
   };
 
-  const handleVerPedidos = async (cliente: ClienteRanking) => {
+  const handleVerPedidos = async (cliente: ClienteRankingExtended) => {
     try {
       setLoading(true);
       setError(null);
@@ -84,14 +100,59 @@ export const RankingCliente = () => {
     }
   };
 
+  // Configuración de columnas para TableGeneric
+  const columns = [
+    {
+      label: 'Nombre Cliente',
+      key: 'nombreCompleto',
+    },
+    {
+      label: 'Cant. Pedidos',
+      key: 'cantidadPedidos',
+      render: (cliente: ClienteRankingExtended) => (
+        <span className="text-primary font-semibold">{cliente.cantidadPedidos}</span>
+      ),
+    },
+    {
+      label: 'Total Gastado',
+      key: 'totalImporte',
+      render: (cliente: ClienteRankingExtended) => (
+        <span className="font-semibold">{formatearMonto(cliente.totalImporte)}</span>
+      ),
+    },
+    {
+      label: 'Ordenado Por',
+      key: 'ordenamiento',
+      render: () => (
+        <span className="text-xs text-gray-500">
+          {ordenarPor === 'cantidad' ? 'Por cantidad' : 'Por importe'}
+        </span>
+      ),
+    },
+    {
+      label: 'Ver Detalles',
+      key: 'acciones',
+      render: (cliente: ClienteRankingExtended) => (
+        <button
+          onClick={() => handleVerPedidos(cliente)}
+          className="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-primary hover:text-white transition-colors"
+          title={`Ver pedidos de ${cliente.nombreCompleto}`}
+        >
+          <IconoVer className="w-4 h-4" />
+        </button>
+      ),
+    },
+  ];
+
   return (
     <div className="bg-white p-8 rounded-xl shadow-md max-w-full overflow-x-auto">
+      {/* Header personalizado con filtros de fecha */}
       <div className="flex justify-between items-center border-b-2 border-negro pb-4 mb-8 flex-wrap">
         <h2 className="text-2xl font-bold text-negro mr-6">Ranking de clientes</h2>
 
-        <div className="flex gap-6 bg-secondary text-black p-2 rounded-lg items-center">
+        <div className="flex gap-4 bg-gray-200 p-2 rounded-lg items-center">
           <div>
-            <label className="block text-sm text-negro font-medium mb-1">Desde:</label>
+            <label className="block text-sm text-gray-600 font-medium mb-1">Desde:</label>
             <input
               type="date"
               value={desde}
@@ -100,7 +161,7 @@ export const RankingCliente = () => {
             />
           </div>
           <div>
-            <label className="block text-sm text-negro font-medium mb-1">Hasta:</label>
+            <label className="block text-sm text-gray-600 font-medium mb-1">Hasta:</label>
             <input
               type="date"
               value={hasta}
@@ -108,15 +169,21 @@ export const RankingCliente = () => {
               className="border border-gray-300 px-2 py-1 rounded"
             />
           </div>
+          <div>
+            <label className="block text-sm text-gray-600 font-medium mb-1">Ordenar por:</label>
+            <select
+              value={ordenarPor}
+              onChange={(e) => setOrdenarPor(e.target.value as 'cantidad' | 'importe')}
+              className="border border-gray-300 px-2 py-1 rounded"
+            >
+              <option value="cantidad">Cantidad de pedidos</option>
+              <option value="importe">Importe total</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-        </div>
-      )}
-
+      {/* Información de resumen */}
       <div className="mb-4 text-sm text-gray-600">
         {obtenerTextoOrdenamiento(ordenarPor)} • Período: {formatearFecha(desde)} -{' '}
         {formatearFecha(hasta)}
@@ -128,81 +195,52 @@ export const RankingCliente = () => {
         )}
       </div>
 
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
+        </div>
+      )}
+
       {loading ? (
         <div className="text-center py-8">
           <p className="text-gray-600">Cargando ranking de clientes...</p>
         </div>
-      ) : clientes.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 rounded-lg">
-          <p className="text-gray-600 text-lg mb-2">No hay datos para mostrar</p>
-          <p className="text-gray-500 text-sm">
-            No se encontraron clientes con pedidos en el período seleccionado
-          </p>
-        </div>
       ) : (
-        <table className="w-full text-sm text-left border-t border-b border-gray-300">
-          <thead className="text-negro font-bold">
-            <tr className="border-b border-gray-300">
-              <th className="py-3 px-2">Nombre Cliente</th>
-              <th className="py-3 px-2 text-primary">Cant. Pedidos</th>
-              <th className="py-3 px-2">Total Gastado</th>
-              <th
-                className="py-3 px-2 text-primary cursor-pointer hover:underline select-none"
-                onClick={() => setOrdenarPor(ordenarPor === 'cantidad' ? 'importe' : 'cantidad')}
-                title="Haz clic para cambiar el orden"
-              >
-                Ordenar Por: {ordenarPor === 'cantidad' ? 'Pedidos ↓' : 'Importe ↓'}
-              </th>
-              <th className="py-3 px-2 text-center">Ver Detalles</th>
-            </tr>
-          </thead>
-          <tbody>
-            {clientes.map((cliente, index) => (
-              <tr
-                key={cliente.idCliente ?? `cliente-${index}`}
-                className="border-b border-gray-200 hover:bg-blanco transition-colors"
-              >
-                <td className="py-3 px-2 font-medium">{cliente.nombreCompleto}</td>
-                <td className="py-3 px-2 text-primary font-semibold text-center">
-                  {cliente.cantidadPedidos}
-                </td>
-                <td className="py-3 px-2 font-semibold">{formatearMonto(cliente.totalImporte)}</td>
-                <td className="py-3 px-2 text-xs text-gray-500">
-                  {ordenarPor === 'cantidad' ? 'Por cantidad' : 'Por importe'}
-                </td>
-                <td className="py-3 px-2 text-center">
-                  <button
-                    onClick={() => handleVerPedidos(cliente)}
-                    className="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-primary hover:text-white transition-colors"
-                    title={`Ver pedidos de ${cliente.nombreCompleto}`}
-                  >
-                    <IconoVer className="w-4 h-4" />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <>
+          {/* Tabla usando ABM genérico */}
+          <TableGeneric
+            columns={columns}
+            rows={clientes}
+            handleDelete={() => {}} // No se usa eliminación en ranking
+            setOpenModal={() => {}} // No se usa modal genérico
+            setSelectedItem={() => {}} // No se usa selección genérica
+            showSearchBar={true}
+            showCategoryFilter={false}
+            searchPlaceholder="Buscar cliente..."
+            onToggleDeleted={undefined} // No hay elementos eliminados
+          />
+
+          {/* Botones de acción */}
+          <div className="flex justify-between items-center mt-6">
+            <button
+              onClick={fetchClientes}
+              disabled={loading}
+              className="bg-primary hover:bg-primarydark disabled:bg-gray-400 text-white px-6 py-2 rounded shadow font-bold transition-colors"
+            >
+              {loading ? 'Cargando...' : 'Ver Mas'}
+            </button>
+            <button
+              onClick={handleExportar}
+              disabled={loading || clientes.length === 0}
+              className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-6 py-2 rounded shadow font-bold transition-colors"
+            >
+              Exportar a Excel
+            </button>
+          </div>
+        </>
       )}
 
-      <div className="flex justify-between items-center mt-6">
-        <button
-          onClick={fetchClientes}
-          disabled={loading}
-          className="bg-primary hover:bg-primarydark disabled:bg-gray-400 text-white px-6 py-2 rounded shadow font-bold transition-colors"
-        >
-          {loading ? 'Cargando...' : 'Ver Mas'}
-        </button>
-        <button
-          onClick={handleExportar}
-          disabled={loading || clientes.length === 0}
-          className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-6 py-2 rounded shadow font-bold transition-colors"
-        >
-          Exportar a Excel
-        </button>
-      </div>
-
-      {/* MODAL MEJORADO */}
+      {/* MODAL DE DETALLES DE PEDIDOS - MANTENIDO IGUAL */}
       {modalVisible && clienteSeleccionado && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white rounded-lg p-6 shadow-lg w-full max-w-4xl max-h-[80dvh] overflow-y-auto relative">
