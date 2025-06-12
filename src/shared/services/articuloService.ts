@@ -13,7 +13,6 @@ export const createArticulo = async (data: Partial<Articulo>) => {
     id: 0, // El backend espera id: 0 para crear
   };
 
-  console.log('Creating Articulo:', payload);
   const response = await axiosInstance.post(API_BASE_URL, payload);
   return response.data;
 };
@@ -24,7 +23,6 @@ export const updateArticulo = async (data: Partial<Articulo>) => {
     throw new Error('ID es requerido para actualizar');
   }
 
-  console.log('Updating Articulo:', data);
   const response = await axiosInstance.put(`${API_BASE_URL}/${data.id}`, data);
   return response.data;
 };
@@ -103,4 +101,16 @@ export const getArticulosByCategoriaWithDeleted = async (categoriaId: number) =>
       (articulo: { categoriaId?: number }) => articulo.categoriaId === categoriaId
     ) ?? []
   );
+};
+
+// 🔍 **ANÁLISIS DE PRODUCCIÓN**
+
+// Analizar si es posible producir cantidades específicas de artículos
+export const analizarProduccion = async (
+  articulos: Array<{ articuloId: number; cantidad: number }>
+) => {
+  const response = await axiosInstance.post(`${API_BASE_URL}/analizar-produccion`, {
+    articulos,
+  });
+  return response.data;
 };
