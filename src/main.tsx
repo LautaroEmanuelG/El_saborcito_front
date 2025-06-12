@@ -2,7 +2,7 @@ import { createRoot } from 'react-dom/client';
 import './app/styles/index.css';
 import { Web } from './app/views/user/Web.tsx';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { VistaCarrito } from './modules/HU11_CarritoCompras/components/VistaCarrito.tsx';
+import { VistaCarrito } from './modules/HU11_12_Carrito_Confirmacion/VistaCarrito.tsx';
 import { CarritoProvider } from './shared/providers/CarritoProvider';
 import { LayoutAdmin } from './app/layout/LayoutAdmin.tsx';
 import { Historial } from './app/views/admin/Historial.tsx';
@@ -106,7 +106,30 @@ createRoot(document.getElementById('root')!).render(
               </ProtectedRoute>
             }
           />
-
+          <Route
+            path="informes/ranking-productos"
+            element={
+              <ProtectedRoute>
+                <RankingProductos />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="informes/ranking-clientes"
+            element={
+              <ProtectedRoute>
+                <RankingCliente />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="informes/movimientos-monetarios"
+            element={
+              <ProtectedRoute>
+                <MovimientosMonetarios />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="control"
             element={

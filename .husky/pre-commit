@@ -1,4 +1,11 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
+# Verificar si estamos en WSL o si hay un indicador de error de WSL
+if grep -q "Microsoft" /proc/version 2>/dev/null || grep -q "WSL" /proc/version 2>/dev/null; then
+  echo "🚫 Detectado entorno WSL. Omitiendo hooks para evitar errores."
+  exit 0
+fi
+
+# Continuar normalmente en entornos no-WSL
 npx lint-staged

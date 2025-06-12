@@ -16,7 +16,6 @@ export const createArticuloManufacturado = async (data: Partial<ArticuloManufact
     articuloManufacturadoDetalles: data.articuloManufacturadoDetalles ?? [],
   };
 
-  console.log('Creating ArticuloManufacturado:', payload);
   const response = await axiosInstance.post(API_BASE_URL, payload);
   return response.data;
 };
@@ -33,7 +32,6 @@ export const updateArticuloManufacturado = async (data: Partial<ArticuloManufact
     articuloManufacturadoDetalles: data.articuloManufacturadoDetalles ?? [],
   };
 
-  console.log('Updating ArticuloManufacturado:', payload);
   const response = await axiosInstance.put(`${API_BASE_URL}/${data.id}`, payload);
   return response.data;
 };
@@ -90,4 +88,10 @@ export const getDeletedArticuloManufacturadoById = async (id: number) => {
 export const getAllArticuloManufacturadosByCategoria = async (id: number) => {
   const response = await axiosInstance.get(`${API_BASE_URL}/categoria/${id}`);
   return response.data;
+};
+
+// Consultar si un artículo manufacturado puede fabricarse (tiene insumos suficientes)
+export const canBeManufactured = async (id: number): Promise<boolean> => {
+  const response = await axiosInstance.get<boolean>(`${API_BASE_URL}/${id}/can-be-manufactured`);
+  return response.data ?? false;
 };

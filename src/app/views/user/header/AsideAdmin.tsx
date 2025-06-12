@@ -20,6 +20,14 @@ const NAV_DATA: NavItemStructure[] = [
     subItems: [{ to: '/admin/historial', label: 'Control' }],
   },
   {
+    title: 'Informes estadísticos',
+    subItems: [
+      { to: '/admin/informes/ranking-productos', label: 'Ranking Producto' },
+      { to: '/admin/informes/ranking-clientes', label: 'Ranking Cliente' },
+      { to: '/admin/informes/movimientos-monetarios', label: 'Movimiento Monetario' },
+    ],
+  },
+  {
     title: 'Gestión de Contenido',
     subItems: [
       { to: '/admin/articulos', label: 'Artículos Manufacturados' },

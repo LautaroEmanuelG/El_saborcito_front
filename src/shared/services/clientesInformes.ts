@@ -1,14 +1,23 @@
 import axios from 'axios';
-import { ClienteRanking, DetallePedidoDTO } from '../../modules/HU26_28_informes/model';
+import {
+  ClienteRanking,
+  DetallePedidoDTO,
+  PedidoResumenPorCliente,
+} from '../../modules/HU26_28_informes/model';
 
 export const getDetallePedidosCliente = async (
   clienteId: number,
   desde: string,
   hasta: string
-): Promise<DetallePedidoDTO[]> => {
-  const url = `/api/sucursales/pedidos-cliente?clienteId=${clienteId}&desde=${desde}&hasta=${hasta}`;
-  const res = await axios.get(url);
-  return res.data;
+): Promise<PedidoResumenPorCliente[]> => {
+  const url = `http://localhost:5252/api/sucursales/pedidos-cliente?clienteId=${clienteId}&desde=${desde}&hasta=${hasta}`;
+
+  try {
+    const res = await axios.get(url);
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const getRankingClientes = async (
@@ -16,11 +25,25 @@ export const getRankingClientes = async (
   hasta: string,
   ordenarPor: string
 ): Promise<ClienteRanking[]> => {
-  const res = await fetch(
-    `http://localhost:5252/api/sucursales/ranking-clientes?desde=${desde}&hasta=${hasta}&ordenarPor=${ordenarPor}`
-  );
-  if (!res.ok) throw new Error('Error al obtener ranking de clientes');
-  return await res.json();
+  const url = `http://localhost:5252/api/sucursales/ranking-clientes?desde=${desde}&hasta=${hasta}&ordenarPor=${ordenarPor}`;
+
+  try {
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`Error al obtener ranking de clientes: ${res.status} ${res.statusText}`);
+    }
+
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const exportarRankingClientesExcel = async (
@@ -28,22 +51,30 @@ export const exportarRankingClientesExcel = async (
   hasta: string,
   ordenarPor: string
 ): Promise<void> => {
-  const res = await fetch(
-    `http://localhost:5252/api/sucursales/exportar-ranking-clientes-excel?desde=${desde}&hasta=${hasta}&ordenarPor=${ordenarPor}`,
-    {
+  const url = `http://localhost:5252/api/sucursales/exportar-ranking-clientes-excel?desde=${desde}&hasta=${hasta}&ordenarPor=${ordenarPor}`;
+
+  try {
+    const res = await fetch(url, {
       method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`Error al exportar Excel de clientes: ${res.status} ${res.statusText}`);
     }
-  );
 
-  if (!res.ok) throw new Error('Error al exportar Excel de clientes');
-
-  const blob = await res.blob();
-  const url = window.URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'ranking-clientes.xlsx';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  window.URL.revokeObjectURL(url);
+    const blob = await res.blob();
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = 'ranking-clientes.xlsx';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(downloadUrl);
+  } catch (error) {
+    throw error;
+  }
 };

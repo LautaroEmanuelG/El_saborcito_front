@@ -67,11 +67,8 @@ export const KanbanBoard: React.FC = () => {
   };
 
   useEffect(() => {
-    console.log('🔍 Iniciando fetch de pedidos...');
     fetchPedidos()
       .then((data) => {
-        console.log('✅ Pedidos recibidos:', data);
-        console.log('📊 Cantidad de pedidos:', data.length);
         setPedidos(data);
       })
       .catch((error) => {

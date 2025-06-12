@@ -115,7 +115,7 @@ const ModalSeleccionInsumos: React.FC<ModalSeleccionInsumosProps> = ({
               {searchTerm ? 'No se encontraron insumos' : 'No hay insumos disponibles'}
             </div>
           ) : (
-            <div className="max-h-48 overflow-y-auto border rounded p-2 space-y-1">
+            <div className="max-h-96 overflow-y-auto border rounded p-2 space-y-1">
               {filteredInsumos.map((insumo) => {
                 const yaSeleccionado = insumosExistentes.some(
                   (existing) => existing.id === insumo.id

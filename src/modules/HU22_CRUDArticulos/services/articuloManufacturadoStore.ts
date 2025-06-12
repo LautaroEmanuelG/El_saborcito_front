@@ -32,7 +32,6 @@ export const useArticuloManufacturadoStore = create<ArticuloManufacturadoState>(
     set({ loading: true, error: null });
     try {
       const data = await service.getAllArticuloManufacturados();
-      console.log('ArticulosManufacturados activos:', data);
       set({ articulos: data ?? [], loading: false });
     } catch (error) {
       set({ error: (error as Error)?.message ?? 'Error al cargar artículos', loading: false });
@@ -43,7 +42,6 @@ export const useArticuloManufacturadoStore = create<ArticuloManufacturadoState>(
     set({ loading: true, error: null });
     try {
       const data = await service.getDeletedArticuloManufacturados();
-      console.log('ArticulosManufacturados eliminados:', data);
       set({ deletedArticulos: data ?? [], loading: false });
     } catch (error) {
       set({

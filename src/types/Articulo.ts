@@ -35,3 +35,35 @@ export interface ArticuloManufacturado extends Articulo {
   articuloManufacturadoDetalles: ArticuloManufacturadoDetalle[];
   eliminado?: boolean; // Indica si el artículo está dado de baja lógica
 }
+
+// 🔍 **TIPOS PARA ANÁLISIS DE PRODUCCIÓN**
+
+export interface InsumoInsuficiente {
+  id: number;
+  denominacion: string;
+  stockActual: number;
+  stockRequerido: number;
+  stockFaltante: number;
+}
+
+export interface ProductoConProblemas {
+  id: number;
+  denominacion: string;
+  cantidadSolicitada: number;
+  cantidadProducible: number;
+  insumosInsuficientes: InsumoInsuficiente[];
+}
+
+export interface AnalisisProduccionResponse {
+  sePuedeProducirCompleto: boolean;
+  productosConProblemas: ProductoConProblemas[];
+  maximoProducible: Record<string, number>;
+  insumosInsuficientes: InsumoInsuficiente[];
+}
+
+export interface AnalisisProduccionRequest {
+  articulos: Array<{
+    articuloId: number;
+    cantidad: number;
+  }>;
+}

@@ -16,7 +16,7 @@ export interface ProductoRankingResponse {
 // src/modules/HU26_28_informes/informes/model.ts
 
 export interface ClienteRanking {
-  id: number;
+  idCliente: number;
   nombreCompleto: string;
   cantidadPedidos: number;
   totalImporte: number;
@@ -30,4 +30,11 @@ export interface DetallePedidoDTO {
     denominacion: string;
     precioVenta: number;
   };
+}
+
+export interface PedidoResumenPorCliente {
+  idPedido: number;
+  fechaPedido: string | Date;
+  total: number;
+  detalles: DetallePedidoDTO[];
 }
