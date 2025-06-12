@@ -4,9 +4,9 @@ import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
-import { BtnAgregarCarrito } from '../../../HU11_CarritoCompras/components/BtnAgregarCarrito';
-import { getAllArticuloManufacturados } from '../../../../shared/services/articuloManufacturadoService';
-import type { ArticuloManufacturado } from '../../../../types/Articulo';
+import { BtnAgregarCarrito } from '../../HU11_12_Carrito_Confirmacion/BtnAgregarCarrito';
+import { getAllArticuloManufacturados } from '../../../shared/services/articuloManufacturadoService';
+import type { ArticuloManufacturado } from '../../../types/Articulo';
 
 interface ActiveSliderProps {
   setArticuloModal: (articulo: ArticuloManufacturado) => void;

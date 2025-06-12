@@ -1,13 +1,13 @@
 import { useContext, useEffect, useMemo, useState } from 'react';
-import { ListaCategorias } from '../../HU9_PaginaPrincipalClientes/components/categorias/ListaCategorias';
 import { ListaProductos } from './articulos/ListaProducto';
 import { ModalProducto } from './articulos/ModalProducto';
 import { ActiveSlider } from './carrusel/ActiveSlider';
 import { ActiveCategoryIndicator } from './categorias/ActiveCategoryIndicator';
-import BtnFlotanteCarrito from '../../HU11_CarritoCompras/components/BtnFlotanteCarrito';
-import { CarritoContext } from '../../../shared/providers/CarritoProvider';
-import { useProductStore, getArticuloCategoriaId } from '../../../shared/providers/ProductProvider';
-import type { ArticuloInsumo, ArticuloManufacturado } from '../../../types/Articulo';
+import { CarritoContext } from '../../shared/providers/CarritoProvider';
+import { useProductStore, getArticuloCategoriaId } from '../../shared/providers/ProductProvider';
+import type { ArticuloInsumo, ArticuloManufacturado } from '../../types/Articulo';
+import { ListaCategorias } from './categorias/ListaCategorias';
+import BtnFlotanteCarrito from '../HU11_12_Carrito_Confirmacion/BtnFlotanteCarrito';
 
 interface PaginaPrincipalClientesProps {
   searchTerm: string;

@@ -1,8 +1,8 @@
 import React, { useContext } from 'react';
-import { CarritoContext } from '../../../shared/providers/CarritoProvider';
-import { useProductStore } from '../../../shared/providers/ProductProvider';
-import type { Articulo } from '../../../types/Articulo';
-import { useNotificacion } from '../../../shared/hooks/useNotificacion';
+import { CarritoContext } from '../../shared/providers/CarritoProvider';
+import { useProductStore } from '../../shared/providers/ProductProvider';
+import type { Articulo } from '../../types/Articulo';
+import { useNotificacion } from '../../shared/hooks/useNotificacion';
 
 interface BtnAgregarCarritoProps {
   position?: 'left' | 'right';

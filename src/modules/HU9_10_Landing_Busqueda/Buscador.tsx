@@ -1,6 +1,6 @@
-import IconoBuscador from '../../../assets/svgs/icons/IconoBuscador';
-import { useProductSearch } from '../../../shared/hooks/useProductSearch';
-import { useProductStore } from '../../../shared/providers/ProductProvider';
+import IconoBuscador from '../../assets/svgs/icons/IconoBuscador';
+import { useProductSearch } from '../../shared/hooks/useProductSearch';
+import { useProductStore } from '../../shared/providers/ProductProvider';
 
 type Props = {
   onSearch: (query: string) => void; // Prop para manejar el evento de búsqueda

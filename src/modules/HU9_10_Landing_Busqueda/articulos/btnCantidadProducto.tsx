@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { CarritoContext } from '../../../../shared/providers/CarritoProvider';
+import { CarritoContext } from '../../../shared/providers/CarritoProvider';
 import { useLocation } from 'react-router-dom';
-import type { Articulo } from '../../../../types/Articulo';
+import type { Articulo } from '../../../types/Articulo';
 
 interface BtnCantidadProductoProps {
   articulo: Articulo;

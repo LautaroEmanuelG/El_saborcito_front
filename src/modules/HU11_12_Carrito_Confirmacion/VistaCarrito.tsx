@@ -1,11 +1,11 @@
 import { useState, useEffect, useContext } from 'react';
-import { Header } from '../../../app/views/user/header/Header';
-import { IconoLocation } from '../../../assets/svgs/icons/IconoLocation';
-import BtnCantidadProducto from '../../HU9_PaginaPrincipalClientes/components/articulos/btnCantidadProducto';
-import { useCart } from '../../../shared/hooks/useCart';
-import { CarritoContext } from '../../../shared/providers/CarritoProvider';
-import type { ArticuloManufacturado } from '../../../types/Articulo';
+import { Header } from '../../app/views/user/header/Header';
+import { IconoLocation } from '../../assets/svgs/icons/IconoLocation';
+import { useCart } from '../../shared/hooks/useCart';
+import { CarritoContext } from '../../shared/providers/CarritoProvider';
+import type { ArticuloManufacturado } from '../../types/Articulo';
 import MetodoPagoModal from './MetodoPagoModal';
+import BtnCantidadProducto from '../HU9_10_Landing_Busqueda/articulos/btnCantidadProducto';
 
 export const VistaCarrito = () => {
   const { carrito, removeFromCart } = useCart();

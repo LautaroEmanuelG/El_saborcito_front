@@ -1,4 +1,4 @@
-import { useProductStore } from '../../../../shared/providers/ProductProvider';
+import { useProductStore } from '../../../shared/providers/ProductProvider';
 
 /**
  * Componente que muestra la categoría actualmente seleccionada

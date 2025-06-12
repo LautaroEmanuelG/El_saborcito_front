@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useCart } from '../../../shared/hooks/useCart';
-import { CarritoContext } from '../../../shared/providers/CarritoProvider';
-import type { AnalisisProduccionResponse, ArticuloManufacturado } from '../../../types/Articulo';
+import { useCart } from '../../shared/hooks/useCart';
+import { CarritoContext } from '../../shared/providers/CarritoProvider';
+import type { AnalisisProduccionResponse, ArticuloManufacturado } from '../../types/Articulo';
 import MapaInteractivo from './MapaInteractivo';
-import { RadioOption } from '../../../shared/components/utils/RadioOption';
+import { RadioOption } from '../../shared/components/utils/RadioOption';
 import { ContactForm } from './ContactForm';
 import { ProductSummary } from './ProductSummary';
-import { IconoLocation } from '../../../assets/svgs/icons/IconoLocation';
+import { IconoLocation } from '../../assets/svgs/icons/IconoLocation';
 
 interface MetodoPagoModalProps {
   isOpen: boolean;

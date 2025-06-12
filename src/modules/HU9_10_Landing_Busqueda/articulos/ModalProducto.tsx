@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { BtnAgregarCarrito } from '../../../HU11_CarritoCompras/components/BtnAgregarCarrito';
-import type { ArticuloInsumo, ArticuloManufacturado } from '../../../../types/Articulo';
-import { useProductStore } from '../../../../shared/providers/ProductProvider';
+import type { ArticuloInsumo, ArticuloManufacturado } from '../../../types/Articulo';
+import { useProductStore } from '../../../shared/providers/ProductProvider';
+import { BtnAgregarCarrito } from '../../HU11_12_Carrito_Confirmacion/BtnAgregarCarrito';
 
 type Props = {
   articulo: ArticuloManufacturado | ArticuloInsumo | null;

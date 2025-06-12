@@ -1,6 +1,6 @@
-import type { ArticuloInsumo, ArticuloManufacturado } from '../../../../types/Articulo';
-import { BtnAgregarCarrito } from '../../../HU11_CarritoCompras/components/BtnAgregarCarrito';
-import { useProductStore } from '../../../../shared/providers/ProductProvider';
+import type { ArticuloInsumo, ArticuloManufacturado } from '../../../types/Articulo';
+import { useProductStore } from '../../../shared/providers/ProductProvider';
+import { BtnAgregarCarrito } from '../../HU11_12_Carrito_Confirmacion/BtnAgregarCarrito';
 
 type ProductProps = {
   articulo: ArticuloManufacturado | ArticuloInsumo;

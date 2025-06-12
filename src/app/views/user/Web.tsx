@@ -1,4 +1,4 @@
-import { PaginaPrincipalClientes } from '../../../modules/HU9_PaginaPrincipalClientes/components/PaginaPrincipalClientes';
+import { PaginaPrincipalClientes } from '../../../modules/HU9_10_Landing_Busqueda/PaginaPrincipalClientes';
 import { Header } from './header/Header';
 import { useProductSearch } from '../../../shared/hooks/useProductSearch';
 

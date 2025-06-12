@@ -1,7 +1,6 @@
 import type React from 'react';
-import { InputField } from '../../../shared/components/utils/InputField';
+import { InputField } from '../../shared/components/utils/InputField';
 
-// 🚀 Componente para datos de contacto
 export const ContactForm: React.FC<{
   telefono: string;
   email: string;

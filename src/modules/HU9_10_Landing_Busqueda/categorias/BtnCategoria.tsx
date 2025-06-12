@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import type { Categoria } from '../../../../types/Categoria';
-import { IconoArrowDown } from '../../../../assets/svgs/icons/IconoArrowDown';
-import { useProductStore } from '../../../../shared/providers/ProductProvider';
+import type { Categoria } from '../../../types/Categoria';
+import { IconoArrowDown } from '../../../assets/svgs/icons/IconoArrowDown';
+import { useProductStore } from '../../../shared/providers/ProductProvider';
 
 interface BtnCategoriaProps {
   category: Categoria;
