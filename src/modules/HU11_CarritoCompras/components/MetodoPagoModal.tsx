@@ -3,6 +3,16 @@ import { useCart } from '../../../shared/hooks/useCart';
 import { CarritoContext } from '../../../shared/providers/CarritoProvider';
 import type { AnalisisProduccionResponse, ArticuloManufacturado } from '../../../types/Articulo';
 import MapaInteractivo from './MapaInteractivo';
+import { RadioOption } from '../../../shared/components/utils/RadioOption';
+import { ContactForm } from './ContactForm';
+import { ProductSummary } from './ProductSummary';
+import { IconoLocation } from '../../../assets/svgs/icons/IconoLocation';
+
+interface MetodoPagoModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  total: number;
+}
 
 interface MetodoPagoModalProps {
   isOpen: boolean;
@@ -250,112 +260,40 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
           {/* Opciones de entrega */}
           <div className="mb-6">
             <div className="flex flex-col sm:flex-row gap-4">
-              <label className="flex items-center text-lg cursor-pointer">
-                <input
-                  type="radio"
-                  name="entrega"
-                  value="retiro"
-                  checked={modaloEntrega === 'retiro'}
-                  onChange={(e) => setModoEntrega(e.target.value as 'retiro')}
-                  className="mr-3 w-5 h-5"
-                />
-                <span className="flex items-center gap-2">Retiro en tienda (10% Descuento)</span>
-              </label>
-
-              <label className="flex items-center text-lg cursor-pointer">
-                <input
-                  type="radio"
-                  name="entrega"
-                  value="domicilio"
-                  checked={modaloEntrega === 'domicilio'}
-                  onChange={(e) => setModoEntrega(e.target.value as 'domicilio')}
-                  className="mr-3 w-5 h-5"
-                />
-                <span className="flex items-center gap-2">Envío a domicilio</span>
-              </label>
+              <RadioOption
+                name="entrega"
+                value="retiro"
+                checked={modaloEntrega === 'retiro'}
+                onChange={(value) => setModoEntrega(value as 'retiro')}
+              >
+                Retiro en tienda (10% Descuento)
+              </RadioOption>
+              <RadioOption
+                name="entrega"
+                value="domicilio"
+                checked={modaloEntrega === 'domicilio'}
+                onChange={(value) => setModoEntrega(value as 'domicilio')}
+              >
+                Envío a domicilio
+              </RadioOption>
             </div>
           </div>{' '}
           {/* Layout condicional según el tipo de entrega */}
           {modaloEntrega === 'retiro' ? (
             // Layout para RETIRO EN TIENDA - Contacto a la izquierda, Resumen a la derecha
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Columna izquierda - Datos de contacto */}
-              <div>
-                <div className="space-y-4 mb-6">
-                  <h3 className="text-lg font-semibold">Datos de contacto</h3>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Teléfono <b className="text-primary font-bold">*</b>
-                    </label>
-                    <input
-                      type="tel"
-                      value={telefono}
-                      onChange={(e) => setTelefono(e.target.value)}
-                      placeholder="Ingresa tu teléfono"
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Email <b className="text-primary font-bold">*</b>
-                    </label>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Ingresa tu email"
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Columna derecha - Resumen de productos */}
-              <div>
-                <h3 className="text-lg font-semibold mb-4">Resumen de productos</h3>
-                <div className="bg-gray-50 rounded-lg p-4 max-h-64 overflow-y-auto">
-                  {carrito.map((producto, index) => (
-                    <div
-                      key={index}
-                      className="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0"
-                    >
-                      <div className="flex-1">
-                        <p className="font-medium text-sm">{producto.denominacion}</p>
-                        <p className="text-xs text-gray-600">Cantidad: {producto.cantidad}</p>
-                      </div>
-                      <p className="font-semibold text-sm">
-                        ${(producto.precioVenta * producto.cantidad).toFixed(2)}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Total */}
-                <div className="mt-4 p-4 bg-gray-100 rounded-lg">
-                  <div className="flex justify-between items-center">
-                    <span className="text-lg font-semibold">Total:</span>
-                    <div className="text-right">
-                      {modaloEntrega === 'retiro' && (
-                        <p className="text-sm text-gray-500 line-through">${total.toFixed(2)}</p>
-                      )}
-                      <p className="text-xl font-bold text-primary">
-                        ${totalConDescuento.toFixed(2)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Mensaje de estado de análisis */}
-                {!puedeComprar && analisisProduccion && (
-                  <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-red-700 font-medium">⚠️ No se puede completar la compra</p>
-                    <p className="text-red-600 text-sm">
-                      Hay limitaciones de stock. Ajusta las cantidades en el carrito.
-                    </p>
-                  </div>
-                )}
-              </div>
+              <ContactForm
+                telefono={telefono}
+                email={email}
+                onTelefonoChange={setTelefono}
+                onEmailChange={setEmail}
+              />
+              <ProductSummary
+                productos={carrito}
+                total={total}
+                descuento={total * 0.1}
+                showDiscount={true}
+              />
             </div>
           ) : modaloEntrega === 'domicilio' ? (
             // Layout para ENVÍO A DOMICILIO - Mapa a la izquierda, Contacto y resumen a la derecha
@@ -363,7 +301,9 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
               {/* Columna izquierda - Mapa y método de pago */}
               <div>
                 <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-3">Selecciona tu ubicación</h3>
+                  <h3 className="text-lg flex gap-2 font-semibold mb-3">
+                    <IconoLocation /> Selecciona tu ubicación
+                  </h3>
                   <MapaInteractivo
                     onUbicacionSeleccionada={manejarSeleccionUbicacion}
                     ubicacionActual={ubicacionInfo}
@@ -379,32 +319,27 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
                     </div>
                   )}
 
-                  {/* Método de pago para envío a domicilio */}
                   <div className="mt-4">
                     <h4 className="text-md font-semibold mb-3">Método de pago</h4>
                     <div className="space-y-2">
-                      <label className="flex items-center cursor-pointer">
-                        <input
-                          type="radio"
-                          name="metodoPago"
-                          value="efectivo"
-                          checked={metodoPago === 'efectivo'}
-                          onChange={(e) => setMetodoPago(e.target.value as 'efectivo')}
-                          className="mr-3 w-4 h-4"
-                        />
-                        <span>💵 Efectivo</span>
-                      </label>
-                      <label className="flex items-center cursor-pointer">
-                        <input
-                          type="radio"
-                          name="metodoPago"
-                          value="mercadopago"
-                          checked={metodoPago === 'mercadopago'}
-                          onChange={(e) => setMetodoPago(e.target.value as 'mercadopago')}
-                          className="mr-3 w-4 h-4"
-                        />
-                        <span>💳 Mercado Pago</span>
-                      </label>
+                      <RadioOption
+                        name="metodoPago"
+                        value="efectivo"
+                        checked={metodoPago === 'efectivo'}
+                        onChange={(value) => setMetodoPago(value as 'efectivo')}
+                        className="w-4 h-4"
+                      >
+                        💵 Efectivo
+                      </RadioOption>
+                      <RadioOption
+                        name="metodoPago"
+                        value="mercadopago"
+                        checked={metodoPago === 'mercadopago'}
+                        onChange={(value) => setMetodoPago(value as 'mercadopago')}
+                        className="w-4 h-4"
+                      >
+                        💳 Mercado Pago
+                      </RadioOption>
                     </div>
                   </div>
                 </div>
@@ -412,81 +347,29 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
 
               {/* Columna derecha - Datos de contacto y resumen */}
               <div>
-                {/* Inputs de contacto */}
-                <div className="space-y-4 mb-6">
-                  <h3 className="text-lg font-semibold">Datos de contacto</h3>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Teléfono *</label>
-                    <input
-                      type="tel"
-                      value={telefono}
-                      onChange={(e) => setTelefono(e.target.value)}
-                      placeholder="Ingresa tu teléfono"
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Email *</label>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Ingresa tu email"
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                    />
-                  </div>
-                </div>
-
-                {/* Resumen de productos */}
-                <div>
-                  <h3 className="text-lg font-semibold mb-4">Resumen de productos</h3>
-                  <div className="bg-gray-50 rounded-lg p-4 max-h-64 overflow-y-auto">
-                    {carrito.map((producto, index) => (
-                      <div
-                        key={index}
-                        className="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0"
-                      >
-                        <div className="flex-1">
-                          <p className="font-medium text-sm">{producto.denominacion}</p>
-                          <p className="text-xs text-gray-600">Cantidad: {producto.cantidad}</p>
-                        </div>
-                        <p className="font-semibold text-sm">
-                          ${(producto.precioVenta * producto.cantidad).toFixed(2)}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Total */}
-                  <div className="mt-4 p-4 bg-gray-100 rounded-lg">
-                    <div className="flex justify-between items-center">
-                      <span className="text-lg font-semibold">Total:</span>
-                      <div className="text-right">
-                        <p className="text-xl font-bold text-primary">
-                          ${totalConDescuento.toFixed(2)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Mensaje de estado de análisis */}
-                  {!puedeComprar && analisisProduccion && (
-                    <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                      <p className="text-red-700 font-medium">⚠️ No se puede completar la compra</p>
-                      <p className="text-red-600 text-sm">
-                        Hay limitaciones de stock. Ajusta las cantidades en el carrito.
-                      </p>
-                    </div>
-                  )}
-                </div>
+                <ContactForm
+                  telefono={telefono}
+                  email={email}
+                  onTelefonoChange={setTelefono}
+                  onEmailChange={setEmail}
+                />
+                <ProductSummary productos={carrito} total={totalConDescuento} />
               </div>
             </div>
           ) : (
             // Mensaje cuando no se ha seleccionado ninguna opción
             <div className="text-center py-8">
               <p className="text-primary font-semibold text-lg">
-                Selecciona un método de entrega para continuar
+                👆 Selecciona un método de entrega para continuar
+              </p>
+            </div>
+          )}
+          {/* Mensaje de estado de análisis - Común para ambos layouts */}
+          {!puedeComprar && analisisProduccion && (
+            <div className="mt-6 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-700 font-medium">⚠️ No se puede completar la compra</p>
+              <p className="text-red-600 text-sm">
+                Hay limitaciones de stock. Ajusta las cantidades en el carrito.
               </p>
             </div>
           )}
