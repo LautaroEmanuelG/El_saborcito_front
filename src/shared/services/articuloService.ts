@@ -104,3 +104,15 @@ export const getArticulosByCategoriaWithDeleted = async (categoriaId: number) =>
     ) ?? []
   );
 };
+
+// 🔍 **ANÁLISIS DE PRODUCCIÓN**
+
+// Analizar si es posible producir cantidades específicas de artículos
+export const analizarProduccion = async (
+  articulos: Array<{ articuloId: number; cantidad: number }>
+) => {
+  const response = await axiosInstance.post(`${API_BASE_URL}/analizar-produccion`, {
+    articulos,
+  });
+  return response.data;
+};

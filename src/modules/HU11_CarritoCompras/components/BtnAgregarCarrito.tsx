@@ -17,7 +17,7 @@ interface BtnAgregarCarritoProps {
 export const BtnAgregarCarrito: React.FC<BtnAgregarCarritoProps> = ({
   position = 'right',
   articulo,
-  cantidadProducto,
+  cantidadProducto: _, // Mantenido por compatibilidad pero no se usa
   setCantidadProducto,
   onClose,
   onClick,
@@ -39,9 +39,9 @@ export const BtnAgregarCarrito: React.FC<BtnAgregarCarritoProps> = ({
     event.preventDefault();
     event.stopPropagation();
 
-    // Agregar al carrito directamente usando la estrategia optimista
-    // El CarritoProvider se encarga de verificar en segundo plano
-    await addToCarrito(articulo, cantidadProducto || 1);
+    // BtnAgregarCarrito siempre agrega solo 1 unidad
+    // Si el usuario quiere más cantidad, debe usar BtnCantidadProducto en VistaCarrito
+    await addToCarrito(articulo, 1);
 
     // Como usamos estrategia optimista, siempre mostramos el mensaje de éxito
     // Si hay problemas, el CarritoProvider se encarga de notificar y quitar el producto

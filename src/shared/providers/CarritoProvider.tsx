@@ -6,9 +6,14 @@ import React, {
   useCallback,
   useState,
 } from 'react';
-import type { Articulo, ArticuloManufacturado } from '../../types/Articulo';
+import type {
+  Articulo,
+  ArticuloManufacturado,
+  AnalisisProduccionResponse,
+} from '../../types/Articulo';
 import { useProductStore } from './ProductProvider';
 import { useNotificacion } from '../hooks/useNotificacion';
+import { analizarProduccion } from '../services/articuloService';
 
 // Define the state shape - El carrito puede contener cualquier tipo de artículo
 interface ArticuloContext extends Articulo {
@@ -28,6 +33,9 @@ interface CarritoContextValue {
   clearCarrito: () => void;
   isProductAvailable: (articulo: Articulo) => Promise<boolean>; // Nueva función para verificar disponibilidad
   isProcessingInBackground: boolean; // Flag para saber si hay procesos en segundo plano
+  analizarCarrito: () => Promise<AnalisisProduccionResponse | null>; // Nueva función para analizar todo el carrito
+  limitacionesProduccion: Record<number, number>; // ID del producto -> cantidad máxima producible
+  ajustarCantidadesCarrito: () => Promise<void>; // Función para ajustar cantidades manualmente
 }
 // Create the context
 export const CarritoContext = createContext<CarritoContextValue | undefined>(undefined);
@@ -117,6 +125,20 @@ const carritoReducer = (state: State, action: any): State => {
       return state;
     case 'CLEAR_CARRITO':
       return { ...state, carrito: [] };
+    case 'ADJUST_QUANTITIES':
+      // Ajustar cantidades basado en limitaciones de producción
+      // Solo para productos manufacturados, no para insumos
+      const updatedCarritoWithLimits = state.carrito.map((item) => {
+        const limitacion = action.payload.limitaciones[item.id];
+        const esManufacturado = isArticuloManufacturado(item);
+
+        // Solo ajustar cantidades automáticamente para productos manufacturados
+        if (limitacion && item.cantidad > limitacion && esManufacturado) {
+          return { ...item, cantidad: limitacion };
+        }
+        return item;
+      });
+      return { ...state, carrito: updatedCarritoWithLimits };
     default:
       return state;
   }
@@ -129,10 +151,18 @@ const isArticuloManufacturado = (articulo: Articulo): articulo is ArticuloManufa
   return 'categoriaId' in articulo && 'descripcion' in articulo;
 };
 
+/**
+ * Determina si un artículo es de tipo ArticuloInsumo
+ */
+const isArticuloInsumo = (articulo: any): boolean => {
+  return 'stockActual' in articulo && 'esParaElaborar' in articulo;
+};
+
 // Define the provider component
 export const CarritoProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(carritoReducer, initialState);
   const [isProcessingInBackground, setIsProcessingInBackground] = useState(false);
+  const [limitacionesProduccion, setLimitacionesProduccion] = useState<Record<number, number>>({});
   const productAvailability = useProductStore((state) => state.productAvailability);
   const checkSingleProductAvailability = useProductStore(
     (state) => state.checkSingleProductAvailability
@@ -231,6 +261,96 @@ export const CarritoProvider: React.FC<{ children: ReactNode }> = ({ children })
     localStorage.removeItem('carrito');
   }, []);
 
+  // Función para analizar todo el carrito con el nuevo endpoint
+  const analizarCarrito = useCallback(async (): Promise<AnalisisProduccionResponse | null> => {
+    // Filtrar productos manufacturados del carrito
+    const productosManufacturados = state.carrito.filter(
+      (item) => isArticuloManufacturado(item) && item.id
+    );
+
+    // Filtrar productos insumos del carrito
+    const productosInsumos = state.carrito.filter((item) => isArticuloInsumo(item) && item.id);
+
+    // Combinar todos los productos para análisis
+    const todosLosProductos = [...productosManufacturados, ...productosInsumos];
+
+    if (todosLosProductos.length === 0) {
+      return null; // No hay productos para analizar
+    }
+
+    try {
+      setIsProcessingInBackground(true);
+
+      const articulosParaAnalizar = todosLosProductos.map((item) => ({
+        articuloId: item.id,
+        cantidad: item.cantidad,
+      }));
+
+      const analisis = await analizarProduccion(articulosParaAnalizar);
+
+      // Limpiar limitaciones existentes primero
+      const nuevasLimitaciones: Record<string, number> = {};
+
+      // Solo agregar limitaciones para productos que realmente tienen problemas
+      if (analisis.productosConProblemas && analisis.productosConProblemas.length > 0) {
+        analisis.productosConProblemas.forEach((problema: any) => {
+          nuevasLimitaciones[problema.id.toString()] = problema.cantidadProducible;
+        });
+      }
+
+      // Para insumos, agregar limitaciones si la cantidad en carrito excede o iguala el stock
+      productosInsumos.forEach((insumo) => {
+        const stockActual = (insumo as any).stockActual;
+        if (stockActual !== undefined && insumo.cantidad >= stockActual) {
+          nuevasLimitaciones[insumo.id.toString()] = stockActual;
+        }
+      });
+
+      // IMPORTANTE: También establecer limitaciones para productos que alcanzaron su límite exacto
+      // Esto ayuda a deshabilitar el botón + cuando se alcanza el límite después de un ajuste
+      state.carrito.forEach((item) => {
+        const limitacionExistente = nuevasLimitaciones[item.id.toString()];
+        if (limitacionExistente && item.cantidad === limitacionExistente) {
+          // Ya está en el límite exacto, mantener la limitación
+          nuevasLimitaciones[item.id.toString()] = limitacionExistente;
+        }
+      });
+
+      setLimitacionesProduccion(nuevasLimitaciones);
+
+      // Si NO hay productos con problemas, limpiar limitaciones anteriores
+      if (analisis.sePuedeProducirCompleto && Object.keys(nuevasLimitaciones).length === 0) {
+        // Ya se establecieron las limitaciones vacías arriba, no necesitamos hacer nada más
+      }
+
+      // Si hay productos con problemas, ajustar cantidades automáticamente
+      if (!analisis.sePuedeProducirCompleto && Object.keys(nuevasLimitaciones).length > 0) {
+        dispatch({
+          type: 'ADJUST_QUANTITIES',
+          payload: { limitaciones: nuevasLimitaciones },
+        });
+      }
+
+      return analisis;
+    } catch (error) {
+      console.error('Error al analizar carrito:', error);
+      mostrarNotificacion('Error al verificar disponibilidad del carrito', 'error', 3000);
+      return null;
+    } finally {
+      setIsProcessingInBackground(false);
+    }
+  }, [state.carrito, mostrarNotificacion]);
+
+  // Función para ajustar cantidades manualmente basado en limitaciones actuales
+  const ajustarCantidadesCarrito = useCallback(async (): Promise<void> => {
+    if (Object.keys(limitacionesProduccion).length > 0) {
+      dispatch({
+        type: 'ADJUST_QUANTITIES',
+        payload: { limitaciones: limitacionesProduccion },
+      });
+    }
+  }, [limitacionesProduccion, mostrarNotificacion]);
+
   return (
     <CarritoContext.Provider
       value={{
@@ -241,6 +361,9 @@ export const CarritoProvider: React.FC<{ children: ReactNode }> = ({ children })
         clearCarrito,
         isProductAvailable,
         isProcessingInBackground,
+        analizarCarrito,
+        limitacionesProduccion,
+        ajustarCantidadesCarrito,
       }}
     >
       {children}

@@ -1,13 +1,75 @@
-import { useState } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Header } from '../../../app/views/user/header/Header';
 import { IconoLocation } from '../../../assets/svgs/icons/IconoLocation';
 import BtnCantidadProducto from '../../HU9_PaginaPrincipalClientes/components/articulos/btnCantidadProducto';
 import { useCart } from '../../../shared/hooks/useCart';
+import { CarritoContext } from '../../../shared/providers/CarritoProvider';
+import type { AnalisisProduccionResponse, ArticuloManufacturado } from '../../../types/Articulo';
 import MetodoPagoModal from './MetodoPagoModal';
 
 export const VistaCarrito = () => {
   const { carrito, removeFromCart } = useCart();
   const [isMetodoPagoOpen, setMetodoPagoOpen] = useState(false);
+  const [analisisCarrito, setAnalisisCarrito] = useState<AnalisisProduccionResponse | null>(null);
+
+  const carritoContext = useContext(CarritoContext);
+  if (!carritoContext) {
+    throw new Error('VistaCarrito must be used within a CarritoProvider');
+  }
+
+  const { analizarCarrito, limitacionesProduccion } = carritoContext;
+
+  // Analizar carrito cuando se monta el componente o cuando cambia
+  useEffect(() => {
+    const realizarAnalisis = async () => {
+      const resultado = await analizarCarrito();
+      setAnalisisCarrito(resultado);
+    };
+
+    if (carrito.length > 0) {
+      realizarAnalisis();
+    } else {
+      setAnalisisCarrito(null);
+    }
+  }, [carrito, analizarCarrito]);
+
+  // Función para determinar si un artículo es manufacturado
+  const isArticuloManufacturado = (articulo: any): articulo is ArticuloManufacturado => {
+    return 'categoriaId' in articulo && 'descripcion' in articulo;
+  };
+
+  // Función para determinar si un artículo es insumo
+  const isArticuloInsumo = (articulo: any): boolean => {
+    return 'stockActual' in articulo && 'esParaElaborar' in articulo;
+  };
+
+  // Función para verificar si hay limitaciones excedidas que impidan la compra
+  const hayLimitacionesExcedidas = (): boolean => {
+    return carrito.some((producto) => {
+      const limitacionMaxima = limitacionesProduccion[producto.id ?? 0];
+      return limitacionMaxima && producto.cantidad > limitacionMaxima;
+    });
+  };
+
+  // Función para obtener mensaje de limitación para un producto
+  const getMensajeLimitacion = (producto: any) => {
+    if (!producto.id) return null;
+
+    const limitacionMaxima = limitacionesProduccion[producto.id];
+    const cantidadEnCarrito = (producto as any).cantidad;
+
+    // Solo mostrar mensaje si hay limitación y la cantidad actual excede el límite
+    if (!limitacionMaxima || cantidadEnCarrito <= limitacionMaxima) return null;
+
+    // Diferentes mensajes según el tipo de artículo
+    if (isArticuloInsumo(producto)) {
+      return `⚠️ Stock limitado: máximo ${limitacionMaxima} unidades disponibles`;
+    } else if (isArticuloManufacturado(producto)) {
+      return `⚠️ Solo se pueden producir hasta ${limitacionMaxima} unidades de este producto`;
+    }
+
+    return `⚠️ Cantidad limitada a ${limitacionMaxima} unidades`;
+  };
 
   return (
     <>
@@ -41,6 +103,11 @@ export const VistaCarrito = () => {
                     </picture>
                     <div className="w-full">
                       <h3 className="text-md md:text-xl  font-semibold">{producto.denominacion}</h3>
+                      {getMensajeLimitacion(producto) && (
+                        <p className="text-sm text-orange-600 font-medium mt-1">
+                          {getMensajeLimitacion(producto)}
+                        </p>
+                      )}
                       <button
                         className="text-lg md:text-xl  text-primary hover:underline"
                         onClick={() => removeFromCart(producto)}
@@ -112,9 +179,19 @@ export const VistaCarrito = () => {
             {carrito.length > 0 && (
               <button
                 onClick={() => setMetodoPagoOpen(true)}
-                className="mt-4 w-full py-2 bg-primary text-lg md:text-xl  font-semibold text-white rounded-lg text-center"
+                disabled={hayLimitacionesExcedidas()}
+                className={`mt-4 w-full py-2 text-lg md:text-xl font-semibold rounded-lg text-center ${
+                  hayLimitacionesExcedidas()
+                    ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                    : 'bg-primary text-white hover:bg-primary-dark'
+                }`}
+                title={
+                  hayLimitacionesExcedidas()
+                    ? 'Ajuste las cantidades antes de continuar'
+                    : undefined
+                }
               >
-                Comprar
+                {hayLimitacionesExcedidas() ? 'Ajustar Cantidades' : 'Comprar'}
               </button>
             )}
           </div>

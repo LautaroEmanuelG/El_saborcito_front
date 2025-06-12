@@ -16,27 +16,53 @@ const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
 }) => {
   const carritoContext = useContext(CarritoContext);
   const [quantity, setQuantity] = useState(cantidadProducto);
+  const [hasAttemptedExceedLimit, setHasAttemptedExceedLimit] = useState(false);
   const location = useLocation();
 
   if (!carritoContext) {
     throw new Error('BtnCantidadProducto must be used within a CarritoProvider');
   }
 
-  const { carrito, addToCarrito, decreaseFromCart } = carritoContext;
+  const { carrito, addToCarrito, decreaseFromCart, analizarCarrito, limitacionesProduccion } =
+    carritoContext;
   useEffect(() => {
     const productoEnCarrito = carrito.find((item) => item.denominacion === articulo.denominacion);
     if (productoEnCarrito) {
-      setQuantity(productoEnCarrito.cantidad);
+      const nuevaCantidad = productoEnCarrito.cantidad;
+      const cantidadAnterior = quantity;
+
+      // Si la cantidad se redujo automáticamente (sistema revirtió un intento de exceder límite)
+      if (nuevaCantidad < cantidadAnterior && location.pathname === '/carrito') {
+        setHasAttemptedExceedLimit(true);
+      }
+
+      setQuantity(nuevaCantidad);
     } else {
       setQuantity(cantidadProducto);
+      setHasAttemptedExceedLimit(false);
     }
-  }, [carrito, articulo.denominacion, cantidadProducto]);
+  }, [carrito, articulo.denominacion, cantidadProducto, quantity, location.pathname]);
   const handleIncrease = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     event.preventDefault();
+
     if (location.pathname === '/carrito') {
-      // En la vista de carrito, agregar al carrito usa la nueva lógica optimista
+      // En la vista de carrito, verificar límites antes de agregar
+      const limitacionMaxima = limitacionesProduccion[articulo.id ?? 0];
+      const cantidadActual = carrito.find((item) => item.id === articulo.id)?.cantidad ?? 0;
+
+      if (limitacionMaxima && cantidadActual >= limitacionMaxima) {
+        // No se puede agregar más de lo permitido
+        setHasAttemptedExceedLimit(true);
+        return;
+      }
+
+      // Reiniciar flag cuando se permite agregar
+      setHasAttemptedExceedLimit(false);
+
+      // Agregar al carrito y luego analizar para actualizar limitaciones
       await addToCarrito(articulo, 1);
+      await analizarCarrito(); // Actualizar limitaciones después del cambio
     } else {
       setCantidadProducto(cantidadProducto + 1);
     }
@@ -45,6 +71,10 @@ const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
   const handleDecrease = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     event.preventDefault();
+
+    // Reiniciar flag cuando se reduce cantidad
+    setHasAttemptedExceedLimit(false);
+
     if (quantity > 1) {
       setQuantity(quantity - 1);
       if (location.pathname === '/carrito') {
@@ -70,6 +100,22 @@ const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
     }
   };
 
+  // Verificar si el botón + debe estar deshabilitado en vista carrito
+  const isIncreaseDisabled = (): boolean => {
+    if (location.pathname === '/carrito') {
+      const limitacionMaxima = limitacionesProduccion[articulo.id ?? 0];
+      const cantidadActual = carrito.find((item) => item.id === articulo.id)?.cantidad ?? 0;
+
+      // Deshabilitar si:
+      // 1. Hay una limitación y se alcanzó el límite
+      // 2. Se ha intentado exceder el límite (flag activado)
+      return Boolean(
+        (limitacionMaxima && cantidadActual >= limitacionMaxima) || hasAttemptedExceedLimit
+      );
+    }
+    return false;
+  };
+
   return (
     <div className="flex items-center justify-between space-x-2 sm:space-x-4 rounded-3xl border-t-gray-300 border-2 sm:w-32">
       <button
@@ -81,7 +127,19 @@ const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
       <span className="sm:text-lg font-semibold">{cantProd()}</span>
       <button
         onClick={handleIncrease}
-        className="px-3 py-2 bg-primary text-white rounded-full hover:font-bold hover:bg-primary-dark"
+        disabled={isIncreaseDisabled()}
+        className={`px-3 py-2 rounded-full ${
+          isIncreaseDisabled()
+            ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+            : 'bg-primary text-white hover:font-bold hover:bg-primary-dark'
+        }`}
+        title={
+          isIncreaseDisabled()
+            ? hasAttemptedExceedLimit
+              ? 'Límite alcanzado - No se puede agregar más'
+              : `Máximo ${limitacionesProduccion[articulo.id ?? 0]} unidades disponibles`
+            : undefined
+        }
       >
         +
       </button>
