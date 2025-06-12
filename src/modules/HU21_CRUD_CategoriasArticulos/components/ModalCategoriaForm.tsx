@@ -23,9 +23,11 @@ const ModalCategoriaForm = ({
   mode = 'add',
 }: Props) => {
   const [form, setForm] = useState<Partial<Categoria>>(initialValues);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     setForm(initialValues);
+    setErrorMsg(null);
   }, [initialValues, open]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -38,9 +40,16 @@ const ModalCategoriaForm = ({
     if (setSelectedPadreId) setSelectedPadreId(Number(e.target.value));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(form);
+    setErrorMsg(null);
+    try {
+      await onSubmit(form);
+    } catch (error: any) {
+      setErrorMsg(
+        error?.response?.data?.message || error?.message || 'Error al guardar la subcategoría'
+      );
+    }
   };
 
   return open ? (
@@ -62,6 +71,11 @@ const ModalCategoriaForm = ({
             required
             disabled={mode === 'view'}
           />
+          {errorMsg && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4 text-center">
+              {errorMsg}
+            </div>
+          )}
           <div className="mb-6">
             <label className="block mb-2">Categoría Padre</label>
             <select
