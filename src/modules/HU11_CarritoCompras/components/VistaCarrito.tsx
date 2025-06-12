@@ -4,13 +4,12 @@ import { IconoLocation } from '../../../assets/svgs/icons/IconoLocation';
 import BtnCantidadProducto from '../../HU9_PaginaPrincipalClientes/components/articulos/btnCantidadProducto';
 import { useCart } from '../../../shared/hooks/useCart';
 import { CarritoContext } from '../../../shared/providers/CarritoProvider';
-import type { AnalisisProduccionResponse, ArticuloManufacturado } from '../../../types/Articulo';
+import type { ArticuloManufacturado } from '../../../types/Articulo';
 import MetodoPagoModal from './MetodoPagoModal';
 
 export const VistaCarrito = () => {
   const { carrito, removeFromCart } = useCart();
   const [isMetodoPagoOpen, setMetodoPagoOpen] = useState(false);
-  const [analisisCarrito, setAnalisisCarrito] = useState<AnalisisProduccionResponse | null>(null);
 
   const carritoContext = useContext(CarritoContext);
   if (!carritoContext) {
@@ -22,14 +21,11 @@ export const VistaCarrito = () => {
   // Analizar carrito cuando se monta el componente o cuando cambia
   useEffect(() => {
     const realizarAnalisis = async () => {
-      const resultado = await analizarCarrito();
-      setAnalisisCarrito(resultado);
+      await analizarCarrito();
     };
 
     if (carrito.length > 0) {
       realizarAnalisis();
-    } else {
-      setAnalisisCarrito(null);
     }
   }, [carrito, analizarCarrito]);
 
@@ -49,6 +45,21 @@ export const VistaCarrito = () => {
       const limitacionMaxima = limitacionesProduccion[producto.id ?? 0];
       return limitacionMaxima && producto.cantidad > limitacionMaxima;
     });
+  };
+
+  // Función para manejar el clic en comprar con validación
+  const handleComprarClick = async () => {
+    // Realizar análisis final antes de abrir el modal
+    const analisisFinal = await analizarCarrito();
+
+    if (!analisisFinal?.sePuedeProducirCompleto) {
+      alert(
+        '❌ No se puede completar la compra debido a limitaciones de stock. Por favor, ajuste las cantidades.'
+      );
+      return;
+    }
+
+    setMetodoPagoOpen(true);
   };
 
   // Función para obtener mensaje de limitación para un producto
@@ -178,7 +189,7 @@ export const VistaCarrito = () => {
             {/* Condicional para mostrar el botón Comprar */}
             {carrito.length > 0 && (
               <button
-                onClick={() => setMetodoPagoOpen(true)}
+                onClick={handleComprarClick}
                 disabled={hayLimitacionesExcedidas()}
                 className={`mt-4 w-full py-2 text-lg md:text-xl font-semibold rounded-lg text-center ${
                   hayLimitacionesExcedidas()

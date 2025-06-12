@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useCart } from '../../../shared/hooks/useCart';
-import { createTicket } from '../../../shared/services/antiguos/ticketService';
+import { CarritoContext } from '../../../shared/providers/CarritoProvider';
+import type { AnalisisProduccionResponse, ArticuloManufacturado } from '../../../types/Articulo';
+import MapaInteractivo from './MapaInteractivo';
 
 interface MetodoPagoModalProps {
   isOpen: boolean;
@@ -8,295 +10,500 @@ interface MetodoPagoModalProps {
   total: number;
 }
 
-declare global {
-  interface Window {
-    MercadoPago: any;
-  }
-}
-
 const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, total }) => {
-  if (!isOpen) return null;
-
   const { carrito, clearCarrito } = useCart();
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
-  const [selectedCrypto, setSelectedCrypto] = useState<string>('BTC'); // Default to BTC
+  const carritoContext = useContext(CarritoContext);
+
+  // Estados
+  const [modaloEntrega, setModoEntrega] = useState<'retiro' | 'domicilio' | ''>('');
+  const [metodoPago, setMetodoPago] = useState<'efectivo' | 'mercadopago' | ''>(''); // 🚀 Nuevo estado
+  const [telefono, setTelefono] = useState('');
+  const [email, setEmail] = useState('');
+  const [ubicacionSeleccionada, setUbicacionSeleccionada] = useState(false);
+  const [ubicacionInfo, setUbicacionInfo] = useState<{
+    lat: number;
+    lng: number;
+    direccion?: string;
+  } | null>(null);
   const [loading, setLoading] = useState(false);
-  const [conversionRate, setConversionRate] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [puedeComprar, setPuedeComprar] = useState(false);
+  const [analisisProduccion, setAnalisisProduccion] = useState<AnalisisProduccionResponse | null>(
+    null
+  );
+  const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
+  const [tiempoEstimado, setTiempoEstimado] = useState(0);
 
-  const cryptoOptions = ['BTC', 'USDT', 'BNB']; // Available cryptos
+  if (!carritoContext) {
+    throw new Error('MetodoPagoModal must be used within a CarritoProvider');
+  }
 
-  // Mapeo de monedas
-  const coinMap: Record<string, string> = {
-    usdt: 'tether',
-    btc: 'bitcoin',
-    bnb: 'binancecoin',
-    // Agrega más monedas según sea necesario
+  const { analizarCarrito } = carritoContext;
+
+  // Calcular total con descuento si es retiro en tienda
+  const totalConDescuento = modaloEntrega === 'retiro' ? total * 0.9 : total;
+
+  // Función para determinar si un artículo es manufacturado
+  const isArticuloManufacturado = (articulo: any): articulo is ArticuloManufacturado => {
+    return 'categoriaId' in articulo && 'descripcion' in articulo;
   };
 
-  const monedaId =
-    (selectedCrypto && coinMap[selectedCrypto.toLowerCase()]) || selectedCrypto.toLowerCase();
+  // Calcular tiempo estimado máximo de los productos manufacturados
+  const calcularTiempoEstimado = (): number => {
+    const productosManufacturados = carrito.filter((item) => isArticuloManufacturado(item));
+    if (productosManufacturados.length === 0) return 45; // Default 45 minutos si no hay manufacturados
 
+    const tiemposEstimados = productosManufacturados.map(
+      (producto) => (producto as ArticuloManufacturado).tiempoEstimadoMinutos || 45
+    );
+
+    return Math.max(...tiemposEstimados);
+  };
+
+  // Verificar si se puede comprar al abrir el modal
   useEffect(() => {
-    const fetchConversionRate = async () => {
-      try {
-        setError(null);
-        if (!monedaId) {
-          throw new Error('Moneda no válida');
+    const verificarCompra = async () => {
+      if (isOpen && carrito.length > 0) {
+        try {
+          const resultado = await analizarCarrito();
+          setAnalisisProduccion(resultado);
+          setPuedeComprar(resultado?.sePuedeProducirCompleto ?? false);
+          setTiempoEstimado(calcularTiempoEstimado());
+        } catch (error) {
+          console.error('Error al analizar carrito:', error);
+          setPuedeComprar(false);
         }
-
-        const response = await fetch(
-          `https://api.coingecko.com/api/v3/simple/price?ids=${monedaId}&vs_currencies=ars`
-        );
-
-        if (!response.ok) {
-          throw new Error(`Error al conectar con la API: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        if (data[monedaId]?.ars) {
-          setConversionRate(data[monedaId].ars);
-        } else {
-          throw new Error(`Moneda ${selectedCrypto} no encontrada en la API`);
-        }
-      } catch (err: unknown) {
-        console.error(err);
-        setError(err instanceof Error ? err.message : 'Error desconocido');
       }
     };
 
-    if (selectedCrypto) {
-      fetchConversionRate();
+    verificarCompra();
+  }, [isOpen, carrito, analizarCarrito]);
+
+  // Verificar si todos los campos están completos
+  const camposCompletos = (): boolean => {
+    const basicosCompletos = modaloEntrega !== '' && telefono.trim() !== '' && email.trim() !== '';
+
+    if (modaloEntrega === 'domicilio') {
+      return basicosCompletos && ubicacionSeleccionada && metodoPago !== '';
     }
-  }, [selectedCrypto]);
 
-  // Cargando mientras obtenemos la tasa de conversión
-  const totalEnCripto = conversionRate ? (total / conversionRate).toFixed(8) : 'Cargando...';
-
-  const handlePaymentMethodChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedPaymentMethod(event.target.value);
-    setSelectedCrypto(''); // Reset crypto selection if switching payment method
+    return basicosCompletos;
   };
 
-  const handleCryptoChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedCrypto(event.target.value);
+  // Manejar selección de ubicación en el mapa
+  const manejarSeleccionUbicacion = (lat: number, lng: number, direccion?: string) => {
+    setUbicacionInfo({ lat, lng, direccion });
+    setUbicacionSeleccionada(true);
   };
 
-  const handleConfirmPayment = async () => {
-    if (!selectedPaymentMethod) {
-      alert('Por favor, selecciona un método de pago.');
-      return;
-    }
+  // Manejar confirmación de compra
+  const confirmarCompra = async () => {
+    if (!camposCompletos() || !puedeComprar) return;
 
     setLoading(true);
 
     try {
-      if (selectedPaymentMethod === 'MP') {
-        // Mercado Pago Payment
-        const productos = carrito.map((producto) => ({
-          productoId: producto.id ?? 0,
-          cantidad: producto.cantidad,
-        }));
+      // NO realizamos análisis aquí, se hizo en VistaCarrito
 
-        await createTicket(productos, selectedPaymentMethod);
-        const response = await fetch('http://localhost:5252/api/mp/crear-preferencia', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            total: total,
-            userEmail: 'usuario@example.com',
-            descripcionProducto: 'Compra en ecommerce',
-            cantidad: 1,
-            precioUnitario: total,
+      // Preparar datos para enviar al backend
+      const datosCompra = {
+        // Información del pedido
+        productos: carrito.map((producto) => ({
+          id: producto.id,
+          denominacion: producto.denominacion,
+          cantidad: producto.cantidad,
+          precioUnitario: producto.precioVenta,
+          subtotal: producto.precioVenta * producto.cantidad,
+          esManufacturado: isArticuloManufacturado(producto),
+          ...(isArticuloManufacturado(producto) && {
+            tiempoEstimadoMinutos: (producto as ArticuloManufacturado).tiempoEstimadoMinutos,
           }),
-        });
+        })),
 
-        const { init_point } = await response.json();
-        if (init_point) {
-          window.open(init_point, '_blank');
-          clearCarrito();
-          onClose();
-        } else {
-          alert('Error al crear la preferencia de pago con Mercado Pago.');
-        }
-      } else if (selectedPaymentMethod === 'CRIPTO') {
-        // Coinbase Commerce Crypto Payment
-        // Simulate crypto payment success after 2 seconds
-        const productos = carrito.map((producto) => ({
-          productoId: producto.id ?? 0,
-          cantidad: producto.cantidad,
-        }));
+        // Información de precios
+        subtotal: total,
+        descuento: modaloEntrega === 'retiro' ? total * 0.1 : 0,
+        total: totalConDescuento,
 
-        await createTicket(productos, selectedPaymentMethod);
-        alert(`Pago exitoso con ${selectedCrypto}`);
-        clearCarrito();
-        onClose();
-        // Redirigir a la página de compra exitosa
-        // const tipoPago = 'cripto';
-        // const url = `/compra-exitosa?total=${total}&tipoPago=${tipoPago}&moneda=${selectedCrypto}`;
-        // window.location.href = url; // Redirección a la página de compra exitosa
-      } else {
-        // Efectivo or other payment methods
-        const productos = carrito.map((producto) => ({
-          productoId: producto.id ?? 0,
-          cantidad: producto.cantidad,
-        }));
-        await createTicket(productos, selectedPaymentMethod);
-        clearCarrito();
-        alert('Compra realizada con éxito.');
-        onClose();
-        // const tipoPago = 'efectivo';
-        // const url = `/compra-exitosa?total=${total}&tipoPago=${tipoPago}`;
-        // window.location.href = url; // Redirección a la página de compra exitosa
-      }
+        // Información de entrega
+        tipoEntrega: modaloEntrega,
+        ...(modaloEntrega === 'domicilio' && {
+          metodoPago,
+          ...(ubicacionInfo && {
+            ubicacionEntrega: {
+              latitud: ubicacionInfo.lat,
+              longitud: ubicacionInfo.lng,
+              direccion:
+                ubicacionInfo.direccion ||
+                `${ubicacionInfo.lat.toFixed(6)}, ${ubicacionInfo.lng.toFixed(6)}`,
+            },
+          }),
+        }),
+
+        // Información de contacto
+        telefono,
+        email,
+
+        // Información adicional
+        tiempoEstimadoTotal: tiempoEstimado,
+        fechaHoraPedido: new Date().toISOString(),
+        analisisProduccion: analisisProduccion,
+      };
+
+      // 🚀 CONSOLE.LOG DE LOS DATOS QUE SE ENVIARÁN AL BACKEND
+      console.log('=== DATOS DE COMPRA PARA BACKEND ===');
+      console.log(JSON.stringify(datosCompra, null, 2));
+      console.log('=======================================');
+
+      // Simular procesamiento de pago
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // NO limpiar carrito aquí, se hará en el modal de confirmación
+      setMostrarConfirmacion(true);
     } catch (error) {
-      console.error('Error en el proceso de pago:', error);
-      alert('Hubo un problema con el pago. Por favor, intenta nuevamente.');
+      console.error('Error en el proceso de compra:', error);
+      alert('Hubo un problema al procesar la compra. Por favor, intenta nuevamente.');
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white rounded-lg mx-6 shadow-lg p-4 relative">
-        <button
-          className="absolute font-bold top-2 right-2 sm:top-6 sm:right-8 text-negro sm:text-xl hover:text-blanco hover:bg-primary rounded-full w-6 h-6 sm:w-10 sm:h-10"
-          onClick={onClose}
-        >
-          X
-        </button>
-        <h2 className="text-2xl font-bold mb-4">Selecciona tu método de pago</h2>
+  // Cerrar modal y resetear estados
+  const cerrarModal = () => {
+    setModoEntrega('');
+    setMetodoPago('');
+    setTelefono('');
+    setEmail('');
+    setUbicacionSeleccionada(false);
+    setUbicacionInfo(null);
+    setMostrarConfirmacion(false);
+    onClose();
+  };
 
-        <div className="flex flex-col space-y-4">
-          <label className="flex items-center text-lg">
-            <input
-              type="radio"
-              name="pago"
-              value="MP"
-              className="mr-2"
-              onChange={handlePaymentMethodChange}
-            />
-            Mercado Pago
-          </label>
-          <label className="flex items-center text-lg">
-            <input
-              type="radio"
-              name="pago"
-              value="EFECTIVO"
-              className="mr-2"
-              onChange={handlePaymentMethodChange}
-            />
-            Efectivo
-          </label>
-          <label className="flex items-center text-lg">
-            <input
-              type="radio"
-              name="pago"
-              value="CRIPTO"
-              className="mr-2"
-              onChange={handlePaymentMethodChange}
-            />
-            Criptomonedas
-          </label>
-        </div>
+  // Navegar al inicio - AHORA limpia el carrito
+  const irAlInicio = () => {
+    clearCarrito(); // 🚀 Limpiar carrito al confirmar
+    cerrarModal();
+    window.location.href = '/';
+  };
 
-        {selectedPaymentMethod === 'CRIPTO' && (
-          <div className="mt-6">
-            <label htmlFor="crypto-select" className="block text-lg font-medium mb-2">
-              Selecciona la moneda:
-            </label>
-            <select
-              id="crypto-select"
-              className="border border-gray-300 rounded-lg p-2 w-full"
-              value={selectedCrypto}
-              onChange={handleCryptoChange}
+  // Navegar al perfil - AHORA limpia el carrito
+  const irAlPerfil = () => {
+    clearCarrito(); // 🚀 Limpiar carrito al confirmar
+    cerrarModal();
+    console.log('Navegando al perfil del usuario...');
+    alert('La pantalla de perfil aún no está implementada. Redirigiendo al inicio...');
+    window.location.href = '/';
+  };
+
+  if (!isOpen) return null;
+
+  // Modal de confirmación de compra exitosa
+  if (mostrarConfirmacion) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+        <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4 text-center">
+          <h2 className="text-2xl font-bold text-primary mb-4">¡Gracias por su compra! 🎉</h2>
+          <p className="text-lg mb-2 text-gray-700">Su pedido estará listo en</p>
+          <p className="text-4xl font-bold text-primary mb-4">{tiempoEstimado} minutos</p>
+          <p className="text-gray-600 mb-6">Te llegará un aviso</p>
+
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={irAlInicio}
+              className="px-6 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition-colors"
             >
-              <option value="" disabled>
-                Selecciona una opción
-              </option>
-              {cryptoOptions.map((crypto) => (
-                <option key={crypto} value={crypto}>
-                  {crypto}
-                </option>
-              ))}
-            </select>
+              Confirmar
+            </button>
+            <button
+              onClick={irAlPerfil}
+              className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
+            >
+              Ir a mi perfil
+            </button>
           </div>
-        )}
-        <div className="flex justify-end align-bottom w-full gap-6 mt-6">
-          <div className="flex flex-col flex-1 h-full w-full">
-            {selectedPaymentMethod === 'CRIPTO' && selectedCrypto ? (
-              <>
-                <span className="text-lg sm:text-2xl text-primary font-black">
-                  Total en {selectedCrypto}: {totalEnCripto}
-                </span>
-                <span className="text-sm sm:text-lg text-black  font-bold">
-                  Total: ${total.toFixed(2)}
-                </span>
-              </>
-            ) : (
-              <span className="text-lg sm:text-2xl text-primary font-black">
-                Total: ${total.toFixed(2)}
-              </span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-lg max-w-5xl w-full max-h-[90vh] overflow-auto">
+        {/* Header */}
+        <div className="flex justify-between items-center p-6 border-b">
+          <h2 className="text-2xl font-bold">Elegir Retiro 📍</h2>
+          <div className="text-right">
+            <p className="text-2xl font-bold text-primary">${totalConDescuento.toFixed(2)}</p>
+            {modaloEntrega === 'retiro' && (
+              <p className="text-sm text-green-600">10% Descuento aplicado</p>
             )}
           </div>
           <button
-            className={`relative py-2 px-4 h-10 sm:h-14 w-42 sm:w-80 rounded-lg sm:text-lg flex justify-end overflow-hidden ${
-              selectedPaymentMethod === 'MP'
-                ? 'btn-mercado-pago'
-                : selectedPaymentMethod === 'EFECTIVO'
-                  ? 'btn-efectivo'
-                  : selectedPaymentMethod === 'CRIPTO'
-                    ? 'btn-cripto'
-                    : null
-            }`}
-            onClick={handleConfirmPayment}
-            disabled={loading}
-            style={{
-              visibility: selectedPaymentMethod ? 'visible' : 'hidden',
-            }}
+            className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl font-bold"
+            onClick={cerrarModal}
           >
-            {selectedPaymentMethod === 'MP' && (
-              <img
-                src="/img/iconoMP/iconMp.png"
-                alt="Icono Mercado Pago"
-                className="w-6 h-6 mr-2"
-              />
-            )}
-            {selectedPaymentMethod === 'EFECTIVO' && (
-              <img
-                src="/img/iconoMP/iconBillete.png"
-                alt="Icono Efectivo"
-                className="w-6 h-6 mr-2"
-              />
-            )}
-            {selectedPaymentMethod === 'CRIPTO' && (
-              <img
-                src="/img/iconoMP/iconCoinBase.png"
-                alt="Icono Criptomonedas"
-                className="w-6 h-6 mr-2"
-              />
-            )}
-            <div className={`progress-bar ${loading ? 'loading' : ''}`}></div>
-            <span className="button-text">
-              <span className="hidden sm:inline">
-                {selectedPaymentMethod === 'MP'
-                  ? 'Pagar con '
-                  : selectedPaymentMethod === 'EFECTIVO'
-                    ? 'Pagar con '
-                    : selectedPaymentMethod === 'CRIPTO'
-                      ? 'Pagar con '
-                      : null}
-              </span>
-              {selectedPaymentMethod === 'MP'
-                ? 'Mercado Pago'
-                : selectedPaymentMethod === 'EFECTIVO'
-                  ? 'Efectivo'
-                  : selectedPaymentMethod === 'CRIPTO'
-                    ? 'Criptomonedas'
-                    : null}
-            </span>
+            ×
           </button>
+        </div>
+
+        <div className="p-6">
+          {/* Opciones de entrega */}
+          <div className="mb-6">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <label className="flex items-center text-lg cursor-pointer">
+                <input
+                  type="radio"
+                  name="entrega"
+                  value="retiro"
+                  checked={modaloEntrega === 'retiro'}
+                  onChange={(e) => setModoEntrega(e.target.value as 'retiro')}
+                  className="mr-3 w-5 h-5"
+                />
+                <span className="flex items-center gap-2">Retiro en tienda (10% Descuento)</span>
+              </label>
+
+              <label className="flex items-center text-lg cursor-pointer">
+                <input
+                  type="radio"
+                  name="entrega"
+                  value="domicilio"
+                  checked={modaloEntrega === 'domicilio'}
+                  onChange={(e) => setModoEntrega(e.target.value as 'domicilio')}
+                  className="mr-3 w-5 h-5"
+                />
+                <span className="flex items-center gap-2">Envío a domicilio</span>
+              </label>
+            </div>
+          </div>{' '}
+          {/* Layout condicional según el tipo de entrega */}
+          {modaloEntrega === 'retiro' ? (
+            // Layout para RETIRO EN TIENDA - Contacto a la izquierda, Resumen a la derecha
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Columna izquierda - Datos de contacto */}
+              <div>
+                <div className="space-y-4 mb-6">
+                  <h3 className="text-lg font-semibold">Datos de contacto</h3>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Teléfono <b className="text-primary font-bold">*</b>
+                    </label>
+                    <input
+                      type="tel"
+                      value={telefono}
+                      onChange={(e) => setTelefono(e.target.value)}
+                      placeholder="Ingresa tu teléfono"
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Email <b className="text-primary font-bold">*</b>
+                    </label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Ingresa tu email"
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Columna derecha - Resumen de productos */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Resumen de productos</h3>
+                <div className="bg-gray-50 rounded-lg p-4 max-h-64 overflow-y-auto">
+                  {carrito.map((producto, index) => (
+                    <div
+                      key={index}
+                      className="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0"
+                    >
+                      <div className="flex-1">
+                        <p className="font-medium text-sm">{producto.denominacion}</p>
+                        <p className="text-xs text-gray-600">Cantidad: {producto.cantidad}</p>
+                      </div>
+                      <p className="font-semibold text-sm">
+                        ${(producto.precioVenta * producto.cantidad).toFixed(2)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Total */}
+                <div className="mt-4 p-4 bg-gray-100 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <span className="text-lg font-semibold">Total:</span>
+                    <div className="text-right">
+                      {modaloEntrega === 'retiro' && (
+                        <p className="text-sm text-gray-500 line-through">${total.toFixed(2)}</p>
+                      )}
+                      <p className="text-xl font-bold text-primary">
+                        ${totalConDescuento.toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Mensaje de estado de análisis */}
+                {!puedeComprar && analisisProduccion && (
+                  <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-red-700 font-medium">⚠️ No se puede completar la compra</p>
+                    <p className="text-red-600 text-sm">
+                      Hay limitaciones de stock. Ajusta las cantidades en el carrito.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : modaloEntrega === 'domicilio' ? (
+            // Layout para ENVÍO A DOMICILIO - Mapa a la izquierda, Contacto y resumen a la derecha
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Columna izquierda - Mapa y método de pago */}
+              <div>
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold mb-3">Selecciona tu ubicación</h3>
+                  <MapaInteractivo
+                    onUbicacionSeleccionada={manejarSeleccionUbicacion}
+                    ubicacionActual={ubicacionInfo}
+                  />
+                  {ubicacionSeleccionada && ubicacionInfo && (
+                    <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg">
+                      <p className="text-sm text-green-700 font-medium">
+                        ✅ Ubicación seleccionada
+                      </p>
+                      {ubicacionInfo.direccion && (
+                        <p className="text-xs text-green-600 mt-1">{ubicacionInfo.direccion}</p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Método de pago para envío a domicilio */}
+                  <div className="mt-4">
+                    <h4 className="text-md font-semibold mb-3">Método de pago</h4>
+                    <div className="space-y-2">
+                      <label className="flex items-center cursor-pointer">
+                        <input
+                          type="radio"
+                          name="metodoPago"
+                          value="efectivo"
+                          checked={metodoPago === 'efectivo'}
+                          onChange={(e) => setMetodoPago(e.target.value as 'efectivo')}
+                          className="mr-3 w-4 h-4"
+                        />
+                        <span>💵 Efectivo</span>
+                      </label>
+                      <label className="flex items-center cursor-pointer">
+                        <input
+                          type="radio"
+                          name="metodoPago"
+                          value="mercadopago"
+                          checked={metodoPago === 'mercadopago'}
+                          onChange={(e) => setMetodoPago(e.target.value as 'mercadopago')}
+                          className="mr-3 w-4 h-4"
+                        />
+                        <span>💳 Mercado Pago</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Columna derecha - Datos de contacto y resumen */}
+              <div>
+                {/* Inputs de contacto */}
+                <div className="space-y-4 mb-6">
+                  <h3 className="text-lg font-semibold">Datos de contacto</h3>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Teléfono *</label>
+                    <input
+                      type="tel"
+                      value={telefono}
+                      onChange={(e) => setTelefono(e.target.value)}
+                      placeholder="Ingresa tu teléfono"
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Email *</label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Ingresa tu email"
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                {/* Resumen de productos */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-4">Resumen de productos</h3>
+                  <div className="bg-gray-50 rounded-lg p-4 max-h-64 overflow-y-auto">
+                    {carrito.map((producto, index) => (
+                      <div
+                        key={index}
+                        className="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0"
+                      >
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">{producto.denominacion}</p>
+                          <p className="text-xs text-gray-600">Cantidad: {producto.cantidad}</p>
+                        </div>
+                        <p className="font-semibold text-sm">
+                          ${(producto.precioVenta * producto.cantidad).toFixed(2)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Total */}
+                  <div className="mt-4 p-4 bg-gray-100 rounded-lg">
+                    <div className="flex justify-between items-center">
+                      <span className="text-lg font-semibold">Total:</span>
+                      <div className="text-right">
+                        <p className="text-xl font-bold text-primary">
+                          ${totalConDescuento.toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Mensaje de estado de análisis */}
+                  {!puedeComprar && analisisProduccion && (
+                    <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <p className="text-red-700 font-medium">⚠️ No se puede completar la compra</p>
+                      <p className="text-red-600 text-sm">
+                        Hay limitaciones de stock. Ajusta las cantidades en el carrito.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            // Mensaje cuando no se ha seleccionado ninguna opción
+            <div className="text-center py-8">
+              <p className="text-primary font-semibold text-lg">
+                Selecciona un método de entrega para continuar
+              </p>
+            </div>
+          )}
+          {/* Botón de pagar */}
+          <div className="mt-6 flex justify-end">
+            <button
+              onClick={confirmarCompra}
+              disabled={!camposCompletos() || !puedeComprar || loading}
+              className={`px-8 py-3 rounded-lg font-semibold text-lg ${
+                camposCompletos() && puedeComprar && !loading
+                  ? 'bg-primary text-white hover:bg-primary-dark'
+                  : 'bg-gray-400 text-gray-600 cursor-not-allowed'
+              }`}
+            >
+              {loading ? 'Procesando...' : 'Pagar'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
