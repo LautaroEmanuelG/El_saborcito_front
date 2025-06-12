@@ -16,7 +16,6 @@ export const createArticuloManufacturado = async (data: Partial<ArticuloManufact
     articuloManufacturadoDetalles: data.articuloManufacturadoDetalles ?? [],
   };
 
-  console.log('Creating ArticuloManufacturado:', payload);
   const response = await axiosInstance.post(API_BASE_URL, payload);
   return response.data;
 };
@@ -33,7 +32,6 @@ export const updateArticuloManufacturado = async (data: Partial<ArticuloManufact
     articuloManufacturadoDetalles: data.articuloManufacturadoDetalles ?? [],
   };
 
-  console.log('Updating ArticuloManufacturado:', payload);
   const response = await axiosInstance.put(`${API_BASE_URL}/${data.id}`, payload);
   return response.data;
 };

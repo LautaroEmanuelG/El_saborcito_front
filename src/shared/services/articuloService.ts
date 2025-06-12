@@ -13,7 +13,6 @@ export const createArticulo = async (data: Partial<Articulo>) => {
     id: 0, // El backend espera id: 0 para crear
   };
 
-  console.log('Creating Articulo:', payload);
   const response = await axiosInstance.post(API_BASE_URL, payload);
   return response.data;
 };
@@ -24,7 +23,6 @@ export const updateArticulo = async (data: Partial<Articulo>) => {
     throw new Error('ID es requerido para actualizar');
   }
 
-  console.log('Updating Articulo:', data);
   const response = await axiosInstance.put(`${API_BASE_URL}/${data.id}`, data);
   return response.data;
 };
