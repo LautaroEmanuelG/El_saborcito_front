@@ -40,12 +40,9 @@ const ScreenSubcategoriasInsumos = () => {
     }
   }, [showDeleted]);
 
-  const categoriasFiltradas = categorias.filter(
-    (cat) => !['insumo', 'insumos'].includes(cat.denominacion.trim().toLowerCase())
-  );
-  const deletedCategoriasFiltradas = deletedCategorias.filter(
-    (cat) => !['insumo', 'insumos'].includes(cat.denominacion.trim().toLowerCase())
-  );
+  // Filtrar categorías: excluir la categoría 'insumo' o 'insumos' en todos los usos (mayúsculas/minúsculas/plural)
+  const categoriasFiltradas = categorias;
+  const deletedCategoriasFiltradas = deletedCategorias;
 
   let currentCategorias: Categoria[] = showDeleted
     ? [
@@ -56,20 +53,15 @@ const ScreenSubcategoriasInsumos = () => {
       ]
     : categoriasFiltradas;
 
-  // Agrupar: por cada categoría padre Insumos y Bebidas, mostrar una fila por cada hija (subcategoría), tanto activas como eliminadas
-  const categoriasPadre = categorias.filter(
-    (cat) =>
-      !cat.tipoCategoria && ['insumos', 'bebidas'].includes(cat.denominacion.trim().toLowerCase())
+  // Solo categorías padre 'Insumos' y 'Bebidas' (respetando mayúsculas y sin variantes)
+  const categoriasPadre = currentCategorias.filter(
+    (cat) => !cat.tipoCategoria && ['Insumos', 'Bebidas'].includes(cat.denominacion.trim())
   );
-  // Hijas activas y eliminadas
-  const hijasTodas = [
-    ...categorias.filter((cat) => cat.tipoCategoria),
-    ...deletedCategorias.filter((cat) => cat.tipoCategoria),
-  ];
+  const categoriasHijas = currentCategorias.filter((cat) => cat.tipoCategoria);
 
   const transformedCategorias: CategoriaTable[] = [];
   categoriasPadre.forEach((padre) => {
-    const hijas = hijasTodas.filter((hija) => hija.tipoCategoria?.id === padre.id);
+    const hijas = categoriasHijas.filter((hija) => hija.tipoCategoria?.id === padre.id);
     if (hijas.length === 0) {
       // Si no tiene hijas, mostrar solo la fila del padre
       transformedCategorias.push({
@@ -167,7 +159,9 @@ const ScreenSubcategoriasInsumos = () => {
             label: 'Acciones',
             key: 'acciones',
             render: (row: CategoriaTable) => {
+              // Buscar la subcategoría real (hija) por id
               const subcategoriaReal = categoriasFiltradas.find((c) => c.id === row.id);
+              // Adaptar el objeto para que siempre tenga id: number y denominacion: string
               const el =
                 subcategoriaReal && typeof subcategoriaReal.id === 'number'
                   ? {
