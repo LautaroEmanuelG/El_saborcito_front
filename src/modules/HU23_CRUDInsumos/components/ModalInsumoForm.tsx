@@ -45,6 +45,19 @@ export const ModalInsumoForm = ({
   );
   const [isHabilitado, setIsHabilitado] = useState(true);
 
+  // Filtrar solo las categorías padre 'Insumos' y 'Bebidas' para el select del modal
+  const categoriasPadre = categorias.filter(
+    (cat) =>
+      !cat.tipoCategoria && (cat.denominacion === 'Insumos' || cat.denominacion === 'Bebidas')
+  );
+  const [selectedCategoriaPadreId, setSelectedCategoriaPadreId] = useState<number | undefined>(
+    undefined
+  );
+  const [subcategorias, setSubcategorias] = useState<Categoria[]>([]);
+  const [selectedSubcategoriaId, setSelectedSubcategoriaId] = useState<number | undefined>(
+    undefined
+  );
+
   useEffect(() => {
     setForm(getInitialForm(initialValues));
     // Corrige el tipado para acceder a 'eliminado' aunque no esté en el tipo base
@@ -52,6 +65,30 @@ export const ModalInsumoForm = ({
       (initialValues as any).eliminado === undefined ? true : !(initialValues as any).eliminado
     );
   }, [initialValues, open]);
+
+  useEffect(() => {
+    // Si hay una categoría seleccionada en el form, setear el padre y subcategoría
+    if (form.categoria) {
+      if (!form.categoria.tipoCategoria) {
+        setSelectedCategoriaPadreId(form.categoria.id);
+        setSubcategorias(categorias.filter((cat) => cat.tipoCategoria?.id === form.categoria?.id));
+        setSelectedSubcategoriaId(undefined);
+      } else if (form.categoria.tipoCategoria && form.categoria.tipoCategoria.id) {
+        setSelectedCategoriaPadreId(form.categoria.tipoCategoria.id);
+        const tipoCatId = form.categoria.tipoCategoria?.id;
+        setSubcategorias(categorias.filter((cat) => cat.tipoCategoria?.id === tipoCatId));
+        setSelectedSubcategoriaId(form.categoria.id);
+      } else {
+        setSelectedCategoriaPadreId(undefined);
+        setSubcategorias([]);
+        setSelectedSubcategoriaId(undefined);
+      }
+    } else {
+      setSelectedCategoriaPadreId(undefined);
+      setSubcategorias([]);
+      setSelectedSubcategoriaId(undefined);
+    }
+  }, [form.categoria, categorias]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -62,14 +99,31 @@ export const ModalInsumoForm = ({
     }));
   };
 
-  const handleCategoriaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const cat = categorias.find((c) => c.id === Number(e.target.value));
-    setForm((prev) => ({ ...prev, categoria: cat }));
-  };
-
   const handleUnidadChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const unidad = unidades.find((u) => u.id === Number(e.target.value));
     setForm((prev) => ({ ...prev, unidadMedida: unidad }));
+  };
+
+  const handleCategoriaPadreChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const padreId = Number(e.target.value);
+    setSelectedCategoriaPadreId(padreId);
+    const subs = categorias.filter((cat) => cat.tipoCategoria?.id === padreId);
+    setSubcategorias(subs);
+    setSelectedSubcategoriaId(undefined);
+    // Si no hay subcategorías, setear la categoría padre en el form
+    if (subs.length === 0) {
+      const catPadre = categoriasPadre.find((c) => c.id === padreId);
+      setForm((prev) => ({ ...prev, categoria: catPadre }));
+    } else {
+      setForm((prev) => ({ ...prev, categoria: undefined }));
+    }
+  };
+
+  const handleSubcategoriaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const subId = Number(e.target.value);
+    setSelectedSubcategoriaId(subId);
+    const subcat = subcategorias.find((c) => c.id === subId);
+    setForm((prev) => ({ ...prev, categoria: subcat }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -183,26 +237,49 @@ export const ModalInsumoForm = ({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1" htmlFor="categoria">
+            <label className="block text-sm font-medium mb-1" htmlFor="categoriaPadre">
               Categoría<span className="text-red-500">*</span>
             </label>
             <select
-              id="categoria"
-              name="categoria"
-              value={form.categoria?.id ?? ''}
-              onChange={handleCategoriaChange}
+              id="categoriaPadre"
+              name="categoriaPadre"
+              value={selectedCategoriaPadreId ?? ''}
+              onChange={handleCategoriaPadreChange}
               disabled={mode === 'view'}
               className="w-full border rounded px-3 py-2"
               required
             >
               <option value="">Seleccionar Categoría</option>
-              {categorias.map((cat) => (
+              {categoriasPadre.map((cat) => (
                 <option key={cat.id} value={cat.id}>
                   {cat.denominacion}
                 </option>
               ))}
             </select>
           </div>
+          {subcategorias.length > 0 && (
+            <div>
+              <label className="block text-sm font-medium mb-1" htmlFor="subcategoria">
+                Subcategoría
+              </label>
+              <select
+                id="subcategoria"
+                name="subcategoria"
+                value={selectedSubcategoriaId ?? ''}
+                onChange={handleSubcategoriaChange}
+                disabled={mode === 'view'}
+                className="w-full border rounded px-3 py-2"
+                required
+              >
+                <option value="">Seleccionar Subcategoría</option>
+                {subcategorias.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.denominacion}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <div>
             <label className="block text-sm font-medium mb-1" htmlFor="unidadMedida">
               Unidad de Medida<span className="text-red-500">*</span>

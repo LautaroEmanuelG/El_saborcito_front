@@ -26,6 +26,8 @@ export interface ITableProps<T> {
   onToggleDeleted?: () => void;
   showDeleted?: boolean;
   searchPlaceholder?: string;
+  // Filtro personalizado por categoría padre
+  customCategoryFilter?: (row: T, categoriaPadreId: number) => boolean;
 }
 
 export const TableGeneric = <
@@ -42,6 +44,7 @@ export const TableGeneric = <
   onToggleDeleted,
   showDeleted = false,
   searchPlaceholder = 'Buscar...',
+  customCategoryFilter,
 }: ITableProps<T>) => {
   const [filters, setFilters] = useState<ITableFilters>({
     search: '',
@@ -73,9 +76,15 @@ export const TableGeneric = <
         }
       }
 
-      // Filtro por categoría
-      if (filters.categoryId !== null && row.categoriaId !== filters.categoryId) {
-        return false;
+      // Filtro por categoría (soporta filtro personalizado por categoría padre)
+      if (filters.categoryId !== null) {
+        if (customCategoryFilter) {
+          if (!customCategoryFilter(row, filters.categoryId)) {
+            return false;
+          }
+        } else if (row.categoriaId !== filters.categoryId) {
+          return false;
+        }
       }
 
       // Filtro por eliminados: usar showDeleted prop directamente
@@ -85,7 +94,7 @@ export const TableGeneric = <
 
       return true;
     });
-  }, [rows, filters, showDeleted]);
+  }, [rows, filters, showDeleted, customCategoryFilter]);
 
   return (
     <div className="w-full flex flex-col justify-center items-center space-y-2">

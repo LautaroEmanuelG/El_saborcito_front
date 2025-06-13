@@ -81,6 +81,31 @@ export const ScreenInsumos = () => {
     restoreInsumo(id);
   };
 
+  // Filtrar solo las categorías padre 'Insumos' y 'Bebidas'
+  const categoriasPadre = categorias.filter(
+    (cat) =>
+      !cat.tipoCategoria && (cat.denominacion === 'Insumos' || cat.denominacion === 'Bebidas')
+  );
+
+  // Para el filtro de la tabla y el modal, solo usar categoriasPadre
+
+  // En la tabla, mostrar solo la categoría padre
+  const getCategoriaPadre = (cat?: Categoria): Categoria | undefined => {
+    if (!cat) return undefined;
+    return cat.tipoCategoria ? getCategoriaPadre(cat.tipoCategoria) : cat;
+  };
+
+  // --- Filtro personalizado para incluir subcategorías al filtrar por categoría padre ---
+  // Recibe el id de la categoría padre seleccionada y retorna true si el insumo pertenece a esa categoría o a una subcategoría
+  const perteneceACategoriaPadre = (insumo: ArticuloInsumo, categoriaPadreId: number): boolean => {
+    let cat: Categoria | null | undefined = insumo.categoria;
+    while (cat) {
+      if (cat.id === categoriaPadreId) return true;
+      cat = cat.tipoCategoria;
+    }
+    return false;
+  };
+
   const INSUMO_COLUMNS = [
     { label: 'Denominación', key: 'denominacion' },
     { label: 'Precio Compra', key: 'precioCompra' },
@@ -95,7 +120,18 @@ export const ScreenInsumos = () => {
     {
       label: 'Categoría',
       key: 'categoria',
-      render: (i: ArticuloInsumo) => i.categoria?.denominacion,
+      render: (i: ArticuloInsumo) => getCategoriaPadre(i.categoria)?.denominacion,
+    },
+    {
+      label: 'Subcategoría',
+      key: 'subcategoria',
+      render: (i: ArticuloInsumo) => {
+        // Si la categoría tiene tipoCategoria, es subcategoría
+        if (i.categoria && i.categoria.tipoCategoria) {
+          return i.categoria.denominacion;
+        }
+        return '';
+      },
     },
     {
       label: 'Acciones',
@@ -151,10 +187,11 @@ export const ScreenInsumos = () => {
         rows={currentInsumos}
         showSearchBar={true}
         showCategoryFilter={true}
-        categories={categorias}
+        categories={categoriasPadre}
         onToggleDeleted={toggleShowDeleted}
         showDeleted={showDeleted}
         searchPlaceholder="Buscar insumos por nombre..."
+        customCategoryFilter={perteneceACategoriaPadre}
       />
       <ModalInsumoForm
         open={openModal}
