@@ -20,6 +20,7 @@ import { MovimientosMonetarios } from './modules/HU26_28_informes/components/Mov
 import { RankingCliente } from './modules/HU26_28_informes/components/RankingCliente.tsx';
 import ScreenCategoriasArticulos from './modules/HU21_CRUD_CategoriasArticulos/components/ScreenCategoriasArticulos';
 import ScreenCategoriaPadreArticulo from './modules/HU21_CRUD_CategoriasPadresArticulos/components/ScreenCategoriaPadreArticulo';
+import ScreenSubcategoriasInsumos from './modules/HU20_CRUD_SubcategoriasInsumos/components/ScreenSubcategoriasInsumos';
 
 createRoot(document.getElementById('root')!).render(
   <AppProviders>
@@ -168,6 +169,14 @@ createRoot(document.getElementById('root')!).render(
             element={
               <ProtectedRoute>
                 <ScreenCategoriaPadreArticulo />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="subcategorias-insumos"
+            element={
+              <ProtectedRoute>
+                <ScreenSubcategoriasInsumos />
               </ProtectedRoute>
             }
           />
