@@ -41,8 +41,23 @@ const ScreenArticulosManufacturados = () => {
 
   useEffect(() => {
     fetchArticulos();
-    categoriaService.getAllCategorias().then(setCategorias);
-  }, [fetchArticulos]);
+    if (showDeleted) {
+      // Cargar categorías activas y eliminadas
+      Promise.all([
+        categoriaService.getAllCategorias(),
+        categoriaService.getDeletedCategorias(),
+      ]).then(([activas, eliminadas]) => {
+        // Unir ambas listas, evitando duplicados por id
+        const todas = [
+          ...activas,
+          ...eliminadas.filter((e: Categoria) => !activas.some((a: Categoria) => a.id === e.id)),
+        ];
+        setCategorias(todas);
+      });
+    } else {
+      categoriaService.getAllCategorias().then(setCategorias);
+    }
+  }, [fetchArticulos, showDeleted]);
 
   // Función para obtener información de categoría y subcategoría
   const getCategoryInfo = (categoriaId: number): { categoria: string; subcategoria: string } => {
@@ -186,7 +201,7 @@ const ScreenArticulosManufacturados = () => {
         rows={transformedArticulos}
         showSearchBar={true}
         showCategoryFilter={true}
-        categories={categorias}
+        categories={categorias.filter((c) => !c.tipoCategoria)}
         onToggleDeleted={toggleShowDeleted}
         showDeleted={showDeleted}
         searchPlaceholder="Buscar artículos por nombre..."
