@@ -86,8 +86,9 @@ const ModalCategoriaForm = ({
               disabled={mode === 'view'}
             >
               <option value="">Seleccionar categoría padre</option>
+              {/* Filtrar solo categorías padre de tipo MANUFACTURADOS */}
               {categorias
-                .filter((c) => !c.tipoCategoria)
+                .filter((c) => !c.tipoCategoria && c.tipo === 'MANUFACTURADOS')
                 .map((cat) => (
                   <option key={cat.id} value={cat.id}>
                     {cat.denominacion}

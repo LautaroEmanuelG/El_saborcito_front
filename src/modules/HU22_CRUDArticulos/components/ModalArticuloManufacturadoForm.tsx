@@ -346,7 +346,7 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
                 >
                   <option value="">Seleccione...</option>
                   {categorias
-                    .filter((cat) => cat.tipoCategoria === null)
+                    .filter((cat) => cat.tipoCategoria === null && cat.tipo === 'MANUFACTURADOS')
                     .map((cat) => (
                       <option key={cat.id} value={cat.id}>
                         {cat.denominacion}

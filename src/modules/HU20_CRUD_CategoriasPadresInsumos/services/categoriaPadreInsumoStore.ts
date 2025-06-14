@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import type { Categoria } from '../../../types/Categoria';
 import * as service from '../../../shared/services/categoriaService';
 
-interface CategoriaPadreArticuloState {
+interface CategoriaPadreInsumoState {
   categoriasPadre: Categoria[];
   deletedCategoriasPadre: Categoria[];
   loading: boolean;
@@ -17,7 +17,7 @@ interface CategoriaPadreArticuloState {
   restoreCategoriaPadre: (id: number) => Promise<void>;
 }
 
-export const useCategoriaPadreArticuloStore = create<CategoriaPadreArticuloState>((set) => ({
+export const useCategoriaPadreInsumoStore = create<CategoriaPadreInsumoState>((set) => ({
   categoriasPadre: [],
   deletedCategoriasPadre: [],
   loading: false,
@@ -30,7 +30,7 @@ export const useCategoriaPadreArticuloStore = create<CategoriaPadreArticuloState
       const data = await service.getAllCategorias();
       set({
         categoriasPadre: (data ?? []).filter(
-          (c: Categoria) => !c.tipoCategoria && c.tipo === 'MANUFACTURADOS'
+          (c: Categoria) => !c.tipoCategoria && c.tipo === 'INSUMOS'
         ),
         loading: false,
       });
@@ -48,7 +48,7 @@ export const useCategoriaPadreArticuloStore = create<CategoriaPadreArticuloState
       const data = await service.getDeletedCategorias();
       set({
         deletedCategoriasPadre: (data ?? []).filter(
-          (c: Categoria) => !c.tipoCategoria && c.tipo === 'MANUFACTURADOS'
+          (c: Categoria) => !c.tipoCategoria && c.tipo === 'INSUMOS'
         ),
         loading: false,
       });
@@ -62,7 +62,7 @@ export const useCategoriaPadreArticuloStore = create<CategoriaPadreArticuloState
 
   toggleShowDeleted: () => {
     const { showDeleted, fetchCategoriasPadre, fetchDeletedCategoriasPadre } =
-      useCategoriaPadreArticuloStore.getState();
+      useCategoriaPadreInsumoStore.getState();
     set({ showDeleted: !showDeleted });
     if (!showDeleted) {
       fetchDeletedCategoriasPadre();
@@ -74,9 +74,9 @@ export const useCategoriaPadreArticuloStore = create<CategoriaPadreArticuloState
   addCategoriaPadre: async (data) => {
     set({ loading: true, error: null });
     try {
-      await service.saveCategoria({ ...data, tipo: 'MANUFACTURADOS' });
+      await service.saveCategoria({ ...data, tipo: 'INSUMOS' });
       const { showDeleted, fetchCategoriasPadre, fetchDeletedCategoriasPadre } =
-        useCategoriaPadreArticuloStore.getState();
+        useCategoriaPadreInsumoStore.getState();
       if (showDeleted) {
         await fetchDeletedCategoriasPadre();
       } else {
@@ -94,9 +94,9 @@ export const useCategoriaPadreArticuloStore = create<CategoriaPadreArticuloState
   updateCategoriaPadre: async (data) => {
     set({ loading: true, error: null });
     try {
-      await service.saveCategoria({ ...data, tipo: 'MANUFACTURADOS' });
+      await service.saveCategoria({ ...data, tipo: 'INSUMOS' });
       const { showDeleted, fetchCategoriasPadre, fetchDeletedCategoriasPadre } =
-        useCategoriaPadreArticuloStore.getState();
+        useCategoriaPadreInsumoStore.getState();
       if (showDeleted) {
         await fetchDeletedCategoriasPadre();
       } else {
@@ -116,7 +116,7 @@ export const useCategoriaPadreArticuloStore = create<CategoriaPadreArticuloState
     try {
       await service.deleteCategoria(id);
       const { showDeleted, fetchCategoriasPadre, fetchDeletedCategoriasPadre } =
-        useCategoriaPadreArticuloStore.getState();
+        useCategoriaPadreInsumoStore.getState();
       if (showDeleted) {
         await fetchDeletedCategoriasPadre();
       } else {
@@ -136,7 +136,7 @@ export const useCategoriaPadreArticuloStore = create<CategoriaPadreArticuloState
     try {
       await service.restoreCategoria(id);
       const { showDeleted, fetchCategoriasPadre, fetchDeletedCategoriasPadre } =
-        useCategoriaPadreArticuloStore.getState();
+        useCategoriaPadreInsumoStore.getState();
       if (showDeleted) {
         await fetchDeletedCategoriasPadre();
       } else {

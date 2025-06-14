@@ -34,6 +34,7 @@ const NAV_DATA: NavItemStructure[] = [
       { to: '/admin/categorias-articulos', label: 'Categorias Artículos' },
       { to: '/admin/subcategorias-articulos', label: 'Subcategorias Artículos' },
       { to: '/admin/insumos', label: 'Insumos' },
+      { to: '/admin/categorias-insumos', label: 'Categorias Insumos' },
       { to: '/admin/subcategorias-insumos', label: 'Subcategorias Insumos' },
     ],
   },

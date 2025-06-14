@@ -45,11 +45,8 @@ export const ModalInsumoForm = ({
   );
   const [isHabilitado, setIsHabilitado] = useState(true);
 
-  // Filtrar solo las categorías padre 'Insumos' y 'Bebidas' para el select del modal
-  const categoriasPadre = categorias.filter(
-    (cat) =>
-      !cat.tipoCategoria && (cat.denominacion === 'Insumos' || cat.denominacion === 'Bebidas')
-  );
+  // Filtrar solo las categorías padre de tipo INSUMOS para el select del modal
+  const categoriasPadre = categorias.filter((cat) => !cat.tipoCategoria && cat.tipo === 'INSUMOS');
   const [selectedCategoriaPadreId, setSelectedCategoriaPadreId] = useState<number | undefined>(
     undefined
   );

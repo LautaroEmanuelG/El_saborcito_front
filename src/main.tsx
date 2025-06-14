@@ -21,6 +21,7 @@ import { RankingCliente } from './modules/HU26_28_informes/components/RankingCli
 import ScreenCategoriasArticulos from './modules/HU21_CRUD_CategoriasArticulos/components/ScreenCategoriasArticulos';
 import ScreenCategoriaPadreArticulo from './modules/HU21_CRUD_CategoriasPadresArticulos/components/ScreenCategoriaPadreArticulo';
 import ScreenSubcategoriasInsumos from './modules/HU20_CRUD_SubcategoriasInsumos/components/ScreenSubcategoriasInsumos';
+import ScreenCategoriaPadreInsumo from './modules/HU20_CRUD_CategoriasPadresInsumos/components/ScreenCategoriaPadreInsumo';
 
 createRoot(document.getElementById('root')!).render(
   <AppProviders>
@@ -177,6 +178,14 @@ createRoot(document.getElementById('root')!).render(
             element={
               <ProtectedRoute>
                 <ScreenSubcategoriasInsumos />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="categorias-insumos"
+            element={
+              <ProtectedRoute>
+                <ScreenCategoriaPadreInsumo />
               </ProtectedRoute>
             }
           />

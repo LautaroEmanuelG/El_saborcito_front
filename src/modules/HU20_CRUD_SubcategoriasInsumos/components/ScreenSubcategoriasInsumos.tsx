@@ -53,35 +53,47 @@ const ScreenSubcategoriasInsumos = () => {
       ]
     : categoriasFiltradas;
 
-  // Solo categorías padre 'Insumos' y 'Bebidas' (respetando mayúsculas y sin variantes)
+  // Solo categorías padre de tipo INSUMOS
   const categoriasPadre = currentCategorias.filter(
-    (cat) => !cat.tipoCategoria && ['Insumos', 'Bebidas'].includes(cat.denominacion.trim())
+    (cat) => !cat.tipoCategoria && cat.tipo === 'INSUMOS'
   );
   const categoriasHijas = currentCategorias.filter((cat) => cat.tipoCategoria);
 
   const transformedCategorias: CategoriaTable[] = [];
   categoriasPadre.forEach((padre) => {
     const hijas = categoriasHijas.filter((hija) => hija.tipoCategoria?.id === padre.id);
+    const padreEliminado = deletedCategorias.some((d) => d.id === padre.id);
     if (hijas.length === 0) {
       // Si no tiene hijas, mostrar solo la fila del padre
       transformedCategorias.push({
         id: padre.id!,
         denominacion: padre.denominacion,
         subcategoria: '-',
-        eliminado: deletedCategorias.some((d) => d.id === padre.id),
+        eliminado: padreEliminado,
         categoriaId: padre.id,
       });
     } else {
       // Por cada hija, mostrar una fila con el padre y la hija
       hijas.forEach((hija) => {
+        const hijaEliminada = deletedCategorias.some((d) => d.id === hija.id);
         transformedCategorias.push({
           id: hija.id!,
           denominacion: padre.denominacion,
           subcategoria: hija.denominacion,
-          eliminado: deletedCategorias.some((d) => d.id === hija.id),
+          eliminado: hijaEliminada || padreEliminado, // Si el padre está eliminado, la hija también
           categoriaId: padre.id,
         });
       });
+      // Si el padre está eliminado y no hay hijas eliminadas, agregar una fila especial para el padre eliminado
+      if (padreEliminado && hijas.length === 0) {
+        transformedCategorias.push({
+          id: padre.id!,
+          denominacion: padre.denominacion,
+          subcategoria: '-',
+          eliminado: true,
+          categoriaId: padre.id,
+        });
+      }
     }
   });
 
@@ -175,7 +187,7 @@ const ScreenSubcategoriasInsumos = () => {
                         row.subcategoria !== '-' ? row.subcategoria || '' : row.denominacion || '',
                       eliminado: row.eliminado,
                     };
-              const soloVer = showDeleted && !row.eliminado;
+              const soloVer = showDeleted || row.eliminado;
               return (
                 <ButtonsTable
                   el={el}
@@ -197,7 +209,7 @@ const ScreenSubcategoriasInsumos = () => {
         rows={transformedCategorias}
         showSearchBar={true}
         showCategoryFilter={true}
-        // Solo categorías padre Insumos y Bebidas en el filtro
+        // Solo categorías padre INSUMOS en el filtro
         categories={categoriasPadre.map((c) => ({ id: c.id!, denominacion: c.denominacion }))}
         onToggleDeleted={toggleShowDeleted}
         showDeleted={showDeleted}

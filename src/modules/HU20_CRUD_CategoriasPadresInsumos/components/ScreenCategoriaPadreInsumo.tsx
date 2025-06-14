@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { TableGeneric } from '../../../shared/components/abmGenerica/components/TableGeneric/TableGeneric';
 import { ButtonsTable } from '../../../shared/components/abmGenerica/components/ButtonsTable/ButtonsTable';
-import { useCategoriaPadreArticuloStore } from '../services/categoriaPadreArticuloStore';
+import { useCategoriaPadreInsumoStore } from '../services/categoriaPadreInsumoStore';
 import type { Categoria } from '../../../types/Categoria';
-import ModalCategoriaPadreForm from './ModalCategoriaPadreForm';
+import ModalCategoriaPadreInsumoForm from './ModalCategoriaPadreInsumoForm';
 import { CATEGORIA_PADRE_COLUMNS, CategoriaPadreTable } from '../model';
 
 const getInitialValues = (): Partial<Categoria> => ({
@@ -11,7 +11,7 @@ const getInitialValues = (): Partial<Categoria> => ({
   tipoCategoria: null,
 });
 
-const ScreenCategoriaPadreArticulo = () => {
+const ScreenCategoriaPadreInsumo = () => {
   const {
     categoriasPadre,
     deletedCategoriasPadre,
@@ -25,7 +25,7 @@ const ScreenCategoriaPadreArticulo = () => {
     updateCategoriaPadre,
     deleteCategoriaPadre,
     restoreCategoriaPadre,
-  } = useCategoriaPadreArticuloStore();
+  } = useCategoriaPadreInsumoStore();
 
   const [openModal, setOpenModal] = useState(false);
   const [selectedCategoria, setSelectedCategoria] = useState<Partial<Categoria> | null>(null);
@@ -37,15 +37,14 @@ const ScreenCategoriaPadreArticulo = () => {
     } else {
       fetchCategoriasPadre();
     }
-    // eslint-disable-next-line
   }, [showDeleted]);
 
-  // Filtrar: solo categorías padre de tipo MANUFACTURADOS
+  // Filtrar: solo categorías padre de tipo INSUMOS
   const categoriasPadreFiltradas = categoriasPadre.filter(
-    (cat: Categoria) => !cat.tipoCategoria && cat.tipo === 'MANUFACTURADOS'
+    (cat: Categoria) => !cat.tipoCategoria && cat.tipo === 'INSUMOS'
   );
   const deletedCategoriasPadreFiltradas = deletedCategoriasPadre.filter(
-    (cat: Categoria) => !cat.tipoCategoria && cat.tipo === 'MANUFACTURADOS'
+    (cat: Categoria) => !cat.tipoCategoria && cat.tipo === 'INSUMOS'
   );
 
   let currentCategorias: Categoria[] = showDeleted
@@ -83,7 +82,7 @@ const ScreenCategoriaPadreArticulo = () => {
     setSelectedCategoria({
       denominacion: categoria.denominacion,
       id: categoria.id,
-      tipoCategoria: null,
+      tipoCategoria: categoria.tipoCategoria ?? null,
     });
     setModalMode('edit');
     setOpenModal(true);
@@ -102,14 +101,14 @@ const ScreenCategoriaPadreArticulo = () => {
       await addCategoriaPadre({
         ...values,
         tipoCategoria: null,
-        tipo: 'MANUFACTURADOS',
+        tipo: 'INSUMOS',
       });
     } else if (modalMode === 'edit' && selectedCategoria?.id) {
       await updateCategoriaPadre({
         ...values,
         id: selectedCategoria.id,
         tipoCategoria: null,
-        tipo: 'MANUFACTURADOS',
+        tipo: 'INSUMOS',
       });
     }
     setOpenModal(false);
@@ -125,7 +124,7 @@ const ScreenCategoriaPadreArticulo = () => {
           title={
             showDeleted
               ? 'No se pueden agregar categorías en vista con eliminados'
-              : 'Agregar nueva categoría'
+              : 'Agregar nueva categoría padre'
           }
         >
           Agregar Categoría
@@ -165,11 +164,12 @@ const ScreenCategoriaPadreArticulo = () => {
         rows={transformedCategorias}
         showSearchBar={true}
         showCategoryFilter={false}
+        categories={[]}
         onToggleDeleted={toggleShowDeleted}
         showDeleted={showDeleted}
         searchPlaceholder="Buscar categorías padre por nombre..."
       />
-      <ModalCategoriaPadreForm
+      <ModalCategoriaPadreInsumoForm
         open={openModal}
         onClose={() => setOpenModal(false)}
         initialValues={selectedCategoria ?? getInitialValues()}
@@ -191,4 +191,4 @@ const ScreenCategoriaPadreArticulo = () => {
   );
 };
 
-export default ScreenCategoriaPadreArticulo;
+export default ScreenCategoriaPadreInsumo;

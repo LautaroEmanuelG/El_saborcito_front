@@ -51,6 +51,10 @@ const ModalSubcategoriasInsumosForm = ({
     }
   };
 
+  const categoriasPadreInsumos = categorias.filter(
+    (cat) => !cat.tipoCategoria && cat.tipo === 'INSUMOS'
+  );
+
   return open ? (
     <div className="fixed inset-0 bg-negro bg-opacity-50 flex justify-center items-center z-50">
       <div className="bg-blanco p-8 rounded-lg w-full max-w-md">
@@ -85,17 +89,11 @@ const ModalSubcategoriasInsumosForm = ({
               disabled={mode === 'view'}
             >
               <option value="">Seleccionar categoría padre</option>
-              {categorias
-                .filter(
-                  (c) =>
-                    !c.tipoCategoria &&
-                    ['insumos', 'bebidas'].includes(c.denominacion.trim().toLowerCase())
-                )
-                .map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.denominacion}
-                  </option>
-                ))}
+              {categoriasPadreInsumos.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.denominacion}
+                </option>
+              ))}
             </select>
           </div>
           <div className="flex justify-center mt-6 gap-4">

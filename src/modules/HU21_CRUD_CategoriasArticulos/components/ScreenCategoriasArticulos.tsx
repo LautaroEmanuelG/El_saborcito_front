@@ -60,32 +60,47 @@ const ScreenCategoriasArticulos = () => {
     : categoriasFiltradas;
 
   // Agrupar: por cada categoría padre, mostrar una fila por cada hija (subcategoría)
-  const categoriasPadre = currentCategorias.filter((cat) => !cat.tipoCategoria);
+  // Solo categorías padre de tipo MANUFACTURADOS
+  const categoriasPadre = currentCategorias.filter(
+    (cat) => !cat.tipoCategoria && cat.tipo === 'MANUFACTURADOS'
+  );
   const categoriasHijas = currentCategorias.filter((cat) => cat.tipoCategoria);
 
   const transformedCategorias: CategoriaTable[] = [];
   categoriasPadre.forEach((padre) => {
     const hijas = categoriasHijas.filter((hija) => hija.tipoCategoria?.id === padre.id);
+    const padreEliminado = deletedCategorias.some((d) => d.id === padre.id);
     if (hijas.length === 0) {
       // Si no tiene hijas, mostrar solo la fila del padre
       transformedCategorias.push({
         id: padre.id!,
         denominacion: padre.denominacion,
         subcategoria: '-',
-        eliminado: deletedCategorias.some((d) => d.id === padre.id),
+        eliminado: padreEliminado,
         categoriaId: padre.id,
       });
     } else {
       // Por cada hija, mostrar una fila con el padre y la hija
       hijas.forEach((hija) => {
+        const hijaEliminada = deletedCategorias.some((d) => d.id === hija.id);
         transformedCategorias.push({
           id: hija.id!,
           denominacion: padre.denominacion,
           subcategoria: hija.denominacion,
-          eliminado: deletedCategorias.some((d) => d.id === hija.id),
+          eliminado: hijaEliminada || padreEliminado, // Si el padre está eliminado, la hija también
           categoriaId: padre.id,
         });
       });
+      // Si el padre está eliminado y no hay hijas eliminadas, agregar una fila especial para el padre eliminado
+      if (padreEliminado && hijas.length === 0) {
+        transformedCategorias.push({
+          id: padre.id!,
+          denominacion: padre.denominacion,
+          subcategoria: '-',
+          eliminado: true,
+          categoriaId: padre.id,
+        });
+      }
     }
   });
 
@@ -180,7 +195,7 @@ const ScreenCategoriasArticulos = () => {
                         row.subcategoria !== '-' ? row.subcategoria || '' : row.denominacion || '',
                       eliminado: row.eliminado,
                     };
-              const soloVer = showDeleted && !row.eliminado;
+              const soloVer = showDeleted;
               return (
                 <ButtonsTable
                   el={el}
@@ -202,10 +217,8 @@ const ScreenCategoriasArticulos = () => {
         rows={transformedCategorias}
         showSearchBar={true}
         showCategoryFilter={true}
-        // Solo categorías padre en el filtro, excluyendo 'insumo'
-        categories={categoriasFiltradas
-          .filter((c) => !c.tipoCategoria)
-          .map((c) => ({ id: c.id!, denominacion: c.denominacion }))}
+        // Solo categorías padre MANUFACTURADOS en el filtro
+        categories={categoriasPadre.map((c) => ({ id: c.id!, denominacion: c.denominacion }))}
         onToggleDeleted={toggleShowDeleted}
         showDeleted={showDeleted}
         searchPlaceholder="Buscar categorías por nombre..."

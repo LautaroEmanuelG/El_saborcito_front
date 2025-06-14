@@ -81,11 +81,8 @@ export const ScreenInsumos = () => {
     restoreInsumo(id);
   };
 
-  // Filtrar solo las categorías padre 'Insumos' y 'Bebidas'
-  const categoriasPadre = categorias.filter(
-    (cat) =>
-      !cat.tipoCategoria && (cat.denominacion === 'Insumos' || cat.denominacion === 'Bebidas')
-  );
+  // Filtrar solo las categorías padre de tipo INSUMOS
+  const categoriasPadre = categorias.filter((cat) => !cat.tipoCategoria && cat.tipo === 'INSUMOS');
 
   // Para el filtro de la tabla y el modal, solo usar categoriasPadre
 
