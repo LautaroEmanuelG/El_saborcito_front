@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import CollapsibleNavItem from './CollapsibleNavItem'; // Importar el nuevo componente
+import CollapsibleNavItem from './CollapsibleNavItem';
 import IconoMenuHamburguesa from '../../../../assets/svgs/icons/IconoMenuHamburguesa';
 
 export interface SubItem {
@@ -10,7 +10,8 @@ export interface SubItem {
 
 export interface NavItemStructure {
   title: string;
-  subItems: SubItem[];
+  subItems?: SubItem[];
+  children?: NavItemStructure[]; // Nuevo: permite submenús anidados
 }
 
 // Datos para la navegación del aside
@@ -29,10 +30,23 @@ const NAV_DATA: NavItemStructure[] = [
   },
   {
     title: 'Gestión de Contenido',
-    subItems: [
-      { to: '/admin/articulos', label: 'Artículos Manufacturados', hasActions: true },
-      { to: '/admin/insumos', label: 'Insumos', hasActions: true },
-      { to: '/admin/categorias', label: 'Categorías', hasActions: true },
+    children: [
+      {
+        title: 'Artículos',
+        subItems: [
+          { to: '/admin/articulos', label: 'Artículos Manufacturados' },
+          { to: '/admin/categorias-articulos', label: 'Categorías de Artículos' },
+          { to: '/admin/subcategorias-articulos', label: 'Subcategorías de Artículos' },
+        ],
+      },
+      {
+        title: 'Insumos',
+        subItems: [
+          { to: '/admin/insumos', label: 'Insumos' },
+          { to: '/admin/categorias-insumos', label: 'Categorías de Insumos' },
+          { to: '/admin/subcategorias-insumos', label: 'Subcategorías de Insumos' },
+        ],
+      },
     ],
   },
   {
@@ -85,7 +99,6 @@ export const AsideAdmin = () => {
       {isOpen && (
         <div className="fixed inset-0 bg-black opacity-50 md:hidden z-10" onClick={closeMenu}></div>
       )}
-      {/* La selección y expansión de los menús se maneja automáticamente en CollapsibleNavItem según la ruta actual */}
     </>
   );
 };

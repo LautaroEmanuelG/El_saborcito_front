@@ -11,21 +11,27 @@ interface CollapsibleNavItemProps {
 
 const CollapsibleNavItem: React.FC<CollapsibleNavItemProps> = ({ itemData, onLinkClick }) => {
   const location = useLocation();
-  const isAnySubItemActive = itemData.subItems.some((subItem) =>
-    location.pathname.startsWith(subItem.to)
-  );
-  // Estado controlado por usuario, pero forzado a true si la ruta está activa
-  const [isExpanded, setIsExpanded] = useState(isAnySubItemActive);
+  // Determinar si algún subitem o submenú está activo
+  const isAnySubItemActive =
+    (itemData.subItems &&
+      itemData.subItems.some((subItem) => location.pathname.startsWith(subItem.to))) ||
+    (itemData.children &&
+      itemData.children.some((child) =>
+        // recursivo: si algún hijo o nieto está activo
+        location.pathname.startsWith('/admin/' + child.title.toLowerCase())
+      ));
 
+  // Solo expandir automáticamente si la ruta activa cambia y pertenece al grupo, pero permitir colapsar manualmente
+  const [isExpanded, setIsExpanded] = useState(isAnySubItemActive);
   useEffect(() => {
     if (isAnySubItemActive) {
       setIsExpanded(true);
     }
+    // No forzar a true si ya está expandido y el usuario lo colapsó manualmente
+    // eslint-disable-next-line
   }, [isAnySubItemActive]);
 
   const handleToggle = () => {
-    // Si la ruta está activa, no permitir colapsar
-    if (isAnySubItemActive) return;
     setIsExpanded((prev) => !prev);
   };
 
@@ -58,35 +64,42 @@ const CollapsibleNavItem: React.FC<CollapsibleNavItemProps> = ({ itemData, onLin
       </button>
       {isExpanded && (
         <ul className="pl-6 pr-2 px-1 border-t border-gray-200">
-          {itemData.subItems.map((subItem) => {
-            const isActive = location.pathname.startsWith(subItem.to);
-            const hasActions = subItem.hasActions === true;
-            return (
-              <li key={subItem.to} className="my-1.5">
-                <div
-                  className={`flex items-center justify-between p-2.5 rounded-md transition-colors duration-150 ease-in-out ${isActive ? 'bg-primary text-blanco font-bold shadow' : 'hover:bg-gray-100 text-negro'} ${hasActions ? 'shadow-sm' : ''}`}
-                >
-                  <Link
-                    to={subItem.to}
-                    onClick={onLinkClick}
-                    className="block w-full text-md font-medium"
+          {/* Renderizar subItems si existen */}
+          {itemData.subItems &&
+            itemData.subItems.map((subItem) => {
+              const isActive = location.pathname.startsWith(subItem.to);
+              const hasActions = subItem.hasActions === true;
+              return (
+                <li key={subItem.to} className="my-1.5">
+                  <div
+                    className={`flex items-center justify-between p-2.5 rounded-md transition-colors duration-150 ease-in-out ${isActive ? 'bg-primary text-blanco font-bold shadow' : 'hover:bg-gray-100 text-negro'} ${hasActions ? 'shadow-sm' : ''}`}
                   >
-                    {subItem.label}
-                  </Link>
-                  {hasActions && (
-                    <div className="flex space-x-2.5 ml-2 flex-shrink-0">
-                      <button className="text-blanco hover:text-gray-200 transition-colors duration-150 ease-in-out focus:outline-none">
-                        <IconoVer className="w-5 h-5" />
-                      </button>
-                      <button className="text-blanco hover:text-gray-200 transition-colors duration-150 ease-in-out focus:outline-none">
-                        <IconoEditar className="w-5 h-5" />
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </li>
-            );
-          })}
+                    <Link
+                      to={subItem.to}
+                      onClick={onLinkClick}
+                      className="block w-full text-md font-medium"
+                    >
+                      {subItem.label}
+                    </Link>
+                    {hasActions && (
+                      <div className="flex space-x-2.5 ml-2 flex-shrink-0">
+                        <button className="text-blanco hover:text-gray-200 transition-colors duration-150 ease-in-out focus:outline-none">
+                          <IconoVer className="w-5 h-5" />
+                        </button>
+                        <button className="text-blanco hover:text-gray-200 transition-colors duration-150 ease-in-out focus:outline-none">
+                          <IconoEditar className="w-5 h-5" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          {/* Renderizar children recursivamente si existen */}
+          {itemData.children &&
+            itemData.children.map((child) => (
+              <CollapsibleNavItem key={child.title} itemData={child} onLinkClick={onLinkClick} />
+            ))}
         </ul>
       )}
     </li>

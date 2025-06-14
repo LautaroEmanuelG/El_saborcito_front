@@ -41,8 +41,23 @@ const ScreenArticulosManufacturados = () => {
 
   useEffect(() => {
     fetchArticulos();
-    categoriaService.getAllCategorias().then(setCategorias);
-  }, [fetchArticulos]);
+    if (showDeleted) {
+      // Cargar categorías activas y eliminadas
+      Promise.all([
+        categoriaService.getAllCategorias(),
+        categoriaService.getDeletedCategorias(),
+      ]).then(([activas, eliminadas]) => {
+        // Unir ambas listas, evitando duplicados por id
+        const todas = [
+          ...activas,
+          ...eliminadas.filter((e: Categoria) => !activas.some((a: Categoria) => a.id === e.id)),
+        ];
+        setCategorias(todas);
+      });
+    } else {
+      categoriaService.getAllCategorias().then(setCategorias);
+    }
+  }, [fetchArticulos, showDeleted]);
 
   // Función para obtener información de categoría y subcategoría
   const getCategoryInfo = (categoriaId: number): { categoria: string; subcategoria: string } => {
@@ -63,6 +78,30 @@ const ScreenArticulosManufacturados = () => {
       categoria: categoriaPadre?.denominacion ?? 'Sin categoría padre',
       subcategoria: categoria.denominacion,
     };
+  };
+
+  // Función para obtener la categoría padre de una categoría
+  const getCategoriaPadre = (cat?: Categoria): Categoria | undefined => {
+    if (!cat) return undefined;
+    return cat.tipoCategoria ? getCategoriaPadre(cat.tipoCategoria) : cat;
+  };
+
+  // Filtro personalizado para incluir subcategorías al filtrar por categoría padre
+  const perteneceACategoriaPadre = (
+    articulo: ArticuloManufacturado,
+    categoriaPadreId: number
+  ): boolean => {
+    const cat = categorias.find((c) => c.id === articulo.categoriaId);
+    let actual = cat;
+    while (actual) {
+      if (actual.id === categoriaPadreId) return true;
+      if (!actual.tipoCategoria) break;
+      const tipoCatId = actual.tipoCategoria?.id;
+      const siguiente = categorias.find((c) => c.id === tipoCatId);
+      if (!siguiente) break;
+      actual = siguiente;
+    }
+    return false;
   };
 
   // Transformar los datos para mostrar en la tabla
@@ -186,10 +225,12 @@ const ScreenArticulosManufacturados = () => {
         rows={transformedArticulos}
         showSearchBar={true}
         showCategoryFilter={true}
-        categories={categorias}
+        // Solo categorías padre de tipo MANUFACTURADOS para el filtro de la tabla
+        categories={categorias.filter((c) => !c.tipoCategoria && c.tipo === 'MANUFACTURADOS')}
         onToggleDeleted={toggleShowDeleted}
         showDeleted={showDeleted}
         searchPlaceholder="Buscar artículos por nombre..."
+        customCategoryFilter={perteneceACategoriaPadre}
       />
 
       <ModalArticuloManufacturadoForm
