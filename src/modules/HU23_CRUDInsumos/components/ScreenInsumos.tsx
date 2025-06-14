@@ -13,7 +13,7 @@ const getInitialValues = (): Partial<ArticuloInsumo> => ({
   denominacion: '',
   precioCompra: 0,
   stockActual: 0,
-  stockMaximo: 0,
+  stockMinimo: 0,
   categoria: undefined,
   unidadMedida: undefined,
   esParaElaborar: false,
@@ -108,7 +108,7 @@ export const ScreenInsumos = () => {
     { label: 'Precio Compra', key: 'precioCompra' },
     { label: 'Precio Venta', key: 'precioVenta' },
     { label: 'Stock Actual', key: 'stockActual' },
-    { label: 'Stock Máximo', key: 'stockMaximo' },
+    { label: 'Stock Mínimo', key: 'stockMinimo' },
     {
       label: 'Unidad de Medida',
       key: 'unidadMedida',

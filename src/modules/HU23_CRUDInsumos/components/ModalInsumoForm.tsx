@@ -24,7 +24,7 @@ const getInitialForm = (
   denominacion: '',
   precioCompra: 0,
   stockActual: 0,
-  stockMaximo: 0,
+  stockMinimo: 0,
   categoria: undefined,
   unidadMedida: undefined,
   eliminado: false,
@@ -218,14 +218,14 @@ export const ModalInsumoForm = ({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1" htmlFor="stockMaximo">
-              Stock Máximo<span className="text-red-500">*</span>
+            <label className="block text-sm font-medium mb-1" htmlFor="stockMinimo">
+              Stock Mínimo<span className="text-red-500">*</span>
             </label>
             <input
-              id="stockMaximo"
-              name="stockMaximo"
+              id="stockMinimo"
+              name="stockMinimo"
               type="number"
-              value={form.stockMaximo ?? 0}
+              value={form.stockMinimo ?? 0}
               onChange={handleChange}
               disabled={mode === 'view'}
               className="w-full border rounded px-3 py-2"

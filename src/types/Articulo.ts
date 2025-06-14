@@ -13,7 +13,7 @@ export interface Articulo {
 export interface ArticuloInsumo extends Articulo {
   precioCompra: number;
   stockActual: number;
-  stockMaximo: number;
+  stockMinimo: number;
   esParaElaborar: boolean;
   categoria: Categoria;
   unidadMedida: UnidadMedida;
