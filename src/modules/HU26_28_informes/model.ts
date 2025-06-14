@@ -34,7 +34,20 @@ export interface DetallePedidoDTO {
 
 export interface PedidoResumenPorCliente {
   idPedido: number;
-  fechaPedido: string | Date;
+  fechaPedido: string;
   total: number;
   detalles: DetallePedidoDTO[];
+}
+
+// Nuevos DTOs para detalles de ganancias y costos
+export interface PedidoGananciaDetalle {
+  idPedido: number;
+  fechaPedido: string;
+  total: number;
+}
+
+export interface PedidoCostoDetalle {
+  idPedido: number;
+  fechaPedido: string;
+  totalCosto: number;
 }
