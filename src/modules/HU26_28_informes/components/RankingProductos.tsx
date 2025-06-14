@@ -27,8 +27,13 @@ export const RankingProductos = () => {
     totalInsumos: 0,
   });
 
+  // Validación de rango de fechas
+  const isInvalidRange = new Date(desde) > new Date(hasta);
+
   useEffect(() => {
-    fetchData();
+    if (!isInvalidRange) {
+      fetchData();
+    }
   }, [desde, hasta]);
 
   const fetchData = async () => {
@@ -41,6 +46,10 @@ export const RankingProductos = () => {
   };
 
   const handleExportar = async () => {
+    if (isInvalidRange) {
+      alert('El rango de fechas no es válido.'); // 📌 validación antes de exportar
+      return;
+    }
     try {
       await exportarRankingExcel(desde, hasta);
     } catch (err) {
@@ -122,6 +131,12 @@ export const RankingProductos = () => {
         </div>
       </div>
 
+      {isInvalidRange && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          La fecha "Desde" no puede ser posterior a "Hasta".
+        </div>
+      )}
+
       <div className="flex flex-wrap gap-8 justify-evenly items-start">
         <div className="flex-1 min-w-[600px]">
           <h3 className="text-center font-semibold mb-2">Ranking de Productos Más Vendidos</h3>
@@ -154,7 +169,13 @@ export const RankingProductos = () => {
       <div className="flex justify-end mt-8">
         <button
           onClick={handleExportar}
-          className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg shadow font-bold"
+          disabled={isInvalidRange}
+          className={`px-6 py-2 rounded-lg shadow font-bold transition-colors
+            ${
+              isInvalidRange
+                ? 'bg-gray-400 cursor-not-allowed text-gray-700'
+                : 'bg-green-600 hover:bg-green-700 text-white'
+            }`}
         >
           Exportar a Excel
         </button>

@@ -5,6 +5,27 @@ import {
   PedidoResumenPorCliente,
 } from '../../modules/HU26_28_informes/model';
 
+export const exportarPedidosClienteExcel = async (
+  clienteId: number,
+  desde: string,
+  hasta: string,
+  nombreArchivo: string
+): Promise<void> => {
+  const url = `http://localhost:5252/api/sucursales/exportar-pedidos-cliente-excel`;
+  const params = new URLSearchParams({ clienteId: String(clienteId), desde, hasta });
+  const res = await fetch(`${url}?${params.toString()}`, { method: 'GET' });
+  if (!res.ok) throw new Error('Error al exportar pedidos de cliente');
+  const blob = await res.blob();
+  const link = document.createElement('a');
+  link.href = window.URL.createObjectURL(blob);
+  // usar el nombre del cliente
+  link.download = `${nombreArchivo}-pedidos.xlsx`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(link.href);
+};
+
 export const getDetallePedidosCliente = async (
   clienteId: number,
   desde: string,
