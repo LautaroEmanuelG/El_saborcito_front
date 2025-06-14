@@ -11,7 +11,7 @@ import {
   exportarDetalleCostosExcel,
 } from '../../../shared/services/movimientosInforme';
 import { PedidoGananciaDetalle, PedidoCostoDetalle } from '../model';
-// Removemos los imports del TableGeneric ya que usaremos una tabla personalizada
+import { validarRangoFechas } from '../logic';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -19,8 +19,11 @@ export const MovimientosMonetarios = () => {
   const [desde, setDesde] = useState(() => format(new Date(), 'yyyy-01-01'));
   const [hasta, setHasta] = useState(() => format(new Date(), 'yyyy-MM-dd'));
   const [datos, setDatos] = useState({ ingresos: 0, costos: 0, ganancias: 0 });
+  const [error, setError] = useState<string | null>(null);
 
-  // Estados para modales
+  const errorValidacion = validarRangoFechas(desde, hasta);
+  const isInvalidRange = Boolean(errorValidacion);
+
   const [showGananciasModal, setShowGananciasModal] = useState(false);
   const [showCostosModal, setShowCostosModal] = useState(false);
   const [gananciasData, setGananciasData] = useState<PedidoGananciaDetalle[]>([]);
@@ -29,7 +32,13 @@ export const MovimientosMonetarios = () => {
   const [loadingCostos, setLoadingCostos] = useState(false);
 
   useEffect(() => {
-    fetchMovimientos();
+    if (errorValidacion) {
+      setError(errorValidacion);
+      setDatos({ ingresos: 0, costos: 0, ganancias: 0 });
+    } else {
+      setError(null);
+      fetchMovimientos();
+    }
   }, [desde, hasta]);
 
   const fetchMovimientos = async () => {
@@ -42,98 +51,81 @@ export const MovimientosMonetarios = () => {
   };
 
   const handleExportar = async () => {
+    if (isInvalidRange) return;
     try {
       await exportarMovimientosExcel(desde, hasta);
-    } catch (err) {
+    } catch {
       alert('Error al exportar Excel');
-      console.error(err);
     }
   };
 
   const handleVerGanancias = async () => {
+    if (isInvalidRange) return;
     setLoadingGanancias(true);
     try {
       const data = await getDetalleGanancias(desde, hasta);
       setGananciasData(data);
       setShowGananciasModal(true);
-    } catch (err) {
+    } catch {
       alert('Error al obtener detalle de ganancias');
-      console.error(err);
     } finally {
       setLoadingGanancias(false);
     }
   };
 
   const handleVerCostos = async () => {
+    if (isInvalidRange) return;
     setLoadingCostos(true);
     try {
       const data = await getDetalleCostos(desde, hasta);
       setCostosData(data);
       setShowCostosModal(true);
-    } catch (err) {
+    } catch {
       alert('Error al obtener detalle de costos');
-      console.error(err);
     } finally {
       setLoadingCostos(false);
     }
   };
 
   const handleExportarGanancias = async () => {
+    if (isInvalidRange) return;
     try {
       await exportarDetalleGananciasExcel(desde, hasta);
-    } catch (err) {
+    } catch {
       alert('Error al exportar Excel de ganancias');
-      console.error(err);
     }
   };
 
   const handleExportarCostos = async () => {
+    if (isInvalidRange) return;
     try {
       await exportarDetalleCostosExcel(desde, hasta);
-    } catch (err) {
+    } catch {
       alert('Error al exportar Excel de costos');
-      console.error(err);
     }
   };
 
-  // Estados para búsqueda en las tablas
-  const [searchGanancias, setSearchGanancias] = useState('');
-  const [searchCostos, setSearchCostos] = useState('');
+  //const totalGanancias = gananciasData.reduce((acc, i) => acc + i.total, 0);
+  //const totalCostos    = costosData.reduce((acc, i) => acc + i.totalCosto, 0);
 
-  const pieDataIngresos = {
+  const pieData = {
     labels: ['Ingresos', 'Costos', 'Ganancias'],
     datasets: [
       {
         data: [datos.ingresos, datos.costos, datos.ganancias],
-        backgroundColor: ['#16a34a', '#dc2626', '#2563eb'], // verde, rojo, azul
+        backgroundColor: ['#16a34a', '#dc2626', '#2563eb'],
       },
     ],
   };
 
-  const totalGanancias = gananciasData.reduce((sum, item) => sum + item.total, 0);
-  const totalCostos = costosData.reduce((sum, item) => sum + item.totalCosto, 0);
-
-  // Filtrar datos para búsqueda
-  const filteredGanancias = gananciasData.filter(
-    (item) =>
-      item.idPedido.toString().includes(searchGanancias) ||
-      new Date(item.fechaPedido).toLocaleDateString().includes(searchGanancias)
-  );
-
-  const filteredCostos = costosData.filter(
-    (item) =>
-      item.idPedido.toString().includes(searchCostos) ||
-      new Date(item.fechaPedido).toLocaleDateString().includes(searchCostos)
-  );
-
   return (
     <div className="bg-white p-8 rounded-xl shadow-md max-w-full overflow-x-auto">
+      {/* Fechas */}
       <div className="flex items-center justify-between border-b-2 border-negro pb-4 mb-8 flex-wrap">
-        <h2 className="text-2xl font-bold text-negro mr-6">Movimientos monetarios</h2>{' '}
-        {/* 📌 Se agregó mr-6 para separarlo del grupo de fechas */}
-        <div className="flex gap-6 bg-secondary text-black p-2 rounded-lg items-center">
+        <h2 className="text-2xl font-bold text-negro mr-6">Movimientos monetarios</h2>
+        <div className="flex gap-4 bg-gray-200 p-2 rounded-lg items-center">
           <div>
-            <label className="block text-sm text-gray-600 font-medium mb-1">Desde:</label>
+            <label className="block text-sm text-gray-600 mb-1">Desde:</label>
             <input
               type="date"
               value={desde}
@@ -142,7 +134,7 @@ export const MovimientosMonetarios = () => {
             />
           </div>
           <div>
-            <label className="block text-sm text-gray-600 font-medium mb-1">Hasta:</label>
+            <label className="block text-sm text-gray-600 mb-1">Hasta:</label>
             <input
               type="date"
               value={hasta}
@@ -153,6 +145,14 @@ export const MovimientosMonetarios = () => {
         </div>
       </div>
 
+      {/* Error rango */}
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
+        </div>
+      )}
+
+      {/* Resumen */}
       <div className="grid grid-cols-3 text-center font-semibold border-b-2 border-negro pb-2 mb-4">
         <div>
           <p className="text-gray-600">Ingresos</p>
@@ -163,178 +163,162 @@ export const MovimientosMonetarios = () => {
           <p className="text-lg font-bold text-negro">${datos.costos.toLocaleString()}</p>
         </div>
         <div>
-          <p className="text-gray-600">Total Ganancias</p>
+          <p className="text-gray-600">Ganancias</p>
           <p className="text-lg font-bold text-green-600">${datos.ganancias.toLocaleString()}</p>
         </div>
       </div>
 
-      <div className="w-full max-w-[450px] mx-auto">
-        <h4 className="text-center font-semibold mb-2">
-          Distribución de Ingresos, Costos y Ganancias
-        </h4>
-        <Pie data={pieDataIngresos} />
+      {/* Gráfico */}
+      <div className="w-full max-w-[450px] mx-auto mb-8">
+        <h4 className="text-center font-semibold mb-2">Distribución</h4>
+        <Pie data={pieData} />
       </div>
 
-      <div className="flex justify-end mt-8">
+      {/* Exportar principal */}
+      <div className="flex justify-end mb-6">
         <button
           onClick={handleExportar}
-          className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg shadow font-bold"
+          disabled={isInvalidRange}
+          className={`px-6 py-2 rounded-lg shadow font-bold transition-colors ${
+            isInvalidRange
+              ? 'bg-gray-400 cursor-not-allowed text-gray-700'
+              : 'bg-green-600 hover:bg-green-700 text-white'
+          }`}
         >
           Exportar a Excel
         </button>
       </div>
 
-      {/* Botones Ver más en color rojo */}
-      <div className="flex justify-center gap-4 mt-6">
+      {/* Ver más */}
+      <div className="flex justify-center gap-4">
         <button
           onClick={handleVerGanancias}
-          disabled={loadingGanancias}
+          disabled={loadingGanancias || isInvalidRange}
           className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg shadow font-bold disabled:opacity-50"
         >
           {loadingGanancias ? 'Cargando...' : 'Ver ganancias'}
         </button>
         <button
           onClick={handleVerCostos}
-          disabled={loadingCostos}
+          disabled={loadingCostos || isInvalidRange}
           className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg shadow font-bold disabled:opacity-50"
         >
           {loadingCostos ? 'Cargando...' : 'Ver costos'}
         </button>
       </div>
 
-      {/* Modal de Ganancias */}
+      {/* Modal Ganancias */}
       {showGananciasModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[80vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
+            {/* Header modal con título, total y botón de cerrar */}
+            <div className="flex items-center justify-between border-b pb-2 mb-4">
               <h3 className="text-xl font-bold">Detalle de Ganancias</h3>
-              <div className="flex items-center gap-4">
-                <span className="text-lg font-bold text-green-600">
-                  Total: ${totalGanancias.toLocaleString()}
-                </span>
-                <button
-                  onClick={handleExportarGanancias}
-                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm"
-                >
-                  Exportar Excel
-                </button>
-                <button
-                  onClick={() => setShowGananciasModal(false)}
-                  className="text-gray-500 hover:text-gray-700 text-2xl"
-                >
-                  ×
-                </button>
-              </div>
+              <button
+                onClick={() => setShowGananciasModal(false)}
+                className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                aria-label="Cerrar"
+              >
+                &times;
+              </button>
             </div>
-            <div className="mb-4">
-              <input
-                type="text"
-                placeholder="Buscar por ID o fecha..."
-                value={searchGanancias}
-                onChange={(e) => setSearchGanancias(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div className="overflow-x-auto">
-              <table className="min-w-full bg-white border border-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      ID Pedido
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Fecha Pedido
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Total
-                    </th>
+            <table className="min-w-full bg-white border border-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-xs text-gray-500 uppercase">ID Pedido</th>
+                  <th className="px-6 py-3 text-xs text-gray-500 uppercase">Fecha Pedido</th>
+                  <th className="px-6 py-3 text-xs text-gray-500 uppercase">Total</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {gananciasData.map((i) => (
+                  <tr key={i.idPedido}>
+                    <td className="px-6 py-4 text-sm text-gray-900">{i.idPedido}</td>
+                    <td className="px-6 py-4 text-sm text-gray-900">
+                      {new Date(i.fechaPedido).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-900">${i.total.toLocaleString()}</td>
                   </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredGanancias.map((item) => (
-                    <tr key={item.idPedido} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {item.idPedido}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(item.fechaPedido).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        ${item.total.toLocaleString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                ))}
+              </tbody>
+            </table>
+            <div className="flex justify-between mt-6 pt-4 border-t">
+              <button
+                onClick={handleExportarGanancias}
+                disabled={isInvalidRange}
+                className={`px-5 py-2 rounded font-bold transition-colors ${
+                  isInvalidRange
+                    ? 'bg-gray-400 cursor-not-allowed text-gray-700'
+                    : 'bg-green-600 hover:bg-green-700 text-white'
+                }`}
+              >
+                Exportar a Excel
+              </button>
+              <button
+                onClick={() => setShowGananciasModal(false)}
+                className="bg-primary hover:bg-primarydark text-white px-5 py-2 rounded font-bold"
+              >
+                Cerrar
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal de Costos */}
+      {/* Modal Costos */}
       {showCostosModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[80vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center justify-between border-b pb-2 mb-4">
               <h3 className="text-xl font-bold">Detalle de Costos</h3>
-              <div className="flex items-center gap-4">
-                <span className="text-lg font-bold text-red-600">
-                  Total: ${totalCostos.toLocaleString()}
-                </span>
-                <button
-                  onClick={handleExportarCostos}
-                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm"
-                >
-                  Exportar Excel
-                </button>
-                <button
-                  onClick={() => setShowCostosModal(false)}
-                  className="text-gray-500 hover:text-gray-700 text-2xl"
-                >
-                  ×
-                </button>
-              </div>
+              <button
+                onClick={() => setShowCostosModal(false)}
+                className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                aria-label="Cerrar"
+              >
+                &times;
+              </button>
             </div>
-            <div className="mb-4">
-              <input
-                type="text"
-                placeholder="Buscar por ID o fecha..."
-                value={searchCostos}
-                onChange={(e) => setSearchCostos(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div className="overflow-x-auto">
-              <table className="min-w-full bg-white border border-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      ID Pedido
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Fecha Pedido
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Total Costo
-                    </th>
+            <table className="min-w-full bg-white border border-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-xs text-gray-500 uppercase">ID Pedido</th>
+                  <th className="px-6 py-3 text-xs text-gray-500 uppercase">Fecha Pedido</th>
+                  <th className="px-6 py-3 text-xs text-gray-500 uppercase">Total Costo</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {costosData.map((i) => (
+                  <tr key={i.idPedido}>
+                    <td className="px-6 py-4 text-sm text-gray-900">{i.idPedido}</td>
+                    <td className="px-6 py-4 text-sm text-gray-900">
+                      {new Date(i.fechaPedido).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-900">
+                      ${i.totalCosto.toLocaleString()}
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredCostos.map((item) => (
-                    <tr key={item.idPedido} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {item.idPedido}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(item.fechaPedido).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        ${item.totalCosto.toLocaleString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                ))}
+              </tbody>
+            </table>
+            <div className="flex justify-between mt-6 pt-4 border-t">
+              <button
+                onClick={handleExportarCostos}
+                disabled={isInvalidRange}
+                className={`px-5 py-2 rounded font-bold transition-colors ${
+                  isInvalidRange
+                    ? 'bg-gray-400 cursor-not-allowed text-gray-700'
+                    : 'bg-green-600 hover:bg-green-700 text-white'
+                }`}
+              >
+                Exportar a Excel
+              </button>
+              <button
+                onClick={() => setShowCostosModal(false)}
+                className="bg-primary hover:bg-primarydark text-white px-5 py-2 rounded font-bold"
+              >
+                Cerrar
+              </button>
             </div>
           </div>
         </div>
