@@ -148,6 +148,27 @@ const ScreenSubcategoriasInsumos = () => {
     setOpenModal(false);
   };
 
+  const handleTableAction = (row: CategoriaTable, action: 'view' | 'edit') => {
+    // Si es una fila de categoría padre sin subcategoría
+    if (row.subcategoria === '-') {
+      // Modal preparado para crear subcategoría: nombre vacío, select preseleccionado
+      setSelectedCategoria({ denominacion: '' });
+      setSelectedPadreId(row.categoriaId ?? null);
+      setModalMode('add');
+      setOpenModal(true);
+    } else {
+      // Buscar la subcategoría real
+      const subcategoriaReal = categorias.find((c) => c.id === row.id);
+      if (subcategoriaReal) {
+        if (action === 'view') {
+          handleView(subcategoriaReal);
+        } else {
+          handleEdit(subcategoriaReal);
+        }
+      }
+    }
+  };
+
   return (
     <div className="container w-full mx-auto p-4">
       <div className="flex w-full justify-end items-center mb-6">
@@ -195,8 +216,8 @@ const ScreenSubcategoriasInsumos = () => {
                   handleRestore={handleRestore}
                   setOpenModal={setOpenModal}
                   setSelectedItem={setSelectedCategoria}
-                  onView={(item) => handleView(item as Categoria)}
-                  onEdit={(item) => handleEdit(item as Categoria)}
+                  onView={() => handleTableAction(row, 'view')}
+                  onEdit={() => handleTableAction(row, 'edit')}
                   soloVer={soloVer}
                 />
               );
