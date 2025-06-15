@@ -127,7 +127,7 @@ export const ScreenInsumos = () => {
         if (i.categoria && i.categoria.tipoCategoria) {
           return i.categoria.denominacion;
         }
-        return '';
+        return '-';
       },
     },
     {
