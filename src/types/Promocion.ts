@@ -1,32 +1,101 @@
-// Tipos para Promociones basados en los DTOs del backend
-import { Articulo } from './Articulo';
-import type { Sucursal } from './Sucursal';
-import { Imagen } from './Imagen';
+import type { Imagen } from './Imagen';
+
+// 🎁 **TIPOS PARA PROMOCIONES**
 
 export interface PromocionDetalle {
   id: number;
   promocionId: number;
-  articulo: Articulo;
+  articulo: {
+    id: number;
+    denominacion: string;
+    precioVenta: number;
+    categoriaId: number;
+    imagen: Imagen;
+    eliminado: boolean;
+    fechaEliminacion: string | null;
+  };
   cantidadRequerida: number;
+}
+
+export interface Sucursal {
+  id: number;
+  nombre: string;
+  domicilio: {
+    id: number;
+    calle: string;
+    numero: number;
+    cp: string;
+    localidad: {
+      id: number;
+      nombre: string;
+      provincia: {
+        id: number;
+        nombre: string;
+        pais: {
+          id: number;
+          nombre: string;
+        };
+      };
+    };
+    latitud: number | null;
+    longitud: number | null;
+  };
+  empresa: {
+    id: number;
+    nombre: string;
+    razonSocial: string;
+    cuil: string;
+  };
+  horarios: Array<{
+    id: number;
+    diaSemana: string;
+    apertura: string;
+    cierre: string;
+  }>;
 }
 
 export interface Promocion {
   id: number;
   denominacion: string;
-  fechaDesde: string; // ISO date string
-  fechaHasta: string; // ISO date string
-  horaDesde: string | null; // HH:mm:ss o null
+  fechaDesde: string;
+  fechaHasta: string;
+  horaDesde: string | null;
   horaHasta: string | null;
   descuento: number | null;
-  precioPromocional: number | null;
-  sucursal: Sucursal | null;
-  imagen: Imagen | null;
+  precioPromocional: number;
+  sucursal: Sucursal;
+  imagen: Imagen;
   promocionDetalles: PromocionDetalle[];
-  articulo?: Articulo | null; // Deprecado, pero puede venir del backend
-  eliminado?: boolean; // Para manejar baja lógica
+  articulo: any | null; // El backend siempre devuelve null para promociones
 }
 
-export interface PromocionSeleccionada {
+// 🛒 **TIPOS PARA CARRITO CON PROMOCIONES**
+
+export interface PromocionEnCarrito {
+  promocion: Promocion;
+  cantidad: number;
+  disponible: boolean;
+}
+
+// 📊 **TIPOS PARA ANÁLISIS DE PROMOCIONES**
+
+export interface AnalisisPromocionRequest {
   promocionId: number;
   cantidad: number;
+}
+
+// 🔄 **TIPOS PARA NORMALIZACIÓN**
+
+export interface PromocionNormalizada {
+  id: number;
+  denominacion: string;
+  precioVenta: number; // Precio promocional
+  imagen: Imagen;
+  tipo: 'promocion'; // Identificador para distinguir de productos
+  promocionOriginal: Promocion; // Referencia a la promoción completa
+  articulosIncluidos: Array<{
+    id: number;
+    denominacion: string;
+    cantidad: number;
+  }>;
 }

@@ -47,18 +47,28 @@ export interface InsumoInsuficiente {
 }
 
 export interface ProductoConProblemas {
-  id: number;
+  articuloId: number;
+  cantidadMaximaPosible: number;
+  cantidadSolicitada?: number | null;
   denominacion: string;
-  cantidadSolicitada: number;
-  cantidadProducible: number;
-  insumosInsuficientes: InsumoInsuficiente[];
+  motivoProblema: string;
 }
 
 export interface AnalisisProduccionResponse {
   sePuedeProducirCompleto: boolean;
+  mensaje: string;
+  productos: any | null;
   productosConProblemas: ProductoConProblemas[];
-  maximoProducible: Record<string, number>;
   insumosInsuficientes: InsumoInsuficiente[];
+}
+
+export interface InsumoInsuficiente {
+  insumoId: number;
+  denominacion: string;
+  cantidadNecesaria: number;
+  stockDisponible: number;
+  stockFaltante: number;
+  unidadMedida: any | null;
 }
 
 export interface AnalisisProduccionRequest {

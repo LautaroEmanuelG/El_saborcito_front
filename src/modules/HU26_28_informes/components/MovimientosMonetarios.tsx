@@ -24,6 +24,8 @@ export const MovimientosMonetarios = () => {
   const errorValidacion = validarRangoFechas(desde, hasta);
   const isInvalidRange = Boolean(errorValidacion);
 
+  const isEmptyData = datos.ingresos === 0 && datos.costos === 0 && datos.ganancias === 0;
+
   const [showGananciasModal, setShowGananciasModal] = useState(false);
   const [showCostosModal, setShowCostosModal] = useState(false);
   const [gananciasData, setGananciasData] = useState<PedidoGananciaDetalle[]>([]);
@@ -178,9 +180,9 @@ export const MovimientosMonetarios = () => {
       <div className="flex justify-end mb-6">
         <button
           onClick={handleExportar}
-          disabled={isInvalidRange}
+          disabled={isInvalidRange || isEmptyData}
           className={`px-6 py-2 rounded-lg shadow font-bold transition-colors ${
-            isInvalidRange
+            isInvalidRange || isEmptyData
               ? 'bg-gray-400 cursor-not-allowed text-gray-700'
               : 'bg-green-600 hover:bg-green-700 text-white'
           }`}
@@ -245,9 +247,9 @@ export const MovimientosMonetarios = () => {
             <div className="flex justify-between mt-6 pt-4 border-t">
               <button
                 onClick={handleExportarGanancias}
-                disabled={isInvalidRange}
+                disabled={isInvalidRange || isEmptyData}
                 className={`px-5 py-2 rounded font-bold transition-colors ${
-                  isInvalidRange
+                  isInvalidRange || isEmptyData
                     ? 'bg-gray-400 cursor-not-allowed text-gray-700'
                     : 'bg-green-600 hover:bg-green-700 text-white'
                 }`}
@@ -304,9 +306,9 @@ export const MovimientosMonetarios = () => {
             <div className="flex justify-between mt-6 pt-4 border-t">
               <button
                 onClick={handleExportarCostos}
-                disabled={isInvalidRange}
+                disabled={isInvalidRange || isEmptyData}
                 className={`px-5 py-2 rounded font-bold transition-colors ${
-                  isInvalidRange
+                  isInvalidRange || isEmptyData
                     ? 'bg-gray-400 cursor-not-allowed text-gray-700'
                     : 'bg-green-600 hover:bg-green-700 text-white'
                 }`}
