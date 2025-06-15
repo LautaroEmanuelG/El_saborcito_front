@@ -113,5 +113,6 @@ export const analizarProduccion = async (
   const response = await axiosInstance.post(`${API_BASE_URL}/analizar-produccion`, {
     articulos,
   });
+  console.log('analizandoProduccion Response :>> ', response.data);
   return response.data;
 };
