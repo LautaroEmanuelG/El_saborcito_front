@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useCart } from '../../shared/hooks/useCart';
 import { CarritoContext } from '../../shared/providers/CarritoProvider';
-import type { AnalisisProduccionResponse, ArticuloManufacturado } from '../../types/Articulo';
+import type { AnalisisProduccionResponse } from '../../types/Articulo';
 import MapaInteractivo from './MapaInteractivo';
 import { RadioOption } from '../../shared/components/utils/RadioOption';
 import { ContactForm } from './ContactForm';
@@ -9,12 +9,22 @@ import { ProductSummary } from './ProductSummary';
 import { IconoLocation } from '../../assets/svgs/icons/IconoLocation';
 import { getAllFormaPagos, type FormaPago } from '../../shared/services/formaPagoService';
 import { createPedido, type CreatePedidoRequest } from '../../shared/services/pedidoService';
-
-interface MetodoPagoModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  total: number;
-}
+import {
+  getIconoFormaPago,
+  formatearNombreFormaPago,
+  tieneItemsEnCarrito,
+  calcularTiempoEstimadoMaximo,
+  extraerDireccionDeUbicacion,
+  combinarClases,
+} from '../../shared/utils/pedidoUtils';
+import {
+  DEFAULT_VALUES,
+  TIPO_ENVIO,
+  DOMICILIO_DEFAULT,
+  FORMAS_PAGO_FALLBACK,
+  BUTTON_STYLES,
+  ALERT_STYLES,
+} from './constants/pedidoConstants';
 
 interface MetodoPagoModalProps {
   isOpen: boolean;
@@ -53,55 +63,12 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
   const { analizarCarrito } = carritoContext;
 
   // Calcular total con descuento si es retiro en tienda
-  const totalConDescuento = modaloEntrega === 'retiro' ? total * 0.9 : total;
-
-  // Función para obtener ícono según el nombre de la forma de pago
-  const getIconoFormaPago = (nombre: string): string => {
-    switch (nombre.toUpperCase()) {
-      case 'EFECTIVO':
-        return '💵';
-      case 'MERCADO_PAGO':
-        return '💳';
-      case 'TARJETA':
-        return '💳';
-      case 'TRANSFERENCIA':
-        return '🏦';
-      default:
-        return '💰';
-    }
-  };
-
-  // Función para formatear el nombre de la forma de pago
-  const formatearNombreFormaPago = (nombre: string): string => {
-    switch (nombre.toUpperCase()) {
-      case 'EFECTIVO':
-        return 'Efectivo';
-      case 'MERCADO_PAGO':
-        return 'Mercado Pago';
-      case 'TARJETA':
-        return 'Tarjeta de Crédito/Débito';
-      case 'TRANSFERENCIA':
-        return 'Transferencia Bancaria';
-      default:
-        return nombre.charAt(0).toUpperCase() + nombre.slice(1).toLowerCase();
-    }
-  };
-
-  // Función para determinar si un artículo es manufacturado
-  const isArticuloManufacturado = (articulo: any): articulo is ArticuloManufacturado => {
-    return 'categoriaId' in articulo && 'descripcion' in articulo;
-  };
+  const totalConDescuento =
+    modaloEntrega === 'retiro' ? total * (1 - DEFAULT_VALUES.DESCUENTO_RETIRO) : total;
 
   // Calcular tiempo estimado máximo de los productos manufacturados
   const calcularTiempoEstimado = (): number => {
-    const productosManufacturados = carrito.filter((item) => isArticuloManufacturado(item));
-    if (productosManufacturados.length === 0) return 45; // Default 45 minutos si no hay manufacturados
-
-    const tiemposEstimados = productosManufacturados.map(
-      (producto) => (producto as ArticuloManufacturado).tiempoEstimadoMinutos || 45
-    );
-
-    return Math.max(...tiemposEstimados);
+    return calcularTiempoEstimadoMaximo(carrito, DEFAULT_VALUES.TIEMPO_ESTIMADO_DEFAULT);
   };
   // Cargar formas de pago al abrir el modal
   useEffect(() => {
@@ -114,10 +81,7 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
         } catch (error) {
           console.error('Error al cargar formas de pago:', error);
           // Fallback a formas de pago por defecto
-          setFormasPago([
-            { id: 1, nombre: 'EFECTIVO' },
-            { id: 2, nombre: 'MERCADO_PAGO' },
-          ]);
+          setFormasPago([...FORMAS_PAGO_FALLBACK]);
         } finally {
           setLoadingFormasPago(false);
         }
@@ -125,12 +89,13 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
     };
 
     cargarFormasPago();
-  }, [isOpen]);
-
-  // Verificar si se puede comprar al abrir el modal
+  }, [isOpen]); // Verificar si se puede comprar al abrir el modal
   useEffect(() => {
     const verificarCompra = async () => {
-      if (isOpen && carrito.length > 0) {
+      // Verificar si hay items (productos o promociones) en el carrito
+      const tieneItems = tieneItemsEnCarrito(carrito, promocionesEnCarrito);
+
+      if (isOpen && tieneItems) {
         try {
           const resultado = await analizarCarrito();
           setAnalisisProduccion(resultado);
@@ -140,11 +105,15 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
           console.error('Error al analizar carrito:', error);
           setPuedeComprar(false);
         }
+      } else if (isOpen && !tieneItems) {
+        // Si no hay items, no se puede comprar
+        setPuedeComprar(false);
+        setAnalisisProduccion(null);
       }
     };
 
     verificarCompra();
-  }, [isOpen, carrito, analizarCarrito]);
+  }, [isOpen, carrito, promocionesEnCarrito, analizarCarrito]);
   // Verificar si todos los campos están completos
   const camposCompletos = (): boolean => {
     const basicosCompletos = modaloEntrega !== '' && telefono.trim() !== '' && email.trim() !== '';
@@ -165,17 +134,29 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
     setUbicacionSeleccionada(true);
   }; // Manejar confirmación de compra
   const confirmarCompra = async () => {
-    if (!camposCompletos() || !puedeComprar) return;
+    // Verificar que tengamos items en el carrito (productos o promociones)
+    const tieneItems = tieneItemsEnCarrito(carrito, promocionesEnCarrito);
+
+    if (!camposCompletos() || !puedeComprar || !tieneItems) {
+      console.log('❌ No se puede confirmar compra:', {
+        camposCompletos: camposCompletos(),
+        puedeComprar,
+        tieneItems,
+        carrito: carrito.length,
+        promociones: promocionesEnCarrito.length,
+      });
+      return;
+    }
 
     setLoading(true);
 
     try {
       // Preparar datos del pedido según el formato EXACTO requerido por el backend
       const pedidoData: CreatePedidoRequest = {
-        clienteId: 5, // Hardcoded por ahora
-        tipoEnvioId: modaloEntrega === 'retiro' ? 1 : 2, // 1: retiro, 2: domicilio
+        clienteId: DEFAULT_VALUES.CLIENTE_ID,
+        tipoEnvioId: modaloEntrega === 'retiro' ? TIPO_ENVIO.RETIRO : TIPO_ENVIO.DOMICILIO,
         formaPagoId: metodoPagoId || 1, // ID de la forma de pago seleccionada
-        sucursalId: 1, // Hardcoded por ahora
+        sucursalId: DEFAULT_VALUES.SUCURSAL_ID,
         detalles: carrito.map((producto) => ({
           cantidad: producto.cantidad,
           articuloId: producto.id || 0,
@@ -191,12 +172,12 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
         ...(modaloEntrega === 'domicilio' &&
           ubicacionInfo && {
             domicilio: {
-              calle: ubicacionInfo.direccion?.split(',')[0]?.trim() || 'Dirección seleccionada',
-              numero: 123, // Hardcoded por ahora - podría extraerse de la dirección
-              cp: '5500', // Hardcoded por ahora
+              calle: extraerDireccionDeUbicacion(ubicacionInfo),
+              numero: DOMICILIO_DEFAULT.NUMERO,
+              cp: DOMICILIO_DEFAULT.CP,
               latitud: ubicacionInfo.lat,
               longitud: ubicacionInfo.lng,
-              localidadId: 1, // Hardcoded por ahora
+              localidadId: DEFAULT_VALUES.LOCALIDAD_ID,
             },
           }),
       };
@@ -347,7 +328,7 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
                 productos={carrito}
                 promociones={promocionesEnCarrito}
                 total={total}
-                descuento={total * 0.1}
+                descuento={total * DEFAULT_VALUES.DESCUENTO_RETIRO}
                 showDiscount={true}
               />
             </div>
@@ -365,17 +346,15 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
                     ubicacionActual={ubicacionInfo}
                   />
                   {ubicacionSeleccionada && ubicacionInfo ? (
-                    <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg">
-                      <p className="text-sm text-green-700 font-medium">
-                        ✅ Ubicación seleccionada
-                      </p>
+                    <div className={combinarClases(ALERT_STYLES.base, ALERT_STYLES.success)}>
+                      <p className="text-sm font-medium">✅ Ubicación seleccionada</p>
                       {ubicacionInfo.direccion && (
-                        <p className="text-xs text-green-600 mt-1">{ubicacionInfo.direccion}</p>
+                        <p className="text-xs mt-1">{ubicacionInfo.direccion}</p>
                       )}
                     </div>
                   ) : (
-                    <div className="mt-2 p-2 bg-orange-50 border border-orange-200 rounded-lg">
-                      <p className="text-sm text-orange-700 font-medium">
+                    <div className={combinarClases(ALERT_STYLES.base, ALERT_STYLES.warning)}>
+                      <p className="text-sm font-medium">
                         📍 Selecciona tu ubicación en el mapa para continuar
                       </p>
                     </div>
@@ -405,8 +384,8 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
                       </div>
                     )}
                     {modaloEntrega === 'domicilio' && metodoPagoId === null && (
-                      <div className="mt-2 p-2 bg-orange-50 border border-orange-200 rounded-lg">
-                        <p className="text-sm text-orange-700 font-medium">
+                      <div className={combinarClases(ALERT_STYLES.base, ALERT_STYLES.warning)}>
+                        <p className="text-sm font-medium">
                           💳 Selecciona un método de pago para continuar
                         </p>
                       </div>
@@ -440,35 +419,40 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
           )}
           {/* Mensaje de estado de análisis - Común para ambos layouts */}
           {!puedeComprar && analisisProduccion && (
-            <div className="mt-6 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-700 font-medium">⚠️ No se puede completar la compra</p>
-              <p className="text-red-600 text-sm">
+            <div className={combinarClases(ALERT_STYLES.base, ALERT_STYLES.error)}>
+              <p className="font-medium">⚠️ No se puede completar la compra</p>
+              <p className="text-sm">
                 Hay limitaciones de stock. Ajusta las cantidades en el carrito.
               </p>
             </div>
-          )}{' '}
+          )}
           {/* Botones de acción */}
           <div className="mt-6 flex justify-end gap-3">
             <button
               onClick={cerrarModal}
               disabled={loading}
-              className="px-8 py-3 rounded-lg font-semibold text-lg bg-gray-400 text-white hover:bg-gray-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className={combinarClases(
+                BUTTON_STYLES.base,
+                BUTTON_STYLES.secondary,
+                loading && 'opacity-50 cursor-not-allowed'
+              )}
             >
               Cancelar
             </button>
             <button
               onClick={confirmarCompra}
               disabled={!camposCompletos() || !puedeComprar || loading}
-              className={`px-8 py-3 rounded-lg font-semibold text-lg transition-colors ${
+              className={combinarClases(
+                BUTTON_STYLES.base,
                 camposCompletos() && puedeComprar && !loading
-                  ? 'bg-primary text-white hover:bg-primary-dark'
-                  : 'bg-gray-400 text-gray-600 cursor-not-allowed'
-              }`}
+                  ? BUTTON_STYLES.primary
+                  : BUTTON_STYLES.disabled
+              )}
               title={
                 !camposCompletos()
                   ? 'Complete todos los campos requeridos'
                   : !puedeComprar
-                    ? 'Ajuste las cantidades antes de continuar'
+                    ? 'Ajuste las cantidades antes de continuar o el carrito está vacío'
                     : undefined
               }
             >

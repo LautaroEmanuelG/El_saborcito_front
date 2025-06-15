@@ -8,13 +8,36 @@ interface ProductoResumen {
   precioPromocional?: number;
 }
 
-export const ProductSummary: React.FC<{
+interface PromocionEnCarrito {
+  promocion: {
+    denominacion?: string;
+    precioPromocional?: number;
+  };
+  cantidad: number;
+  denominacion?: string;
+  precioPromocional?: number;
+}
+
+interface ProductSummaryProps {
   productos: ProductoResumen[];
-  promociones?: any[];
+  promociones?: PromocionEnCarrito[];
   total: number;
   descuento?: number;
   showDiscount?: boolean;
-}> = ({ productos, promociones = [], total, descuento = 0, showDiscount = false }) => {
+}
+
+const BADGE_PROMOCION = {
+  className: 'bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold',
+  text: '🎁 PROMO',
+} as const;
+
+export const ProductSummary: React.FC<ProductSummaryProps> = ({
+  productos,
+  promociones = [],
+  total,
+  descuento = 0,
+  showDiscount = false,
+}) => {
   // Función para obtener el precio correcto según el tipo
   const getPrecioItem = (item: ProductoResumen): number => {
     if (item.tipo === 'promocion') {
@@ -23,48 +46,53 @@ export const ProductSummary: React.FC<{
     return item.precioVenta;
   };
 
-  // Combinar productos y promociones para mostrar
-  const todosLosItems = [
+  // Normalizar promociones a formato ProductoResumen
+  const promocionesNormalizadas = promociones.map((item) => ({
+    denominacion: item.promocion?.denominacion ?? item.denominacion ?? 'Promoción',
+    cantidad: item.cantidad,
+    precioVenta: item.promocion?.precioPromocional ?? item.precioPromocional ?? 0,
+    tipo: 'promocion' as const,
+    precioPromocional: item.promocion?.precioPromocional ?? item.precioPromocional,
+  }));
+
+  // Combinar productos y promociones
+  const todosLosItems: ProductoResumen[] = [
     ...productos.map((item) => ({ ...item, tipo: 'producto' as const })),
-    ...promociones.map((item) => ({
-      denominacion: item.promocion?.denominacion ?? item.denominacion,
-      cantidad: item.cantidad,
-      precioVenta: item.promocion?.precioPromocional ?? item.precioPromocional ?? item.precioVenta,
-      tipo: 'promocion' as const,
-      precioPromocional: item.promocion?.precioPromocional ?? item.precioPromocional,
-    })),
+    ...promocionesNormalizadas,
   ];
+
+  const ItemRow: React.FC<{ item: ProductoResumen; index: number }> = ({ item, index }) => (
+    <div
+      key={index}
+      className="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0"
+    >
+      <div className="flex-1">
+        <div className="flex items-center gap-2">
+          <p className="font-medium text-sm">{item.denominacion}</p>
+          {item.tipo === 'promocion' && (
+            <span className={BADGE_PROMOCION.className}>{BADGE_PROMOCION.text}</span>
+          )}
+        </div>
+        <p className="text-xs text-gray-600">Cantidad: {item.cantidad}</p>
+      </div>
+      <p className="font-semibold text-sm">${(getPrecioItem(item) * item.cantidad).toFixed(2)}</p>
+    </div>
+  );
+
+  const EmptyState: React.FC = () => (
+    <div className="text-center py-4 text-gray-500">
+      <p className="text-sm">No hay productos en el carrito</p>
+    </div>
+  );
 
   return (
     <div>
       <h3 className="text-lg font-semibold mb-4">📋 Resumen de productos</h3>
       <div className="bg-gray-50 rounded-lg p-4 max-h-64 overflow-y-auto">
-        {todosLosItems.map((item, index) => (
-          <div
-            key={index}
-            className="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0"
-          >
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <p className="font-medium text-sm">{item.denominacion}</p>
-                {item.tipo === 'promocion' && (
-                  <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold">
-                    🎁 PROMO
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-gray-600">Cantidad: {item.cantidad}</p>
-            </div>
-            <p className="font-semibold text-sm">
-              ${(getPrecioItem(item) * item.cantidad).toFixed(2)}
-            </p>
-          </div>
-        ))}
-
-        {todosLosItems.length === 0 && (
-          <div className="text-center py-4 text-gray-500">
-            <p className="text-sm">No hay productos en el carrito</p>
-          </div>
+        {todosLosItems.length > 0 ? (
+          todosLosItems.map((item, index) => <ItemRow key={index} item={item} index={index} />)
+        ) : (
+          <EmptyState />
         )}
       </div>
 
