@@ -12,17 +12,21 @@ export const ActiveCategoryIndicator = () => {
 
   const categoryLabel = Array.isArray(activeCategory) ? activeCategory.join(', ') : activeCategory;
 
+  const handleClearCategory = () => {
+    // Limpiar filtros y asegurarnos de que la categoría activa se resetee
+    resetFilters();
+    // Para asegurar que se actualice la UI correctamente, también llamamos a handleCategoryFilter
+    useProductStore.getState().handleCategoryFilter('');
+  };
+
   return (
     <div className="flex items-center justify-start w-full my-2">
       <div className="inline-flex items-center px-3 py-1 bg-primary/10 text-primary rounded-lg">
-        <span className="mr-2 font-medium">Categoría activa: {categoryLabel}</span>
+        <span className="mr-2 font-medium">
+          Categoría activa: {categoryLabel === 'promociones' ? '🎁 Promociones' : categoryLabel}
+        </span>
         <button
-          onClick={() => {
-            // Limpiar filtros y asegurarnos de que la categoría activa se resetee
-            resetFilters();
-            // Para asegurar que se actualice la UI correctamente, también llamamos a handleCategoryFilter
-            useProductStore.getState().handleCategoryFilter('');
-          }}
+          onClick={handleClearCategory}
           className="text-sm bg-primary text-white px-2 py-1 rounded hover:bg-primarydark transition-colors"
         >
           Limpiar

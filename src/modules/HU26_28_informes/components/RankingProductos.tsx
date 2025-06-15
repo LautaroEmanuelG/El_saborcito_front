@@ -29,6 +29,7 @@ export const RankingProductos = () => {
 
   // Validación de rango de fechas
   const isInvalidRange = new Date(desde) > new Date(hasta);
+  const isEmptyData = rankingData.productos.length === 0;
 
   useEffect(() => {
     if (!isInvalidRange) {
@@ -169,10 +170,10 @@ export const RankingProductos = () => {
       <div className="flex justify-end mt-8">
         <button
           onClick={handleExportar}
-          disabled={isInvalidRange}
+          disabled={isInvalidRange || isEmptyData}
           className={`px-6 py-2 rounded-lg shadow font-bold transition-colors
             ${
-              isInvalidRange
+              isInvalidRange || isEmptyData
                 ? 'bg-gray-400 cursor-not-allowed text-gray-700'
                 : 'bg-green-600 hover:bg-green-700 text-white'
             }`}

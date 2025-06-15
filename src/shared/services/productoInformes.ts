@@ -1,25 +1,37 @@
+// productoInformes.ts
+import axiosInstance from './axiosConfig';
 import { ProductoRankingResponse } from '../../modules/HU26_28_informes/model';
 
+const API_BASE = '/sucursales';
+
+/**
+ * Obtiene el ranking de productos entre dos fechas
+ */
 export const getRankingProductos = async (
   desde: string,
   hasta: string
 ): Promise<ProductoRankingResponse> => {
-  const res = await fetch(
-    `http://localhost:5252/api/sucursales/ranking-productos?desde=${desde}&hasta=${hasta}`
+  const response = await axiosInstance.get<ProductoRankingResponse>(
+    `${API_BASE}/ranking-productos`,
+    { params: { desde, hasta } }
   );
-  if (!res.ok) throw new Error('Error al obtener ranking');
-  return await res.json();
+  return response.data;
 };
 
+/**
+ * Exporta el ranking de productos a Excel
+ */
 export const exportarRankingExcel = async (desde: string, hasta: string): Promise<void> => {
-  const res = await fetch(
-    `http://localhost:5252/api/sucursales/exportar-excel?desde=${desde}&hasta=${hasta}`,
-    { method: 'GET' }
-  );
+  // Hacemos la petición pidiendo un blob
+  const response = await axiosInstance.get<Blob>(`${API_BASE}/exportar-excel`, {
+    params: { desde, hasta },
+    responseType: 'blob',
+  });
 
-  if (!res.ok) throw new Error('Error al exportar Excel');
-
-  const blob = await res.blob();
+  // Creamos el enlace de descarga
+  const blob = new Blob([response.data], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  });
   const url = window.URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;

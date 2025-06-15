@@ -23,8 +23,10 @@ export const Header = ({ onSearch }: Props) => {
   if (!carritoContext) {
     throw new Error('Header must be used within a CarritoProvider');
   }
-  const { carrito } = carritoContext;
-  const totalItems = carrito.reduce((total, product) => total + product.cantidad, 0);
+  const { carrito, promocionesEnCarrito } = carritoContext;
+  const totalItems =
+    (carrito?.reduce?.((total, product) => total + (product?.cantidad ?? 0), 0) ?? 0) +
+    (promocionesEnCarrito?.reduce?.((total, promo) => total + (promo?.cantidad ?? 0), 0) ?? 0);
 
   const toggleLoginModal = () => {
     setIsLoginOpen(!isLoginOpen);

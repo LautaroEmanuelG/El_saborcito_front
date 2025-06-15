@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { BtnCategoria } from './BtnCategoria';
+import { BtnPromocion } from './BtnPromocion';
 import type { Categoria } from '../../../types/Categoria';
 
 interface Props {
@@ -7,6 +8,7 @@ interface Props {
   onSearch: (query: string | string[]) => void; // Se mantiene para compatibilidad
   onCategoryFilter?: (query: string | string[]) => void; // Nueva prop para filtrar por categoría sin afectar el search term
   categoriasConProductosIds: Set<number>; // Agregamos esta prop
+  activeCategory?: string | string[] | null; // Nueva prop para mostrar la categoría activa (mantenida por compatibilidad)
 }
 
 export const ListaCategorias = ({
@@ -14,6 +16,7 @@ export const ListaCategorias = ({
   onCategoryFilter,
   categorias: todasCategorias,
   categoriasConProductosIds,
+  activeCategory: _, // Nueva prop para categoría activa (mantenida por compatibilidad)
 }: Props) => {
   const [termAnterior, setTermAnterior] = useState<string | string[]>(''); // Puede ser string o array
 
@@ -67,9 +70,13 @@ export const ListaCategorias = ({
 
     return { padres, hijosPorPadre };
   }, [todasCategorias, categoriasConProductosIds]);
-
   return (
     <div className="container gap-2 sm:gap-6 py-4 flex w-full flex-wrap justify-start items-start">
+      <BtnPromocion
+        onCategoryFilter={onCategoryFilter}
+        termAnterior={termAnterior}
+        setTermAnterior={setTermAnterior}
+      />
       {categoriasOrganizadas.padres.map((categoriaPadre) => {
         // Asegurarse de que categoriaPadre.id exista antes de usarlo
         if (categoriaPadre.id === undefined) return null;

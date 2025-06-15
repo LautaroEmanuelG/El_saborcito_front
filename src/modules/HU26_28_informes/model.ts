@@ -1,5 +1,4 @@
-// src/modules/HU26_28_informes/informes/model.ts
-
+//RANKING DE PRODUCTOS
 export interface ProductoRanking {
   id: number;
   denominacion: string;
@@ -13,8 +12,7 @@ export interface ProductoRankingResponse {
   totalInsumos: number;
 }
 
-// src/modules/HU26_28_informes/informes/model.ts
-
+//RANKING DE CLIENTES
 export interface ClienteRanking {
   idCliente: number;
   nombreCompleto: string;
@@ -23,12 +21,17 @@ export interface ClienteRanking {
 }
 
 export interface DetallePedidoDTO {
-  id: number;
+  id: number | null;
   cantidad: number;
+  cantidadConPromocion: number;
+  cantidadSinPromocion: number;
+  subtotal: number;
+  origen: 'INDIVIDUAL' | 'PROMOCION';
+  promocionOrigenId: number | null;
   articulo: {
     id: number;
     denominacion: string;
-    precioVenta: number;
+    precioVenta: number | null;
   };
 }
 
@@ -39,7 +42,7 @@ export interface PedidoResumenPorCliente {
   detalles: DetallePedidoDTO[];
 }
 
-// Nuevos DTOs para detalles de ganancias y costos
+//MOVIMIENTOS MONETARIOS
 export interface PedidoGananciaDetalle {
   idPedido: number;
   fechaPedido: string;
