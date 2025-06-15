@@ -61,6 +61,7 @@ const NAV_DATA: NavItemStructure[] = [
     subItems: [
       { to: '/admin/reportes', label: 'Reportes' },
       { to: '/admin/control', label: 'Libros Contables' },
+      { to: '/admin/facturas-test', label: 'Gestión de Facturas (Demo)' },
     ],
   },
 ];

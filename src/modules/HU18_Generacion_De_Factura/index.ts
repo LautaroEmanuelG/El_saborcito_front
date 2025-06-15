@@ -5,6 +5,12 @@ export {
 } from './Components/FacturaIntegracion.tsx';
 export type { FacturaIntegracionProps } from './Components/FacturaIntegracion.tsx';
 
+// NUEVO: Componente para administración de facturas
+export { default as FacturaAdmin } from './Components/FacturaAdmin.tsx';
+
+// NUEVO: Demo para probar la funcionalidad
+export { default as FacturaAdminDemo } from './Components/FacturaAdminDemo.tsx';
+
 // Tipos y modelos
 export type {
   FacturaDTO,
@@ -56,4 +62,6 @@ export {
  * };
  *
  * Para testing, usa: import { DemoPage } from '@/modules/HU18_Generacion_De_Factura';
+ * Para admin, usa: import { FacturaAdmin } from '@/modules/HU18_Generacion_De_Factura';
+ * Para probar todo, usa: import { FacturaAdminDemo } from '@/modules/HU18_Generacion_De_Factura';
  */
