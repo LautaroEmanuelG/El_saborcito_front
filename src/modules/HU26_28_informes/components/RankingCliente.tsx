@@ -254,9 +254,12 @@ export const RankingCliente = () => {
             {/* Header modal */}
             <div className="flex justify-between items-center border-b pb-2 mb-4">
               <div>
-                <h2 className="text-xl font-bold">{clienteSeleccionado.nombreCompleto}</h2>
+                <h2 className="text-xl font-bold text-negro">
+                  {clienteSeleccionado.nombreCompleto}
+                </h2>
                 <p className="text-sm text-gray-600">
-                  {clienteSeleccionado.cantidadPedidos} pedidos
+                  {clienteSeleccionado.cantidadPedidos} pedido
+                  {clienteSeleccionado.cantidadPedidos > 1 ? 's' : ''}
                 </p>
               </div>
               <button
@@ -275,18 +278,12 @@ export const RankingCliente = () => {
             ) : (
               <div className="space-y-4">
                 {pedidosCliente.map((pedido) => {
-                  // 1) Recalculo el total sumando cada fila
-                  const totalCalc = pedido.detalles.reduce((sum, det) => {
-                    if (det.origen === 'PROMOCION') {
-                      // det.subtotal aquí es el precio total de la promo
-                      return sum + (det.subtotal || 0);
-                    } else {
-                      // artículos normales: cantidad * precioUnitario
-                      return sum + calcularSubtotal(det.cantidad, det.articulo.precioVenta || 0);
-                    }
-                  }, 0);
+                  // Total ya incluye promociones si vienen en DTO
+                  const totalCalc = pedido.total;
+
                   return (
                     <div key={pedido.idPedido} className="border border-gray-200 rounded-lg p-4">
+                      {/* Cabecera de cada pedido */}
                       <div className="flex justify-between items-center mb-3">
                         <h3 className="font-semibold text-lg">Pedido #{pedido.idPedido}</h3>
                         <p className="text-sm text-gray-600">
@@ -303,34 +300,30 @@ export const RankingCliente = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {pedido.detalles.map((det) => (
-                            <tr
-                              key={det.id ?? `promo-${det.promocionOrigenId}`}
-                              className="border-t border-gray-100"
-                            >
-                              <td className="py-2 px-3">
-                                {det.origen === 'PROMOCION'
-                                  ? `🎁 ${det.articulo.denominacion}`
-                                  : det.articulo.denominacion}
-                              </td>
-                              <td className="py-2 px-3 text-center">{det.cantidad}</td>
-                              <td className="py-2 px-3 text-right">
-                                {det.origen === 'PROMOCION'
-                                  ? '-'
-                                  : formatearMonto(det.articulo.precioVenta || 0)}
-                              </td>
-                              <td className="py-2 px-3 text-right font-semibold">
-                                {/* ← aquí */}
-                                {formatearMonto(
-                                  det.origen === 'PROMOCION'
-                                    ? det.subtotal
-                                    : calcularSubtotal(det.cantidad, det.articulo.precioVenta || 0)
-                                )}
-                              </td>
-                            </tr>
-                          ))}
+                          {pedido.detalles.map((det) => {
+                            return (
+                              <tr
+                                key={det.id ?? `promo-${det.promocionOrigenId}`}
+                                className="border-t border-gray-100"
+                              >
+                                <td className="py-2 px-3">
+                                  {det.origen === 'PROMOCION'
+                                    ? `🎁 ${det.articulo.denominacion}`
+                                    : det.articulo.denominacion}
+                                </td>
+                                <td className="py-2 px-3 text-center">{det.cantidad}</td>
+                                <td className="py-2 px-3 text-right">
+                                  {det.origen === 'PROMOCION'
+                                    ? '–'
+                                    : formatearMonto(det.articulo.precioVenta || 0)}
+                                </td>
+                                <td className="py-2 px-3 text-right font-semibold">
+                                  {formatearMonto(det.subtotal)}
+                                </td>
+                              </tr>
+                            );
+                          })}
                         </tbody>
-                        {/* Aquí el footer que muestra el total recalculado */}
                         <tfoot className="bg-gray-50 border-t-2 border-gray-300">
                           <tr>
                             <td colSpan={3} className="py-3 px-3 text-right font-bold">

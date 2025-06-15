@@ -1,9 +1,13 @@
-import axios from 'axios';
-import {
+// shared/services/clientesInformes.ts
+
+import axiosInstance from './axiosConfig'; // tu instancia de Axios preconfigurada
+import type {
   ClienteRanking,
   DetallePedidoDTO,
   PedidoResumenPorCliente,
 } from '../../modules/HU26_28_informes/model';
+
+const API_BASE = '/sucursales';
 
 export const exportarPedidosClienteExcel = async (
   clienteId: number,
@@ -11,14 +15,16 @@ export const exportarPedidosClienteExcel = async (
   hasta: string,
   nombreArchivo: string
 ): Promise<void> => {
-  const url = `http://localhost:5252/api/sucursales/exportar-pedidos-cliente-excel`;
-  const params = new URLSearchParams({ clienteId: String(clienteId), desde, hasta });
-  const res = await fetch(`${url}?${params.toString()}`, { method: 'GET' });
-  if (!res.ok) throw new Error('Error al exportar pedidos de cliente');
-  const blob = await res.blob();
+  const url = `${API_BASE}/exportar-pedidos-cliente-excel`;
+  const params = { clienteId, desde, hasta };
+  const res = await axiosInstance.get<Blob>(url, {
+    params,
+    responseType: 'blob',
+  });
+  // construyo el link para descargar
+  const blob = new Blob([res.data], { type: res.data.type });
   const link = document.createElement('a');
   link.href = window.URL.createObjectURL(blob);
-  // usar el nombre del cliente
   link.download = `${nombreArchivo}-pedidos.xlsx`;
   document.body.appendChild(link);
   link.click();
@@ -31,14 +37,11 @@ export const getDetallePedidosCliente = async (
   desde: string,
   hasta: string
 ): Promise<PedidoResumenPorCliente[]> => {
-  const url = `http://localhost:5252/api/sucursales/pedidos-cliente?clienteId=${clienteId}&desde=${desde}&hasta=${hasta}`;
-
-  try {
-    const res = await axios.get(url);
-    return res.data;
-  } catch (error) {
-    throw error;
-  }
+  const url = `${API_BASE}/pedidos-cliente`;
+  const res = await axiosInstance.get<PedidoResumenPorCliente[]>(url, {
+    params: { clienteId, desde, hasta },
+  });
+  return res.data;
 };
 
 export const getRankingClientes = async (
@@ -46,25 +49,11 @@ export const getRankingClientes = async (
   hasta: string,
   ordenarPor: string
 ): Promise<ClienteRanking[]> => {
-  const url = `http://localhost:5252/api/sucursales/ranking-clientes?desde=${desde}&hasta=${hasta}&ordenarPor=${ordenarPor}`;
-
-  try {
-    const res = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!res.ok) {
-      throw new Error(`Error al obtener ranking de clientes: ${res.status} ${res.statusText}`);
-    }
-
-    const data = await res.json();
-    return data;
-  } catch (error) {
-    throw error;
-  }
+  const url = `${API_BASE}/ranking-clientes`;
+  const res = await axiosInstance.get<ClienteRanking[]>(url, {
+    params: { desde, hasta, ordenarPor },
+  });
+  return res.data;
 };
 
 export const exportarRankingClientesExcel = async (
@@ -72,30 +61,17 @@ export const exportarRankingClientesExcel = async (
   hasta: string,
   ordenarPor: string
 ): Promise<void> => {
-  const url = `http://localhost:5252/api/sucursales/exportar-ranking-clientes-excel?desde=${desde}&hasta=${hasta}&ordenarPor=${ordenarPor}`;
-
-  try {
-    const res = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!res.ok) {
-      throw new Error(`Error al exportar Excel de clientes: ${res.status} ${res.statusText}`);
-    }
-
-    const blob = await res.blob();
-    const downloadUrl = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.download = 'ranking-clientes.xlsx';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(downloadUrl);
-  } catch (error) {
-    throw error;
-  }
+  const url = `${API_BASE}/exportar-ranking-clientes-excel`;
+  const res = await axiosInstance.get<Blob>(url, {
+    params: { desde, hasta, ordenarPor },
+    responseType: 'blob',
+  });
+  const blob = new Blob([res.data], { type: res.data.type });
+  const link = document.createElement('a');
+  link.href = window.URL.createObjectURL(blob);
+  link.download = 'ranking-clientes.xlsx';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(link.href);
 };
