@@ -7,6 +7,7 @@ import {
 } from '../../../shared/services/articuloService';
 import { getAllCategorias } from '../../../shared/services/categoriaService';
 import { ModalConfirm } from '../../../shared/components/utils/ModalConfirm';
+import type { Articulo } from '../../../types/Articulo';
 
 export const Productos = () => {
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);

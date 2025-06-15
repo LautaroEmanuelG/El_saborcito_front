@@ -4,8 +4,12 @@ import { ReactNode } from 'react';
 import { useCart } from '../../shared/hooks/useCart';
 
 const ProtectedCarrito = ({ children }: { children: ReactNode }) => {
-  const { carrito } = useCart();
-  return carrito.length > 0 ? children : <Navigate to="/" />;
+  const { carrito, promocionesEnCarrito } = useCart();
+
+  // Verificar si hay productos o promociones en el carrito
+  const tieneItems = carrito.length > 0 || promocionesEnCarrito.length > 0;
+
+  return tieneItems ? children : <Navigate to="/" />;
 };
 
 export default ProtectedCarrito;

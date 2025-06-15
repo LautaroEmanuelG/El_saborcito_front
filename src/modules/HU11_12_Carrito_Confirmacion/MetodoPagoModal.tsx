@@ -1,18 +1,30 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useCart } from '../../shared/hooks/useCart';
 import { CarritoContext } from '../../shared/providers/CarritoProvider';
-import type { AnalisisProduccionResponse, ArticuloManufacturado } from '../../types/Articulo';
+import type { AnalisisProduccionResponse } from '../../types/Articulo';
 import MapaInteractivo from './MapaInteractivo';
 import { RadioOption } from '../../shared/components/utils/RadioOption';
 import { ContactForm } from './ContactForm';
 import { ProductSummary } from './ProductSummary';
 import { IconoLocation } from '../../assets/svgs/icons/IconoLocation';
-
-interface MetodoPagoModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  total: number;
-}
+import { getAllFormaPagos, type FormaPago } from '../../shared/services/formaPagoService';
+import { createPedido, type CreatePedidoRequest } from '../../shared/services/pedidoService';
+import {
+  getIconoFormaPago,
+  formatearNombreFormaPago,
+  tieneItemsEnCarrito,
+  calcularTiempoEstimadoMaximo,
+  extraerDireccionDeUbicacion,
+  combinarClases,
+} from '../../shared/utils/pedidoUtils';
+import {
+  DEFAULT_VALUES,
+  TIPO_ENVIO,
+  DOMICILIO_DEFAULT,
+  FORMAS_PAGO_FALLBACK,
+  BUTTON_STYLES,
+  ALERT_STYLES,
+} from './constants/pedidoConstants';
 
 interface MetodoPagoModalProps {
   isOpen: boolean;
@@ -21,12 +33,14 @@ interface MetodoPagoModalProps {
 }
 
 const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, total }) => {
-  const { carrito, clearCarrito } = useCart();
+  const { carrito, promocionesEnCarrito, clearCarrito } = useCart();
   const carritoContext = useContext(CarritoContext);
 
   // Estados
   const [modaloEntrega, setModoEntrega] = useState<'retiro' | 'domicilio' | ''>('');
-  const [metodoPago, setMetodoPago] = useState<'efectivo' | 'mercadopago' | ''>(''); // 🚀 Nuevo estado
+  const [metodoPagoId, setMetodoPagoId] = useState<number | null>(null); // 🚀 Cambiado a ID numérico
+  const [formasPago, setFormasPago] = useState<FormaPago[]>([]); // 🚀 Estado para formas de pago
+  const [loadingFormasPago, setLoadingFormasPago] = useState(false);
   const [telefono, setTelefono] = useState('');
   const [email, setEmail] = useState('');
   const [ubicacionSeleccionada, setUbicacionSeleccionada] = useState(false);
@@ -46,33 +60,42 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
   if (!carritoContext) {
     throw new Error('MetodoPagoModal must be used within a CarritoProvider');
   }
-
   const { analizarCarrito } = carritoContext;
 
   // Calcular total con descuento si es retiro en tienda
-  const totalConDescuento = modaloEntrega === 'retiro' ? total * 0.9 : total;
-
-  // Función para determinar si un artículo es manufacturado
-  const isArticuloManufacturado = (articulo: any): articulo is ArticuloManufacturado => {
-    return 'categoriaId' in articulo && 'descripcion' in articulo;
-  };
+  const totalConDescuento =
+    modaloEntrega === 'retiro' ? total * (1 - DEFAULT_VALUES.DESCUENTO_RETIRO) : total;
 
   // Calcular tiempo estimado máximo de los productos manufacturados
   const calcularTiempoEstimado = (): number => {
-    const productosManufacturados = carrito.filter((item) => isArticuloManufacturado(item));
-    if (productosManufacturados.length === 0) return 45; // Default 45 minutos si no hay manufacturados
-
-    const tiemposEstimados = productosManufacturados.map(
-      (producto) => (producto as ArticuloManufacturado).tiempoEstimadoMinutos || 45
-    );
-
-    return Math.max(...tiemposEstimados);
+    return calcularTiempoEstimadoMaximo(carrito, DEFAULT_VALUES.TIEMPO_ESTIMADO_DEFAULT);
   };
+  // Cargar formas de pago al abrir el modal
+  useEffect(() => {
+    const cargarFormasPago = async () => {
+      if (isOpen) {
+        setLoadingFormasPago(true);
+        try {
+          const formas = await getAllFormaPagos();
+          setFormasPago(formas);
+        } catch (error) {
+          console.error('Error al cargar formas de pago:', error);
+          // Fallback a formas de pago por defecto
+          setFormasPago([...FORMAS_PAGO_FALLBACK]);
+        } finally {
+          setLoadingFormasPago(false);
+        }
+      }
+    };
 
-  // Verificar si se puede comprar al abrir el modal
+    cargarFormasPago();
+  }, [isOpen]); // Verificar si se puede comprar al abrir el modal
   useEffect(() => {
     const verificarCompra = async () => {
-      if (isOpen && carrito.length > 0) {
+      // Verificar si hay items (productos o promociones) en el carrito
+      const tieneItems = tieneItemsEnCarrito(carrito, promocionesEnCarrito);
+
+      if (isOpen && tieneItems) {
         try {
           const resultado = await analizarCarrito();
           setAnalisisProduccion(resultado);
@@ -82,20 +105,26 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
           console.error('Error al analizar carrito:', error);
           setPuedeComprar(false);
         }
+      } else if (isOpen && !tieneItems) {
+        // Si no hay items, no se puede comprar
+        setPuedeComprar(false);
+        setAnalisisProduccion(null);
       }
     };
 
     verificarCompra();
-  }, [isOpen, carrito, analizarCarrito]);
-
+  }, [isOpen, carrito, promocionesEnCarrito, analizarCarrito]);
   // Verificar si todos los campos están completos
   const camposCompletos = (): boolean => {
     const basicosCompletos = modaloEntrega !== '' && telefono.trim() !== '' && email.trim() !== '';
 
     if (modaloEntrega === 'domicilio') {
-      return basicosCompletos && ubicacionSeleccionada && metodoPago !== '';
+      return (
+        basicosCompletos && ubicacionSeleccionada && metodoPagoId !== null && ubicacionInfo !== null
+      );
     }
 
+    // Para retiro en tienda, solo necesitamos los datos básicos
     return basicosCompletos;
   };
 
@@ -103,90 +132,93 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
   const manejarSeleccionUbicacion = (lat: number, lng: number, direccion?: string) => {
     setUbicacionInfo({ lat, lng, direccion });
     setUbicacionSeleccionada(true);
-  };
-
-  // Manejar confirmación de compra
+  }; // Manejar confirmación de compra
   const confirmarCompra = async () => {
-    if (!camposCompletos() || !puedeComprar) return;
+    // Verificar que tengamos items en el carrito (productos o promociones)
+    const tieneItems = tieneItemsEnCarrito(carrito, promocionesEnCarrito);
+
+    if (!camposCompletos() || !puedeComprar || !tieneItems) {
+      console.log('❌ No se puede confirmar compra:', {
+        camposCompletos: camposCompletos(),
+        puedeComprar,
+        tieneItems,
+        carrito: carrito.length,
+        promociones: promocionesEnCarrito.length,
+      });
+      return;
+    }
 
     setLoading(true);
 
     try {
-      // NO realizamos análisis aquí, se hizo en VistaCarrito
-
-      // Preparar datos para enviar al backend
-      const datosCompra = {
-        // Información del pedido
-        productos: carrito.map((producto) => ({
-          id: producto.id,
-          denominacion: producto.denominacion,
+      // Preparar datos del pedido según el formato EXACTO requerido por el backend
+      const pedidoData: CreatePedidoRequest = {
+        clienteId: DEFAULT_VALUES.CLIENTE_ID,
+        tipoEnvioId: modaloEntrega === 'retiro' ? TIPO_ENVIO.RETIRO : TIPO_ENVIO.DOMICILIO,
+        formaPagoId: metodoPagoId || 1, // ID de la forma de pago seleccionada
+        sucursalId: DEFAULT_VALUES.SUCURSAL_ID,
+        detalles: carrito.map((producto) => ({
           cantidad: producto.cantidad,
-          precioUnitario: producto.precioVenta,
-          subtotal: producto.precioVenta * producto.cantidad,
-          esManufacturado: isArticuloManufacturado(producto),
-          ...(isArticuloManufacturado(producto) && {
-            tiempoEstimadoMinutos: (producto as ArticuloManufacturado).tiempoEstimadoMinutos,
-          }),
+          articuloId: producto.id || 0,
         })),
-
-        // Información de precios
-        subtotal: total,
-        descuento: modaloEntrega === 'retiro' ? total * 0.1 : 0,
-        total: totalConDescuento,
-
-        // Información de entrega
-        tipoEntrega: modaloEntrega,
-        ...(modaloEntrega === 'domicilio' && {
-          metodoPago,
-          ...(ubicacionInfo && {
-            ubicacionEntrega: {
+        // Solo incluir promociones SI hay promociones en el carrito
+        ...(promocionesEnCarrito.length > 0 && {
+          promocionesSeleccionadas: promocionesEnCarrito.map((promo) => ({
+            promocionId: promo.promocion.id || 0,
+            cantidad: promo.cantidad,
+          })),
+        }),
+        // Solo incluir domicilio SI es envío a domicilio Y tenemos ubicación
+        ...(modaloEntrega === 'domicilio' &&
+          ubicacionInfo && {
+            domicilio: {
+              calle: extraerDireccionDeUbicacion(ubicacionInfo),
+              numero: DOMICILIO_DEFAULT.NUMERO,
+              cp: DOMICILIO_DEFAULT.CP,
               latitud: ubicacionInfo.lat,
               longitud: ubicacionInfo.lng,
-              direccion:
-                ubicacionInfo.direccion ||
-                `${ubicacionInfo.lat.toFixed(6)}, ${ubicacionInfo.lng.toFixed(6)}`,
+              localidadId: DEFAULT_VALUES.LOCALIDAD_ID,
             },
           }),
-        }),
-
-        // Información de contacto
-        telefono,
-        email,
-
-        // Información adicional
-        tiempoEstimadoTotal: tiempoEstimado,
-        fechaHoraPedido: new Date().toISOString(),
-        analisisProduccion: analisisProduccion,
       };
 
-      // 🚀 CONSOLE.LOG DE LOS DATOS QUE SE ENVIARÁN AL BACKEND
-      console.log('=== DATOS DE COMPRA PARA BACKEND ===');
-      console.log(JSON.stringify(datosCompra, null, 2));
+      // 🚀 LOG para debugging
+      console.log('=== DATOS DE PEDIDO PARA BACKEND ===');
+      console.log(JSON.stringify(pedidoData, null, 2));
       console.log('=======================================');
 
-      // Simular procesamiento de pago
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Enviar pedido al backend
+      const response = await createPedido(pedidoData);
+      console.log('✅ Pedido creado exitosamente:', response);
 
-      // NO limpiar carrito aquí, se hará en el modal de confirmación
+      // Mostrar confirmación
       setMostrarConfirmacion(true);
     } catch (error) {
-      console.error('Error en el proceso de compra:', error);
-      alert('Hubo un problema al procesar la compra. Por favor, intenta nuevamente.');
+      console.error('❌ Error en el proceso de compra:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      alert(
+        `Hubo un problema al procesar la compra: ${errorMessage}. Por favor, intenta nuevamente.`
+      );
     } finally {
       setLoading(false);
     }
-  };
-
-  // Cerrar modal y resetear estados
+  }; // Cerrar modal y resetear estados
   const cerrarModal = () => {
     setModoEntrega('');
-    setMetodoPago('');
+    setMetodoPagoId(null);
     setTelefono('');
     setEmail('');
     setUbicacionSeleccionada(false);
     setUbicacionInfo(null);
     setMostrarConfirmacion(false);
     onClose();
+  };
+
+  // Manejar clic fuera del modal para cerrarlo
+  const handleClickOutside = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      cerrarModal();
+    }
   };
 
   // Navegar al inicio - AHORA limpia el carrito
@@ -206,11 +238,13 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
   };
 
   if (!isOpen) return null;
-
   // Modal de confirmación de compra exitosa
   if (mostrarConfirmacion) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+      <div
+        className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4"
+        onClick={handleClickOutside}
+      >
         <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4 text-center">
           <h2 className="text-2xl font-bold text-primary mb-4">¡Gracias por su compra! 🎉</h2>
           <p className="text-lg mb-2 text-gray-700">Su pedido estará listo en</p>
@@ -235,9 +269,11 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
       </div>
     );
   }
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4"
+      onClick={handleClickOutside}
+    >
       <div className="bg-white rounded-lg shadow-lg max-w-5xl w-full max-h-[90vh] overflow-auto">
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b">
@@ -287,11 +323,12 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
                 email={email}
                 onTelefonoChange={setTelefono}
                 onEmailChange={setEmail}
-              />
+              />{' '}
               <ProductSummary
                 productos={carrito}
+                promociones={promocionesEnCarrito}
                 total={total}
-                descuento={total * 0.1}
+                descuento={total * DEFAULT_VALUES.DESCUENTO_RETIRO}
                 showDiscount={true}
               />
             </div>
@@ -303,44 +340,56 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
                 <div className="mb-6">
                   <h3 className="text-lg flex gap-2 font-semibold mb-3">
                     <IconoLocation /> Selecciona tu ubicación
-                  </h3>
+                  </h3>{' '}
                   <MapaInteractivo
                     onUbicacionSeleccionada={manejarSeleccionUbicacion}
                     ubicacionActual={ubicacionInfo}
                   />
-                  {ubicacionSeleccionada && ubicacionInfo && (
-                    <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg">
-                      <p className="text-sm text-green-700 font-medium">
-                        ✅ Ubicación seleccionada
-                      </p>
+                  {ubicacionSeleccionada && ubicacionInfo ? (
+                    <div className={combinarClases(ALERT_STYLES.base, ALERT_STYLES.success)}>
+                      <p className="text-sm font-medium">✅ Ubicación seleccionada</p>
                       {ubicacionInfo.direccion && (
-                        <p className="text-xs text-green-600 mt-1">{ubicacionInfo.direccion}</p>
+                        <p className="text-xs mt-1">{ubicacionInfo.direccion}</p>
                       )}
                     </div>
-                  )}
-
-                  <div className="mt-4">
-                    <h4 className="text-md font-semibold mb-3">Método de pago</h4>
-                    <div className="space-y-2">
-                      <RadioOption
-                        name="metodoPago"
-                        value="efectivo"
-                        checked={metodoPago === 'efectivo'}
-                        onChange={(value) => setMetodoPago(value as 'efectivo')}
-                        className="w-4 h-4"
-                      >
-                        💵 Efectivo
-                      </RadioOption>
-                      <RadioOption
-                        name="metodoPago"
-                        value="mercadopago"
-                        checked={metodoPago === 'mercadopago'}
-                        onChange={(value) => setMetodoPago(value as 'mercadopago')}
-                        className="w-4 h-4"
-                      >
-                        💳 Mercado Pago
-                      </RadioOption>
+                  ) : (
+                    <div className={combinarClases(ALERT_STYLES.base, ALERT_STYLES.warning)}>
+                      <p className="text-sm font-medium">
+                        📍 Selecciona tu ubicación en el mapa para continuar
+                      </p>
                     </div>
+                  )}
+                  <div className="mt-4">
+                    <h4 className="text-md font-semibold mb-3">💳 Método de pago</h4>
+                    {loadingFormasPago ? (
+                      <div className="space-y-2">
+                        <div className="animate-pulse bg-gray-200 h-8 rounded"></div>
+                        <div className="animate-pulse bg-gray-200 h-8 rounded"></div>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {formasPago.map((forma) => (
+                          <RadioOption
+                            key={forma.id}
+                            name="metodoPago"
+                            value={forma.id.toString()}
+                            checked={metodoPagoId === forma.id}
+                            onChange={(value) => setMetodoPagoId(parseInt(value))}
+                            className="w-4 h-4"
+                          >
+                            {getIconoFormaPago(forma.nombre)}{' '}
+                            {formatearNombreFormaPago(forma.nombre)}
+                          </RadioOption>
+                        ))}
+                      </div>
+                    )}
+                    {modaloEntrega === 'domicilio' && metodoPagoId === null && (
+                      <div className={combinarClases(ALERT_STYLES.base, ALERT_STYLES.warning)}>
+                        <p className="text-sm font-medium">
+                          💳 Selecciona un método de pago para continuar
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -353,7 +402,11 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
                   onTelefonoChange={setTelefono}
                   onEmailChange={setEmail}
                 />
-                <ProductSummary productos={carrito} total={totalConDescuento} />
+                <ProductSummary
+                  productos={carrito}
+                  promociones={promocionesEnCarrito}
+                  total={totalConDescuento}
+                />
               </div>
             </div>
           ) : (
@@ -366,23 +419,42 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
           )}
           {/* Mensaje de estado de análisis - Común para ambos layouts */}
           {!puedeComprar && analisisProduccion && (
-            <div className="mt-6 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-700 font-medium">⚠️ No se puede completar la compra</p>
-              <p className="text-red-600 text-sm">
+            <div className={combinarClases(ALERT_STYLES.base, ALERT_STYLES.error)}>
+              <p className="font-medium">⚠️ No se puede completar la compra</p>
+              <p className="text-sm">
                 Hay limitaciones de stock. Ajusta las cantidades en el carrito.
               </p>
             </div>
           )}
-          {/* Botón de pagar */}
-          <div className="mt-6 flex justify-end">
+          {/* Botones de acción */}
+          <div className="mt-6 flex justify-end gap-3">
+            <button
+              onClick={cerrarModal}
+              disabled={loading}
+              className={combinarClases(
+                BUTTON_STYLES.base,
+                BUTTON_STYLES.secondary,
+                loading && 'opacity-50 cursor-not-allowed'
+              )}
+            >
+              Cancelar
+            </button>
             <button
               onClick={confirmarCompra}
               disabled={!camposCompletos() || !puedeComprar || loading}
-              className={`px-8 py-3 rounded-lg font-semibold text-lg ${
+              className={combinarClases(
+                BUTTON_STYLES.base,
                 camposCompletos() && puedeComprar && !loading
-                  ? 'bg-primary text-white hover:bg-primary-dark'
-                  : 'bg-gray-400 text-gray-600 cursor-not-allowed'
-              }`}
+                  ? BUTTON_STYLES.primary
+                  : BUTTON_STYLES.disabled
+              )}
+              title={
+                !camposCompletos()
+                  ? 'Complete todos los campos requeridos'
+                  : !puedeComprar
+                    ? 'Ajuste las cantidades antes de continuar o el carrito está vacío'
+                    : undefined
+              }
             >
               {loading ? 'Procesando...' : 'Pagar'}
             </button>
