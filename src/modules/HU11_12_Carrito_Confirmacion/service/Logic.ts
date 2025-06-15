@@ -11,6 +11,7 @@ export const getAllPromocionesVigentes = async (sucursalId: number): Promise<Pro
   const response = await axiosInstance.get<Promocion[]>(
     `${API_BASE_URL_PROMOCIONES}/vigentes/${sucursalId}`
   );
+  console.log('response.data :>> ', response.data);
   return response.data ?? [];
 };
 

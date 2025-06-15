@@ -17,7 +17,7 @@ export const VistaCarrito = () => {
     throw new Error('VistaCarrito must be used within a CarritoProvider');
   }
 
-  const { analizarCarrito, limitacionesProduccion } = carritoContext;
+  const { analizarCarrito, limitacionesProduccion, promocionesProblematicas } = carritoContext;
   // Combinar productos y promociones para mostrar
   const todosLosItems = [
     ...carrito.map((item) => ({ ...item, tipo: 'producto' as const })),
@@ -28,26 +28,20 @@ export const VistaCarrito = () => {
     })),
   ];
 
-  // 🐛 DEBUG: Agregar logs para verificar el estado
-  console.log('🛒 DEBUG VistaCarrito:', {
-    carrito,
-    promocionesEnCarrito,
-    todosLosItems,
-    carritoLength: carrito.length,
-    promocionesLength: promocionesEnCarrito.length,
-    todosLosItemsLength: todosLosItems.length,
-  });
-
-  // Analizar carrito cuando se monta el componente o cuando cambia
-  useEffect(() => {
-    const realizarAnalisis = async () => {
-      await analizarCarrito();
-    };
-
+  const realizarAnalisis = async () => {
+    // Solo analizar si hay items en el carrito
     if (todosLosItems.length > 0) {
-      realizarAnalisis();
+      console.log('🔍 Analizando carrito desde VistaCarrito');
+      console.log('todosLosItems :>> ', todosLosItems);
+      return await analizarCarrito();
     }
-  }, [carrito, promocionesEnCarrito, analizarCarrito]);
+  };
+
+  // Analizar carrito cuando se monta el componente o cuando cambia el contenido
+  useEffect(() => {
+    // Debounce el análisis para evitar múltiples llamadas
+    realizarAnalisis();
+  }, [carrito.length, promocionesEnCarrito.length]); // Solo ejecutar cuando cambie la cantidad de items
 
   // Función para determinar si un artículo es manufacturado
   const isArticuloManufacturado = (articulo: any): articulo is ArticuloManufacturado => {
@@ -62,10 +56,28 @@ export const VistaCarrito = () => {
   const hayLimitacionesExcedidas = (): boolean => {
     return todosLosItems.some((item) => {
       if (item.tipo === 'producto') {
-        const limitacionMaxima = limitacionesProduccion[item.id ?? 0];
+        const articuloIdStr = (item.id ?? 0).toString();
+        const limitacionMaxima = limitacionesProduccion[articuloIdStr];
+        // 🚀 NUEVA LÓGICA: Solo considerar como "excedida" si la cantidad actual supera la limitación
         return limitacionMaxima && item.cantidad > limitacionMaxima;
+      } else if (item.tipo === 'promocion') {
+        // Para promociones, verificar si está en la lista de problemáticas
+        return promocionesProblematicas.has(item.id);
       }
-      return false; // Las promociones no tienen limitaciones individuales
+      return false;
+    });
+  };
+
+  // 🚀 NUEVA FUNCIÓN: Verificar si hay limitaciones alcanzadas (en el límite exacto)
+  const hayLimitacionesAlcanzadas = (): boolean => {
+    return todosLosItems.some((item) => {
+      if (item.tipo === 'producto') {
+        const articuloIdStr = (item.id ?? 0).toString();
+        const limitacionMaxima = limitacionesProduccion[articuloIdStr];
+        // Verificar si está exactamente en el límite
+        return limitacionMaxima && item.cantidad === limitacionMaxima;
+      }
+      return false;
     });
   };
 
@@ -85,11 +97,18 @@ export const VistaCarrito = () => {
   };
   // Función para obtener mensaje de limitación para un item
   const getMensajeLimitacion = (item: any) => {
-    if (item.tipo === 'promocion') return null; // Promociones no tienen limitaciones individuales
+    if (item.tipo === 'promocion') {
+      // Para promociones, verificar si está en la lista de problemáticas
+      const esProblematica = promocionesProblematicas.has(item.id);
+      return esProblematica
+        ? '⚠️ Esta promoción contiene productos que no se pueden fabricar completamente'
+        : null;
+    }
 
     if (!item.id) return null;
 
-    const limitacionMaxima = limitacionesProduccion[item.id];
+    const articuloIdStr = item.id.toString();
+    const limitacionMaxima = limitacionesProduccion[articuloIdStr];
     const cantidadEnCarrito = item.cantidad;
 
     // Solo mostrar mensaje si hay limitación y la cantidad actual excede el límite
@@ -130,7 +149,7 @@ export const VistaCarrito = () => {
           <div className="bg-blanco min-h-full p-4 rounded-xl shadow-lg shadow-gray-300 w-full mr-4 flex flex-col justify-between">
             {' '}
             <div>
-              <h2 className="text-3xl font-bold mb-4">🛒 Carrito</h2>
+              <h2 className="text-3xl font-bold mb-4">Carrito</h2>
               {todosLosItems.length === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-lg text-gray-500">Tu carrito está vacío</p>
@@ -250,11 +269,13 @@ export const VistaCarrito = () => {
                 }`}
                 title={
                   hayLimitacionesExcedidas()
-                    ? 'Ajuste las cantidades antes de continuar'
-                    : undefined
+                    ? 'Hay cantidades que exceden los límites de producción'
+                    : hayLimitacionesAlcanzadas()
+                      ? 'Algunos productos están en su límite máximo de producción'
+                      : undefined
                 }
               >
-                {hayLimitacionesExcedidas() ? 'Ajustar Cantidades' : 'Comprar'}
+                {hayLimitacionesExcedidas() ? 'Reducir Cantidades' : 'Comprar'}
               </button>
             )}
           </div>

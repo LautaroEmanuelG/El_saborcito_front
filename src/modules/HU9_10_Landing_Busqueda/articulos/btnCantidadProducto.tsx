@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useRef } from 'react';
 import { CarritoContext } from '../../../shared/providers/CarritoProvider';
 import { useLocation } from 'react-router-dom';
 import type { Articulo } from '../../../types/Articulo';
@@ -17,6 +17,9 @@ const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
   const carritoContext = useContext(CarritoContext);
   const [quantity, setQuantity] = useState(cantidadProducto);
   const [hasAttemptedExceedLimit, setHasAttemptedExceedLimit] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const lastCarritoSize = useRef(0);
+  const pendingAnalysis = useRef(false);
   const location = useLocation();
 
   if (!carritoContext) {
@@ -25,44 +28,109 @@ const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
 
   const { carrito, addToCarrito, decreaseFromCart, analizarCarrito, limitacionesProduccion } =
     carritoContext;
+  // Sincronizar estado con carrito
   useEffect(() => {
     const productoEnCarrito = carrito.find((item) => item.denominacion === articulo.denominacion);
     if (productoEnCarrito) {
-      const nuevaCantidad = productoEnCarrito.cantidad;
-      const cantidadAnterior = quantity;
-
-      // Si la cantidad se redujo automáticamente (sistema revirtió un intento de exceder límite)
-      if (nuevaCantidad < cantidadAnterior && location.pathname === '/carrito') {
-        setHasAttemptedExceedLimit(true);
-      }
-
-      setQuantity(nuevaCantidad);
+      setQuantity(productoEnCarrito.cantidad);
     } else {
       setQuantity(cantidadProducto);
       setHasAttemptedExceedLimit(false);
     }
-  }, [carrito, articulo.denominacion, cantidadProducto, quantity, location.pathname]);
+  }, [carrito, articulo.denominacion, cantidadProducto]);
+
+  // 🔄 **EFECTO REACTIVO** para analizar carrito cuando cambie
+  useEffect(() => {
+    // Solo ejecutar en vista carrito y si hay un análisis pendiente
+    if (location.pathname !== '/carrito' || !pendingAnalysis.current) {
+      return;
+    }
+
+    const currentCarritoSize = carrito.reduce((total, item) => total + item.cantidad, 0);
+
+    // Si el carrito cambió desde la última vez
+    if (currentCarritoSize !== lastCarritoSize.current) {
+      lastCarritoSize.current = currentCarritoSize;
+
+      const executeAnalysis = async () => {
+        try {
+          setIsAnalyzing(true);
+          console.log(`🔄 Analizando carrito reactivo para ${articulo.denominacion}`);
+
+          const analisisResultado = await analizarCarrito();
+          console.log(`📋 Análisis reactivo completado:`, analisisResultado);
+
+          if (analisisResultado && !analisisResultado.sePuedeProducirCompleto) {
+            const problemaEsteArticulo = analisisResultado.productosConProblemas?.find(
+              (problema) => problema.articuloId === articulo.id
+            );
+
+            if (problemaEsteArticulo) {
+              const cantidadMaxima = problemaEsteArticulo.cantidadMaximaPosible;
+              const cantidadActual = carrito.find((item) => item.id === articulo.id)?.cantidad ?? 0;
+
+              console.log(`🚫 Limitación detectada para ${articulo.denominacion}:`);
+              console.log(`   - Cantidad máxima posible: ${cantidadMaxima}`);
+              console.log(`   - Cantidad actual: ${cantidadActual}`);
+
+              if (cantidadActual > cantidadMaxima) {
+                console.log(`🔄 Ajustando de ${cantidadActual} a ${cantidadMaxima}`);
+
+                // Decrementar hasta llegar a la cantidad máxima
+                const vecesDecrementar = cantidadActual - cantidadMaxima;
+                for (let i = 0; i < vecesDecrementar; i++) {
+                  decreaseFromCart({ id: articulo.id ?? 0 });
+                }
+              }
+
+              // Marcar que se intentó exceder el límite
+              setHasAttemptedExceedLimit(true);
+            }
+          } else {
+            console.log(`✅ Sin limitaciones para ${articulo.denominacion}`);
+            setHasAttemptedExceedLimit(false);
+          }
+        } catch (error) {
+          console.error('Error en análisis reactivo:', error);
+        } finally {
+          setIsAnalyzing(false);
+          pendingAnalysis.current = false;
+        }
+      };
+
+      executeAnalysis();
+    }
+  }, [
+    carrito,
+    location.pathname,
+    articulo.denominacion,
+    articulo.id,
+    analizarCarrito,
+    decreaseFromCart,
+  ]);
   const handleIncrease = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     event.preventDefault();
 
     if (location.pathname === '/carrito') {
-      // En la vista de carrito, verificar límites antes de agregar
-      const limitacionMaxima = limitacionesProduccion[articulo.id ?? 0];
-      const cantidadActual = carrito.find((item) => item.id === articulo.id)?.cantidad ?? 0;
-
-      if (limitacionMaxima && cantidadActual >= limitacionMaxima) {
-        // No se puede agregar más de lo permitido
-        setHasAttemptedExceedLimit(true);
+      if (isAnalyzing) {
+        console.log('⏳ Análisis en curso, esperando...');
         return;
       }
 
-      // Reiniciar flag cuando se permite agregar
-      setHasAttemptedExceedLimit(false);
+      console.log(`➕ Agregando ${articulo.denominacion} al carrito`);
 
-      // Agregar al carrito y luego analizar para actualizar limitaciones
-      await addToCarrito(articulo, 1);
-      await analizarCarrito(); // Actualizar limitaciones después del cambio
+      // Marcar que hay un análisis pendiente
+      pendingAnalysis.current = true;
+
+      try {
+        // Agregar al carrito - el useEffect detectará el cambio y hará el análisis
+        await addToCarrito(articulo, 1);
+        console.log(`✅ Producto agregado, análisis se ejecutará automáticamente`);
+      } catch (error) {
+        console.error('Error al agregar al carrito:', error);
+        pendingAnalysis.current = false;
+      }
     } else {
       setCantidadProducto(cantidadProducto + 1);
     }
@@ -72,7 +140,7 @@ const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
     event.stopPropagation();
     event.preventDefault();
 
-    // Reiniciar flag cuando se reduce cantidad
+    // SIEMPRE limpiar flag cuando se reduce cantidad
     setHasAttemptedExceedLimit(false);
 
     if (quantity > 1) {
@@ -103,17 +171,21 @@ const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
   // Verificar si el botón + debe estar deshabilitado en vista carrito
   const isIncreaseDisabled = (): boolean => {
     if (location.pathname === '/carrito') {
-      const limitacionMaxima = limitacionesProduccion[articulo.id ?? 0];
-      const cantidadActual = carrito.find((item) => item.id === articulo.id)?.cantidad ?? 0;
-
       // Deshabilitar si:
-      // 1. Hay una limitación y se alcanzó el límite
-      // 2. Se ha intentado exceder el límite (flag activado)
-      return Boolean(
-        (limitacionMaxima && cantidadActual >= limitacionMaxima) || hasAttemptedExceedLimit
-      );
+      // 1. Se está analizando actualmente
+      // 2. Se intentó exceder el límite Y actualmente está en el límite
+      return Boolean(isAnalyzing || (hasAttemptedExceedLimit && isCurrentlyAtLimit()));
     }
     return false;
+  };
+
+  // Función auxiliar para verificar si actualmente está en el límite
+  const isCurrentlyAtLimit = (): boolean => {
+    const articuloIdStr = (articulo.id ?? 0).toString();
+    const limitacionMaxima = limitacionesProduccion[articuloIdStr];
+    const cantidadActual = carrito.find((item) => item.id === articulo.id)?.cantidad ?? 0;
+
+    return Boolean(limitacionMaxima && cantidadActual >= limitacionMaxima);
   };
 
   return (
@@ -135,9 +207,11 @@ const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
         }`}
         title={
           isIncreaseDisabled()
-            ? hasAttemptedExceedLimit
-              ? 'Límite alcanzado - No se puede agregar más'
-              : `Máximo ${limitacionesProduccion[articulo.id ?? 0]} unidades disponibles`
+            ? isAnalyzing
+              ? 'Analizando disponibilidad...'
+              : hasAttemptedExceedLimit
+                ? 'Límite alcanzado - No se puede agregar más'
+                : `Máximo ${limitacionesProduccion[(articulo.id ?? 0).toString()]} unidades disponibles`
             : undefined
         }
       >
