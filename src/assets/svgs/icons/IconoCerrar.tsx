@@ -11,7 +11,7 @@ export const IconoCerrar: React.FC<IconoCerrarProps> = ({ color }) => {
       fill="none"
       stroke={color}
       strokeWidth="2"
-      strokeinecap="round"
+      strokeLinecap="round"
       strokeLinejoin="round"
     >
       <path d="m9 6-6 6 6 6" />

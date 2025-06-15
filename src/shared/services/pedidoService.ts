@@ -58,3 +58,21 @@ export const deletePedido = async (id: number) => {
   const response = await axiosInstance.delete(`${API_BASE_URL}/${id}`);
   return response.data;
 };
+
+/**
+ * Actualizar el estado de un pedido
+ */
+export const updateEstadoPedido = async (pedidoId: number, nuevoEstado: string) => {
+  const response = await axiosInstance.put(
+    `${API_BASE_URL}/${pedidoId}/estado?nuevoEstado=${nuevoEstado}`
+  );
+  return response.data;
+};
+
+/**
+ * Obtener pedidos filtrados por estado
+ */
+export const getPedidosByEstado = async (estado: string) => {
+  const response = await axiosInstance.get(`${API_BASE_URL}?estado=${estado}`);
+  return response.data;
+};
