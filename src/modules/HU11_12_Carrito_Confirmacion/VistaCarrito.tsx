@@ -6,9 +6,10 @@ import { CarritoContext } from '../../shared/providers/CarritoProvider';
 import type { ArticuloManufacturado } from '../../types/Articulo';
 import MetodoPagoModal from './MetodoPagoModal';
 import BtnCantidadProducto from '../HU9_10_Landing_Busqueda/articulos/btnCantidadProducto';
+import BtnCantidadPromocion from './BtnCantidadPromocion';
 
 export const VistaCarrito = () => {
-  const { carrito, removeFromCart } = useCart();
+  const { carrito, promocionesEnCarrito, removeFromCart, removePromocionFromCart } = useCart();
   const [isMetodoPagoOpen, setMetodoPagoOpen] = useState(false);
 
   const carritoContext = useContext(CarritoContext);
@@ -17,6 +18,25 @@ export const VistaCarrito = () => {
   }
 
   const { analizarCarrito, limitacionesProduccion } = carritoContext;
+  // Combinar productos y promociones para mostrar
+  const todosLosItems = [
+    ...carrito.map((item) => ({ ...item, tipo: 'producto' as const })),
+    ...promocionesEnCarrito.map((item) => ({
+      ...item.promocion,
+      cantidad: item.cantidad,
+      tipo: 'promocion' as const,
+    })),
+  ];
+
+  // 🐛 DEBUG: Agregar logs para verificar el estado
+  console.log('🛒 DEBUG VistaCarrito:', {
+    carrito,
+    promocionesEnCarrito,
+    todosLosItems,
+    carritoLength: carrito.length,
+    promocionesLength: promocionesEnCarrito.length,
+    todosLosItemsLength: todosLosItems.length,
+  });
 
   // Analizar carrito cuando se monta el componente o cuando cambia
   useEffect(() => {
@@ -24,10 +44,10 @@ export const VistaCarrito = () => {
       await analizarCarrito();
     };
 
-    if (carrito.length > 0) {
+    if (todosLosItems.length > 0) {
       realizarAnalisis();
     }
-  }, [carrito, analizarCarrito]);
+  }, [carrito, promocionesEnCarrito, analizarCarrito]);
 
   // Función para determinar si un artículo es manufacturado
   const isArticuloManufacturado = (articulo: any): articulo is ArticuloManufacturado => {
@@ -38,12 +58,14 @@ export const VistaCarrito = () => {
   const isArticuloInsumo = (articulo: any): boolean => {
     return 'stockActual' in articulo && 'esParaElaborar' in articulo;
   };
-
   // Función para verificar si hay limitaciones excedidas que impidan la compra
   const hayLimitacionesExcedidas = (): boolean => {
-    return carrito.some((producto) => {
-      const limitacionMaxima = limitacionesProduccion[producto.id ?? 0];
-      return limitacionMaxima && producto.cantidad > limitacionMaxima;
+    return todosLosItems.some((item) => {
+      if (item.tipo === 'producto') {
+        const limitacionMaxima = limitacionesProduccion[item.id ?? 0];
+        return limitacionMaxima && item.cantidad > limitacionMaxima;
+      }
+      return false; // Las promociones no tienen limitaciones individuales
     });
   };
 
@@ -61,25 +83,41 @@ export const VistaCarrito = () => {
 
     setMetodoPagoOpen(true);
   };
+  // Función para obtener mensaje de limitación para un item
+  const getMensajeLimitacion = (item: any) => {
+    if (item.tipo === 'promocion') return null; // Promociones no tienen limitaciones individuales
 
-  // Función para obtener mensaje de limitación para un producto
-  const getMensajeLimitacion = (producto: any) => {
-    if (!producto.id) return null;
+    if (!item.id) return null;
 
-    const limitacionMaxima = limitacionesProduccion[producto.id];
-    const cantidadEnCarrito = (producto as any).cantidad;
+    const limitacionMaxima = limitacionesProduccion[item.id];
+    const cantidadEnCarrito = item.cantidad;
 
     // Solo mostrar mensaje si hay limitación y la cantidad actual excede el límite
     if (!limitacionMaxima || cantidadEnCarrito <= limitacionMaxima) return null;
 
     // Diferentes mensajes según el tipo de artículo
-    if (isArticuloInsumo(producto)) {
+    if (isArticuloInsumo(item)) {
       return `⚠️ Stock limitado: máximo ${limitacionMaxima} unidades disponibles`;
-    } else if (isArticuloManufacturado(producto)) {
+    } else if (isArticuloManufacturado(item)) {
       return `⚠️ Solo se pueden producir hasta ${limitacionMaxima} unidades de este producto`;
     }
 
     return `⚠️ Cantidad limitada a ${limitacionMaxima} unidades`;
+  }; // Función para obtener el precio de un item
+  const getPrecioItem = (item: any): number => {
+    if (item.tipo === 'promocion') {
+      return item.precioPromocional || item.precioVenta || 0;
+    }
+    return item.precioVenta || 0;
+  };
+
+  // Función para manejar eliminación según el tipo
+  const handleEliminarItem = (item: any) => {
+    if (item.tipo === 'promocion') {
+      removePromocionFromCart(item.id);
+    } else {
+      removeFromCart(item);
+    }
   };
 
   return (
@@ -90,59 +128,76 @@ export const VistaCarrito = () => {
         <div className="container min-h-full mx-auto px-6 py-12 flex gap-4 flex-col md:flex-row">
           {/* Productos */}
           <div className="bg-blanco min-h-full p-4 rounded-xl shadow-lg shadow-gray-300 w-full mr-4 flex flex-col justify-between">
+            {' '}
             <div>
-              <h2 className="text-3xl font-bold mb-4">Carrito</h2>
-              {carrito.map((producto, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between border-t border-gray-300 py-4"
-                >
-                  <div className="flex gap-6">
-                    {/* Imagen del producto */}
-                    <picture className="hidden md:block w-40 h-auto object-cover rounded-lg">
-                      <source type="image/webp" />
-                      <img
-                        src={
-                          producto.imagen?.url ||
-                          (Array.isArray(producto.imagen) && producto.imagen.length > 0
-                            ? producto.imagen[0]
-                            : '/img/Default.png')
-                        }
-                        alt={producto.denominacion}
-                        className="w-20 h-20 object-cover rounded-lg"
-                      />
-                    </picture>
-                    <div className="w-full">
-                      <h3 className="text-md md:text-xl  font-semibold">{producto.denominacion}</h3>
-                      {getMensajeLimitacion(producto) && (
-                        <p className="text-sm text-orange-600 font-medium mt-1">
-                          {getMensajeLimitacion(producto)}
-                        </p>
-                      )}
-                      <button
-                        className="text-lg md:text-xl  text-primary hover:underline"
-                        onClick={() => removeFromCart(producto)}
-                      >
-                        Eliminar
-                      </button>
-                    </div>
-                  </div>{' '}
-                  <div className="flex items-center">
-                    <BtnCantidadProducto
-                      articulo={producto}
-                      cantidadProducto={producto.cantidad}
-                      setCantidadProducto={() => {
-                        /* No se usa en vista carrito */
-                      }}
-                    />
-                    <p className="ml-6 sm:text-xl font-semibold flex justify-end">
-                      ${(producto.precioVenta * producto.cantidad).toFixed(2)}
-                    </p>
-                  </div>
+              <h2 className="text-3xl font-bold mb-4">🛒 Carrito</h2>
+              {todosLosItems.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-lg text-gray-500">Tu carrito está vacío</p>
                 </div>
-              ))}
+              ) : (
+                todosLosItems.map((item, index) => (
+                  <div
+                    key={`${item.tipo}-${item.id}-${index}`}
+                    className="flex items-center justify-between border-t border-gray-300 py-4"
+                  >
+                    <div className="flex gap-6">
+                      {/* Imagen del item */}
+                      <picture className="hidden md:block w-40 h-auto object-cover rounded-lg">
+                        <source type="image/webp" />
+                        <img
+                          src={
+                            item.imagen?.url ||
+                            (Array.isArray(item.imagen) && item.imagen.length > 0
+                              ? item.imagen[0]
+                              : '/img/Default.png')
+                          }
+                          alt={item.denominacion}
+                          className="w-20 h-20 object-cover rounded-lg"
+                        />
+                      </picture>
+                      <div className="w-full">
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-md md:text-xl font-semibold">{item.denominacion}</h3>
+                          {item.tipo === 'promocion' && (
+                            <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+                              🎁 PROMO
+                            </span>
+                          )}
+                        </div>
+                        {getMensajeLimitacion(item) && (
+                          <p className="text-sm text-orange-600 font-medium mt-1">
+                            {getMensajeLimitacion(item)}
+                          </p>
+                        )}
+                        <button
+                          className="text-lg md:text-xl text-primary hover:underline"
+                          onClick={() => handleEliminarItem(item)}
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    </div>{' '}
+                    <div className="flex items-center">
+                      {item.tipo === 'producto' ? (
+                        <BtnCantidadProducto
+                          articulo={item}
+                          cantidadProducto={item.cantidad}
+                          setCantidadProducto={() => {
+                            /* No se usa en vista carrito */
+                          }}
+                        />
+                      ) : (
+                        <BtnCantidadPromocion promocion={item} cantidadPromocion={item.cantidad} />
+                      )}
+                      <p className="ml-6 sm:text-xl font-semibold flex justify-end">
+                        ${(getPrecioItem(item) * item.cantidad).toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
-
             {/* Barra de Envío: Retiro en Local */}
             <div className="flex justify-between items-center py-2 text-primary mt-4">
               <span className="font-semibold text-black text-lg md:text-xl ">Envío</span>
@@ -156,19 +211,16 @@ export const VistaCarrito = () => {
 
           {/* Resumen de compra */}
           <div className="bg-blanco p-4 rounded-xl shadow-lg shadow-gray-300 max-w-80 min-h-96 flex flex-col">
-            <h3 className="text-xl md:text-2xl font-semibold">Resumen Compra</h3>
+            <h3 className="text-xl md:text-2xl font-semibold">Resumen Compra</h3>{' '}
             <div className="flex-grow">
               <div className="flex justify-between mt-2 text-lg sm:text-xl">
                 <span className="text-nowrap">
-                  Productos ({carrito.reduce((total, producto) => total + producto.cantidad, 0)})
+                  Items ({todosLosItems.reduce((total, item) => total + item.cantidad, 0)})
                 </span>
                 <span className="pl-4 text-negro font-bold">
                   $
-                  {carrito
-                    .reduce(
-                      (total, producto) => total + producto.precioVenta * producto.cantidad,
-                      0
-                    )
+                  {todosLosItems
+                    .reduce((total, item) => total + getPrecioItem(item) * item.cantidad, 0)
                     .toFixed(2)}
                 </span>
               </div>
@@ -181,13 +233,13 @@ export const VistaCarrito = () => {
               <span>Total</span>
               <span>
                 $
-                {carrito
-                  .reduce((total, producto) => total + producto.precioVenta * producto.cantidad, 0)
+                {todosLosItems
+                  .reduce((total, item) => total + getPrecioItem(item) * item.cantidad, 0)
                   .toFixed(2)}
               </span>
             </div>
             {/* Condicional para mostrar el botón Comprar */}
-            {carrito.length > 0 && (
+            {todosLosItems.length > 0 && (
               <button
                 onClick={handleComprarClick}
                 disabled={hayLimitacionesExcedidas()}
@@ -207,13 +259,12 @@ export const VistaCarrito = () => {
             )}
           </div>
         </div>
-
-        {/* Modal de método de pago */}
+        {/* Modal de método de pago */}{' '}
         <MetodoPagoModal
           isOpen={isMetodoPagoOpen}
           onClose={() => setMetodoPagoOpen(false)}
-          total={carrito.reduce(
-            (total, producto) => total + producto.precioVenta * producto.cantidad,
+          total={todosLosItems.reduce(
+            (total, item) => total + getPrecioItem(item) * item.cantidad,
             0
           )}
         />

@@ -109,6 +109,7 @@ export const getArticulosByCategoriaWithDeleted = async (categoriaId: number) =>
 export const analizarProduccion = async (
   articulos: Array<{ articuloId: number; cantidad: number }>
 ) => {
+  console.log('analizandoProduccion :>> ', articulos);
   const response = await axiosInstance.post(`${API_BASE_URL}/analizar-produccion`, {
     articulos,
   });

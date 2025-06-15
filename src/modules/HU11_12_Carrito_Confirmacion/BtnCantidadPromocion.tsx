@@ -1,0 +1,98 @@
+import React, { useContext, useEffect, useState } from 'react';
+import { CarritoContext } from '../../shared/providers/CarritoProvider';
+import { useLocation } from 'react-router-dom';
+import type { Promocion } from '../../types/Promocion';
+
+interface BtnCantidadPromocionProps {
+  promocion: Promocion;
+  cantidadPromocion: number;
+}
+
+const BtnCantidadPromocion: React.FC<BtnCantidadPromocionProps> = ({
+  promocion,
+  cantidadPromocion,
+}) => {
+  const carritoContext = useContext(CarritoContext);
+  const [quantity, setQuantity] = useState(cantidadPromocion);
+  const location = useLocation();
+
+  if (!carritoContext) {
+    throw new Error('BtnCantidadPromocion must be used within a CarritoProvider');
+  }
+
+  const {
+    promocionesEnCarrito,
+    addPromocionToCarrito,
+    decreasePromocionFromCart,
+    analizarCarrito,
+  } = carritoContext;
+
+  useEffect(() => {
+    const promocionEnCarrito = promocionesEnCarrito.find(
+      (item) => item.promocion.id === promocion.id
+    );
+    if (promocionEnCarrito) {
+      setQuantity(promocionEnCarrito.cantidad);
+    } else {
+      setQuantity(cantidadPromocion);
+    }
+  }, [promocionesEnCarrito, promocion.id, cantidadPromocion]);
+
+  const handleIncrease = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    event.preventDefault();
+
+    if (location.pathname === '/carrito') {
+      // En la vista de carrito, agregar promoción y analizar
+      await addPromocionToCarrito(promocion, 1);
+      await analizarCarrito(); // Analizar carrito después del cambio
+    }
+  };
+
+  const handleDecrease = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    event.preventDefault();
+
+    if (quantity > 1) {
+      setQuantity(quantity - 1);
+      if (location.pathname === '/carrito') {
+        decreasePromocionFromCart(promocion.id);
+        await analizarCarrito(); // Analizar carrito después del cambio
+      }
+    } else {
+      // Si la cantidad es 1 y estamos en /carrito, elimina la promoción del carrito
+      if (location.pathname === '/carrito') {
+        decreasePromocionFromCart(promocion.id);
+        await analizarCarrito(); // Analizar carrito después del cambio
+      }
+    }
+  };
+
+  const cantProd = () => {
+    if (location.pathname === '/carrito') {
+      return quantity;
+    } else {
+      return cantidadPromocion;
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-between space-x-2 sm:space-x-4 rounded-3xl border-t-gray-300 border-2 sm:w-32">
+      <button
+        onClick={handleDecrease}
+        className="px-3 py-2 bg-gray-300 text-black rounded-full hover:bg-gray-400"
+      >
+        -
+      </button>
+      <span className="sm:text-lg font-semibold">{cantProd()}</span>
+      <button
+        onClick={handleIncrease}
+        className="px-3 py-2 bg-primary text-white rounded-full hover:font-bold hover:bg-primary-dark"
+      >
+        +
+      </button>
+    </div>
+  );
+};
+
+export default BtnCantidadPromocion;

@@ -6,7 +6,9 @@ import { ActiveCategoryIndicator } from './categorias/ActiveCategoryIndicator';
 import { CarritoContext } from '../../shared/providers/CarritoProvider';
 import { useProductStore, getArticuloCategoriaId } from '../../shared/providers/ProductProvider';
 import type { ArticuloInsumo, ArticuloManufacturado } from '../../types/Articulo';
+import type { Promocion } from '../../types/Promocion';
 import { ListaCategorias } from './categorias/ListaCategorias';
+import { ModalPromocion } from '../HU11_12_Carrito_Confirmacion/ModalPromocion';
 import BtnFlotanteCarrito from '../HU11_12_Carrito_Confirmacion/BtnFlotanteCarrito';
 
 interface PaginaPrincipalClientesProps {
@@ -22,11 +24,22 @@ export const PaginaPrincipalClientes = ({
   handleCategoryFilter,
   filteredProducts,
 }: PaginaPrincipalClientesProps) => {
-  const { allCategorias } = useProductStore(); // Obtenemos categorías del store
+  // 🎁 Obtener estados de promociones del store
+  const {
+    allCategorias,
+    activeCategory,
+    showPromociones,
+    filteredItemsIncludingPromociones, // 🔄 Usar los items combinados
+  } = useProductStore();
+
   const [articuloModal, setArticuloModal] = useState<ArticuloManufacturado | ArticuloInsumo | null>(
     null
   );
   const [isModalOpen, setModalOpen] = useState(false);
+
+  // 🎁 Estados para promociones
+  const [promocionModal, setPromocionModal] = useState<Promocion | null>(null);
+  const [isPromocionModalOpen, setPromocionModalOpen] = useState(false);
 
   // Calcular las categorías que tienen productos
   const categoriasConProductos = useMemo(() => {
@@ -96,49 +109,75 @@ export const PaginaPrincipalClientes = ({
     setModalOpen(false); // Cerrar el modal
     setArticuloModal(null); // Resetear el artículo modal para permitir abrir el mismo producto nuevamente
   };
-
   const handleProductClick = (articulo: ArticuloManufacturado | ArticuloInsumo | null) => {
     setArticuloModal(articulo); // Actualizar el producto modal y abrir el modal
   };
 
+  // 🎁 Funciones para manejar modal de promociones
+  const handlePromocionClick = (promocion: Promocion | null) => {
+    setPromocionModal(promocion);
+  };
+
+  const handleClosePromocionModal = () => {
+    setPromocionModalOpen(false);
+    setPromocionModal(null);
+  };
+
+  // 🎁 useEffect para promociones
+  useEffect(() => {
+    if (promocionModal) {
+      setPromocionModalOpen(true);
+    }
+  }, [promocionModal]);
   const carritoContext = useContext(CarritoContext);
   if (!carritoContext) {
     throw new Error('Header must be used within a CarritoProvider');
   }
-  const { carrito } = carritoContext;
-  // Calculate total items in the cart
-  const totalItems = carrito.reduce((total, articulo) => total + articulo.cantidad, 0);
+  const { carrito, promocionesEnCarrito } = carritoContext; // 🎁 Incluir promociones del carrito
 
-  // Obtenemos la categoría activa para saber si mostrar o no el slider
-  const { activeCategory } = useProductStore();
-  const showSlider = !searchTerm && !activeCategory;
-  const noResults = filteredProducts.length === 0;
-
+  // Calculate total items in the cart (productos + promociones)
+  const totalProductos = carrito.reduce((total, articulo) => total + articulo.cantidad, 0);
+  const totalPromociones = promocionesEnCarrito.reduce((total, promo) => total + promo.cantidad, 0);
+  const totalItems = totalProductos + totalPromociones; // Determinar si mostrar slider y si no hay resultados
+  const showSlider = !searchTerm && !activeCategory && !showPromociones;
+  const noResults = filteredItemsIncludingPromociones.length === 0;
   return (
     <div className="container mx-auto px-4 md:px-6 py-4 flex flex-col min-h-screen w-full">
-      {showSlider && <ActiveSlider setArticuloModal={setArticuloModal} />}
+      {showSlider && <ActiveSlider setArticuloModal={setArticuloModal} />}{' '}
       <ListaCategorias
         categorias={allCategorias}
         onSearch={handleSearch}
         onCategoryFilter={handleCategoryFilter}
         categoriasConProductosIds={categoriasConProductos}
+        activeCategory={activeCategory}
       />
       <ActiveCategoryIndicator />
+      {/* Componente unificado para productos y promociones */}{' '}
       {noResults ? (
         <p className="text-center text-xl mt-8">
           {searchTerm
             ? `No se encontraron productos para "${searchTerm}"`
             : activeCategory
               ? `No hay productos disponibles en esta categoría`
-              : null}
+              : 'No hay productos disponibles'}
         </p>
       ) : (
-        <ListaProductos articulos={filteredProducts} onProductClick={handleProductClick} />
+        <ListaProductos
+          articulos={filteredItemsIncludingPromociones}
+          onProductClick={handleProductClick}
+          onPromocionClick={handlePromocionClick}
+        />
       )}
+      {/* Modales */}
       <ModalProducto
         articulo={articuloModal ?? null}
         isOpen={isModalOpen}
         onClose={handleCloseModal}
+      />
+      <ModalPromocion
+        promocion={promocionModal}
+        isOpen={isPromocionModalOpen}
+        onClose={handleClosePromocionModal}
       />
       {totalItems > 0 ? <BtnFlotanteCarrito productCount={totalItems} /> : null}
     </div>

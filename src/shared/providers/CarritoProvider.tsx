@@ -11,9 +11,14 @@ import type {
   ArticuloManufacturado,
   AnalisisProduccionResponse,
 } from '../../types/Articulo';
+import type { Promocion, PromocionEnCarrito } from '../../types/Promocion';
 import { useProductStore } from './ProductProvider';
 import { useNotificacion } from '../hooks/useNotificacion';
 import { analizarProduccion } from '../services/articuloService';
+import {
+  analizarPromocionAvailability,
+  getArticulosFromPromocion,
+} from '../../modules/HU11_12_Carrito_Confirmacion/service/Logic';
 
 // Define the state shape - El carrito puede contener cualquier tipo de artículo
 interface ArticuloContext extends Articulo {
@@ -22,11 +27,13 @@ interface ArticuloContext extends Articulo {
 
 interface State {
   carrito: ArticuloContext[];
+  promocionesEnCarrito: PromocionEnCarrito[]; // 🎁 Nuevo estado para promociones
 }
 
 // Define the context value shape
 interface CarritoContextValue {
   carrito: ArticuloContext[];
+  promocionesEnCarrito: PromocionEnCarrito[]; // 🎁 Exposer promociones en carrito
   addToCarrito: (articulo: Articulo, cantidad: number) => Promise<boolean>; // Devuelve true si se pudo agregar, false si no
   removeFromCart: (articulo: { denominacion: string }) => void;
   decreaseFromCart: (articulo: { id: number }) => void;
@@ -36,6 +43,12 @@ interface CarritoContextValue {
   analizarCarrito: () => Promise<AnalisisProduccionResponse | null>; // Nueva función para analizar todo el carrito
   limitacionesProduccion: Record<number, number>; // ID del producto -> cantidad máxima producible
   ajustarCantidadesCarrito: () => Promise<void>; // Función para ajustar cantidades manualmente
+
+  // 🎁 **NUEVAS FUNCIONES PARA PROMOCIONES**
+  addPromocionToCarrito: (promocion: Promocion, cantidad: number) => Promise<boolean>;
+  removePromocionFromCart: (promocionId: number) => void;
+  decreasePromocionFromCart: (promocionId: number) => void;
+  isPromocionAvailable: (promocion: Promocion) => Promise<boolean>;
 }
 // Create the context
 export const CarritoContext = createContext<CarritoContextValue | undefined>(undefined);
@@ -70,6 +83,7 @@ const limpiarCarritoAntiguo = (): ArticuloContext[] => {
 // Define the initial state
 const initialState: State = {
   carrito: limpiarCarritoAntiguo(),
+  promocionesEnCarrito: [], // 🎁 Inicializar array vacío de promociones
 };
 
 // Define the reducer
@@ -123,8 +137,6 @@ const carritoReducer = (state: State, action: any): State => {
         };
       }
       return state;
-    case 'CLEAR_CARRITO':
-      return { ...state, carrito: [] };
     case 'ADJUST_QUANTITIES':
       // Ajustar cantidades basado en limitaciones de producción
       // Solo para productos manufacturados, no para insumos
@@ -139,6 +151,67 @@ const carritoReducer = (state: State, action: any): State => {
         return item;
       });
       return { ...state, carrito: updatedCarritoWithLimits };
+
+    // 🎁 **NUEVOS CASOS PARA PROMOCIONES**
+    case 'ADD_PROMOCION_TO_CARRITO':
+      const existingPromocionIndex = state.promocionesEnCarrito.findIndex(
+        (item) => item.promocion.id === action.payload.promocion.id
+      );
+
+      if (existingPromocionIndex !== -1) {
+        const updatedPromociones = [...state.promocionesEnCarrito];
+        updatedPromociones[existingPromocionIndex] = {
+          ...updatedPromociones[existingPromocionIndex],
+          cantidad:
+            updatedPromociones[existingPromocionIndex].cantidad + (action.payload.cantidad ?? 1),
+        };
+        return { ...state, promocionesEnCarrito: updatedPromociones };
+      }
+
+      return {
+        ...state,
+        promocionesEnCarrito: [
+          ...state.promocionesEnCarrito,
+          {
+            promocion: action.payload.promocion,
+            cantidad: action.payload.cantidad ?? 1,
+            disponible: action.payload.disponible ?? true,
+          },
+        ],
+      };
+
+    case 'REMOVE_PROMOCION_FROM_CARRITO':
+      return {
+        ...state,
+        promocionesEnCarrito: state.promocionesEnCarrito.filter(
+          (item) => item.promocion.id !== action.payload.promocionId
+        ),
+      };
+
+    case 'DECREASE_PROMOCION_FROM_CARRITO':
+      const promocionIndex = state.promocionesEnCarrito.findIndex(
+        (item) => item.promocion.id === action.payload.promocionId
+      );
+      if (promocionIndex !== -1) {
+        const updatedPromociones = [...state.promocionesEnCarrito];
+        if (updatedPromociones[promocionIndex].cantidad > 1) {
+          updatedPromociones[promocionIndex] = {
+            ...updatedPromociones[promocionIndex],
+            cantidad: updatedPromociones[promocionIndex].cantidad - 1,
+          };
+        } else {
+          updatedPromociones.splice(promocionIndex, 1);
+        }
+        return {
+          ...state,
+          promocionesEnCarrito: updatedPromociones,
+        };
+      }
+      return state;
+
+    case 'CLEAR_CARRITO':
+      return { ...state, carrito: [], promocionesEnCarrito: [] }; // Limpiar también promociones
+
     default:
       return state;
   }
@@ -255,12 +328,66 @@ export const CarritoProvider: React.FC<{ children: ReactNode }> = ({ children })
   const decreaseFromCart = useCallback((articulo: { id: number }) => {
     dispatch({ type: 'DECREASE_FROM_CARRITO', payload: articulo });
   }, []);
-
   const clearCarrito = useCallback(() => {
     dispatch({ type: 'CLEAR_CARRITO' });
     localStorage.removeItem('carrito');
   }, []);
 
+  // 🎁 **NUEVAS FUNCIONES PARA PROMOCIONES**
+
+  // Verificar disponibilidad de una promoción
+  const isPromocionAvailable = useCallback(async (promocion: Promocion): Promise<boolean> => {
+    try {
+      return await analizarPromocionAvailability(promocion);
+    } catch (error) {
+      console.error('Error verificando disponibilidad de promoción:', error);
+      return false;
+    }
+  }, []);
+
+  // Agregar promoción al carrito
+  const addPromocionToCarrito = useCallback(
+    async (promocion: Promocion, cantidad: number = 1): Promise<boolean> => {
+      try {
+        // Verificar disponibilidad antes de agregar
+        const available = await isPromocionAvailable(promocion);
+
+        if (!available) {
+          mostrarNotificacion(
+            `⚠️ No hay suficientes insumos para la promoción ${promocion.denominacion}`,
+            'error',
+            3000
+          );
+          return false;
+        }
+
+        // Agregar al carrito si está disponible
+        dispatch({
+          type: 'ADD_PROMOCION_TO_CARRITO',
+          payload: { promocion, cantidad, disponible: available },
+        });
+
+        mostrarNotificacion(`🎁 ${promocion.denominacion} añadida al carrito`, 'success', 2000);
+
+        return true;
+      } catch (error) {
+        console.error('Error al agregar promoción al carrito:', error);
+        mostrarNotificacion('Error al agregar promoción al carrito', 'error', 3000);
+        return false;
+      }
+    },
+    [isPromocionAvailable, mostrarNotificacion]
+  );
+
+  // Remover promoción del carrito
+  const removePromocionFromCart = useCallback((promocionId: number) => {
+    dispatch({ type: 'REMOVE_PROMOCION_FROM_CARRITO', payload: { promocionId } });
+  }, []);
+
+  // Disminuir cantidad de promoción
+  const decreasePromocionFromCart = useCallback((promocionId: number) => {
+    dispatch({ type: 'DECREASE_PROMOCION_FROM_CARRITO', payload: { promocionId } });
+  }, []);
   // Función para analizar todo el carrito con el nuevo endpoint
   const analizarCarrito = useCallback(async (): Promise<AnalisisProduccionResponse | null> => {
     // Filtrar productos manufacturados del carrito
@@ -271,22 +398,34 @@ export const CarritoProvider: React.FC<{ children: ReactNode }> = ({ children })
     // Filtrar productos insumos del carrito
     const productosInsumos = state.carrito.filter((item) => isArticuloInsumo(item) && item.id);
 
-    // Combinar todos los productos para análisis
-    const todosLosProductos = [...productosManufacturados, ...productosInsumos];
+    // 🎁 **INCLUIR PRODUCTOS DE PROMOCIONES**
+    const productosDePromociones: Array<{ articuloId: number; cantidad: number }> = [];
+    state.promocionesEnCarrito.forEach((promocionEnCarrito) => {
+      const articulosDePromocion = getArticulosFromPromocion(
+        promocionEnCarrito.promocion,
+        promocionEnCarrito.cantidad
+      );
+      productosDePromociones.push(...articulosDePromocion);
+    });
 
-    if (todosLosProductos.length === 0) {
+    // Combinar todos los productos para análisis (carrito + promociones)
+    const todosLosProductos = [...productosManufacturados, ...productosInsumos];
+    const todosLosArticulosParaAnalizar = [
+      ...todosLosProductos.map((item) => ({
+        articuloId: item.id,
+        cantidad: item.cantidad,
+      })),
+      ...productosDePromociones,
+    ];
+
+    if (todosLosArticulosParaAnalizar.length === 0) {
       return null; // No hay productos para analizar
     }
 
     try {
       setIsProcessingInBackground(true);
 
-      const articulosParaAnalizar = todosLosProductos.map((item) => ({
-        articuloId: item.id,
-        cantidad: item.cantidad,
-      }));
-
-      const analisis = await analizarProduccion(articulosParaAnalizar);
+      const analisis = await analizarProduccion(todosLosArticulosParaAnalizar);
 
       // Limpiar limitaciones existentes primero
       const nuevasLimitaciones: Record<string, number> = {};
@@ -350,11 +489,11 @@ export const CarritoProvider: React.FC<{ children: ReactNode }> = ({ children })
       });
     }
   }, [limitacionesProduccion, mostrarNotificacion]);
-
   return (
     <CarritoContext.Provider
       value={{
         carrito: state.carrito,
+        promocionesEnCarrito: state.promocionesEnCarrito, // 🎁 Exposer promociones
         addToCarrito,
         removeFromCart,
         decreaseFromCart,
@@ -364,6 +503,11 @@ export const CarritoProvider: React.FC<{ children: ReactNode }> = ({ children })
         analizarCarrito,
         limitacionesProduccion,
         ajustarCantidadesCarrito,
+        // 🎁 Nuevas funciones de promociones
+        addPromocionToCarrito,
+        removePromocionFromCart,
+        decreasePromocionFromCart,
+        isPromocionAvailable,
       }}
     >
       {children}
