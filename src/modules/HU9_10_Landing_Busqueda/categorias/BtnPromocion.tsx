@@ -63,7 +63,7 @@ export const BtnPromocion = ({
                       : 'bg-blanco text-negro hover:bg-blanco/80'
                   }`}
     >
-      🎁 Promociones
+      Promociones
     </button>
   );
 };

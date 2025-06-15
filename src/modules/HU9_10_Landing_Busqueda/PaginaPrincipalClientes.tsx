@@ -9,6 +9,7 @@ import type { ArticuloInsumo, ArticuloManufacturado } from '../../types/Articulo
 import type { Promocion } from '../../types/Promocion';
 import { ListaCategorias } from './categorias/ListaCategorias';
 import { ModalPromocion } from '../HU11_12_Carrito_Confirmacion/ModalPromocion';
+import { CardPromocion } from '../HU11_12_Carrito_Confirmacion/CardPromocion';
 import BtnFlotanteCarrito from '../HU11_12_Carrito_Confirmacion/BtnFlotanteCarrito';
 
 interface PaginaPrincipalClientesProps {
@@ -30,6 +31,8 @@ export const PaginaPrincipalClientes = ({
     activeCategory,
     showPromociones,
     filteredItemsIncludingPromociones, // 🔄 Usar los items combinados
+    filteredPromociones, // 🎁 Obtener promociones filtradas
+    promocionAvailability, // 🎁 Disponibilidad de promociones
   } = useProductStore();
 
   const [articuloModal, setArticuloModal] = useState<ArticuloManufacturado | ArticuloInsumo | null>(
@@ -141,9 +144,19 @@ export const PaginaPrincipalClientes = ({
   const totalItems = totalProductos + totalPromociones; // Determinar si mostrar slider y si no hay resultados
   const showSlider = !searchTerm && !activeCategory && !showPromociones;
   const noResults = filteredItemsIncludingPromociones.length === 0;
+  // 🎁 Filtrar promociones disponibles para mostrar al inicio
+  const promocionesDisponibles = filteredPromociones.filter(
+    (promocion) => promocionAvailability[promocion.id] !== false
+  );
+
   return (
     <div className="container mx-auto px-4 md:px-6 py-4 flex flex-col min-h-screen w-full">
-      {showSlider && <ActiveSlider setArticuloModal={setArticuloModal} />}{' '}
+      {showSlider && (
+        <ActiveSlider
+          setArticuloModal={setArticuloModal}
+          setPromocionModal={handlePromocionClick}
+        />
+      )}
       <ListaCategorias
         categorias={allCategorias}
         onSearch={handleSearch}
@@ -151,6 +164,24 @@ export const PaginaPrincipalClientes = ({
         categoriasConProductosIds={categoriasConProductos}
         activeCategory={activeCategory}
       />
+      {!searchTerm && !activeCategory && !showPromociones && promocionesDisponibles.length > 0 && (
+        <div className="container pt-4 mx-auto p-4 px-0 flex flex-wrap md:gap-6 mb-6">
+          <div className="mb-4 w-full">
+            <h2 className="text-2xl font-bold mb-4 text-negro border-b-2 border-primary pb-2">
+              Promociones Especiales
+            </h2>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-5 md:gap-6 flex-wrap">
+              {promocionesDisponibles.map((promocionNormalizada) => (
+                <CardPromocion
+                  key={`promocion-inicio-${promocionNormalizada.id}`}
+                  promocion={promocionNormalizada.promocionOriginal}
+                  setPromocionModal={handlePromocionClick}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
       <ActiveCategoryIndicator />
       {/* Componente unificado para productos y promociones */}{' '}
       {noResults ? (

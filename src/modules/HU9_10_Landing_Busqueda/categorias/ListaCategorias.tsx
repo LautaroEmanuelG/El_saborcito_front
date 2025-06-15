@@ -72,7 +72,6 @@ export const ListaCategorias = ({
   }, [todasCategorias, categoriasConProductosIds]);
   return (
     <div className="container gap-2 sm:gap-6 py-4 flex w-full flex-wrap justify-start items-start">
-      {/* 🎁 Botón para promociones usando el mismo patrón de BtnCategoria */}
       <BtnPromocion
         onCategoryFilter={onCategoryFilter}
         termAnterior={termAnterior}
