@@ -19,6 +19,11 @@ export const useProductSearch = (initialValue: string = '') => {
     handleCategoryFilter,
     setSearchTerm,
     resetFilters,
+    // 🎁 Nuevos estados para promociones
+    allPromociones,
+    filteredPromociones,
+    showPromociones,
+    toggleShowPromociones,
   } = useProductStore();
 
   // Aplicar valor inicial si existe y los productos ya están cargados
@@ -32,7 +37,6 @@ export const useProductSearch = (initialValue: string = '') => {
   const handleSearchInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     handleSearch(event.target.value);
   };
-
   return {
     searchTerm,
     activeCategory,
@@ -46,5 +50,10 @@ export const useProductSearch = (initialValue: string = '') => {
     resetFilters,
     isLoading,
     error,
+    // 🎁 Nuevos valores para promociones
+    allPromociones,
+    filteredPromociones,
+    showPromociones,
+    toggleShowPromociones,
   };
 };

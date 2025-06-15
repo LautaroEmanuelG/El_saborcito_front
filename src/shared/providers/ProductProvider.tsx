@@ -2,12 +2,18 @@ import { ReactNode, createContext, useContext, useEffect } from 'react';
 import { create } from 'zustand';
 import type { ArticuloManufacturado, ArticuloInsumo } from '../../types/Articulo';
 import type { Categoria } from '../../types/Categoria';
+import type { Promocion, PromocionNormalizada } from '../../types/Promocion';
 import { getAllCategorias } from '../services/categoriaService';
 import {
   getAllArticuloManufacturados,
   canBeManufactured,
 } from '../services/articuloManufacturadoService';
 import { getAllArticuloInsumoNoEsParaElaborar } from '../services/articuloInsumoService';
+import {
+  getAllPromocionesVigentes,
+  normalizePromociones,
+  analizarPromocionAvailability,
+} from '../../modules/HU11_12_Carrito_Confirmacion/service/Logic';
 
 // Helper para obtener el ID de categoría de manera consistente
 export const getArticuloCategoriaId = (
@@ -27,9 +33,35 @@ export const getArticuloCategoriaId = (
   return undefined;
 };
 
+// 🔄 Helper para detectar si un item es una promoción normalizada
+export const isPromocionNormalizada = (
+  item: ArticuloManufacturado | ArticuloInsumo | PromocionNormalizada
+): item is PromocionNormalizada => {
+  return 'tipo' in item && item.tipo === 'promocion';
+};
+
+// 🔄 Helper para obtener ID de cualquier item (producto o promoción)
+export const getItemId = (
+  item: ArticuloManufacturado | ArticuloInsumo | PromocionNormalizada
+): number => {
+  return item.id;
+};
+
+// 🔄 Helper para combinar productos y promociones cuando están activas
+export const combineProductsAndPromociones = (
+  products: (ArticuloManufacturado | ArticuloInsumo)[],
+  promociones: PromocionNormalizada[],
+  showPromociones: boolean
+): (ArticuloManufacturado | ArticuloInsumo | PromocionNormalizada)[] => {
+  if (showPromociones) {
+    return [...promociones]; // Solo promociones cuando están activas
+  }
+  return [...products]; // Solo productos cuando no están activas las promociones
+};
+
 // Definición del tipo de estado para el store
 type ProductState = {
-  // Estados
+  // Estados existentes
   allProducts: (ArticuloManufacturado | ArticuloInsumo)[];
   filteredProducts: (ArticuloManufacturado | ArticuloInsumo)[];
   allCategorias: Categoria[];
@@ -37,24 +69,44 @@ type ProductState = {
   activeCategory: string | string[] | null;
   isLoading: boolean;
   error: string | null;
-  // Nuevo: Estado de disponibilidad centralizado
+  // Estado de disponibilidad centralizado
   productAvailability: Record<number, boolean>;
 
-  // Acciones
+  // 🎁 Nuevos estados para promociones (integradas como productos especiales)
+  allPromociones: Promocion[];
+  filteredPromociones: PromocionNormalizada[];
+  promocionesVigentes: Promocion[];
+  promocionAvailability: Record<number, boolean>;
+  showPromociones: boolean;
+  // 🔄 Nuevo: productos combinados (productos + promociones normalizadas)
+  allItemsIncludingPromociones: (ArticuloManufacturado | ArticuloInsumo | PromocionNormalizada)[];
+  filteredItemsIncludingPromociones: (
+    | ArticuloManufacturado
+    | ArticuloInsumo
+    | PromocionNormalizada
+  )[];
+
+  // Acciones existentes
   fetchAllData: () => Promise<void>;
   setSearchTerm: (term: string) => void;
   handleSearch: (query: string | string[]) => void;
   handleCategoryFilter: (category: string | string[]) => void;
   resetFilters: () => void;
-  // Nuevas acciones para manejar disponibilidad
+  // Acciones para manejar disponibilidad de productos
   updateProductAvailability: (productId: number, available: boolean) => void;
   checkSingleProductAvailability: (productId: number) => Promise<void>;
   getArticuloCategoriaId: (articulo: ArticuloManufacturado | ArticuloInsumo) => number | undefined;
+
+  // 🎁 Nuevas acciones para promociones
+  fetchPromociones: () => Promise<void>;
+  updatePromocionAvailability: (promocionId: number, available: boolean) => void;
+  checkPromocionAvailability: (promocionId: number) => Promise<void>;
+  toggleShowPromociones: () => void;
 };
 
 // Creación del store de Zustand
 export const useProductStore = create<ProductState>((set, get) => ({
-  // Estados iniciales
+  // Estados iniciales de productos
   allProducts: [],
   filteredProducts: [],
   allCategorias: [],
@@ -63,6 +115,15 @@ export const useProductStore = create<ProductState>((set, get) => ({
   isLoading: false,
   error: null,
   productAvailability: {},
+  // 🎁 Estados iniciales de promociones
+  allPromociones: [],
+  filteredPromociones: [],
+  promocionesVigentes: [],
+  promocionAvailability: {},
+  showPromociones: false,
+  // 🔄 Estados combinados (productos + promociones)
+  allItemsIncludingPromociones: [],
+  filteredItemsIncludingPromociones: [],
 
   // Incluimos la función en el store
   getArticuloCategoriaId,
@@ -76,7 +137,6 @@ export const useProductStore = create<ProductState>((set, get) => ({
       },
     }));
   },
-
   // Nueva función para verificar disponibilidad de un producto específico en background
   checkSingleProductAvailability: async (productId: number) => {
     try {
@@ -87,6 +147,98 @@ export const useProductStore = create<ProductState>((set, get) => ({
       // En caso de error, marcamos como no disponible
       get().updateProductAvailability(productId, false);
     }
+  },
+
+  // 🎁 **NUEVAS FUNCIONES PARA PROMOCIONES**
+
+  // Cargar promociones vigentes
+  fetchPromociones: async () => {
+    try {
+      // Usar sucursal hardcodeada temporalmente
+      const SUCURSAL_ID = 1;
+      const promocionesData = await getAllPromocionesVigentes(SUCURSAL_ID);
+      const promocionesNormalizadas = normalizePromociones(promocionesData);
+
+      // Verificar disponibilidad inicial de promociones
+      const initialPromocionAvailability: Record<number, boolean> = {};
+      const promocionChecks = promocionesData.map(async (promocion) => {
+        try {
+          const available = await analizarPromocionAvailability(promocion);
+          initialPromocionAvailability[promocion.id] = available;
+        } catch (error) {
+          console.error(`Error checking availability for promocion ${promocion.id}:`, error);
+          initialPromocionAvailability[promocion.id] = false;
+        }
+      });
+      await Promise.all(promocionChecks);
+
+      // 🔄 Actualizar items combinados después de cargar promociones
+      const { allProducts, showPromociones } = get();
+      const combinedItems = combineProductsAndPromociones(
+        allProducts,
+        promocionesNormalizadas,
+        showPromociones
+      );
+
+      set({
+        allPromociones: promocionesData,
+        promocionesVigentes: promocionesData,
+        filteredPromociones: promocionesNormalizadas,
+        promocionAvailability: initialPromocionAvailability,
+        // 🔄 Actualizar items combinados
+        allItemsIncludingPromociones: combinedItems,
+        filteredItemsIncludingPromociones: combinedItems,
+      });
+    } catch (error) {
+      console.error('Error al cargar promociones:', error);
+    }
+  },
+
+  // Actualizar disponibilidad de una promoción específica
+  updatePromocionAvailability: (promocionId: number, available: boolean) => {
+    set((state) => ({
+      promocionAvailability: {
+        ...state.promocionAvailability,
+        [promocionId]: available,
+      },
+    }));
+  },
+
+  // Verificar disponibilidad de una promoción específica en background
+  checkPromocionAvailability: async (promocionId: number) => {
+    try {
+      const { allPromociones } = get();
+      const promocion = allPromociones.find((p) => p.id === promocionId);
+      if (promocion) {
+        const available = await analizarPromocionAvailability(promocion);
+        get().updatePromocionAvailability(promocionId, available);
+      }
+    } catch (error) {
+      console.error(`Error checking availability for promocion ${promocionId}:`, error);
+      get().updatePromocionAvailability(promocionId, false);
+    }
+  }, // Toggle para mostrar/ocultar promociones
+  toggleShowPromociones: () => {
+    const { allProducts, filteredPromociones } = get();
+    const newShowPromociones = !get().showPromociones;
+
+    // Combinar items según el nuevo estado
+    const combinedItems = combineProductsAndPromociones(
+      allProducts,
+      filteredPromociones,
+      newShowPromociones
+    );
+
+    set((state) => ({
+      showPromociones: newShowPromociones,
+      // Cuando se activan promociones, resetear filtros de productos
+      searchTerm: newShowPromociones ? '' : state.searchTerm,
+      activeCategory: newShowPromociones ? 'promociones' : null, // Marcar promociones como categoría activa
+      filteredProducts: newShowPromociones ? allProducts : state.filteredProducts,
+      // 🔄 Actualizar items combinados
+      allItemsIncludingPromociones: combinedItems,
+      filteredItemsIncludingPromociones: combinedItems,
+    }));
   },
   // Acción para cargar todos los datos
   fetchAllData: async () => {
@@ -208,8 +360,14 @@ export const useProductStore = create<ProductState>((set, get) => ({
         filteredProducts: sortedProducts, // Inicialmente mostrar todos los productos
         allCategorias: categoriasRelevantes, // Ahora incluye padres de categorías con productos
         productAvailability: initialAvailability,
+        // 🔄 Inicializar items combinados (solo productos al inicio)
+        allItemsIncludingPromociones: sortedProducts,
+        filteredItemsIncludingPromociones: sortedProducts,
         isLoading: false,
       });
+
+      // 🎁 Cargar promociones después de cargar productos
+      await get().fetchPromociones();
     } catch (error) {
       console.error('Error al cargar datos:', error);
       set({ error: 'Error al cargar productos y categorías', isLoading: false });
@@ -219,27 +377,50 @@ export const useProductStore = create<ProductState>((set, get) => ({
   // Establecer el término de búsqueda
   setSearchTerm: (term) => {
     set({ searchTerm: term });
-  },
-  // Resetear filtros para mostrar todos los productos
+  }, // Resetear filtros para mostrar todos los productos
   resetFilters: () => {
-    const { allProducts } = get();
+    const { allProducts, filteredPromociones } = get();
+    const combinedItems = combineProductsAndPromociones(allProducts, filteredPromociones, false);
+
     set({
       filteredProducts: allProducts,
       searchTerm: '',
       activeCategory: null,
+      showPromociones: false, // También resetear promociones
+      // 🔄 Resetear items combinados a solo productos
+      allItemsIncludingPromociones: combinedItems,
+      filteredItemsIncludingPromociones: combinedItems,
     });
-  },
-
-  // Nueva función para filtrar por categorías sin modificar el searchTerm
+  }, // Nueva función para filtrar por categorías sin modificar el searchTerm
   handleCategoryFilter: (category) => {
-    const { allProducts, allCategorias } = get();
+    const { allProducts, allCategorias, filteredPromociones } = get();
 
-    // Guardar la categoría activa
-    set({ activeCategory: category });
+    // 🎁 Caso especial: filtro por promociones
+    if (category === 'promociones') {
+      const combinedItems = combineProductsAndPromociones(allProducts, filteredPromociones, true);
+      set({
+        activeCategory: category,
+        showPromociones: true,
+        allItemsIncludingPromociones: combinedItems,
+        filteredItemsIncludingPromociones: combinedItems,
+      });
+      return;
+    }
+
+    // Para cualquier otra categoría, desactivar promociones
+    const combinedItems = combineProductsAndPromociones(allProducts, filteredPromociones, false);
+    set({
+      activeCategory: category,
+      showPromociones: false, // Desactivar promociones cuando se selecciona una categoría
+      allItemsIncludingPromociones: combinedItems,
+    });
 
     // Si la categoría está vacía, mostrar todos los productos
     if (category === '' || (Array.isArray(category) && category.length === 0)) {
-      set({ filteredProducts: allProducts });
+      set({
+        filteredProducts: allProducts,
+        filteredItemsIncludingPromociones: combinedItems,
+      });
       return;
     }
 
@@ -294,19 +475,32 @@ export const useProductStore = create<ProductState>((set, get) => ({
       }
     }
 
-    set({ filteredProducts: newFilteredList });
+    set({
+      filteredProducts: newFilteredList,
+      filteredItemsIncludingPromociones: combineProductsAndPromociones(
+        newFilteredList,
+        filteredPromociones,
+        false
+      ),
+    });
   },
-
   // Manejar la búsqueda (por texto)
   handleSearch: (query) => {
-    const { allProducts, allCategorias } = get();
+    const { allProducts, allCategorias, filteredPromociones } = get();
 
-    // Actualizar el término de búsqueda visible
-    set({ searchTerm: query.toString(), activeCategory: null });
-
-    // Si la query está vacía, mostrar todos los productos
+    // Actualizar el término de búsqueda visible y desactivar promociones
+    const combinedItems = combineProductsAndPromociones(allProducts, filteredPromociones, false);
+    set({
+      searchTerm: query.toString(),
+      activeCategory: null,
+      showPromociones: false, // Desactivar promociones cuando se hace una búsqueda
+      allItemsIncludingPromociones: combinedItems,
+    }); // Si la query está vacía, mostrar todos los productos
     if (query === '' || (Array.isArray(query) && query.length === 0)) {
-      set({ filteredProducts: allProducts });
+      set({
+        filteredProducts: allProducts,
+        filteredItemsIncludingPromociones: combinedItems,
+      });
       return;
     }
 
@@ -373,8 +567,14 @@ export const useProductStore = create<ProductState>((set, get) => ({
         });
       }
     }
-
-    set({ filteredProducts: newFilteredList });
+    set({
+      filteredProducts: newFilteredList,
+      filteredItemsIncludingPromociones: combineProductsAndPromociones(
+        newFilteredList,
+        filteredPromociones,
+        false
+      ),
+    });
   },
 }));
 
