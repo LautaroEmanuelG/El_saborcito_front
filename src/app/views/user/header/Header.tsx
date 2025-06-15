@@ -6,7 +6,7 @@ import IconoLogoSaborcito from '../../../../assets/svgs/icons/IconoLogoSaborcito
 import IconoLoggin from '../../../../assets/svgs/icons/IconoLoggin';
 import IconoCarrito from '../../../../assets/svgs/icons/IconoCarrito';
 import IconoMenuHamburguesa from '../../../../assets/svgs/icons/IconoMenuHamburguesa';
-import { LoginModal } from '../../../../shared/components/loggin/LoginModal';
+import { LoginModal } from '../../../../modules/HU1_2_Registro_Login/components/loggin/LoginModal';
 import { Buscador } from '../../../../modules/HU9_10_Landing_Busqueda/Buscador';
 
 type Props = {

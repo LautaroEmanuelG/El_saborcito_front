@@ -22,6 +22,7 @@ import ScreenCategoriasArticulos from './modules/HU21_CRUD_CategoriasArticulos/c
 import ScreenCategoriaPadreArticulo from './modules/HU21_CRUD_CategoriasPadresArticulos/components/ScreenCategoriaPadreArticulo';
 import ScreenSubcategoriasInsumos from './modules/HU20_CRUD_SubcategoriasInsumos/components/ScreenSubcategoriasInsumos';
 import ScreenCategoriaPadreInsumo from './modules/HU20_CRUD_CategoriasPadresInsumos/components/ScreenCategoriaPadreInsumo';
+import { RegistroView } from './modules/HU1_2_Registro_Login/components/registro/RegistroView';
 
 createRoot(document.getElementById('root')!).render(
   <AppProviders>
@@ -35,6 +36,7 @@ createRoot(document.getElementById('root')!).render(
             </CarritoProvider>
           }
         />
+        <Route path="/registro" element={<RegistroView />} />
         <Route
           path="/carrito"
           element={
