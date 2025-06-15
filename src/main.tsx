@@ -22,6 +22,7 @@ import ScreenCategoriasArticulos from './modules/HU21_CRUD_CategoriasArticulos/c
 import ScreenCategoriaPadreArticulo from './modules/HU21_CRUD_CategoriasPadresArticulos/components/ScreenCategoriaPadreArticulo';
 import ScreenSubcategoriasInsumos from './modules/HU20_CRUD_SubcategoriasInsumos/components/ScreenSubcategoriasInsumos';
 import ScreenCategoriaPadreInsumo from './modules/HU20_CRUD_CategoriasPadresInsumos/components/ScreenCategoriaPadreInsumo';
+import ScreenPromociones from './modules/HU25_Promociones/components/ScreenPromociones';
 
 createRoot(document.getElementById('root')!).render(
   <AppProviders>
@@ -186,6 +187,14 @@ createRoot(document.getElementById('root')!).render(
             element={
               <ProtectedRoute>
                 <ScreenCategoriaPadreInsumo />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="promociones"
+            element={
+              <ProtectedRoute>
+                <ScreenPromociones />
               </ProtectedRoute>
             }
           />
