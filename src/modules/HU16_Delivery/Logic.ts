@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
-import { getAllPedidos, updateEstadoPedido } from '../../shared/services/pedidoService';
-import { PedidoCompleto } from '../../types/Pedido';
+import {
+  getPedidosDetalladosCompletos,
+  updateEstadoPedido,
+} from '../../shared/services/pedidoService';
+import { PedidoCompletoConDetalles } from '../../types/Pedido';
 
 export const useDeliveryLogic = () => {
-  const [pedidosDelivery, setPedidosDelivery] = useState<PedidoCompleto[]>([]);
+  const [pedidosDelivery, setPedidosDelivery] = useState<PedidoCompletoConDetalles[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
 
@@ -11,14 +14,15 @@ export const useDeliveryLogic = () => {
   useEffect(() => {
     cargarPedidosDelivery();
   }, []);
+
   const cargarPedidosDelivery = async () => {
     setLoading(true);
     try {
-      const todosPedidos = await getAllPedidos();
+      const todosPedidos = await getPedidosDetalladosCompletos();
 
       // Filtrar solo pedidos EN_DELIVERY
       const pedidosEnDelivery = todosPedidos.filter(
-        (pedido: PedidoCompleto) => pedido.estado.nombre === 'EN_DELIVERY'
+        (pedido: PedidoCompletoConDetalles) => pedido.estado.nombre === 'EN_DELIVERY'
       );
 
       setPedidosDelivery(pedidosEnDelivery);

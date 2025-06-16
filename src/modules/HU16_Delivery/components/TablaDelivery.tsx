@@ -1,10 +1,10 @@
 import React from 'react';
-import { PedidoCompleto } from '../../../types/Pedido';
+import { PedidoCompletoConDetalles } from '../../../types/Pedido';
 import { formatearNombreFormaPago } from '../../../shared/utils/pedidoUtils';
 
 interface TablaDeliveryProps {
-  pedidos: PedidoCompleto[];
-  onVerDetalle: (pedido: PedidoCompleto) => void;
+  pedidos: PedidoCompletoConDetalles[];
+  onVerDetalle: (pedido: PedidoCompletoConDetalles) => void;
   onMarcarEntregado: (pedidoId: number) => void;
 }
 
@@ -30,7 +30,7 @@ export const TablaDelivery: React.FC<TablaDeliveryProps> = ({
     }).format(precio);
   };
 
-  const obtenerDireccionPrincipal = (pedido: PedidoCompleto): string => {
+  const obtenerDireccionPrincipal = (pedido: PedidoCompletoConDetalles): string => {
     if (pedido.cliente.domicilios && pedido.cliente.domicilios.length > 0) {
       const domicilio = pedido.cliente.domicilios[0];
       return `${domicilio.calle} ${domicilio.numero}, ${domicilio.localidad.nombre}`;

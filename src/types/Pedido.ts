@@ -1,3 +1,5 @@
+import type { DetallePedidoDTO } from '../modules/HU26_28_informes/model';
+
 // 📦 **TIPOS PARA PEDIDOS CON PROMOCIONES**
 
 export interface DetallePedido {
@@ -198,6 +200,12 @@ export interface PedidoCompleto {
   cliente: ClienteCompleto;
   sucursal: SucursalCompleta;
   detalles: DetallePedidoCompleto[];
+}
+
+// 🔄 **EXTENSIÓN PARA DETALLES COMPLETOS DESDE INFORMES**
+export interface PedidoCompletoConDetalles extends PedidoCompleto {
+  detallesCompletos?: DetallePedidoDTO[];
+  totalCalculado?: number;
 }
 
 export interface UpdateEstadoPedidoRequest {

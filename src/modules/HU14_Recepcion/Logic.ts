@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
-import { getAllPedidos, updateEstadoPedido } from '../../shared/services/pedidoService';
+import {
+  updateEstadoPedido,
+  getPedidosDetalladosCompletos,
+} from '../../shared/services/pedidoService';
 import { getAllEstados } from '../../shared/services/estadoService';
-import { PedidoCompleto, Estado } from '../../types/Pedido';
+import { PedidoCompletoConDetalles, Estado } from '../../types/Pedido';
 
 export const useRecepcionLogic = () => {
-  const [pedidos, setPedidos] = useState<PedidoCompleto[]>([]);
-  const [pedidosFiltrados, setPedidosFiltrados] = useState<PedidoCompleto[]>([]);
+  const [pedidos, setPedidos] = useState<PedidoCompletoConDetalles[]>([]);
+  const [pedidosFiltrados, setPedidosFiltrados] = useState<PedidoCompletoConDetalles[]>([]);
   const [estados, setEstados] = useState<Estado[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
@@ -21,11 +24,13 @@ export const useRecepcionLogic = () => {
   useEffect(() => {
     aplicarFiltros();
   }, [pedidos, filtroEstado, buscarId]);
-
   const cargarDatos = async () => {
     setLoading(true);
     try {
-      const [pedidosData, estadosData] = await Promise.all([getAllPedidos(), getAllEstados()]);
+      const [pedidosData, estadosData] = await Promise.all([
+        getPedidosDetalladosCompletos(),
+        getAllEstados(),
+      ]);
       setPedidos(pedidosData);
       setEstados(estadosData);
     } catch (err) {

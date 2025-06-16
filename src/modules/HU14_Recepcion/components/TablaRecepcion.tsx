@@ -1,10 +1,10 @@
 import React from 'react';
-import { PedidoCompleto } from '../../../types/Pedido';
+import { PedidoCompletoConDetalles } from '../../../types/Pedido';
 import { formatearNombreFormaPago } from '../../../shared/utils/pedidoUtils';
 
 interface TablaRecepcionProps {
-  pedidos: PedidoCompleto[];
-  onVerDetalle: (pedido: PedidoCompleto) => void;
+  pedidos: PedidoCompletoConDetalles[];
+  onVerDetalle: (pedido: PedidoCompletoConDetalles) => void;
   onCambiarEstado: (pedidoId: number, nuevoEstado: string) => void;
   puedeAvanzarEstado: (estadoActual: string, tipoEnvio: string) => boolean;
   obtenerProximoEstado: (estadoActual: string, tipoEnvio: string) => string | null;
@@ -55,7 +55,7 @@ export const TablaRecepcion: React.FC<TablaRecepcionProps> = ({
     }).format(precio);
   };
 
-  const manejarAvanzarEstado = (pedido: PedidoCompleto) => {
+  const manejarAvanzarEstado = (pedido: PedidoCompletoConDetalles) => {
     const proximoEstado = obtenerProximoEstado(pedido.estado.nombre, pedido.tipoEnvio.nombre);
     if (proximoEstado) {
       onCambiarEstado(pedido.id, proximoEstado);

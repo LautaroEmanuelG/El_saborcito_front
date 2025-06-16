@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDeliveryLogic } from '../Logic';
-import { PedidoCompleto } from '../../../types/Pedido';
+import { PedidoCompletoConDetalles } from '../../../types/Pedido';
 import { TablaDelivery } from './TablaDelivery';
 import { ModalDetalleDelivery } from './ModalDetalleDelivery';
 
@@ -8,10 +8,12 @@ export const ScreenDelivery: React.FC = () => {
   const { pedidosDelivery, loading, error, marcarComoEntregado, cargarPedidosDelivery } =
     useDeliveryLogic();
 
-  const [pedidoSeleccionado, setPedidoSeleccionado] = useState<PedidoCompleto | null>(null);
+  const [pedidoSeleccionado, setPedidoSeleccionado] = useState<PedidoCompletoConDetalles | null>(
+    null
+  );
   const [modalDetalle, setModalDetalle] = useState(false);
 
-  const abrirDetalle = (pedido: PedidoCompleto) => {
+  const abrirDetalle = (pedido: PedidoCompletoConDetalles) => {
     setPedidoSeleccionado(pedido);
     setModalDetalle(true);
   };

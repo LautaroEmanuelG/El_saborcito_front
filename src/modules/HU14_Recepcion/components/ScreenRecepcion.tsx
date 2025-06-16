@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useRecepcionLogic } from '../Logic';
-import { PedidoCompleto } from '../../../types/Pedido';
+import { PedidoCompletoConDetalles } from '../../../types/Pedido';
 import { FiltrosRecepcion } from './FiltrosRecepcion';
 import { TablaRecepcion } from './TablaRecepcion';
 import { ModalDetallePedido } from './ModalDetallePedido';
@@ -21,11 +21,12 @@ export const ScreenRecepcion: React.FC = () => {
     puedeAvanzarEstado,
     obtenerProximoEstado,
   } = useRecepcionLogic();
-
-  const [pedidoSeleccionado, setPedidoSeleccionado] = useState<PedidoCompleto | null>(null);
+  const [pedidoSeleccionado, setPedidoSeleccionado] = useState<PedidoCompletoConDetalles | null>(
+    null
+  );
   const [modalDetalle, setModalDetalle] = useState(false);
 
-  const abrirDetalle = (pedido: PedidoCompleto) => {
+  const abrirDetalle = (pedido: PedidoCompletoConDetalles) => {
     setPedidoSeleccionado(pedido);
     setModalDetalle(true);
   };
@@ -68,7 +69,6 @@ export const ScreenRecepcion: React.FC = () => {
         <h1 className="text-3xl font-bold text-gray-800 mb-2">📋 Recepción de Pedidos</h1>
         <p className="text-gray-600">Gestiona y controla el estado de todos los pedidos</p>
       </div>
-
       {/* Filtros */}
       <FiltrosRecepcion
         estados={estados}
@@ -77,10 +77,9 @@ export const ScreenRecepcion: React.FC = () => {
         onFiltroEstadoChange={setFiltroEstado}
         onBuscarIdChange={setBuscarId}
         onLimpiarFiltros={limpiarFiltros}
-      />
-
+      />{' '}
       {/* Estadísticas rápidas */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
         <div className="bg-yellow-100 p-4 rounded-lg">
           <h3 className="font-semibold text-yellow-800">Pendientes</h3>
           <p className="text-2xl font-bold text-yellow-900">
@@ -99,12 +98,23 @@ export const ScreenRecepcion: React.FC = () => {
             {pedidosFiltrados.filter((p) => p.estado.nombre === 'LISTO').length}
           </p>
         </div>
+        <div className="bg-purple-100 p-4 rounded-lg">
+          <h3 className="font-semibold text-purple-800">Con Promociones</h3>
+          <p className="text-2xl font-bold text-purple-900">
+            {
+              pedidosFiltrados.filter(
+                (p) =>
+                  p.detallesCompletos?.some((detalle) => detalle.origen === 'PROMOCION') ||
+                  p.detalles?.some((detalle) => detalle.origen === 'PROMOCION')
+              ).length
+            }
+          </p>
+        </div>
         <div className="bg-gray-100 p-4 rounded-lg">
           <h3 className="font-semibold text-gray-800">Total</h3>
           <p className="text-2xl font-bold text-gray-900">{pedidosFiltrados.length}</p>
         </div>
       </div>
-
       {/* Tabla */}
       <TablaRecepcion
         pedidos={pedidosFiltrados}
@@ -113,7 +123,6 @@ export const ScreenRecepcion: React.FC = () => {
         puedeAvanzarEstado={puedeAvanzarEstado}
         obtenerProximoEstado={obtenerProximoEstado}
       />
-
       {/* Modal de detalle */}
       {modalDetalle && pedidoSeleccionado && (
         <ModalDetallePedido
