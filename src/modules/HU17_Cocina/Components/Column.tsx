@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { TaskCard } from './TaskCard';
-import { EstadoNombre, Pedido } from '../Model';
+import { EstadoId, ESTADO_IDS, Pedido } from '../Model';
 import IconoChevronDown from '../../../assets/svgs/icons/IconoChevronDown';
 import IconoChevronsRight from '../../../assets/svgs/icons/IconoChevronsRight';
 
 interface ColumnProps {
-  column: { id: EstadoNombre; title: string; color: string };
+  column: { id: EstadoId; nombre: string; title: string; color: string };
   tasks: Pedido[];
   animatingPedidos: { [key: number]: 'en-proceso' | 'demorado' };
-  onVerDetalle?: (id: number) => void;
-  onCompletarPedido?: (id: number) => void;
+  onVerDetalle: (id: number) => void;
+  onAvanzarPedido: (id: number) => void;
+  onMarcarDemorado: (id: number) => void;
 }
 
 export function Column({
@@ -18,15 +19,16 @@ export function Column({
   tasks,
   animatingPedidos,
   onVerDetalle,
-  onCompletarPedido,
+  onAvanzarPedido,
+  onMarcarDemorado,
 }: ColumnProps) {
-  const { setNodeRef } = useDroppable({
+  const { setNodeRef, isOver } = useDroppable({
     id: column.id,
   });
 
   // Estado para colapsar/expandir solo la columna LISTO
   const [isExpanded, setIsExpanded] = useState(true);
-  const isListoColumn = column.id === 'LISTO';
+  const isListoColumn = column.id === ESTADO_IDS.LISTO;
 
   const toggleExpanded = () => {
     if (isListoColumn) {
@@ -34,64 +36,114 @@ export function Column({
     }
   };
 
+  // Función para obtener el icono según el estado
+  const getIconoEstado = () => {
+    switch (column.id) {
+      case ESTADO_IDS.PENDIENTE:
+        return '⏳';
+      case ESTADO_IDS.EN_PREPARACION:
+        return '👨‍🍳';
+      case ESTADO_IDS.DEMORADO:
+        return '⚠️';
+      case ESTADO_IDS.LISTO:
+        return '✅';
+      default:
+        return '📋';
+    }
+  };
+
   return (
-    <div className="flex w-96 flex-col rounded-lg bg-transparent">
-      {/* Header de columna */}
+    <div className="flex w-80 flex-col bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+      {/* Header de columna mejorado */}
       <div
-        className="flex items-center justify-between px-4 py-2 rounded-t-lg cursor-pointer"
-        style={{ background: column.color }}
+        className={`
+          flex items-center justify-between px-4 py-4 cursor-pointer transition-all duration-200
+          ${isListoColumn ? 'hover:opacity-90' : ''}
+        `}
+        style={{
+          background: `linear-gradient(135deg, ${column.color} 0%, ${column.color}dd 100%)`,
+        }}
         onClick={toggleExpanded}
       >
-        <span className="font-bold text-white text-lg">{column.title}</span>
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">{getIconoEstado()}</span>
+          <div>
+            <h3 className="font-bold text-white text-lg">{column.title}</h3>
+            <p className="text-white text-sm opacity-90">
+              {tasks.length} {tasks.length === 1 ? 'pedido' : 'pedidos'}
+            </p>
+          </div>
+        </div>
+
         <div className="flex items-center gap-2">
-          <span className="font-bold text-white text-lg">{tasks.length}</span>
+          <div className="bg-white bg-opacity-20 rounded-full px-3 py-1">
+            <span className="font-bold text-white text-lg">{tasks.length}</span>
+          </div>
           {/* Icono de colapsar/expandir solo para columna LISTO */}
           {isListoColumn && (
-            <div className="text-white">
+            <div className="text-white transition-transform duration-200">
               {isExpanded ? (
-                <IconoChevronDown
-                  width={20}
-                  height={20}
-                  className="transition-transform duration-200"
-                />
+                <IconoChevronDown width={20} height={20} />
               ) : (
-                <IconoChevronsRight
-                  width={20}
-                  height={20}
-                  className="transition-transform duration-200"
-                />
+                <IconoChevronsRight width={20} height={20} />
               )}
             </div>
           )}
         </div>
       </div>
-      {/* Contenedor de tarjetas */}
+
+      {/* Contenedor de tarjetas mejorado */}
       <div
         ref={setNodeRef}
-        className={`flex flex-1 flex-col gap-4 bg-white rounded-b-lg p-2 border border-t-0 border-gray-300 transition-all duration-300 ${
-          isListoColumn && !isExpanded
-            ? 'min-h-[40px] max-h-[40px] overflow-hidden'
-            : 'min-h-[120px]'
-        }`}
+        className={`
+          flex-1 p-3 transition-all duration-300 custom-scrollbar
+          ${isOver ? 'bg-blue-50 ring-2 ring-blue-300 ring-opacity-50' : 'bg-gray-50'}
+          ${
+            isListoColumn && !isExpanded
+              ? 'min-h-[60px] max-h-[60px] overflow-hidden'
+              : 'min-h-[400px] max-h-[600px] overflow-y-auto'
+          }
+        `}
       >
         {/* Solo mostrar tarjetas si está expandida (o si no es columna LISTO) */}
         {(isExpanded || !isListoColumn) && (
           <div className="space-y-3">
-            {tasks.map((task) => (
-              <TaskCard
-                key={task.id}
-                task={task}
-                isAnimating={animatingPedidos[task.id]}
-                onVerDetalle={onVerDetalle}
-                onCompletarPedido={onCompletarPedido}
-              />
-            ))}
+            {tasks.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="text-4xl mb-2 opacity-50">{getIconoEstado()}</div>
+                <p className="text-gray-500 text-sm">
+                  No hay pedidos en {column.title.toLowerCase()}
+                </p>
+              </div>
+            ) : (
+              tasks.map((task) => (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  animatingClass={animatingPedidos[task.id]}
+                  onVerDetalle={onVerDetalle}
+                  onAvanzarPedido={onAvanzarPedido}
+                  onMarcarDemorado={onMarcarDemorado}
+                />
+              ))
+            )}
           </div>
         )}
+
         {/* Mensaje cuando está colapsada */}
         {isListoColumn && !isExpanded && (
-          <div className="text-center text-gray-500 text-sm py-1 ">
-            {tasks.length} pedidos listos (click para expandir)
+          <div className="text-center py-4">
+            <p className="text-gray-600 text-sm font-medium">{tasks.length} pedidos listos</p>
+            <p className="text-gray-400 text-xs mt-1">Click para expandir</p>
+          </div>
+        )}
+
+        {/* Indicador de drop zone activo */}
+        {isOver && (
+          <div className="absolute inset-0 bg-blue-100 bg-opacity-50 border-2 border-dashed border-blue-400 rounded-lg flex items-center justify-center pointer-events-none">
+            <div className="bg-blue-500 text-white px-4 py-2 rounded-lg font-medium shadow-lg">
+              Soltar aquí
+            </div>
           </div>
         )}
       </div>
