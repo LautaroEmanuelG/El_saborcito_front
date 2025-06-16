@@ -93,10 +93,9 @@ const ScreenPromociones = () => {
   const handleRestore = (id: number) => {
     restorePromocion(id);
   };
-
-  const handleSubmit = (values: Partial<Promocion>) => {
+  const handleSubmit = (values: Partial<Promocion>, imageFile?: File) => {
     if (modalMode === 'add') {
-      addPromocion(values);
+      addPromocion(values, imageFile);
     } else if (modalMode === 'edit') {
       // Lógica de soft delete/restaurar
       if (
@@ -112,7 +111,7 @@ const ScreenPromociones = () => {
           restorePromocion(values.id);
         }
       } else {
-        updatePromocion(values);
+        updatePromocion(values, imageFile);
       }
     }
     setOpenModal(false);

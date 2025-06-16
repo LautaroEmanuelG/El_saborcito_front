@@ -14,7 +14,7 @@ interface ModalArticuloManufacturadoFormProps {
   open: boolean;
   onClose: () => void;
   initialValues: Partial<ArticuloManufacturado>;
-  onSubmit: (values: Partial<ArticuloManufacturado>) => void;
+  onSubmit: (values: Partial<ArticuloManufacturado>, imageFile?: File) => void;
   mode: 'add' | 'edit' | 'view';
 }
 
@@ -29,6 +29,7 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [subcategorias, setSubcategorias] = useState<Categoria[]>([]);
   const [imagenPreview, setImagenPreview] = useState<string | null>(null);
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [selectedCategoriaId, setSelectedCategoriaId] = useState<number | null>(null);
   const [selectedSubcategoriaId, setSelectedSubcategoriaId] = useState<number | null>(null);
   const [formValues, setFormValues] = useState<Record<string, string | number>>({});
@@ -44,11 +45,11 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
   useEffect(() => {
     categoriaService.getAllCategorias().then(setCategorias);
   }, []);
-
   // Cuando abro el modal o cambian los datos iniciales, setear valores y subcategorías
   useEffect(() => {
     setForm(initialValues);
     setImagenPreview(initialValues.imagen?.url ?? null);
+    setSelectedImageFile(null); // Limpiar archivo seleccionado al abrir
     setDetalles(initialValues.articuloManufacturadoDetalles ?? []);
     // Determinar categoría y subcategoría seleccionadas
     const categoriaActual = categorias.find((cat) => cat.id === initialValues.categoriaId);
@@ -167,7 +168,6 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
         return 'Artículo Manufacturado';
     }
   };
-
   // Submit: llama a onSubmit solo en modo add/edit
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -179,19 +179,21 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
       finalCategoriaId = selectedCategoriaId;
     } else if (formValues.categoria) {
       finalCategoriaId = Number(formValues.categoria);
-    }
-    // El objeto values es igual para add/edit, el servicio se decide fuera
-    onSubmit({
-      ...form,
-      denominacion: String(formValues.denominacion ?? ''),
-      precioVenta: Number(formValues.precioVenta ?? 0),
-      descripcion: String(formValues.descripcion ?? ''),
-      tiempoEstimadoMinutos: Number(formValues.tiempoEstimadoMinutos ?? 0),
-      categoriaId: finalCategoriaId ?? undefined,
-      imagen: form.imagen,
-      articuloManufacturadoDetalles: detalles,
-      eliminado: !isDisponible, // true si está eliminado, false si está disponible
-    });
+    } // El objeto values es igual para add/edit, el servicio se decide fuera
+    onSubmit(
+      {
+        ...form,
+        denominacion: String(formValues.denominacion ?? ''),
+        precioVenta: Number(formValues.precioVenta ?? 0),
+        descripcion: String(formValues.descripcion ?? ''),
+        tiempoEstimadoMinutos: Number(formValues.tiempoEstimadoMinutos ?? 0),
+        categoriaId: finalCategoriaId ?? undefined,
+        // NO incluir imagen aquí - se envía por separado como archivo
+        articuloManufacturadoDetalles: detalles,
+        eliminado: !isDisponible, // true si está eliminado, false si está disponible
+      },
+      selectedImageFile ?? undefined
+    );
   };
 
   // Render
@@ -508,7 +510,7 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
                 </p>
               )}
             </div>
-          </div>
+          </div>{' '}
           {/* Imagen: carga y preview (debajo de las columnas, centrado) */}
           {(mode === 'add' || mode === 'edit') && (
             <div className="flex flex-col items-center mt-4">
@@ -527,11 +529,43 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (!file) return;
-                  const reader = new FileReader();
-                  reader.onloadend = () => {
-                    setImagenPreview(reader.result as string);
-                  };
-                  reader.readAsDataURL(file);
+
+                  // Validar archivo
+                  try {
+                    // Validar tipo de archivo
+                    if (!file.type.startsWith('image/')) {
+                      alert('El archivo debe ser una imagen');
+                      e.target.value = '';
+                      return;
+                    }
+
+                    // Validar tamaño (10MB máximo)
+                    const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+                    if (file.size > MAX_SIZE) {
+                      alert('La imagen es demasiado grande (máximo 10MB)');
+                      e.target.value = '';
+                      return;
+                    }
+
+                    // Validar formatos específicos
+                    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                    if (!ALLOWED_TYPES.includes(file.type)) {
+                      alert('Formato no soportado. Use JPEG, PNG, GIF o WebP');
+                      e.target.value = '';
+                      return;
+                    }
+
+                    // Si pasa todas las validaciones, procesar la imagen
+                    setSelectedImageFile(file);
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                      setImagenPreview(reader.result as string);
+                    };
+                    reader.readAsDataURL(file);
+                  } catch (error) {
+                    alert('Error al procesar la imagen');
+                    e.target.value = '';
+                  }
                 }}
               />
             </div>

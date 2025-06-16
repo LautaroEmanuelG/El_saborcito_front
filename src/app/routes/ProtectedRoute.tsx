@@ -9,3 +9,7 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
 };
 
 export default ProtectedRoute;
+
+export const PublicRoutes = () => {
+  return <>{/* ... otras rutas públicas ... */}</>;
+};

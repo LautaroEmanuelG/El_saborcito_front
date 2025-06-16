@@ -7,7 +7,7 @@ interface Props {
   open: boolean;
   onClose: () => void;
   initialValues: Partial<ArticuloInsumo>;
-  onSubmit: (values: Partial<ArticuloInsumo>) => void;
+  onSubmit: (values: Partial<ArticuloInsumo>, imageFile?: File) => void;
   mode: 'add' | 'edit' | 'view';
   categorias: Categoria[];
   unidades: UnidadMedida[];
@@ -44,6 +44,8 @@ export const ModalInsumoForm = ({
     getInitialForm(initialValues)
   );
   const [isHabilitado, setIsHabilitado] = useState(true);
+  const [imagenPreview, setImagenPreview] = useState<string | null>(null);
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
 
   // Filtrar solo las categorías padre de tipo INSUMOS para el select del modal
   const categoriasPadre = categorias.filter((cat) => !cat.tipoCategoria && cat.tipo === 'INSUMOS');
@@ -54,9 +56,10 @@ export const ModalInsumoForm = ({
   const [selectedSubcategoriaId, setSelectedSubcategoriaId] = useState<number | undefined>(
     undefined
   );
-
   useEffect(() => {
     setForm(getInitialForm(initialValues));
+    setImagenPreview(initialValues.imagen?.url ?? null);
+    setSelectedImageFile(null); // Limpiar archivo seleccionado al abrir
     // Corrige el tipado para acceder a 'eliminado' aunque no esté en el tipo base
     setIsHabilitado(
       (initialValues as any).eliminado === undefined ? true : !(initialValues as any).eliminado
@@ -122,7 +125,6 @@ export const ModalInsumoForm = ({
     const subcat = subcategorias.find((c) => c.id === subId);
     setForm((prev) => ({ ...prev, categoria: subcat }));
   };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.unidadMedida || !form.unidadMedida.id) {
@@ -142,7 +144,7 @@ export const ModalInsumoForm = ({
       categoriaId: form.categoria.id,
       unidadMedida: form.unidadMedida,
     };
-    onSubmit(payload);
+    onSubmit(payload, selectedImageFile ?? undefined);
   };
 
   if (!open) return null;
@@ -296,8 +298,81 @@ export const ModalInsumoForm = ({
                   {uni.denominacion}
                 </option>
               ))}
-            </select>
+            </select>{' '}
           </div>
+
+          {/* Imagen: carga y preview */}
+          {(mode === 'add' || mode === 'edit') && (
+            <div className="flex flex-col items-center mt-4">
+              <label className="block text-sm font-medium mb-1">Imagen</label>
+              {imagenPreview && (
+                <img
+                  src={imagenPreview}
+                  alt="Preview"
+                  className="mb-2 rounded max-h-32 object-contain border"
+                />
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                className="mb-2 w-full"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+
+                  // Validar archivo
+                  try {
+                    // Validar tipo de archivo
+                    if (!file.type.startsWith('image/')) {
+                      alert('El archivo debe ser una imagen');
+                      e.target.value = '';
+                      return;
+                    }
+
+                    // Validar tamaño (10MB máximo)
+                    const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+                    if (file.size > MAX_SIZE) {
+                      alert('La imagen es demasiado grande (máximo 10MB)');
+                      e.target.value = '';
+                      return;
+                    }
+
+                    // Validar formatos específicos
+                    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                    if (!ALLOWED_TYPES.includes(file.type)) {
+                      alert('Formato no soportado. Use JPEG, PNG, GIF o WebP');
+                      e.target.value = '';
+                      return;
+                    }
+
+                    // Si pasa todas las validaciones, procesar la imagen
+                    setSelectedImageFile(file);
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                      setImagenPreview(reader.result as string);
+                    };
+                    reader.readAsDataURL(file);
+                  } catch (error) {
+                    alert('Error al procesar la imagen');
+                    e.target.value = '';
+                  }
+                }}
+              />
+            </div>
+          )}
+
+          {/* Imagen en modo view */}
+          {mode === 'view' && imagenPreview && (
+            <div className="flex flex-col items-center mt-4">
+              <label className="block text-sm font-medium mb-1">Imagen</label>
+              <img
+                src={imagenPreview}
+                alt="Imagen del insumo"
+                className="mb-2 rounded max-h-32 object-contain border"
+              />
+            </div>
+          )}
+
           <div className="flex justify-center items-center gap-2 mt-2">
             <input
               id="habilitado"
