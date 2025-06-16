@@ -34,7 +34,8 @@ export const registrarCliente = async (dto: RegistroCliente): Promise<any> => {
   } catch (error: any) {
     if (
       error.response?.status === 400 &&
-      error.response?.data?.includes('Ya existe un usuario registrado con este email')
+      typeof error.response?.data?.message === 'string' &&
+      error.response.data.message.includes('Ya existe un usuario registrado con este email')
     ) {
       throw new Error('Ya existe un usuario registrado con este email');
     }

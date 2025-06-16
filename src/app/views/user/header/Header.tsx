@@ -2,11 +2,13 @@ import { useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { CarritoContext } from '../../../../shared/providers/CarritoProvider';
 import { useProductStore } from '../../../../shared/providers/ProductProvider';
+import { useUser } from '../../../../shared/providers/UserProvider';
 import IconoLogoSaborcito from '../../../../assets/svgs/icons/IconoLogoSaborcito';
 import IconoLoggin from '../../../../assets/svgs/icons/IconoLoggin';
 import IconoCarrito from '../../../../assets/svgs/icons/IconoCarrito';
 import IconoMenuHamburguesa from '../../../../assets/svgs/icons/IconoMenuHamburguesa';
 import { LoginModal } from '../../../../modules/HU1_2_Registro_Login/components/loggin/LoginModal';
+import { RegistroModal } from '../../../../modules/HU1_2_Registro_Login/components/registro/RegistroModal';
 import { Buscador } from '../../../../modules/HU9_10_Landing_Busqueda/Buscador';
 
 type Props = {
@@ -17,7 +19,10 @@ export const Header = ({ onSearch }: Props) => {
   const [hoverLogin, setHoverLogin] = useState(false);
   const [hoverCarrito, setHoverCarrito] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isRegistroOpen, setIsRegistroOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const { user, logout } = useUser();
 
   const carritoContext = useContext(CarritoContext);
   if (!carritoContext) {
@@ -32,8 +37,16 @@ export const Header = ({ onSearch }: Props) => {
     setIsLoginOpen(!isLoginOpen);
   };
 
+  const toggleRegistroModal = () => {
+    setIsRegistroOpen(!isRegistroOpen);
+  };
+
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
+  };
+
+  const toggleUserMenu = () => {
+    setUserMenuOpen(!userMenuOpen);
   };
 
   // Acceder al resetFilters desde el store
@@ -71,14 +84,66 @@ export const Header = ({ onSearch }: Props) => {
 
           {/* Iconos de login y carrito siempre visibles en desktop */}
           <div className="hidden md:flex items-center gap-4">
-            <button
-              className="relative flex items-center justify-center gap-4 w-10 h-10 rounded-full hover:bg-blanco"
-              onMouseEnter={() => setHoverLogin(true)}
-              onMouseLeave={() => setHoverLogin(false)}
-              onClick={toggleLoginModal}
-            >
-              <IconoLoggin color={hoverLogin ? '#E11D48' : 'white'} />
-            </button>
+            {user ? (
+              <div className="relative">
+                <button
+                  className="flex items-center gap-2 text-white hover:text-blanco"
+                  onClick={toggleUserMenu}
+                >
+                  <span>{user.nombre}</span>
+                  <svg
+                    className={`w-4 h-4 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </button>
+
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
+                    <Link
+                      to="/perfil"
+                      className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      Mi Perfil
+                    </Link>
+                    <Link
+                      to="/historial-compras"
+                      className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      Historial de Compras
+                    </Link>
+                    <button
+                      onClick={() => {
+                        logout();
+                        setUserMenuOpen(false);
+                      }}
+                      className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+                    >
+                      Cerrar Sesión
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button
+                className="relative flex items-center justify-center gap-4 w-10 h-10 rounded-full hover:bg-blanco"
+                onMouseEnter={() => setHoverLogin(true)}
+                onMouseLeave={() => setHoverLogin(false)}
+                onClick={toggleLoginModal}
+              >
+                <IconoLoggin color={hoverLogin ? '#E11D48' : 'white'} />
+              </button>
+            )}
 
             {window.location.pathname !== '/carrito' && totalItems > 0 ? (
               <Link
@@ -101,7 +166,12 @@ export const Header = ({ onSearch }: Props) => {
         </div>
       </header>
 
-      <LoginModal isOpen={isLoginOpen} onClose={toggleLoginModal} />
+      <LoginModal
+        isOpen={isLoginOpen}
+        onClose={toggleLoginModal}
+        onOpenRegistro={toggleRegistroModal}
+      />
+      <RegistroModal isOpen={isRegistroOpen} onClose={toggleRegistroModal} />
 
       <div
         className={`fixed top-0 left-0 h-full bg-primary text-white transition-transform duration-300 ease-in-out z-20 ${
@@ -123,28 +193,42 @@ export const Header = ({ onSearch }: Props) => {
 
         <div className="p-4">{onSearch && <Buscador onSearch={onSearch} />}</div>
 
-        {/* Iconos solo se muestran si el menú está abierto */}
-        {menuOpen && (
-          <div className="p-4 border-t border-white mt-6 flex justify-around">
-            <button
-              className="relative flex items-center justify-center gap-4 w-10 h-10 rounded-full hover:bg-blanco"
-              onClick={toggleLoginModal}
+        {/* Menú móvil para usuario */}
+        {user ? (
+          <div className="p-4 border-t border-gray-700">
+            <div className="mb-4">
+              <span className="text-lg font-semibold">{user.nombre}</span>
+            </div>
+            <Link to="/perfil" className="block py-2 hover:bg-gray-700" onClick={toggleMenu}>
+              Mi Perfil
+            </Link>
+            <Link
+              to="/historial-compras"
+              className="block py-2 hover:bg-gray-700"
+              onClick={toggleMenu}
             >
-              <IconoLoggin color="white" />
+              Historial de Compras
+            </Link>
+            <button
+              onClick={() => {
+                logout();
+                toggleMenu();
+              }}
+              className="block w-full text-left py-2 hover:bg-gray-700"
+            >
+              Cerrar Sesión
             </button>
-
-            {totalItems > 0 ? (
-              <Link
-                to="/carrito"
-                className="relative flex items-center justify-center gap-4 w-10 h-10 rounded-full hover:bg-blanco"
-              >
-                <IconoCarrito color="white" />
-                <div className="absolute text-blanco -top-3 -right-3 bg-primary text-primary-foreground rounded-full px-2 py-1 text-xs font-bold hover:bg-blanco hover:text-primary">
-                  {totalItems}
-                </div>
-              </Link>
-            ) : null}
           </div>
+        ) : (
+          <button
+            onClick={() => {
+              toggleMenu();
+              toggleLoginModal();
+            }}
+            className="block w-full text-left p-4 hover:bg-gray-700"
+          >
+            Iniciar Sesión
+          </button>
         )}
       </div>
 
