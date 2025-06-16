@@ -21,6 +21,7 @@ import ScreenCategoriasArticulos from './modules/HU21_CRUD_CategoriasArticulos/c
 import ScreenCategoriaPadreArticulo from './modules/HU21_CRUD_CategoriasPadresArticulos/components/ScreenCategoriaPadreArticulo';
 import ScreenSubcategoriasInsumos from './modules/HU20_CRUD_SubcategoriasInsumos/components/ScreenSubcategoriasInsumos';
 import ScreenCategoriaPadreInsumo from './modules/HU20_CRUD_CategoriasPadresInsumos/components/ScreenCategoriaPadreInsumo';
+import ScreenPromociones from './modules/HU25_Promociones/components/ScreenPromociones';
 import { Recepcion } from './modules/HU14_Recepcion/components/Recepcion.tsx';
 import { Delivery } from './modules/HU16_Delivery/components/Delivery.tsx';
 import { ScreenRecepcionFacturas } from './modules/HU18_Generacion_De_Factura/Components/ScreenRecepcionFacturas.tsx';
@@ -196,6 +197,14 @@ createRoot(document.getElementById('root')!).render(
             element={
               <ProtectedRoute>
                 <ScreenCategoriaPadreInsumo />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="promociones"
+            element={
+              <ProtectedRoute>
+                <ScreenPromociones />
               </ProtectedRoute>
             }
           />

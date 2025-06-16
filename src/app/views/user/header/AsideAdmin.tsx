@@ -51,6 +51,10 @@ const NAV_DATA: NavItemStructure[] = [
           { to: '/admin/subcategorias-insumos', label: 'Subcategorías de Insumos' },
         ],
       },
+      {
+        title: 'Promociones',
+        subItems: [{ to: '/admin/promociones', label: 'Promociones' }],
+      },
     ],
   },
   {
