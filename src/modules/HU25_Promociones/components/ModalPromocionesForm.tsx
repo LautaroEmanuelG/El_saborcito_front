@@ -65,7 +65,17 @@ const ModalPromocionesForm: React.FC<ModalPromocionesFormProps> = ({
   const handleAddArticulo = (articulo: ArticuloManufacturado, cantidad: number) => {
     setDetalles((prev) => [
       ...prev,
-      { id: 0, promocionId: form.id ?? 0, articulo, cantidadRequerida: cantidad },
+      {
+        id: 0,
+        promocionId: form.id ?? 0,
+        articulo: {
+          ...articulo,
+          imagen: articulo.imagen ?? { url: '' },
+          eliminado: articulo.eliminado ?? false,
+          fechaEliminacion: (articulo as any)?.fechaEliminacion ?? null,
+        },
+        cantidadRequerida: cantidad,
+      },
     ]);
   };
 
@@ -492,7 +502,14 @@ const ModalPromocionesForm: React.FC<ModalPromocionesFormProps> = ({
             open={showModalArticulos}
             onClose={() => setShowModalArticulos(false)}
             onAddArticulo={handleAddArticulo}
-            articulosExistentes={detalles.map((d) => d.articulo as ArticuloManufacturado)}
+            articulosExistentes={detalles.map((d) => ({
+              ...d.articulo,
+              descripcion: (d.articulo as any).descripcion ?? '',
+              tiempoEstimadoMinutos: (d.articulo as any).tiempoEstimadoMinutos ?? 0,
+              articuloManufacturadoDetalles:
+                (d.articulo as any).articuloManufacturadoDetalles ?? [],
+              categoriaId: (d.articulo as any).categoriaId ?? 0,
+            }))}
           />
         </form>
       )}
