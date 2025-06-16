@@ -16,9 +16,8 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
   const [isBlocked, setIsBlocked] = useState(false);
   const [blockTime, setBlockTime] = useState(0);
   const navigate = useNavigate();
-
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let timer: number;
     if (isBlocked && blockTime > 0) {
       timer = setInterval(() => {
         setBlockTime((prev) => {

@@ -149,7 +149,7 @@ export const RankingCliente = () => {
   ];
 
   return (
-    <div className="bg-white p-8 rounded-xl shadow-md max-w-full overflow-x-auto">
+    <div className="bg-white p-8 rounded-xl w-full shadow-md max-w-full overflow-x-auto">
       {/* Header */}
       <div className="flex justify-between items-center border-b-2 border-negro pb-4 mb-8 flex-wrap">
         <h2 className="text-2xl font-bold text-negro mr-6">Ranking de clientes</h2>
@@ -301,6 +301,7 @@ export const RankingCliente = () => {
                         </thead>
                         <tbody>
                           {pedido.detalles.map((det) => {
+                            console.log('det :>> ', det);
                             return (
                               <tr
                                 key={det.id ?? `promo-${det.promocionOrigenId}`}
