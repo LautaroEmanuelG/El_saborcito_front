@@ -83,7 +83,7 @@ export const AsideAdmin = () => {
   return (
     <>
       <button
-        className={`fixed top-4 left-4 xl:hidden text-negro text-2xl p-2 z-30 rounded-full shadow-lg focus:outline-none ${isOpen ? 'bg-primarydark' : ''}`}
+        className={`fixed top-22 mt-1 left-1 lg:mt-0 lg:top-6 xl:hidden text-negro text-2xl p-2 z-30 rounded shadow-lg lg:shadow-none focus:outline-none bg-primary ${isOpen ? 'bg-primarydark' : ''}`}
         onClick={toggleMenu}
         aria-label="Abrir menú"
         aria-expanded={isOpen}
