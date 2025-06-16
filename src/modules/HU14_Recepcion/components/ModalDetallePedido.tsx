@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PedidoCompletoConDetalles } from '../../../types/Pedido';
 import { formatearNombreFormaPago } from '../../../shared/utils/pedidoUtils';
 import { getPromocionById } from '../../../shared/services/promocionService';
+import { IconoArrowRight } from '../../../assets/svgs/icons/IconoArrowRight';
 
 interface ModalDetallePedidoProps {
   pedido: PedidoCompletoConDetalles;
@@ -207,7 +208,7 @@ export const ModalDetallePedido: React.FC<ModalDetallePedidoProps> = ({
 
             {/* Información del Cliente */}
             <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="text-lg font-semibold mb-3 text-gray-800">👤 Cliente</h3>
+              <h3 className="text-lg font-semibold mb-3 text-gray-800">Cliente</h3>
               <div className="space-y-2">
                 <p>
                   <strong>Nombre:</strong> {pedido.cliente.nombre} {pedido.cliente.apellido}
@@ -224,11 +225,9 @@ export const ModalDetallePedido: React.FC<ModalDetallePedidoProps> = ({
           {/* Detalles del Pedido */}
           <div className="mb-6">
             <h3 className="text-lg font-semibold mb-3 text-gray-800">
-              📦 Detalles del Pedido
+              Detalles del Pedido
               {pedido.detallesCompletos && (
-                <span className="text-sm text-green-600 ml-2">
-                  ✨ Con información de promociones
-                </span>
+                <span className="text-sm text-green-600 ml-2">Con información de promociones</span>
               )}
             </h3>
 
@@ -237,8 +236,6 @@ export const ModalDetallePedido: React.FC<ModalDetallePedidoProps> = ({
               <div className="space-y-4">
                 {(() => {
                   const { promociones, individuales } = agruparArticulos();
-                  console.log('promociones :>> ', promociones);
-                  console.log('individuales :>> ', individuales);
                   return (
                     <>
                       {/* Artículos Individuales */}
@@ -272,10 +269,9 @@ export const ModalDetallePedido: React.FC<ModalDetallePedidoProps> = ({
                           className="bg-purple-50 border border-purple-200 rounded-lg p-4"
                         >
                           <div className="flex items-center mb-3">
-                            <div className="w-3 h-3 bg-purple-500 rounded-full mr-3"></div>
                             <div className="flex-1">
                               <p className="font-medium text-purple-900">
-                                🎁 {promocion.denominacion}
+                                {promocion.denominacion}
                               </p>
                               <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">
                                 🎉 Promoción
@@ -296,7 +292,6 @@ export const ModalDetallePedido: React.FC<ModalDetallePedidoProps> = ({
                                 className="flex items-center justify-between bg-white bg-opacity-50 rounded p-2"
                               >
                                 <div className="flex items-center">
-                                  <div className="w-2 h-2 bg-purple-400 rounded-full mr-2"></div>
                                   <span className="text-sm text-gray-700">
                                     {detalle.articulo.denominacion}
                                   </span>
@@ -418,9 +413,9 @@ export const ModalDetallePedido: React.FC<ModalDetallePedidoProps> = ({
             {puedeAvanzarEstado(pedido.estado.nombre, pedido.tipoEnvio.nombre) && (
               <button
                 onClick={manejarAvanzarEstado}
-                className="px-6 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors flex items-center"
+                className="px-4 py-2 gap-2 bg-primary text-white rounded hover:bg-primarydark transition-colors flex items-center"
               >
-                ➡️ Avanzar a{' '}
+                <IconoArrowRight />
                 {obtenerProximoEstado(pedido.estado.nombre, pedido.tipoEnvio.nombre)?.replace(
                   /_/g,
                   ' '

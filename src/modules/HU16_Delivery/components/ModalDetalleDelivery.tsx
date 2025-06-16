@@ -146,9 +146,9 @@ export const ModalDetalleDelivery: React.FC<ModalDetalleDeliveryProps> = ({
     >
       <div className="bg-white rounded-lg shadow-lg w-full max-w-4xl max-h-[95vh] overflow-auto">
         {/* Header */}
-        <div className="bg-purple-600 text-white p-3 sm:p-4 rounded-t-lg">
+        <div className="bg-primary text-white p-3 sm:p-4 rounded-t-lg">
           <div className="flex justify-between items-center">
-            <h2 className="text-lg sm:text-xl font-bold">🚚 Pedido #{pedido.id}</h2>
+            <h2 className="text-lg sm:text-xl font-bold">Pedido #{pedido.id}</h2>
             <button onClick={onClose} className="text-white hover:text-gray-200 text-xl">
               ✕
             </button>
@@ -158,7 +158,7 @@ export const ModalDetalleDelivery: React.FC<ModalDetalleDeliveryProps> = ({
         <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
           {/* Información del Cliente - Compacta */}
           <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
-            <h3 className="text-base sm:text-lg font-semibold mb-2 text-blue-800">👤 Cliente</h3>
+            <h3 className="text-base sm:text-lg font-semibold mb-2 text-blue-800">Cliente</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm sm:text-base">
               <p>
                 <strong>Nombre:</strong> {pedido.cliente.nombre} {pedido.cliente.apellido}
@@ -231,7 +231,6 @@ export const ModalDetalleDelivery: React.FC<ModalDetalleDeliveryProps> = ({
                       className="bg-purple-50 p-3 rounded border border-purple-200"
                     >
                       <div className="flex items-center gap-2 mb-3">
-                        <span className="text-lg">🎁</span>
                         <h4 className="font-semibold text-sm sm:text-base text-purple-800">
                           {promocionInfo?.articulo?.denominacion || `Promoción ${promocionId}`}
                         </h4>
@@ -254,7 +253,7 @@ export const ModalDetalleDelivery: React.FC<ModalDetalleDeliveryProps> = ({
                             <div className="flex justify-between items-center">
                               <div className="flex-1">
                                 <p className="font-medium text-xs sm:text-sm">
-                                  • {articulo.articulo.denominacion}
+                                  {articulo.articulo.denominacion}
                                 </p>
                               </div>
                               <span className="text-xs text-purple-600">x{articulo.cantidad}</span>
@@ -282,7 +281,7 @@ export const ModalDetalleDelivery: React.FC<ModalDetalleDeliveryProps> = ({
           </div>
 
           {/* Botones de Acción - Mobile Optimized */}
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 border-t">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 border-t justify-end">
             <button
               onClick={onClose}
               className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors text-sm sm:text-base"
@@ -291,7 +290,7 @@ export const ModalDetalleDelivery: React.FC<ModalDetalleDeliveryProps> = ({
             </button>
             <button
               onClick={manejarEntrega}
-              className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-green-500 text-white rounded hover:bg-green-600 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base font-semibold"
+              className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-primary text-white rounded hover:bg-primarydark transition-colors flex items-center justify-center gap-2 text-sm sm:text-base font-semibold"
             >
               Marcar como Entregado
             </button>

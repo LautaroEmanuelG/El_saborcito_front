@@ -2,6 +2,7 @@ import React from 'react';
 import { PedidoCompletoConDetalles } from '../../../types/Pedido';
 import { formatearNombreFormaPago } from '../../../shared/utils/pedidoUtils';
 import IconoVer from '../../../assets/svgs/icons/IconoVer';
+import { IconoArrowRight } from '../../../assets/svgs/icons/IconoArrowRight';
 
 interface TablaRecepcionProps {
   pedidos: PedidoCompletoConDetalles[];
@@ -92,9 +93,6 @@ export const TablaRecepcion: React.FC<TablaRecepcionProps> = ({
                 Tipo Envío
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Forma Pago
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Total
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -106,7 +104,7 @@ export const TablaRecepcion: React.FC<TablaRecepcionProps> = ({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {pedidos.map((pedido) => (
+            {pedidos.reverse().map((pedido) => (
               <tr key={pedido.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   #{pedido.id}
@@ -115,7 +113,7 @@ export const TablaRecepcion: React.FC<TablaRecepcionProps> = ({
                   <div className="text-sm font-medium text-gray-900">
                     {pedido.cliente.nombre} {pedido.cliente.apellido}
                   </div>
-                  <div className="text-sm text-gray-500">📞 {pedido.cliente.telefono}</div>
+                  <div className="text-sm text-gray-500">{pedido.cliente.telefono}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span
@@ -130,9 +128,9 @@ export const TablaRecepcion: React.FC<TablaRecepcionProps> = ({
                   >
                     {pedido.tipoEnvio.nombre.replace(/_/g, ' ')}
                   </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {formatearNombreFormaPago(pedido.formaPago.nombre)}
+                  <div className="text-sm text-gray-500">
+                    {formatearNombreFormaPago(pedido.formaPago.nombre)}
+                  </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   {formatearPrecio(pedido.total)}
@@ -145,7 +143,7 @@ export const TablaRecepcion: React.FC<TablaRecepcionProps> = ({
                     {/* Botón Ver Detalle */}
                     <button
                       onClick={() => onVerDetalle(pedido)}
-                      className="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600 transition-colors"
+                      className="bg-gris text-white px-3 py-1 rounded text-xs hover:bg-blue-600 transition-colors"
                       title="Ver detalle"
                     >
                       <IconoVer className="inline-block w-4 h-4" />
@@ -155,10 +153,10 @@ export const TablaRecepcion: React.FC<TablaRecepcionProps> = ({
                     {puedeAvanzarEstado(pedido.estado.nombre, pedido.tipoEnvio.nombre) && (
                       <button
                         onClick={() => manejarAvanzarEstado(pedido)}
-                        className="bg-green-500 text-white px-3 py-1 rounded text-xs hover:bg-green-600 transition-colors"
+                        className="bg-primary text-white px-3 py-1 rounded text-xs hover:bg-green-600 transition-colors"
                         title={`Cambiar a ${obtenerProximoEstado(pedido.estado.nombre, pedido.tipoEnvio.nombre)}`}
                       >
-                        ➡️
+                        <IconoArrowRight />
                       </button>
                     )}
                   </div>
