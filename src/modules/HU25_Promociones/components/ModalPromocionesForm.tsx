@@ -104,18 +104,30 @@ const ModalPromocionesForm: React.FC<ModalPromocionesFormProps> = ({
       }));
       const payload = {
         ...form,
-        precioPromocional: form.precioPromocional ? Number(form.precioPromocional) : null,
-        descuento: form.descuento ? Number(form.descuento) : null,
-        horaDesde: form.horaDesde ? form.horaDesde : null,
-        horaHasta: form.horaHasta ? form.horaHasta : null,
+        precioPromocional: form.precioPromocional ? Number(form.precioPromocional) : undefined,
+        horaDesde: form.horaDesde ? form.horaDesde : undefined,
+        horaHasta: form.horaHasta ? form.horaHasta : undefined,
         articulo: null,
         promocionDetalles: detallesTransformados,
         imagen: imagenPreview,
-        habilitado: isDisponible,
+        eliminado: !isDisponible, // Si no está disponible, marcar como eliminado (baja lógica)
+        sucursal: { id: 1 }, // Asignar sucursal 1 a todas las promociones creadas
       };
       onSubmit(payload as any);
     }
     onClose();
+  };
+
+  // Calcular descuento automático
+  const calcularDescuento = () => {
+    if (!detalles.length || !form.precioPromocional) return '-';
+    const sumaArticulos = detalles.reduce((acc, d) => {
+      const precio = d.articulo?.precioVenta ?? 0;
+      return acc + precio * (d.cantidadRequerida || 1);
+    }, 0);
+    if (!sumaArticulos) return '-';
+    const descuento = 100 - (Number(form.precioPromocional) / sumaArticulos) * 100;
+    return descuento > 0 ? descuento.toFixed(0) + '%' : '0%';
   };
 
   // Render
@@ -143,13 +155,20 @@ const ModalPromocionesForm: React.FC<ModalPromocionesFormProps> = ({
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Precio Promocional</label>
-                <div className="w-full border rounded px-3 py-2 bg-gray-100">
-                  {form.precioPromocional}
-                </div>
+                <input
+                  id="precioPromocional"
+                  name="precioPromocional"
+                  type="number"
+                  className="w-full border rounded px-3 py-2 bg-gray-100"
+                  value={form.precioPromocional?.toString() ?? ''}
+                  onChange={(e) => handleInputChange('precioPromocional', e.target.value)}
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Descuento (%)</label>
-                <div className="w-full border rounded px-3 py-2 bg-gray-100">{form.descuento}</div>
+                <div className="w-full border rounded px-3 py-2 bg-gray-100">
+                  {calcularDescuento()}
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Fecha Desde</label>
@@ -234,17 +253,10 @@ const ModalPromocionesForm: React.FC<ModalPromocionesFormProps> = ({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1" htmlFor="descuento">
-                  Descuento (%)
-                </label>
-                <input
-                  id="descuento"
-                  name="descuento"
-                  type="number"
-                  className="w-full border rounded px-3 py-2 bg-gray-100"
-                  value={form.descuento?.toString() ?? ''}
-                  onChange={(e) => handleInputChange('descuento', e.target.value)}
-                />
+                <label className="block text-sm font-medium mb-1">Descuento (%)</label>
+                <div className="w-full border rounded px-3 py-2 bg-gray-100">
+                  {calcularDescuento()}
+                </div>
               </div>
               <div className="flex gap-2">
                 <div className="flex-1">

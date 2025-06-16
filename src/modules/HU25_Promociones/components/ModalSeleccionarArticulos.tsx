@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import type { ArticuloManufacturado } from '../../../types/Articulo';
 import * as articuloManufacturadoService from '../../../shared/services/articuloManufacturadoService';
+import * as articuloInsumoService from '../../../shared/services/articuloInsumoService';
 import * as categoriaService from '../../../shared/services/categoriaService';
 import Modal from '../../../shared/components/abmGenerica/components/modals/Modal';
 import type { Categoria } from '../../../types/Categoria';
@@ -52,9 +53,18 @@ const ModalSeleccionarArticulos: React.FC<ModalSeleccionarArticulosProps> = ({
     setLoading(true);
     setError(null);
     try {
-      const data = await articuloManufacturadoService.getAllArticuloManufacturados();
-      setArticulos(data ?? []);
-      setFilteredArticulos(data ?? []);
+      const [manufacturados, insumos] = await Promise.all([
+        articuloManufacturadoService.getAllArticuloManufacturados(),
+        articuloInsumoService.getAllArticuloInsumos(),
+      ]);
+      // Filtrar insumos que no son para elaborar
+      const insumosNoElaborar = (insumos ?? []).filter(
+        (insumo: any) => insumo.esParaElaborar === false
+      );
+      // Unir ambos arrays
+      const todos = [...(manufacturados ?? []), ...insumosNoElaborar];
+      setArticulos(todos);
+      setFilteredArticulos(todos);
     } catch (err) {
       setError('Error al cargar artículos');
       console.error('Error loading articulos:', err);

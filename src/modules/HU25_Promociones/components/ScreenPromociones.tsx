@@ -6,10 +6,22 @@ import { ButtonsTable } from '../../../shared/components/abmGenerica/components/
 import ModalPromocionesForm from './ModalPromocionesForm';
 import type { Promocion } from '../../../types/Promocion';
 
+// Calcula el descuento real basado en los artículos y el precio promocional
+function calcularDescuento(promocion: Promocion): string {
+  if (!promocion.promocionDetalles || promocion.promocionDetalles.length === 0) return '-';
+  const sumaArticulos = promocion.promocionDetalles.reduce((acc, d) => {
+    const precio = d.articulo?.precioVenta ?? 0;
+    return acc + precio * (d.cantidadRequerida || 1);
+  }, 0);
+  if (!sumaArticulos || !promocion.precioPromocional) return '-';
+  const descuento = 100 - (promocion.precioPromocional / sumaArticulos) * 100;
+  return descuento > 0 ? descuento.toFixed(0) + '%' : '0%';
+}
+
 const getInitialValues = (): Partial<Promocion> => ({
   denominacion: '',
-  precioPromocional: null,
-  descuento: null,
+  precioPromocional: undefined,
+  descuento: undefined,
   fechaDesde: '',
   fechaHasta: '',
   horaDesde: '',
@@ -107,10 +119,18 @@ const ScreenPromociones = () => {
   };
 
   const columns = [
-    ...PROMOCION_COLUMNS.map((col) => ({
-      label: col.headerName,
-      key: col.field,
-    })),
+    ...PROMOCION_COLUMNS.map((col) =>
+      col.field === 'descuento'
+        ? {
+            label: col.headerName,
+            key: col.field,
+            render: (row: Promocion) => calcularDescuento(row),
+          }
+        : {
+            label: col.headerName,
+            key: col.field,
+          }
+    ),
     {
       label: 'Acciones',
       key: 'acciones',
