@@ -17,7 +17,9 @@ export const VistaCarrito = () => {
     throw new Error('VistaCarrito must be used within a CarritoProvider');
   }
 
-  const { analizarCarrito, limitacionesProduccion, promocionesProblematicas } = carritoContext;
+  const { analizarCarrito, limitacionesProduccion, promocionesProblematicas, isAnalyzing } =
+    carritoContext;
+
   // Combinar productos y promociones para mostrar
   const todosLosItems = [
     ...carrito.map((item) => ({ ...item, tipo: 'producto' as const })),
@@ -28,20 +30,14 @@ export const VistaCarrito = () => {
     })),
   ];
 
-  const realizarAnalisis = async () => {
-    // Solo analizar si hay items en el carrito
-    if (todosLosItems.length > 0) {
-      console.log('🔍 Analizando carrito desde VistaCarrito');
-      console.log('todosLosItems :>> ', todosLosItems);
-      return await analizarCarrito();
-    }
-  };
-
-  // Analizar carrito cuando se monta el componente o cuando cambia el contenido
+  // 🚀 **ANÁLISIS AUTOMATIZADO AL MONTAR EL COMPONENTE**
   useEffect(() => {
-    // Debounce el análisis para evitar múltiples llamadas
-    realizarAnalisis();
-  }, [carrito.length, promocionesEnCarrito.length]); // Solo ejecutar cuando cambie la cantidad de items
+    // Solo analizar si hay items en el carrito y no se está analizando ya
+    if (todosLosItems.length > 0 && !isAnalyzing) {
+      console.log('🔍 Analizando carrito inicial desde VistaCarrito');
+      analizarCarrito();
+    }
+  }, []); // Solo ejecutar al montar el componente
 
   // Función para determinar si un artículo es manufacturado
   const isArticuloManufacturado = (articulo: any): articulo is ArticuloManufacturado => {
@@ -52,37 +48,41 @@ export const VistaCarrito = () => {
   const isArticuloInsumo = (articulo: any): boolean => {
     return 'stockActual' in articulo && 'esParaElaborar' in articulo;
   };
-  // Función para verificar si hay limitaciones excedidas que impidan la compra
+
+  // 🚀 **FUNCIÓN OPTIMIZADA PARA VERIFICAR LIMITACIONES**
   const hayLimitacionesExcedidas = (): boolean => {
     return todosLosItems.some((item) => {
       if (item.tipo === 'producto') {
         const articuloIdStr = (item.id ?? 0).toString();
         const limitacionMaxima = limitacionesProduccion[articuloIdStr];
-        // 🚀 NUEVA LÓGICA: Solo considerar como "excedida" si la cantidad actual supera la limitación
         return limitacionMaxima && item.cantidad > limitacionMaxima;
       } else if (item.tipo === 'promocion') {
-        // Para promociones, verificar si está en la lista de problemáticas
         return promocionesProblematicas.has(item.id);
       }
       return false;
     });
   };
 
-  // 🚀 NUEVA FUNCIÓN: Verificar si hay limitaciones alcanzadas (en el límite exacto)
+  // 🚀 **FUNCIÓN PARA VERIFICAR LIMITACIONES ALCANZADAS**
   const hayLimitacionesAlcanzadas = (): boolean => {
     return todosLosItems.some((item) => {
       if (item.tipo === 'producto') {
         const articuloIdStr = (item.id ?? 0).toString();
         const limitacionMaxima = limitacionesProduccion[articuloIdStr];
-        // Verificar si está exactamente en el límite
         return limitacionMaxima && item.cantidad === limitacionMaxima;
       }
       return false;
     });
   };
 
-  // Función para manejar el clic en comprar con validación
+  // 🚀 **FUNCIÓN OPTIMIZADA PARA MANEJAR COMPRA**
   const handleComprarClick = async () => {
+    // No permitir compra si se está analizando
+    if (isAnalyzing) {
+      console.log('⏳ Análisis en curso, esperando...');
+      return;
+    }
+
     // Realizar análisis final antes de abrir el modal
     const analisisFinal = await analizarCarrito();
 
@@ -95,10 +95,10 @@ export const VistaCarrito = () => {
 
     setMetodoPagoOpen(true);
   };
-  // Función para obtener mensaje de limitación para un item
+
+  // 🚀 **FUNCIÓN OPTIMIZADA PARA MENSAJES DE LIMITACIÓN**
   const getMensajeLimitacion = (item: any) => {
     if (item.tipo === 'promocion') {
-      // Para promociones, verificar si está en la lista de problemáticas
       const esProblematica = promocionesProblematicas.has(item.id);
       return esProblematica
         ? '⚠️ Esta promoción contiene productos que no se pueden fabricar completamente'
@@ -111,10 +111,8 @@ export const VistaCarrito = () => {
     const limitacionMaxima = limitacionesProduccion[articuloIdStr];
     const cantidadEnCarrito = item.cantidad;
 
-    // Solo mostrar mensaje si hay limitación y la cantidad actual excede el límite
     if (!limitacionMaxima || cantidadEnCarrito <= limitacionMaxima) return null;
 
-    // Diferentes mensajes según el tipo de artículo
     if (isArticuloInsumo(item)) {
       return `⚠️ Stock limitado: máximo ${limitacionMaxima} unidades disponibles`;
     } else if (isArticuloManufacturado(item)) {
