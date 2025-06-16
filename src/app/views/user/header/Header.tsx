@@ -157,7 +157,8 @@ export const Header = ({ onSearch }: Props) => {
                       Mi Perfil
                     </Link>
                     <Link
-                      to="/historial-compras"
+                      to="/perfil"
+                      state={{ activeView: 'pedidos' }}
                       className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
                       onClick={() => setUserMenuOpen(false)}
                     >
@@ -253,7 +254,8 @@ export const Header = ({ onSearch }: Props) => {
               Mi Perfil
             </Link>
             <Link
-              to="/historial-compras"
+              to="/perfil"
+              state={{ activeView: 'pedidos' }}
               className="block py-2 hover:bg-gray-700"
               onClick={toggleMenu}
             >

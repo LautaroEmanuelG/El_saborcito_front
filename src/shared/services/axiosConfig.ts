@@ -15,8 +15,6 @@ const axiosInstance = axios.create({
 // Aquí puedes agregar interceptores si es necesario
 axiosInstance.interceptors.request.use(
   (config) => {
-    // console.log('Enviando petición a:', config.url);
-    // console.log('Datos de la petición:', config.data);
     // Modificar la configuración de la solicitud antes de enviarla (por ejemplo, agregar token de autenticación)
     // const token = localStorage.getItem('authToken');
     // if (token) {
