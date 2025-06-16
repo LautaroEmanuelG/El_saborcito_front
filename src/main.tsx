@@ -23,6 +23,7 @@ import ScreenSubcategoriasInsumos from './modules/HU20_CRUD_SubcategoriasInsumos
 import ScreenCategoriaPadreInsumo from './modules/HU20_CRUD_CategoriasPadresInsumos/components/ScreenCategoriaPadreInsumo';
 import { Recepcion } from './modules/HU14_Recepcion/components/Recepcion.tsx';
 import { Delivery } from './modules/HU16_Delivery/components/Delivery.tsx';
+import { ScreenRecepcionFacturas } from './modules/HU18_Generacion_De_Factura/Components/ScreenRecepcionFacturas.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <AppProviders>
@@ -67,6 +68,14 @@ createRoot(document.getElementById('root')!).render(
             element={
               <ProtectedRoute>
                 <Recepcion />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="recepcion-facturas"
+            element={
+              <ProtectedRoute>
+                <ScreenRecepcionFacturas />
               </ProtectedRoute>
             }
           />

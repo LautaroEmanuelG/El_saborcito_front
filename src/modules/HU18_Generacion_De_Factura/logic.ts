@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import {
   FacturaDTO,
+  FacturaCreateDTO,
   FacturaResponse,
   FacturaRequest,
   FacturaError,
@@ -16,16 +17,85 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5252';
 /**
  * Verifica si un pedido de la API puede ser facturado
  */
-const puedeFacturarseFromAPI = (pedido: any): boolean => {
+export const puedeFacturarseFromAPI = (pedido: any): boolean => {
   const estadoNombre = pedido.estado?.nombre || pedido.estado;
   const estadosFacturables = ['LISTO', 'ENTREGADO', 'PAGADO'];
   return estadosFacturables.includes(estadoNombre?.toUpperCase());
 };
 
 /**
- * Genera una factura enviando los datos al backend
+ * NUEVO FLUJO: Consulta la factura de un pedido
+ */
+export const consultarFacturaPorPedido = async (pedidoId: number): Promise<FacturaDTO> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/facturas/pedido/${pedidoId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error ${response.status}: ${errorText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    throw error instanceof Error ? error : new Error('Error al consultar factura');
+  }
+};
+
+/**
+ * NUEVO FLUJO: Descarga el PDF de una factura
+ */
+export const descargarFacturaPDF = async (facturaId: number): Promise<Blob> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/facturas/${facturaId}/pdf`, {
+      method: 'GET',
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error ${response.status}: ${errorText}`);
+    }
+
+    return await response.blob();
+  } catch (error) {
+    throw error instanceof Error ? error : new Error('Error al descargar PDF');
+  }
+};
+
+/**
+ * NUEVO FLUJO: Reenvía la factura por email
+ */
+export const reenviarFacturaPorEmail = async (facturaId: number): Promise<void> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/facturas/${facturaId}/reenviar`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error ${response.status}: ${errorText}`);
+    }
+  } catch (error) {
+    throw error instanceof Error ? error : new Error('Error al reenviar email');
+  }
+};
+
+/**
+ * DEPRECADO: Esta función ya no se usa porque la factura se genera automáticamente al crear el pedido
+ * Se mantiene por compatibilidad pero debería usarse el nuevo flujo
  */
 export const generarFactura = async (facturaRequest: FacturaRequest): Promise<FacturaResponse> => {
+  console.warn(
+    '⚠️ generarFactura está deprecado. La factura se genera automáticamente al crear el pedido.'
+  );
+
   try {
     // Validar datos antes de enviar
     const validationError = validarDatosFactura(facturaRequest);
@@ -34,11 +104,11 @@ export const generarFactura = async (facturaRequest: FacturaRequest): Promise<Fa
     }
 
     // Preparar DTO para enviar al backend
-    const facturaDTO: FacturaDTO = {
+    const facturaDTO: FacturaCreateDTO = {
       pedido: { id: facturaRequest.pedidoId },
       formaPago: { id: facturaRequest.formaPagoId },
       totalVenta: facturaRequest.totalVenta,
-      clienteEmail: facturaRequest.clienteEmail, // Enviar email desde frontend
+      clienteEmail: facturaRequest.clienteEmail,
       ...(facturaRequest.mercadoPagoData && {
         mercadoPagoData: facturaRequest.mercadoPagoData,
       }),
@@ -49,8 +119,6 @@ export const generarFactura = async (facturaRequest: FacturaRequest): Promise<Fa
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        // Agregar headers de autenticación si son necesarios
-        // 'Authorization': `Bearer ${getAuthToken()}`
       },
       body: JSON.stringify(facturaDTO),
     });
@@ -59,7 +127,6 @@ export const generarFactura = async (facturaRequest: FacturaRequest): Promise<Fa
       let errorData = {};
       try {
         const textResponse = await response.text();
-
         if (textResponse) {
           try {
             errorData = JSON.parse(textResponse);
@@ -78,7 +145,6 @@ export const generarFactura = async (facturaRequest: FacturaRequest): Promise<Fa
 
     const responseData = await response.json();
 
-    // Convertir la respuesta del backend al formato esperado
     const facturaResponse: FacturaResponse = {
       success: true,
       message: 'Factura generada exitosamente',
@@ -89,7 +155,6 @@ export const generarFactura = async (facturaRequest: FacturaRequest): Promise<Fa
 
     return facturaResponse;
   } catch (error) {
-    // Manejar diferentes tipos de errores
     if (error instanceof Error) {
       return {
         success: false,
@@ -172,7 +237,85 @@ export const formatearMensajeError = (error: FacturaError | string): string => {
 };
 
 /**
- * Hook personalizado para manejar el estado de facturación
+ * NUEVO: Hook para manejar operaciones de factura (consultar, descargar PDF, reenviar email)
+ */
+export const useFacturaOperaciones = () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const consultarFactura = async (pedidoId: number): Promise<FacturaDTO | null> => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const factura = await consultarFacturaPorPedido(pedidoId);
+      return factura;
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Error al consultar factura';
+      setError(errorMsg);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const descargarPDF = async (facturaId: number, nombreArchivo?: string): Promise<boolean> => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const blob = await descargarFacturaPDF(facturaId);
+
+      // Crear enlace de descarga
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = nombreArchivo || `factura_${facturaId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      return true;
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Error al descargar PDF';
+      setError(errorMsg);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const reenviarEmail = async (facturaId: number): Promise<boolean> => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      await reenviarFacturaPorEmail(facturaId);
+      return true;
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Error al reenviar email';
+      setError(errorMsg);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const limpiarError = () => setError(null);
+
+  return {
+    loading,
+    error,
+    consultarFactura,
+    descargarPDF,
+    reenviarEmail,
+    limpiarError,
+  };
+};
+
+/**
+ * Hook personalizado para manejar el estado de facturación (DEPRECADO)
  */
 export const useFacturacion = () => {
   const [status, setStatus] = useState<FacturaStatus>(FacturaStatus.IDLE);
@@ -180,6 +323,10 @@ export const useFacturacion = () => {
   const [response, setResponse] = useState<FacturaResponse | null>(null);
 
   const generarFacturaConEstado = async (facturaRequest: FacturaRequest) => {
+    console.warn(
+      '⚠️ useFacturacion está deprecado. Usa useFacturaOperaciones para el nuevo flujo.'
+    );
+
     setStatus(FacturaStatus.VALIDATING);
     setError(null);
     setResponse(null);

@@ -20,6 +20,7 @@ const NAV_DATA: NavItemStructure[] = [
     title: 'Recepción y Gestión',
     subItems: [
       { to: '/admin/recepcion', label: 'Recepción de Pedidos' },
+      { to: '/admin/recepcion-facturas', label: 'Recepción de Facturas' },
       { to: '/admin/delivery', label: 'Delivery' },
     ],
   },

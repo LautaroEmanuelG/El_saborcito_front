@@ -5,9 +5,13 @@ export {
 } from './Components/FacturaIntegracion.tsx';
 export type { FacturaIntegracionProps } from './Components/FacturaIntegracion.tsx';
 
+// NUEVO: Componente para administración de facturas
+export { default as FacturaAdmin } from './Components/FacturaAdmin.tsx';
+
 // Tipos y modelos
 export type {
   FacturaDTO,
+  FacturaCreateDTO,
   FacturaResponse,
   FacturaRequest,
   FacturaError,
@@ -19,41 +23,69 @@ export { FacturaStatus as FacturaStatusEnum } from './model';
 
 // Lógica de negocio
 export {
-  generarFactura,
+  // NUEVO FLUJO
+  consultarFacturaPorPedido,
+  descargarFacturaPDF,
+  reenviarFacturaPorEmail,
+  useFacturaOperaciones,
+
+  // FUNCIONES DE UTILIDAD
   validarDatosFactura,
   puedeFacturarse,
   formatearMensajeError,
+
+  // DEPRECADO (mantener por compatibilidad)
+  generarFactura,
   useFacturacion,
 } from './logic';
 
 /*
- * Ejemplo de uso:
+ * NUEVO FLUJO DE FACTURACIÓN:
  *
- * import { FacturaHandler, useFacturacion, PedidoFacturacion } from '@/modules/HU18_Generacion_De_Factura';
+ * La factura se genera automáticamente al crear el pedido.
+ * Este módulo proporciona funciones para:
+ * 1. Consultar la factura de un pedido
+ * 2. Descargar el PDF de la factura
+ * 3. Reenviar la factura por email
+ *
+ * Ejemplo de uso básico:
+ *
+ * import { useFacturaOperaciones } from '@/modules/HU18_Generacion_De_Factura';
  *
  * const MiComponente = () => {
- *   const pedido: PedidoFacturacion = {
- *     id: 123,
- *     clienteId: 456,
- *     clienteEmail: 'cliente@email.com',
- *     clienteNombre: 'Juan Pérez',
- *     totalVenta: 2500.00,
- *     estado: 'PAGADO'
+ *   const { consultarFactura, descargarPDF, reenviarEmail, loading, error } = useFacturaOperaciones();
+ *
+ *   const handleConsultarFactura = async (pedidoId: number) => {
+ *     const factura = await consultarFactura(pedidoId);
+ *     if (factura) {
+ *       console.log('Factura:', factura);
+ *     }
+ *   };
+ *
+ *   const handleDescargarPDF = async (facturaId: number) => {
+ *     const success = await descargarPDF(facturaId);
+ *     if (success) {
+ *       console.log('PDF descargado exitosamente');
+ *     }
+ *   };
+ *
+ *   const handleReenviarEmail = async (facturaId: number) => {
+ *     const success = await reenviarEmail(facturaId);
+ *     if (success) {
+ *       console.log('Email reenviado exitosamente');
+ *     }
  *   };
  *
  *   return (
- *     <FacturaHandler
- *       pedido={pedido}
- *       formaPagoId={2}
- *       onFacturaGenerada={(numeroFactura) => {
- *         console.log('Factura generada:', numeroFactura);
- *       }}
- *       onError={(error) => {
- *         console.error('Error:', error);
- *       }}
- *     />
+ *     <div>
+ *       {loading && <p>Cargando...</p>}
+ *       {error && <p>Error: {error}</p>}
+ *       <button onClick={() => handleConsultarFactura(123)}>Consultar Factura</button>
+ *       <button onClick={() => handleDescargarPDF(456)}>Descargar PDF</button>
+ *       <button onClick={() => handleReenviarEmail(456)}>Reenviar Email</button>
+ *     </div>
  *   );
  * };
  *
- * Para testing, usa: import { DemoPage } from '@/modules/HU18_Generacion_De_Factura';
+ * Para integración con carrito, usa: import { FacturaIntegracion } from '@/modules/HU18_Generacion_De_Factura';
  */
