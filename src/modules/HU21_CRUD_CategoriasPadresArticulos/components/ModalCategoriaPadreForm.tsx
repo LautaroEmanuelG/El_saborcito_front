@@ -31,7 +31,13 @@ const ModalCategoriaPadreForm: React.FC<ModalCategoriaPadreFormProps> = ({
     if (!isView) {
       setErrorMsg(null);
       try {
-        await onSubmit({ denominacion: denominacion.trim(), tipoCategoria: null });
+        const payload = {
+          denominacion: denominacion.trim(),
+          tipoCategoria: null,
+          sucursal: { id: 1 },
+        }; // Asignar sucursal_id 1
+        console.log('Payload enviado:', payload); // Log para depuración
+        await onSubmit(payload);
       } catch (error: any) {
         setErrorMsg(
           error?.response?.data?.message || error?.message || 'Error al guardar la categoría'

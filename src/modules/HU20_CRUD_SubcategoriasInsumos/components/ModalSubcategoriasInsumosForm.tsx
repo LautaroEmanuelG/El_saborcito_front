@@ -43,7 +43,9 @@ const ModalSubcategoriasInsumosForm = ({
     e.preventDefault();
     setErrorMsg(null);
     try {
-      await onSubmit(form);
+      const payload = { ...form, sucursal: { id: 1 } }; // Asignar sucursal_id 1
+      console.log('Payload enviado:', payload); // Log para depuración
+      await onSubmit(payload);
     } catch (error: any) {
       setErrorMsg(
         error?.response?.data?.message || error?.message || 'Error al guardar la subcategoría'

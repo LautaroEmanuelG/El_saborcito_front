@@ -3,4 +3,5 @@ export interface Categoria {
   denominacion: string;
   tipoCategoria?: Categoria | null;
   tipo?: 'INSUMOS' | 'MANUFACTURADOS';
+  sucursal?: { id: number }; // Se agrega sucursal opcional
 }
