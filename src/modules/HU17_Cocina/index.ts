@@ -5,6 +5,7 @@ export { KanbanBoard } from './Components/KanbanBoard';
 export { TaskCard } from './Components/TaskCard';
 export { Column } from './Components/Column';
 export { ModalAgregarTiempo } from './Components/ModalAgregarTiempo';
+export { ColumnVisibilityControls } from './Components/ColumnVisibilityControls';
 
 // Modelos y tipos
 export type {
@@ -57,3 +58,6 @@ export {
   agregarMinutos,
   validarTiempo,
 } from './utils/tiempoUtils';
+
+// Hooks
+export { useColumnVisibility } from './hooks/useColumnVisibility';

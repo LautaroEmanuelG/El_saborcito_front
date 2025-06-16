@@ -10,19 +10,25 @@ import {
 } from '@dnd-kit/core';
 import { Column } from './Column';
 import { TaskCard } from './TaskCard';
-import { ESTADOS, EstadoId } from '../Model';
+import { ESTADOS, EstadoId, ESTADO_IDS } from '../Model';
 import { ModalRecetaKanban } from './ModalRecetaKanban';
 import { ModalAgregarTiempo } from './ModalAgregarTiempo';
 import { AlertaElegante } from './AlertaElegante';
+import { ColumnVisibilityControls } from './ColumnVisibilityControls';
 import { useDetalleCompleto } from '../../../shared/hooks/useHistorialCocina';
 import { useKanbanLogic } from '../hooks/useKanbanLogic';
 import { useModalTiempo } from '../hooks/useModalTiempo';
+import { useColumnVisibility } from '../hooks/useColumnVisibility';
 
 /**
  * 🏗️ Componente principal del Kanban de Cocina - Completamente optimizado
  */
 export const KanbanBoard: React.FC = () => {
   const [activeId, setActiveId] = useState<number | null>(null);
+
+  // 👁️ Hook para visibilidad de columnas
+  const { showPendiente, showListo, togglePendienteVisibility, toggleListoVisibility } =
+    useColumnVisibility();
 
   // 🎯 Hooks personalizados para separar responsabilidades
   const {
@@ -113,16 +119,47 @@ export const KanbanBoard: React.FC = () => {
                 <span className="text-gray-600 font-medium">{pedidos.length} pedidos activos</span>
               </div>
               <div className="text-sm text-gray-500">Gestión en tiempo real</div>
+
+              {/* Resumen de columnas ocultas */}
+              {(!showPendiente || !showListo) && (
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-gray-500">Ocultas:</span>
+                  {!showPendiente && (
+                    <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-medium">
+                      {pedidos.filter((p) => p.estado.id === ESTADO_IDS.PENDIENTE).length}{' '}
+                      Pendientes
+                    </span>
+                  )}
+                  {!showListo && (
+                    <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-medium">
+                      {pedidos.filter((p) => p.estado.id === ESTADO_IDS.LISTO).length} Listos
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           </div>
-          <button
-            onClick={cargarPedidos}
-            disabled={loading}
-            className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primarydark disabled:opacity-50 transition-all duration-200 flex items-center gap-2 shadow-sm"
-          >
-            <span className={loading ? 'animate-spin' : ''}>🔄</span>
-            Actualizar
-          </button>
+
+          <div className="flex items-center gap-4">
+            {/* Controles de visibilidad de columnas */}
+            <ColumnVisibilityControls
+              showPendiente={showPendiente}
+              showListo={showListo}
+              onTogglePendiente={togglePendienteVisibility}
+              onToggleListo={toggleListoVisibility}
+              pendienteCount={pedidos.filter((p) => p.estado.id === ESTADO_IDS.PENDIENTE).length}
+              listoCount={pedidos.filter((p) => p.estado.id === ESTADO_IDS.LISTO).length}
+            />
+
+            <button
+              onClick={cargarPedidos}
+              disabled={loading}
+              className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primarydark disabled:opacity-50 transition-all duration-200 flex items-center gap-2 shadow-sm"
+            >
+              <span className={loading ? 'animate-spin' : ''}>🔄</span>
+              Actualizar
+            </button>
+          </div>
         </div>
       </div>
 
@@ -130,6 +167,10 @@ export const KanbanBoard: React.FC = () => {
       <div className="flex gap-4 overflow-x-auto pb-4">
         <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
           {ESTADOS.map((estado) => {
+            // 👁️ Filtrar columnas según visibilidad configurada
+            if (estado.id === ESTADO_IDS.PENDIENTE && !showPendiente) return null;
+            if (estado.id === ESTADO_IDS.LISTO && !showListo) return null;
+
             const pedidosFiltrados = pedidos.filter((p) => p.estado.id === estado.id);
             return (
               <Column

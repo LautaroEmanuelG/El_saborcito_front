@@ -1,9 +1,6 @@
-import React, { useState } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { TaskCard } from './TaskCard';
-import { EstadoId, ESTADO_IDS, Pedido } from '../Model';
-import IconoChevronDown from '../../../assets/svgs/icons/IconoChevronDown';
-import IconoChevronsRight from '../../../assets/svgs/icons/IconoChevronsRight';
+import { EstadoId, Pedido } from '../Model';
 
 interface ColumnProps {
   column: { id: EstadoId; nombre: string; title: string; color: string };
@@ -28,28 +25,14 @@ export function Column({
     id: column.id,
   });
 
-  // Estado para colapsar/expandir solo la columna LISTO
-  const [isExpanded, setIsExpanded] = useState(true);
-  const isListoColumn = column.id === ESTADO_IDS.LISTO;
-
-  const toggleExpanded = () => {
-    if (isListoColumn) {
-      setIsExpanded(!isExpanded);
-    }
-  };
-
   return (
     <div className="flex w-80 flex-col bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
       {/* Header de columna mejorado */}
       <div
-        className={`
-          flex items-center justify-between px-4 py-4 cursor-pointer transition-all duration-200
-          ${isListoColumn ? 'hover:opacity-90' : ''}
-        `}
+        className="flex items-center justify-between px-4 py-4"
         style={{
           background: `linear-gradient(135deg, ${column.color} 0%, ${column.color}dd 100%)`,
         }}
-        onClick={toggleExpanded}
       >
         <div className="flex items-center gap-3">
           <div>
@@ -64,16 +47,6 @@ export function Column({
           <div className="bg-white bg-opacity-20 rounded-full px-3 py-1">
             <span className="font-bold text-white text-lg">{tasks.length}</span>
           </div>
-          {/* Icono de colapsar/expandir solo para columna LISTO */}
-          {isListoColumn && (
-            <div className="text-white transition-transform duration-200">
-              {isExpanded ? (
-                <IconoChevronDown width={20} height={20} />
-              ) : (
-                <IconoChevronsRight width={20} height={20} />
-              )}
-            </div>
-          )}
         </div>
       </div>
 
@@ -81,47 +54,31 @@ export function Column({
       <div
         ref={setNodeRef}
         className={`
-          flex-1 p-3 transition-all duration-300 custom-scrollbar
+          flex-1 p-3 transition-all duration-300 custom-scrollbar min-h-[400px] max-h-[600px] overflow-y-auto
           ${isOver ? 'bg-blue-50 ring-2 ring-blue-300 ring-opacity-50' : 'bg-gray-50'}
-          ${
-            isListoColumn && !isExpanded
-              ? 'min-h-[60px] max-h-[60px] overflow-hidden'
-              : 'min-h-[400px] max-h-[600px] overflow-y-auto'
-          }
         `}
       >
-        {/* Solo mostrar tarjetas si está expandida (o si no es columna LISTO) */}
-        {(isExpanded || !isListoColumn) && (
-          <div className="space-y-3">
-            {tasks.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-gray-500 text-sm">
-                  No hay pedidos en {column.title.toLowerCase()}
-                </p>
-              </div>
-            ) : (
-              tasks.map((task) => (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  animatingClass={animatingPedidos[task.id]}
-                  onVerDetalle={onVerDetalle}
-                  onAvanzarPedido={onAvanzarPedido}
-                  onMarcarDemorado={onMarcarDemorado}
-                  onAgregarTiempo={onAgregarTiempo}
-                />
-              ))
-            )}
-          </div>
-        )}
-
-        {/* Mensaje cuando está colapsada */}
-        {isListoColumn && !isExpanded && (
-          <div className="text-center py-4">
-            <p className="text-gray-600 text-sm font-medium">{tasks.length} pedidos listos</p>
-            <p className="text-gray-400 text-xs mt-1">Click para expandir</p>
-          </div>
-        )}
+        <div className="space-y-3">
+          {tasks.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500 text-sm">
+                No hay pedidos en {column.title.toLowerCase()}
+              </p>
+            </div>
+          ) : (
+            tasks.map((task) => (
+              <TaskCard
+                key={task.id}
+                task={task}
+                animatingClass={animatingPedidos[task.id]}
+                onVerDetalle={onVerDetalle}
+                onAvanzarPedido={onAvanzarPedido}
+                onMarcarDemorado={onMarcarDemorado}
+                onAgregarTiempo={onAgregarTiempo}
+              />
+            ))
+          )}
+        </div>
 
         {/* Indicador de drop zone activo */}
         {isOver && (
