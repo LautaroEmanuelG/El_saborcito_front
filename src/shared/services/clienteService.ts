@@ -21,3 +21,8 @@ export const getAllClientes = async () => {
   const response = await axiosInstance.get(`${API_BASE_URL}`);
   return response.data;
 };
+
+export const updateCliente = async (id: number, data: any) => {
+  const response = await axiosInstance.put(`${API_BASE_URL}/${id}/actualizar-datos`, data);
+  return response.data;
+};
