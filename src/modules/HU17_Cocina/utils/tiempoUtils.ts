@@ -99,7 +99,7 @@ export const getEstadoTiempo = (
 
   return {
     estado: 'en-tiempo',
-    mensaje: `${tiempoRestante} min restantes`,
+    mensaje: `${tiempoRestante} min`,
     emoji: '🟢',
   };
 };

@@ -9,6 +9,8 @@ import {
 } from '../utils/tiempoUtils';
 import IconoVer from '../../../assets/svgs/icons/IconoVer';
 import { IconoArrowRight } from '../../../assets/svgs/icons/IconoArrowRight';
+import IconoTimeDuration15 from '../../../assets/svgs/icons/IconoTimeDuration15';
+import { IconoTimeOut } from '../../../assets/svgs/icons/IconoTimeOut';
 
 interface TaskCardProps {
   task: Pedido;
@@ -129,16 +131,16 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       {/* Header con ID y tiempo */}
       <div className="flex justify-between items-start mb-3">
         <div className="flex-1">
-          <h3 className="font-bold text-xl text-gray-800">#{task.id}</h3>
-          <div className="space-y-1">
-            <p className="text-sm text-gray-600 flex items-center gap-1">
-              <span>⏰</span>
-              <span>Estimado: {tiempoFormateado}</span>
+          <div className="flex gap-1 items-center">
+            <h3 className="font-bold text-xs text-gray-800">#{task.id}</h3>
+            <p className="text-md font-bold text-primary flex items-center gap-1">
+              <span>{tiempoFormateado}</span>
             </p>
+          </div>
+          <div className="space-y-1">
             <div className="flex items-center gap-1">
-              <span className="text-xs">{estadoTiempo.emoji}</span>
               <span
-                className={`text-xs font-medium ${
+                className={`text-lg font-black ${
                   estadoTiempo.estado === 'demorado'
                     ? 'text-red-600'
                     : estadoTiempo.estado === 'proximo'
@@ -160,14 +162,16 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 
       {/* Lista de artículos */}
       <div className="mb-4">
-        <p className="font-semibold text-gray-700 mb-2 flex items-center gap-1">
-          <span>📋</span>
+        <p className="font-semibold text-sm text-gray-700 flex items-center gap-1">
           Artículos ({task.detalles.length})
         </p>
         <div className="bg-white bg-opacity-60 rounded-lg p-3 max-h-24 overflow-y-auto custom-scrollbar">
           <ul className="space-y-1">
             {task.detalles.map((detalle, idx) => (
-              <li key={idx} className="text-gray-700 text-sm flex justify-between items-center">
+              <li
+                key={idx}
+                className="text-negro text-md font-bold flex justify-between items-center"
+              >
                 <span className="truncate">• {detalle.articulo.denominacion}</span>
                 {detalle.cantidad > 1 && (
                   <span className="font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full text-xs ml-2">
@@ -189,18 +193,16 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           title="Ver detalle completo"
         >
           <IconoVer className="w-4 h-4" />
-          <span className="hidden sm:inline">Ver</span>
         </button>
 
         {/* Botón Agregar Tiempo */}
         {puedeAgregarTiempo && (
           <button
             onClick={(e) => handleStopPropagation(e, () => onAgregarTiempo(task.id))}
-            className="bg-purple-500 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-purple-600 transition-all duration-200 flex items-center justify-center gap-2 shadow-sm"
+            className="bg-violet-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-purple-600 transition-all duration-200 flex items-center justify-center gap-2 shadow-sm"
             title="Agregar tiempo de preparación"
           >
-            <span className="text-base">⏱️</span>
-            <span className="hidden sm:inline">+Tiempo</span>
+            <IconoTimeDuration15 className="w-4 h-4" />
           </button>
         )}
 
@@ -208,11 +210,10 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         {puedeAvanzar && (
           <button
             onClick={(e) => handleStopPropagation(e, () => onAvanzarPedido(task.id))}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 flex-1 shadow-sm ${estilos?.boton || 'bg-primary text-white hover:bg-primarydark'}`}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 flex-1 shadow-sm bg-primary text-white hover:bg-primarydark`}
             title={getMensajeAccion(estadoId)}
           >
             <IconoArrowRight />
-            <span>{estilos?.texto || 'Avanzar'}</span>
           </button>
         )}
 
@@ -220,10 +221,10 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         {puedeMarcarDemorado && (
           <button
             onClick={(e) => handleStopPropagation(e, () => onMarcarDemorado(task.id))}
-            className="bg-red-500 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-red-600 transition-all duration-200 flex items-center justify-center shadow-sm"
+            className="bg-red-700 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-red-600 transition-all duration-200 flex items-center justify-center shadow-sm"
             title="Marcar como demorado"
           >
-            <span className="text-base">⚠️</span>
+            <IconoTimeOut />
           </button>
         )}
       </div>

@@ -101,12 +101,12 @@ export const KanbanBoard: React.FC = () => {
   }
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-6 bg-gray-50 min-h-screen max-w-full w-full overflow-auto">
       {/* Header mejorado */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">🍳 Kanban de Cocina</h1>
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">Cocina</h1>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
