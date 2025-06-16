@@ -45,7 +45,7 @@ export const CardPromocion = ({ promocion, setPromocionModal }: PromocionProps) 
     return suma + detalle.articulo.precioVenta * detalle.cantidadRequerida;
   }, 0);
 
-  const ahorro = precioNormal - promocion.precioPromocional;
+  const ahorro = precioNormal - (promocion.precioPromocional ?? 0);
   const porcentajeAhorro = Math.round((ahorro / precioNormal) * 100);
 
   return (
@@ -53,20 +53,15 @@ export const CardPromocion = ({ promocion, setPromocionModal }: PromocionProps) 
       onClick={handlePromocionModal}
       className="bg-white flex-1 rounded-xl shadow-lg overflow-hidden border cursor-pointer relative"
     >
-      {/* Badge de promoción */}
-      <div className="absolute top-2 left-2 bg-primary text-white text-xs px-2 py-1 rounded-full font-bold z-10">
-        🎁 PROMOCIÓN
-      </div>
-
       {/* Badge de descuento */}
       {ahorro > 0 && (
-        <div className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold z-10">
+        <div className="absolute top-2 right-2 bg-primary text-white text-xs px-2 py-1 rounded-full font-bold z-10">
           -{porcentajeAhorro}%
         </div>
       )}
 
       <div className="relative flex justify-end items-end w-full bg-red-900">
-        <div className="bg-red-500 h-64 w-full relative">
+        <div className="bg-primarydark h-64 w-full relative">
           <picture>
             <source type="image/webp" />
             <img
@@ -77,12 +72,16 @@ export const CardPromocion = ({ promocion, setPromocionModal }: PromocionProps) 
           </picture>
 
           {/* Mostrar productos incluidos como overlay */}
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
+          <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/70 to-transparent p-2">
             <div className="text-white text-xs">
               <span className="font-semibold">Incluye:</span>
-              <div className="flex flex-wrap gap-1 mt-1">
+              <div className="flex flex-wrap flex-col gap-1 mt-1">
                 {promocion.promocionDetalles.map((detalle, index) => (
-                  <span key={detalle.id} className="bg-white/20 px-1 rounded text-xs">
+                  <span
+                    key={detalle.id}
+                    className="bg-white/20 px-1 rounded text-xs inline-block w-auto max-w-full"
+                    style={{ width: 'fit-content' }}
+                  >
                     {detalle.cantidadRequerida}x {detalle.articulo.denominacion}
                     {index < promocion.promocionDetalles.length - 1 ? '' : ''}
                   </span>
@@ -92,7 +91,7 @@ export const CardPromocion = ({ promocion, setPromocionModal }: PromocionProps) 
           </div>
 
           {!isAvailable && (
-            <div className="absolute top-2 left-1/2 transform -translate-x-1/2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+            <div className="absolute bottom-16 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
               Sin stock de insumos
             </div>
           )}
@@ -131,6 +130,11 @@ export const CardPromocion = ({ promocion, setPromocionModal }: PromocionProps) 
           )}
         </div>
         {ahorro > 0 && <p className="text-green-600 text-sm font-semibold">¡Ahorrás ${ahorro}!</p>}
+      </div>
+
+      {/* Badge de promoción */}
+      <div className="absolute bottom-2 right-2 bg-primary text-white text-xs px-2 py-1 rounded-full font-bold z-10">
+        PROMO
       </div>
     </div>
   );
