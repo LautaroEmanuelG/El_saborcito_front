@@ -107,7 +107,7 @@ export const RankingProductos = () => {
   };
 
   return (
-    <div className="bg-white p-8 rounded-xl shadow-md max-w-full overflow-x-auto">
+    <div className="bg-white p-8 rounded-xl shadow-md max-w-full w-full overflow-x-auto">
       <div className="flex justify-between items-center border-b-2 border-black pb-4 mb-8 flex-wrap">
         <h2 className="text-2xl font-bold">Productos más vendidos</h2>
         <div className="flex gap-4 bg-gray-200 p-2 rounded-lg items-center">

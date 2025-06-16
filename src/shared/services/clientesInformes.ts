@@ -1,11 +1,7 @@
 // shared/services/clientesInformes.ts
 
 import axiosInstance from './axiosConfig'; // tu instancia de Axios preconfigurada
-import type {
-  ClienteRanking,
-  DetallePedidoDTO,
-  PedidoResumenPorCliente,
-} from '../../modules/HU26_28_informes/model';
+import type { ClienteRanking, PedidoResumenPorCliente } from '../../modules/HU26_28_informes/model';
 
 const API_BASE = '/sucursales';
 

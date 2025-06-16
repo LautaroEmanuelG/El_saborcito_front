@@ -17,8 +17,11 @@ export interface NavItemStructure {
 // Datos para la navegación del aside
 const NAV_DATA: NavItemStructure[] = [
   {
-    title: 'Estadística e Informes',
-    subItems: [{ to: '/admin/historial', label: 'Control' }],
+    title: 'Recepción y Gestión',
+    subItems: [
+      { to: '/admin/recepcion', label: 'Recepción de Pedidos' },
+      { to: '/admin/delivery', label: 'Delivery' },
+    ],
   },
   {
     title: 'Informes estadísticos',
@@ -58,11 +61,7 @@ const NAV_DATA: NavItemStructure[] = [
   },
   {
     title: 'Finanzas',
-    subItems: [
-      { to: '/admin/reportes', label: 'Reportes' },
-      { to: '/admin/control', label: 'Libros Contables' },
-      { to: '/admin/facturas-test', label: 'Gestión de Facturas (Demo)' },
-    ],
+    subItems: [{ to: '/admin/control', label: 'Libros Contables' }],
   },
 ];
 
