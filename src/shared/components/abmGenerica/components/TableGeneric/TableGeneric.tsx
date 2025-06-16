@@ -180,7 +180,7 @@ export const TableGeneric = <
       <div className="w-full bg-white rounded-lg shadow-sm border overflow-hidden">
         <div className="overflow-x-auto max-h-[60vh] overflow-y-auto">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gradient-to-r from-gray-50 to-gray-100 sticky top-0 z-10">
+            <thead className="bg-gradient-to-r from-gray-50 to-gray-100 sticky top-0">
               <tr>
                 {columns.map((column, i) => (
                   <th
