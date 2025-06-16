@@ -12,6 +12,7 @@ interface ColumnProps {
   onVerDetalle: (id: number) => void;
   onAvanzarPedido: (id: number) => void;
   onMarcarDemorado: (id: number) => void;
+  onAgregarTiempo: (id: number) => void;
 }
 
 export function Column({
@@ -21,6 +22,7 @@ export function Column({
   onVerDetalle,
   onAvanzarPedido,
   onMarcarDemorado,
+  onAgregarTiempo,
 }: ColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: column.id,
@@ -33,22 +35,6 @@ export function Column({
   const toggleExpanded = () => {
     if (isListoColumn) {
       setIsExpanded(!isExpanded);
-    }
-  };
-
-  // Función para obtener el icono según el estado
-  const getIconoEstado = () => {
-    switch (column.id) {
-      case ESTADO_IDS.PENDIENTE:
-        return '⏳';
-      case ESTADO_IDS.EN_PREPARACION:
-        return '👨‍🍳';
-      case ESTADO_IDS.DEMORADO:
-        return '⚠️';
-      case ESTADO_IDS.LISTO:
-        return '✅';
-      default:
-        return '📋';
     }
   };
 
@@ -66,7 +52,6 @@ export function Column({
         onClick={toggleExpanded}
       >
         <div className="flex items-center gap-3">
-          <span className="text-2xl">{getIconoEstado()}</span>
           <div>
             <h3 className="font-bold text-white text-lg">{column.title}</h3>
             <p className="text-white text-sm opacity-90">
@@ -110,7 +95,6 @@ export function Column({
           <div className="space-y-3">
             {tasks.length === 0 ? (
               <div className="text-center py-8">
-                <div className="text-4xl mb-2 opacity-50">{getIconoEstado()}</div>
                 <p className="text-gray-500 text-sm">
                   No hay pedidos en {column.title.toLowerCase()}
                 </p>
@@ -124,6 +108,7 @@ export function Column({
                   onVerDetalle={onVerDetalle}
                   onAvanzarPedido={onAvanzarPedido}
                   onMarcarDemorado={onMarcarDemorado}
+                  onAgregarTiempo={onAgregarTiempo}
                 />
               ))
             )}

@@ -113,7 +113,7 @@ export const ModalReceta: React.FC<ModalRecetaProps> = ({ detalle, onClose, load
                 {!item.esManufacturado && (
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
                     <p className="text-sm text-yellow-800">
-                      📦 Este es un producto simple (no manufacturado)
+                      Este es un producto simple (no manufacturado)
                     </p>
                   </div>
                 )}

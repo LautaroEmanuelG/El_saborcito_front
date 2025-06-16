@@ -2,6 +2,11 @@ import React from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { Pedido, EstadoId, ESTADO_IDS, getNombreEstado } from '../Model';
 import { getAccionesDisponibles, getMensajeAccion } from '../Logic';
+import {
+  formatearTiempoEstimado,
+  calcularTiempoRestante,
+  getEstadoTiempo,
+} from '../utils/tiempoUtils';
 import IconoVer from '../../../assets/svgs/icons/IconoVer';
 import { IconoArrowRight } from '../../../assets/svgs/icons/IconoArrowRight';
 
@@ -11,14 +16,59 @@ interface TaskCardProps {
   onVerDetalle: (id: number) => void;
   onAvanzarPedido: (id: number) => void;
   onMarcarDemorado: (id: number) => void;
+  onAgregarTiempo: (id: number) => void;
 }
 
+/**
+ * 🎨 Configuración de estilos por estado
+ */
+const ESTILOS_ESTADO: Partial<
+  Record<
+    EstadoId,
+    {
+      card: string;
+      badge: string;
+      boton: string;
+      texto: string;
+    }
+  >
+> = {
+  [ESTADO_IDS.PENDIENTE]: {
+    card: 'border-l-4 border-l-blue-500 bg-blue-50 hover:bg-blue-100',
+    badge: 'bg-blue-200 text-blue-800',
+    boton: 'bg-blue-500 text-white hover:bg-blue-600',
+    texto: 'Iniciar',
+  },
+  [ESTADO_IDS.EN_PREPARACION]: {
+    card: 'border-l-4 border-l-orange-500 bg-orange-50 hover:bg-orange-100',
+    badge: 'bg-orange-200 text-orange-800',
+    boton: 'bg-orange-500 text-white hover:bg-orange-600',
+    texto: 'Completar',
+  },
+  [ESTADO_IDS.DEMORADO]: {
+    card: 'border-l-4 border-l-red-500 bg-red-50 hover:bg-red-100',
+    badge: 'bg-red-200 text-red-800',
+    boton: 'bg-green-500 text-white hover:bg-green-600',
+    texto: 'Completar',
+  },
+  [ESTADO_IDS.LISTO]: {
+    card: 'border-l-4 border-l-green-500 bg-green-50 hover:bg-green-100',
+    badge: 'bg-green-200 text-green-800',
+    boton: 'bg-primary text-white hover:bg-primarydark',
+    texto: 'Avanzar',
+  },
+};
+
+/**
+ * 🃏 Componente TaskCard optimizado
+ */
 export const TaskCard: React.FC<TaskCardProps> = ({
   task,
   animatingClass,
   onVerDetalle,
   onAvanzarPedido,
   onMarcarDemorado,
+  onAgregarTiempo,
 }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: task.id,
@@ -32,99 +82,77 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 
   const estadoId = task.estado.id as EstadoId;
   const acciones = getAccionesDisponibles(estadoId);
+  const estilos = ESTILOS_ESTADO[estadoId];
 
-  // Función para obtener el estilo completo según el estado
-  const getEstiloEstado = () => {
-    const base =
-      'border border-gray-200 rounded-lg p-4 mb-3 shadow-sm cursor-grab transition-all duration-200';
+  // Información de tiempo
+  const tiempoFormateado = formatearTiempoEstimado(task.horasEstimadaFinalizacion);
+  const tiempoRestante = calcularTiempoRestante(task.horasEstimadaFinalizacion);
+  const estadoTiempo = getEstadoTiempo(tiempoRestante);
 
-    switch (estadoId) {
-      case ESTADO_IDS.PENDIENTE:
-        return `${base} border-l-4 border-l-blue-500 bg-blue-50 hover:bg-blue-100 hover:shadow-md`;
-      case ESTADO_IDS.EN_PREPARACION:
-        return `${base} border-l-4 border-l-orange-500 bg-orange-50 hover:bg-orange-100 hover:shadow-md`;
-      case ESTADO_IDS.DEMORADO:
-        return `${base} border-l-4 border-l-red-500 bg-red-50 hover:bg-red-100 hover:shadow-md`;
-      case ESTADO_IDS.LISTO:
-        return `${base} border-l-4 border-l-green-500 bg-green-50 hover:bg-green-100 hover:shadow-md`;
-      default:
-        return `${base} border-l-4 border-l-gray-500 bg-white hover:bg-gray-50`;
-    }
-  };
+  // Clases CSS dinámicas
+  const getCardClasses = (): string => {
+    const baseClasses =
+      'border border-gray-200 rounded-lg p-4 mb-3 shadow-sm cursor-grab transition-all duration-200 hover:shadow-md';
 
-  // Función para obtener el color de fondo según animación usando solo Tailwind
-  const getBackgroundClass = (): string => {
+    let classes = `${baseClasses} ${estilos?.card || 'border-l-4 border-l-gray-500 bg-white hover:bg-gray-50'}`;
+
+    // Animaciones
     if (animatingClass === 'en-proceso') {
-      return 'bg-orange-200 border-orange-400 animate-pulse shadow-lg scale-105';
+      classes += ' bg-orange-200 border-orange-400 animate-pulse shadow-lg scale-105';
+    } else if (animatingClass === 'demorado') {
+      classes += ' bg-red-200 border-red-400 animate-pulse shadow-lg scale-105';
     }
-    if (animatingClass === 'demorado') {
-      return 'bg-red-200 border-red-400 animate-pulse shadow-lg scale-105';
+
+    // Estado de dragging
+    if (isDragging) {
+      classes += ' opacity-50 rotate-2 scale-105 shadow-xl';
     }
-    return '';
+
+    return classes;
   };
 
-  // Función para obtener el texto del botón principal
-  const getTextoBotonPrincipal = (): string => {
-    switch (estadoId) {
-      case ESTADO_IDS.PENDIENTE:
-        return 'Iniciar';
-      case ESTADO_IDS.EN_PREPARACION:
-        return 'Completar';
-      case ESTADO_IDS.DEMORADO:
-        return 'Completar';
-      default:
-        return 'Avanzar';
-    }
+  const handleStopPropagation = (e: React.MouseEvent, callback: () => void) => {
+    e.stopPropagation();
+    callback();
   };
 
-  // Función para obtener el estilo del botón principal
-  const getEstiloBotonPrincipal = (): string => {
-    const base =
-      'px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 flex-1 shadow-sm';
+  const puedeAgregarTiempo =
+    acciones.includes('agregar_tiempo') ||
+    estadoId === ESTADO_IDS.EN_PREPARACION ||
+    estadoId === ESTADO_IDS.DEMORADO;
 
-    switch (estadoId) {
-      case ESTADO_IDS.PENDIENTE:
-        return `${base} bg-blue-500 text-white hover:bg-blue-600 hover:shadow-md`;
-      case ESTADO_IDS.EN_PREPARACION:
-        return `${base} bg-orange-500 text-white hover:bg-orange-600 hover:shadow-md`;
-      case ESTADO_IDS.DEMORADO:
-        return `${base} bg-green-500 text-white hover:bg-green-600 hover:shadow-md`;
-      default:
-        return `${base} bg-primary text-white hover:bg-primarydark hover:shadow-md`;
-    }
-  };
+  const puedeAvanzar = acciones.includes('avanzar_automatico') || acciones.includes('completar');
+  const puedeMarcarDemorado = acciones.includes('marcar_demorado');
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...listeners}
-      {...attributes}
-      className={`
-        ${getEstiloEstado()}
-        ${getBackgroundClass()}
-        ${isDragging ? 'opacity-50 rotate-2 scale-105 shadow-xl' : ''}
-      `}
-    >
+    <div ref={setNodeRef} style={style} {...listeners} {...attributes} className={getCardClasses()}>
       {/* Header con ID y tiempo */}
       <div className="flex justify-between items-start mb-3">
-        <div>
+        <div className="flex-1">
           <h3 className="font-bold text-xl text-gray-800">#{task.id}</h3>
-          <p className="text-sm text-gray-600 flex items-center gap-1">
-            <span>⏰</span>
-            {task.horasEstimadaFinalizacion
-              ? task.horasEstimadaFinalizacion.split(':').slice(0, 2).join(':')
-              : 'Sin tiempo'}
-          </p>
+          <div className="space-y-1">
+            <p className="text-sm text-gray-600 flex items-center gap-1">
+              <span>⏰</span>
+              <span>Estimado: {tiempoFormateado}</span>
+            </p>
+            <div className="flex items-center gap-1">
+              <span className="text-xs">{estadoTiempo.emoji}</span>
+              <span
+                className={`text-xs font-medium ${
+                  estadoTiempo.estado === 'demorado'
+                    ? 'text-red-600'
+                    : estadoTiempo.estado === 'proximo'
+                      ? 'text-yellow-600'
+                      : 'text-green-600'
+                }`}
+              >
+                {estadoTiempo.mensaje}
+              </span>
+            </div>
+          </div>
         </div>
         <span
-          className={`
-          px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide
-          ${estadoId === ESTADO_IDS.PENDIENTE ? 'bg-blue-200 text-blue-800' : ''}
-          ${estadoId === ESTADO_IDS.EN_PREPARACION ? 'bg-orange-200 text-orange-800' : ''}
-          ${estadoId === ESTADO_IDS.DEMORADO ? 'bg-red-200 text-red-800' : ''}
-          ${estadoId === ESTADO_IDS.LISTO ? 'bg-green-200 text-green-800' : ''}
-        `}
+          className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${estilos?.badge || 'bg-gray-200 text-gray-800'}`}
         >
           {getNombreEstado(estadoId).replace('_', ' ')}
         </span>
@@ -152,14 +180,11 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         </div>
       </div>
 
-      {/* Botones de acción mejorados */}
+      {/* Botones de acción */}
       <div className="flex gap-2">
         {/* Botón Ver Detalle */}
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onVerDetalle(task.id);
-          }}
+          onClick={(e) => handleStopPropagation(e, () => onVerDetalle(task.id))}
           className="bg-gray-500 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-600 transition-all duration-200 flex items-center justify-center gap-2 shadow-sm"
           title="Ver detalle completo"
         >
@@ -167,28 +192,34 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           <span className="hidden sm:inline">Ver</span>
         </button>
 
-        {/* Botón de Acción Principal */}
-        {(acciones.includes('avanzar_automatico') || acciones.includes('completar')) && (
+        {/* Botón Agregar Tiempo */}
+        {puedeAgregarTiempo && (
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onAvanzarPedido(task.id);
-            }}
-            className={getEstiloBotonPrincipal()}
+            onClick={(e) => handleStopPropagation(e, () => onAgregarTiempo(task.id))}
+            className="bg-purple-500 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-purple-600 transition-all duration-200 flex items-center justify-center gap-2 shadow-sm"
+            title="Agregar tiempo de preparación"
+          >
+            <span className="text-base">⏱️</span>
+            <span className="hidden sm:inline">+Tiempo</span>
+          </button>
+        )}
+
+        {/* Botón de Acción Principal */}
+        {puedeAvanzar && (
+          <button
+            onClick={(e) => handleStopPropagation(e, () => onAvanzarPedido(task.id))}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 flex-1 shadow-sm ${estilos?.boton || 'bg-primary text-white hover:bg-primarydark'}`}
             title={getMensajeAccion(estadoId)}
           >
             <IconoArrowRight />
-            <span>{getTextoBotonPrincipal()}</span>
+            <span>{estilos?.texto || 'Avanzar'}</span>
           </button>
         )}
 
         {/* Botón Marcar Demorado */}
-        {acciones.includes('marcar_demorado') && (
+        {puedeMarcarDemorado && (
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onMarcarDemorado(task.id);
-            }}
+            onClick={(e) => handleStopPropagation(e, () => onMarcarDemorado(task.id))}
             className="bg-red-500 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-red-600 transition-all duration-200 flex items-center justify-center shadow-sm"
             title="Marcar como demorado"
           >
@@ -197,15 +228,15 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         )}
       </div>
 
-      {/* Indicador de animación usando solo Tailwind */}
+      {/* Indicador de animación */}
       {animatingClass && (
         <div className="mt-3 text-center">
           <div
-            className={`
-            inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium transition-all duration-300
-            ${animatingClass === 'en-proceso' ? 'bg-orange-200 text-orange-800' : ''}
-            ${animatingClass === 'demorado' ? 'bg-red-200 text-red-800' : ''}
-          `}
+            className={`inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+              animatingClass === 'en-proceso'
+                ? 'bg-orange-200 text-orange-800'
+                : 'bg-red-200 text-red-800'
+            }`}
           >
             <span className="animate-bounce">{animatingClass === 'en-proceso' ? '🔄' : '⚠️'}</span>
             <span>
@@ -218,17 +249,4 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       )}
     </div>
   );
-};
-
-// Helper function para obtener colores según el estado (usando IDs)
-const getColorForEstado = (estadoId: EstadoId): string => {
-  const colores = {
-    [ESTADO_IDS.PENDIENTE]: '#334FFF',
-    [ESTADO_IDS.EN_PREPARACION]: '#EB9417',
-    [ESTADO_IDS.DEMORADO]: '#EB1741',
-    [ESTADO_IDS.LISTO]: '#60AF29',
-    [ESTADO_IDS.DELIVERY]: '#8B5CF6',
-    [ESTADO_IDS.ENTREGADO]: '#10B981',
-  };
-  return colores[estadoId] || '#6B7280';
 };
