@@ -7,7 +7,6 @@ import { CarritoProvider } from './shared/providers/CarritoProvider';
 import { LayoutAdmin } from './app/layout/LayoutAdmin.tsx';
 import { Historial } from './app/views/admin/Historial.tsx';
 import { Control } from './app/views/admin/Control.tsx';
-import { Productos } from './app/views/admin/Productos.tsx';
 import ProtectedRoute from './app/routes/ProtectedRoute.tsx';
 import ProtectedCarrito from './app/routes/ProtectCarrito.tsx';
 import { AppProviders } from './shared/providers/AppProviders.tsx';
@@ -22,6 +21,8 @@ import ScreenCategoriasArticulos from './modules/HU21_CRUD_CategoriasArticulos/c
 import ScreenCategoriaPadreArticulo from './modules/HU21_CRUD_CategoriasPadresArticulos/components/ScreenCategoriaPadreArticulo';
 import ScreenSubcategoriasInsumos from './modules/HU20_CRUD_SubcategoriasInsumos/components/ScreenSubcategoriasInsumos';
 import ScreenCategoriaPadreInsumo from './modules/HU20_CRUD_CategoriasPadresInsumos/components/ScreenCategoriaPadreInsumo';
+import { Recepcion } from './modules/HU14_Recepcion/components/Recepcion.tsx';
+import { Delivery } from './modules/HU16_Delivery/components/Delivery.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <AppProviders>
@@ -60,20 +61,20 @@ createRoot(document.getElementById('root')!).render(
                 <Historial />
               </ProtectedRoute>
             }
+          />{' '}
+          <Route
+            path="recepcion"
+            element={
+              <ProtectedRoute>
+                <Recepcion />
+              </ProtectedRoute>
+            }
           />
           <Route
             path="articulos"
             element={
               <ProtectedRoute>
                 <ScreenArticulosManufacturados />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="productos"
-            element={
-              <ProtectedRoute>
-                <Productos />
               </ProtectedRoute>
             }
           />
@@ -186,6 +187,14 @@ createRoot(document.getElementById('root')!).render(
             element={
               <ProtectedRoute>
                 <ScreenCategoriaPadreInsumo />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="delivery"
+            element={
+              <ProtectedRoute>
+                <Delivery />
               </ProtectedRoute>
             }
           />

@@ -121,7 +121,7 @@ export const MovimientosMonetarios = () => {
   };
 
   return (
-    <div className="bg-white p-8 rounded-xl shadow-md max-w-full overflow-x-auto">
+    <div className="bg-white p-8 w-full rounded-xl shadow-md max-w-full overflow-x-auto">
       {/* Fechas */}
       <div className="flex items-center justify-between border-b-2 border-negro pb-4 mb-8 flex-wrap">
         <h2 className="text-2xl font-bold text-negro mr-6">Movimientos monetarios</h2>
