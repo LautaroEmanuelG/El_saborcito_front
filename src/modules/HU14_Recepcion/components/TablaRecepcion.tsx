@@ -3,6 +3,7 @@ import { PedidoCompletoConDetalles } from '../../../types/Pedido';
 import { formatearNombreFormaPago } from '../../../shared/utils/pedidoUtils';
 import IconoVer from '../../../assets/svgs/icons/IconoVer';
 import { IconoArrowRight } from '../../../assets/svgs/icons/IconoArrowRight';
+import { getEstadoBadgeColor } from '../../HU13_MisPedidos/components/HistorialPedidosCliente';
 
 interface TablaRecepcionProps {
   pedidos: PedidoCompletoConDetalles[];
@@ -19,20 +20,6 @@ export const TablaRecepcion: React.FC<TablaRecepcionProps> = ({
   puedeAvanzarEstado,
   obtenerProximoEstado,
 }) => {
-  const getEstadoBadgeColor = (estado: string): string => {
-    const colors: Record<string, string> = {
-      PENDIENTE: 'bg-yellow-100 text-yellow-800',
-      CONFIRMADO: 'bg-blue-100 text-blue-800',
-      EN_PREPARACION: 'bg-orange-100 text-orange-800',
-      LISTO: 'bg-green-100 text-green-800',
-      EN_DELIVERY: 'bg-purple-100 text-purple-800',
-      ENTREGADO: 'bg-gray-100 text-gray-800',
-      CANCELADO: 'bg-red-100 text-red-800',
-      DEMORADO: 'bg-red-200 text-red-900',
-    };
-    return colors[estado] || 'bg-gray-100 text-gray-800';
-  };
-
   const getTipoEnvioBadgeColor = (tipo: string): string => {
     const colors: Record<string, string> = {
       DELIVERY: 'bg-blue-100 text-blue-800',

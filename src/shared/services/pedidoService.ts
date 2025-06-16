@@ -80,6 +80,21 @@ export const getPedidosByEstado = async (estado: string) => {
 };
 
 /**
+ * Obtener todos los pedidos de un cliente específico con información completa
+ * @param clienteId ID del cliente
+ * @returns Array de pedidos completos del cliente
+ */
+export const getPedidosByCliente = async (clienteId: number) => {
+  try {
+    const response = await axiosInstance.get(`${API_BASE_URL}/cliente/${clienteId}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error obteniendo pedidos del cliente ${clienteId}:`, error);
+    throw error;
+  }
+};
+
+/**
  * Obtener detalles completos de pedidos con información de promociones y artículos
  * desde el endpoint /sucursales/pedidos-cliente
  */
