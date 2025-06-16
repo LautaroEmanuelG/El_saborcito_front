@@ -8,7 +8,7 @@ interface ModalPromocionesFormProps {
   open: boolean;
   onClose: () => void;
   initialValues?: Partial<Promocion>;
-  onSubmit?: (values: Partial<Promocion>) => void;
+  onSubmit?: (values: Partial<Promocion>, imageFile?: File) => void;
   mode?: 'add' | 'edit' | 'view';
 }
 
@@ -37,11 +37,12 @@ const ModalPromocionesForm: React.FC<ModalPromocionesFormProps> = ({
   const [showModalArticulos, setShowModalArticulos] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [imagenPreview, setImagenPreview] = useState<string | null>(null);
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [isDisponible, setIsDisponible] = useState<boolean>(true);
-
   useEffect(() => {
     setForm(initialValues ?? getInitialValues());
     setDetalles(initialValues?.promocionDetalles ?? []);
+    setSelectedImageFile(null); // Limpiar archivo seleccionado al abrir
     // Manejo de imagen: si es objeto, usar .url, si es string, usar directo
     const img = initialValues?.imagen
       ? typeof initialValues.imagen === 'string'
@@ -64,7 +65,17 @@ const ModalPromocionesForm: React.FC<ModalPromocionesFormProps> = ({
   const handleAddArticulo = (articulo: ArticuloManufacturado, cantidad: number) => {
     setDetalles((prev) => [
       ...prev,
-      { id: 0, promocionId: form.id ?? 0, articulo, cantidadRequerida: cantidad },
+      {
+        id: 0,
+        promocionId: form.id ?? 0,
+        articulo: {
+          ...articulo,
+          imagen: articulo.imagen ?? { url: '' },
+          eliminado: articulo.eliminado ?? false,
+          fechaEliminacion: (articulo as any)?.fechaEliminacion ?? null,
+        },
+        cantidadRequerida: cantidad,
+      },
     ]);
   };
 
@@ -81,7 +92,6 @@ const ModalPromocionesForm: React.FC<ModalPromocionesFormProps> = ({
       )
     );
   };
-
   // Submit: llama a onSubmit solo en modo add/edit
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -109,12 +119,12 @@ const ModalPromocionesForm: React.FC<ModalPromocionesFormProps> = ({
         horaHasta: form.horaHasta ? form.horaHasta : undefined,
         articulo: null,
         promocionDetalles: detallesTransformados,
-        imagen: imagenPreview,
+        // NO incluir imagen aquí - se envía por separado como archivo
         eliminado: !isDisponible, // Si no está disponible, marcar como eliminado (baja lógica)
         sucursal: { id: 1 }, // Asignar sucursal 1 a todas las promociones creadas
       };
       delete payload.descuento; // Eliminar descuento del payload para evitar error en backend
-      onSubmit(payload as any);
+      onSubmit(payload as any, selectedImageFile ?? undefined);
     }
     onClose();
   };
@@ -187,6 +197,22 @@ const ModalPromocionesForm: React.FC<ModalPromocionesFormProps> = ({
                 <label className="block text-sm font-medium mb-1">Hora Hasta</label>
                 <div className="w-full border rounded px-3 py-2 bg-gray-100">{form.horaHasta}</div>
               </div>
+              {/* Checkbox de habilitado en modo view (centrado) */}
+              <div className="flex items-center justify-center mt-2">
+                <input
+                  id="disponibleCheckPromoView"
+                  type="checkbox"
+                  className="mr-2"
+                  checked={isDisponible}
+                  disabled
+                />
+                <label
+                  htmlFor="disponibleCheckPromoView"
+                  className="text-base select-none cursor-default"
+                >
+                  Habilitado
+                </label>
+              </div>
             </div>
             <div className="flex-1 p-4 max-h-96 overflow-y-auto border-l">
               <h3 className="text-lg font-medium mb-2">Combo Promoción</h3>
@@ -211,6 +237,17 @@ const ModalPromocionesForm: React.FC<ModalPromocionesFormProps> = ({
               )}
             </div>
           </div>
+          {/* Imagen solo en modo view, centrada debajo de las columnas */}
+          {imagenPreview && (
+            <div className="flex flex-col items-center mt-4">
+              <label className="block text-sm font-medium mb-1">Imagen</label>
+              <img
+                src={imagenPreview}
+                alt="Imagen de la promoción"
+                className="mb-2 rounded max-h-32 object-contain border"
+              />
+            </div>
+          )}
           <div className="flex justify-center gap-2 p-4 border-t">
             <button
               type="button"
@@ -393,7 +430,23 @@ const ModalPromocionesForm: React.FC<ModalPromocionesFormProps> = ({
                           onClick={() => handleRemoveArticulo(index)}
                           title="Eliminar artículo"
                         >
-                          🗑️
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M3 6h18" />
+                            <path d="M8 6v-2a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+                            <path d="M10 11v6" />
+                            <path d="M14 11v6" />
+                          </svg>
                         </button>
                       </div>
                     )}
@@ -422,7 +475,7 @@ const ModalPromocionesForm: React.FC<ModalPromocionesFormProps> = ({
                   alt="Preview"
                   className="mb-2 rounded max-h-32 object-contain border"
                 />
-              )}
+              )}{' '}
               <input
                 type="file"
                 accept="image/*"
@@ -430,16 +483,47 @@ const ModalPromocionesForm: React.FC<ModalPromocionesFormProps> = ({
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (!file) return;
-                  const reader = new FileReader();
-                  reader.onloadend = () => {
-                    setImagenPreview(reader.result as string);
-                  };
-                  reader.readAsDataURL(file);
+
+                  // Validar archivo
+                  try {
+                    // Validar tipo de archivo
+                    if (!file.type.startsWith('image/')) {
+                      alert('El archivo debe ser una imagen');
+                      e.target.value = '';
+                      return;
+                    }
+
+                    // Validar tamaño (10MB máximo)
+                    const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+                    if (file.size > MAX_SIZE) {
+                      alert('La imagen es demasiado grande (máximo 10MB)');
+                      e.target.value = '';
+                      return;
+                    }
+
+                    // Validar formatos específicos
+                    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                    if (!ALLOWED_TYPES.includes(file.type)) {
+                      alert('Formato no soportado. Use JPEG, PNG, GIF o WebP');
+                      e.target.value = '';
+                      return;
+                    }
+
+                    // Si pasa todas las validaciones, procesar la imagen
+                    setSelectedImageFile(file);
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                      setImagenPreview(reader.result as string);
+                    };
+                    reader.readAsDataURL(file);
+                  } catch (error) {
+                    alert('Error al procesar la imagen');
+                    e.target.value = '';
+                  }
                 }}
               />
             </div>
           )}
-          {/* Botones al final del modal */}
           <div className="flex justify-center gap-2 p-4 border-t mt-4">
             <button
               type="button"
@@ -460,7 +544,14 @@ const ModalPromocionesForm: React.FC<ModalPromocionesFormProps> = ({
             open={showModalArticulos}
             onClose={() => setShowModalArticulos(false)}
             onAddArticulo={handleAddArticulo}
-            articulosExistentes={detalles.map((d) => d.articulo as ArticuloManufacturado)}
+            articulosExistentes={detalles.map((d) => ({
+              ...d.articulo,
+              descripcion: (d.articulo as any).descripcion ?? '',
+              tiempoEstimadoMinutos: (d.articulo as any).tiempoEstimadoMinutos ?? 0,
+              articuloManufacturadoDetalles:
+                (d.articulo as any).articuloManufacturadoDetalles ?? [],
+              categoriaId: (d.articulo as any).categoriaId ?? 0,
+            }))}
           />
         </form>
       )}

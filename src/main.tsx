@@ -5,7 +5,6 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { VistaCarrito } from './modules/HU11_12_Carrito_Confirmacion/VistaCarrito.tsx';
 import { CarritoProvider } from './shared/providers/CarritoProvider';
 import { LayoutAdmin } from './app/layout/LayoutAdmin.tsx';
-import { Historial } from './app/views/admin/Historial.tsx';
 import { Control } from './app/views/admin/Control.tsx';
 import ProtectedRoute from './app/routes/ProtectedRoute.tsx';
 import ProtectedCarrito from './app/routes/ProtectCarrito.tsx';
@@ -24,10 +23,13 @@ import ScreenCategoriaPadreInsumo from './modules/HU20_CRUD_CategoriasPadresInsu
 import ScreenPromociones from './modules/HU25_Promociones/components/ScreenPromociones';
 import { Recepcion } from './modules/HU14_Recepcion/components/Recepcion.tsx';
 import { Delivery } from './modules/HU16_Delivery/components/Delivery.tsx';
+import ScreenCompraIngredientes from './modules/HU24_CompraIngredientes/components/ScreenCompraIngredientes';
+import { CallbackPage } from './app/views/CallbackPage.tsx';
+import { HistorialPedidosCliente } from './modules/HU13_MisPedidos/index.ts';
 
 createRoot(document.getElementById('root')!).render(
-  <AppProviders>
-    <BrowserRouter>
+  <BrowserRouter>
+    <AppProviders>
       <Routes>
         <Route
           path="/"
@@ -56,13 +58,13 @@ createRoot(document.getElementById('root')!).render(
           }
         >
           <Route
-            path="historial"
+            path="mis-pedidos"
             element={
-              <ProtectedRoute>
-                <Historial />
-              </ProtectedRoute>
+              <CarritoProvider>
+                <HistorialPedidosCliente />
+              </CarritoProvider>
             }
-          />{' '}
+          />
           <Route
             path="recepcion"
             element={
@@ -207,9 +209,18 @@ createRoot(document.getElementById('root')!).render(
               </ProtectedRoute>
             }
           />
+          <Route
+            path="compra-insumos"
+            element={
+              <ProtectedRoute>
+                <ScreenCompraIngredientes />
+              </ProtectedRoute>
+            }
+          />
         </Route>
+        <Route path="/callback" element={<CallbackPage />} />
         <Route path="*" element={<Navigate replace to="/" />} />
       </Routes>
-    </BrowserRouter>
-  </AppProviders>
+    </AppProviders>
+  </BrowserRouter>
 );

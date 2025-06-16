@@ -17,6 +17,10 @@ export interface NavItemStructure {
 // Datos para la navegación del aside
 const NAV_DATA: NavItemStructure[] = [
   {
+    title: 'Usuario',
+    subItems: [{ to: '/admin/mis-pedidos', label: 'Mis Pedidos' }],
+  },
+  {
     title: 'Recepción y Gestión',
     subItems: [
       { to: '/admin/recepcion', label: 'Recepción de Pedidos' },
@@ -48,6 +52,7 @@ const NAV_DATA: NavItemStructure[] = [
           { to: '/admin/insumos', label: 'Insumos' },
           { to: '/admin/categorias-insumos', label: 'Categorías de Insumos' },
           { to: '/admin/subcategorias-insumos', label: 'Subcategorías de Insumos' },
+          { to: '/admin/compra-insumos', label: 'Compra de Insumos' }, // Nuevo menú
         ],
       },
       {

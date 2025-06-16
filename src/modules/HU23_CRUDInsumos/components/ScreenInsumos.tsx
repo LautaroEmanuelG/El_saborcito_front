@@ -150,12 +150,11 @@ export const ScreenInsumos = () => {
       },
     },
   ];
-
-  const handleSubmit = (values: Partial<ArticuloInsumo>) => {
+  const handleSubmit = (values: Partial<ArticuloInsumo>, imageFile?: File) => {
     if (modalMode === 'add') {
-      addInsumo(values);
+      addInsumo(values, imageFile);
     } else if (modalMode === 'edit') {
-      updateInsumo(values);
+      updateInsumo(values, imageFile);
     }
     setOpenModal(false);
   };

@@ -11,8 +11,8 @@ interface PromocionState {
   showDeleted: boolean;
   fetchPromociones: () => Promise<void>;
   fetchDeletedPromociones: () => Promise<void>;
-  addPromocion: (data: Partial<Promocion>) => Promise<void>;
-  updatePromocion: (data: Partial<Promocion>) => Promise<void>;
+  addPromocion: (data: Partial<Promocion>, imageFile?: File) => Promise<void>;
+  updatePromocion: (data: Partial<Promocion>, imageFile?: File) => Promise<void>;
   deletePromocion: (id: number) => Promise<void>;
   restorePromocion: (id: number) => Promise<void>;
   toggleShowDeleted: () => void;
@@ -52,11 +52,10 @@ export const usePromocionStore = create<PromocionState>((set, get) => ({
       });
     }
   },
-
-  addPromocion: async (data) => {
+  addPromocion: async (data, imageFile) => {
     set({ loading: true, error: null });
     try {
-      await service.savePromocion(data);
+      await service.savePromocion(data, imageFile);
       const { fetchPromociones } = get();
       await fetchPromociones();
     } catch (error) {
@@ -64,10 +63,10 @@ export const usePromocionStore = create<PromocionState>((set, get) => ({
     }
   },
 
-  updatePromocion: async (data) => {
+  updatePromocion: async (data, imageFile) => {
     set({ loading: true, error: null });
     try {
-      await service.savePromocion(data);
+      await service.savePromocion(data, imageFile);
       const { fetchPromociones, fetchDeletedPromociones } = get();
       await fetchPromociones();
       if (get().showDeleted) {

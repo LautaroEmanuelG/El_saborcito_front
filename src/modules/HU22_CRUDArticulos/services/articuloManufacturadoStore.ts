@@ -13,8 +13,8 @@ interface ArticuloManufacturadoState {
   fetchDeletedArticulos: () => Promise<void>;
   toggleShowDeleted: () => void;
   // 🔄 **MÉTODOS DE GESTIÓN**
-  addArticulo: (data: Partial<ArticuloManufacturado>) => Promise<void>;
-  updateArticulo: (data: Partial<ArticuloManufacturado>) => Promise<void>;
+  addArticulo: (data: Partial<ArticuloManufacturado>, imageFile?: File) => Promise<void>;
+  updateArticulo: (data: Partial<ArticuloManufacturado>, imageFile?: File) => Promise<void>;
   // 🗑️ **MÉTODOS DE ELIMINACIÓN**
   deleteArticulo: (id: number) => Promise<void>;
   restoreArticulo: (id: number) => Promise<void>;
@@ -61,13 +61,12 @@ export const useArticuloManufacturadoStore = create<ArticuloManufacturadoState>(
       fetchArticulos();
     }
   },
-
   // 🔄 **MÉTODOS DE GESTIÓN**
-  addArticulo: async (data) => {
+  addArticulo: async (data, imageFile) => {
     set({ loading: true, error: null });
     try {
       // Usamos save para crear con id:0 y preparar payload correctamente
-      await service.saveArticuloManufacturado(data);
+      await service.saveArticuloManufacturado(data, imageFile);
       const { fetchArticulos } = useArticuloManufacturadoStore.getState();
       await fetchArticulos();
     } catch (error) {
@@ -75,11 +74,11 @@ export const useArticuloManufacturadoStore = create<ArticuloManufacturadoState>(
     }
   },
 
-  updateArticulo: async (data) => {
+  updateArticulo: async (data, imageFile) => {
     set({ loading: true, error: null });
     try {
       // Usamos save para actualizar según el id existente
-      await service.saveArticuloManufacturado(data);
+      await service.saveArticuloManufacturado(data, imageFile);
       const { fetchArticulos } = useArticuloManufacturadoStore.getState();
       await fetchArticulos();
     } catch (error) {
