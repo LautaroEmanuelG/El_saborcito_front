@@ -113,6 +113,7 @@ const ModalPromocionesForm: React.FC<ModalPromocionesFormProps> = ({
         eliminado: !isDisponible, // Si no está disponible, marcar como eliminado (baja lógica)
         sucursal: { id: 1 }, // Asignar sucursal 1 a todas las promociones creadas
       };
+      delete payload.descuento; // Eliminar descuento del payload para evitar error en backend
       onSubmit(payload as any);
     }
     onClose();
