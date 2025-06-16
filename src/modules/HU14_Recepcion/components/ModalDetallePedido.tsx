@@ -3,6 +3,7 @@ import { PedidoCompletoConDetalles } from '../../../types/Pedido';
 import { formatearNombreFormaPago } from '../../../shared/utils/pedidoUtils';
 import { getPromocionById } from '../../../shared/services/promocionService';
 import { IconoArrowRight } from '../../../assets/svgs/icons/IconoArrowRight';
+import { GestionFacturaRecepcion } from './GestionFacturaRecepcion';
 
 interface ModalDetallePedidoProps {
   pedido: PedidoCompletoConDetalles;
@@ -33,7 +34,6 @@ export const ModalDetallePedido: React.FC<ModalDetallePedidoProps> = ({
   obtenerProximoEstado,
 }) => {
   const [promocionesDetalle, setPromocionesDetalle] = useState<Record<number, any>>({});
-  const [cargandoPromociones, setCargandoPromociones] = useState(false);
 
   if (!isOpen) return null;
 
@@ -74,9 +74,7 @@ export const ModalDetallePedido: React.FC<ModalDetallePedidoProps> = ({
       cargarDetallesPromociones();
     }
   }, [isOpen, pedido.detallesCompletos]);
-
   const cargarDetallesPromociones = async () => {
-    setCargandoPromociones(true);
     try {
       const promocionesUnicas = Array.from(
         new Set(
@@ -98,8 +96,6 @@ export const ModalDetallePedido: React.FC<ModalDetallePedidoProps> = ({
       setPromocionesDetalle(detallesPromociones);
     } catch (error) {
       console.error('Error cargando detalles de promociones:', error);
-    } finally {
-      setCargandoPromociones(false);
     }
   };
   const agruparArticulos = (): ArticulosAgrupados => {
@@ -397,9 +393,19 @@ export const ModalDetallePedido: React.FC<ModalDetallePedidoProps> = ({
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                </table>{' '}
               </div>
             )}
+          </div>
+          {/* Gestión de Factura */}
+          <div className="mb-6">
+            {' '}
+            <GestionFacturaRecepcion
+              pedidoId={pedido.id}
+              clienteNombre={`${pedido.cliente.nombre} ${pedido.cliente.apellido}`}
+              clienteEmail={pedido.cliente.email}
+              className="w-full"
+            />
           </div>
           {/* Botones de Acción */}
           <div className="flex justify-end space-x-4 pt-4 border-t">
