@@ -17,6 +17,10 @@ export interface NavItemStructure {
 // Datos para la navegación del aside
 const NAV_DATA: NavItemStructure[] = [
   {
+    title: 'Usuario',
+    subItems: [{ to: '/admin/historial-pedidos', label: 'Mis Pedidos' }],
+  },
+  {
     title: 'Recepción y Gestión',
     subItems: [
       { to: '/admin/recepcion', label: 'Recepción de Pedidos' },
