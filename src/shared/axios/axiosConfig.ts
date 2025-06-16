@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 // Crear una instancia de Axios con la configuración base
-const BASE_URL = process.env.BACK_API_BASE_URL ?? 'http://localhost:5252/api';
+const BASE_URL = import.meta.env.VITE_BACK_API_BASE_URL ?? 'http://localhost:5252/api';
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,

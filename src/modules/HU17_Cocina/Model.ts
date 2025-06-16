@@ -1,4 +1,4 @@
-// Modelos y utilidades para el módulo de cocina
+// 🍳 Modelos y constantes para el módulo de cocina
 
 // IDs fijos de estados según especificación del backend
 export const ESTADO_IDS = {
@@ -36,6 +36,14 @@ export interface Pedido {
   estado: Estado;
   horasEstimadaFinalizacion: string;
   detalles: DetallePedido[];
+  fechaPedido?: string;
+  cliente?: {
+    id: number;
+    nombre: string;
+    apellido: string;
+  };
+  total?: number;
+  totalCosto?: number;
 }
 
 // Interfaces para el Historial de Cocina
@@ -103,12 +111,12 @@ export const TRANSICIONES_VALIDAS: Record<EstadoId, EstadoId[]> = {
 };
 
 // Función para validar si una transición es válida (ahora solo informativa)
-export function esTransicionValida(estadoActual: EstadoId, nuevoEstado: EstadoId): boolean {
+export const esTransicionValida = (estadoActual: EstadoId, nuevoEstado: EstadoId): boolean => {
   return TRANSICIONES_VALIDAS[estadoActual].includes(nuevoEstado);
-}
+};
 
 // Función para obtener el nombre del estado por ID
-export function getNombreEstado(estadoId: EstadoId): EstadoNombre {
+export const getNombreEstado = (estadoId: EstadoId): EstadoNombre => {
   const estado = ESTADOS.find((e) => e.id === estadoId);
   if (estado) return estado.nombre;
 
@@ -121,10 +129,10 @@ export function getNombreEstado(estadoId: EstadoId): EstadoNombre {
     default:
       return 'PENDIENTE';
   }
-}
+};
 
 // Función para obtener el ID del estado por nombre
-export function getIdEstado(estadoNombre: EstadoNombre): EstadoId {
+export const getIdEstado = (estadoNombre: EstadoNombre): EstadoId => {
   const estado = ESTADOS.find((e) => e.nombre === estadoNombre);
   if (estado) return estado.id;
 
@@ -137,74 +145,8 @@ export function getIdEstado(estadoNombre: EstadoNombre): EstadoId {
     default:
       return ESTADO_IDS.PENDIENTE;
   }
-}
+};
 
-// Función para obtener pedidos activos desde la API
-export async function fetchPedidosActivos(): Promise<Pedido[]> {
-  const res = await fetch('http://localhost:5252/api/cocina/pedidos/activos');
-  if (!res.ok) {
-    const errorText = await res.text();
-    throw new Error(`Error al obtener pedidos activos: ${res.status} - ${errorText}`);
-  }
-  return res.json();
-}
-
-// Función para avanzar estado automáticamente con mejor manejo de errores
-export async function avanzarEstadoPedido(pedidoId: number): Promise<Pedido> {
-  const res = await fetch(`http://localhost:5252/api/cocina/pedidos/${pedidoId}/avanzar`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!res.ok) {
-    let errorMessage = `Error ${res.status}`;
-    try {
-      const errorData = await res.json();
-      errorMessage = errorData.message || errorData.error || errorMessage;
-    } catch {
-      const errorText = await res.text();
-      errorMessage = errorText || errorMessage;
-    }
-    throw new Error(`Error al avanzar pedido #${pedidoId}: ${errorMessage}`);
-  }
-
-  return res.json();
-}
-
-// Función para cambiar estado específico con mejor manejo de errores
-export async function updatePedidoEstado(
-  pedidoId: number,
-  nuevoEstadoId: EstadoId
-): Promise<Pedido> {
-  const res = await fetch(
-    `http://localhost:5252/api/cocina/pedidos/${pedidoId}/estado-cocina?nuevoEstadoId=${nuevoEstadoId}`,
-    {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }
-  );
-
-  if (!res.ok) {
-    let errorMessage = `Error ${res.status}`;
-    try {
-      const errorData = await res.json();
-      errorMessage = errorData.message || errorData.error || errorMessage;
-    } catch {
-      const errorText = await res.text();
-      errorMessage = errorText || errorMessage;
-    }
-    throw new Error(`Error al actualizar estado del pedido #${pedidoId}: ${errorMessage}`);
-  }
-
-  return res.json();
-}
-
-// Función legacy mantenida para compatibilidad (deprecada)
-export async function fetchPedidos(): Promise<Pedido[]> {
-  console.warn('⚠️ fetchPedidos() está deprecada. Usar fetchPedidosActivos() en su lugar.');
-  return fetchPedidosActivos();
-}
+// 📝 IMPORTANTE: Las funciones de API están en service/cocinaService.ts
+// Para usar los servicios:
+// import { fetchPedidosActivos, avanzarEstadoPedido, updatePedidoEstado, updateTiempoEstimado } from './service/cocinaService';
