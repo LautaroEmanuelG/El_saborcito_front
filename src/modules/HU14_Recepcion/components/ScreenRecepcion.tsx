@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useRecepcionLogic } from '../Logic';
 import { PedidoCompletoConDetalles } from '../../../types/Pedido';
 import { FiltrosRecepcion } from './FiltrosRecepcion';
+import { FiltrosFecha } from './FiltrosFecha';
 import { TablaRecepcion } from './TablaRecepcion';
 import { ModalDetallePedido } from './ModalDetallePedido';
 
@@ -13,8 +14,12 @@ export const ScreenRecepcion: React.FC = () => {
     error,
     filtroEstado,
     buscarId,
+    fechaDesde,
+    fechaHasta,
     setFiltroEstado,
     setBuscarId,
+    setFechaDesde,
+    setFechaHasta,
     cambiarEstadoPedido,
     cargarDatos,
     limpiarFiltros,
@@ -63,12 +68,19 @@ export const ScreenRecepcion: React.FC = () => {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-6 w-full">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">📋 Recepción de Pedidos</h1>
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">Recepción de Pedidos</h1>
         <p className="text-gray-600">Gestiona y controla el estado de todos los pedidos</p>
       </div>
+      {/* Filtros de Fecha */}
+      <FiltrosFecha
+        fechaDesde={fechaDesde}
+        fechaHasta={fechaHasta}
+        onFechaDesdeChange={setFechaDesde}
+        onFechaHastaChange={setFechaHasta}
+      />
       {/* Filtros */}
       <FiltrosRecepcion
         estados={estados}
@@ -92,22 +104,16 @@ export const ScreenRecepcion: React.FC = () => {
             {pedidosFiltrados.filter((p) => p.estado.nombre === 'EN_PREPARACION').length}
           </p>
         </div>
-        <div className="bg-green-100 p-4 rounded-lg">
-          <h3 className="font-semibold text-green-800">Listos</h3>
-          <p className="text-2xl font-bold text-green-900">
-            {pedidosFiltrados.filter((p) => p.estado.nombre === 'LISTO').length}
+        <div className="bg-red-100 p-4 rounded-lg">
+          <h3 className="font-semibold text-red-800">Demorados</h3>
+          <p className="text-2xl font-bold text-red-900">
+            {pedidosFiltrados.filter((p) => p.estado.nombre === 'DEMORADO').length}
           </p>
         </div>
-        <div className="bg-purple-100 p-4 rounded-lg">
-          <h3 className="font-semibold text-purple-800">Con Promociones</h3>
-          <p className="text-2xl font-bold text-purple-900">
-            {
-              pedidosFiltrados.filter(
-                (p) =>
-                  p.detallesCompletos?.some((detalle) => detalle.origen === 'PROMOCION') ||
-                  p.detalles?.some((detalle) => detalle.origen === 'PROMOCION')
-              ).length
-            }
+        <div className="bg-violet-100 p-4 rounded-lg">
+          <h3 className="font-semibold text-violet-800">En Delivery</h3>
+          <p className="text-2xl font-bold text-violet-900">
+            {pedidosFiltrados.filter((p) => p.estado.nombre === 'EN_DELIVERY').length}
           </p>
         </div>
         <div className="bg-gray-100 p-4 rounded-lg">

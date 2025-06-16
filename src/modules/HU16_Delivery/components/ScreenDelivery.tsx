@@ -50,36 +50,27 @@ export const ScreenDelivery: React.FC = () => {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-6 w-full">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">🚚 Gestión de Delivery</h1>
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">Gestión de Delivery</h1>
         <p className="text-gray-600">Pedidos listos para entrega a domicilio</p>
       </div>
 
       {/* Estadísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div className="bg-purple-100 p-4 rounded-lg">
-          <h3 className="font-semibold text-purple-800">📦 En Delivery</h3>
+          <h3 className="font-semibold text-purple-800">En Delivery</h3>
           <p className="text-2xl font-bold text-purple-900">{pedidosDelivery.length}</p>
         </div>
-        <div className="bg-green-100 p-4 rounded-lg">
-          <h3 className="font-semibold text-green-800">💰 Total a Entregar</h3>
-          <p className="text-2xl font-bold text-green-900">
-            {new Intl.NumberFormat('es-AR', {
-              style: 'currency',
-              currency: 'ARS',
-            }).format(pedidosDelivery.reduce((sum, pedido) => sum + pedido.total, 0))}
-          </p>
-        </div>
         <div className="bg-blue-100 p-4 rounded-lg">
-          <h3 className="font-semibold text-blue-800">⏰ Refrescar</h3>
+          <h3 className="font-semibold text-blue-800">Refrescar</h3>
           <button
             onClick={cargarPedidosDelivery}
             disabled={loading}
             className="mt-1 bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 disabled:opacity-50"
           >
-            🔄 Actualizar
+            Actualizar
           </button>
         </div>
       </div>

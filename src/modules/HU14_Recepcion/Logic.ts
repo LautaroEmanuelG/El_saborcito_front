@@ -5,6 +5,7 @@ import {
 } from '../../shared/services/pedidoService';
 import { getAllEstados } from '../../shared/services/estadoService';
 import { PedidoCompletoConDetalles, Estado } from '../../types/Pedido';
+import { obtenerFechaHoy } from '../../shared/utils/fechaUtils';
 
 export const useRecepcionLogic = () => {
   const [pedidos, setPedidos] = useState<PedidoCompletoConDetalles[]>([]);
@@ -14,6 +15,8 @@ export const useRecepcionLogic = () => {
   const [error, setError] = useState<string>('');
   const [filtroEstado, setFiltroEstado] = useState<string>('');
   const [buscarId, setBuscarId] = useState<string>('');
+  const [fechaDesde, setFechaDesde] = useState<string>(obtenerFechaHoy());
+  const [fechaHasta, setFechaHasta] = useState<string>(obtenerFechaHoy());
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -23,7 +26,7 @@ export const useRecepcionLogic = () => {
   // Filtrar pedidos cuando cambian los filtros
   useEffect(() => {
     aplicarFiltros();
-  }, [pedidos, filtroEstado, buscarId]);
+  }, [pedidos, filtroEstado, buscarId, fechaDesde, fechaHasta]);
   const cargarDatos = async () => {
     setLoading(true);
     try {
@@ -54,6 +57,14 @@ export const useRecepcionLogic = () => {
       pedidosFiltrados = pedidosFiltrados.filter((pedido) =>
         pedido.id.toString().includes(buscarId.trim())
       );
+    }
+
+    // Filtrar por rango de fechas
+    if (fechaDesde && fechaHasta) {
+      pedidosFiltrados = pedidosFiltrados.filter((pedido) => {
+        const fechaPedido = new Date(pedido.fechaPedido).toISOString().split('T')[0];
+        return fechaPedido >= fechaDesde && fechaPedido <= fechaHasta;
+      });
     }
 
     setPedidosFiltrados(pedidosFiltrados);
@@ -110,6 +121,8 @@ export const useRecepcionLogic = () => {
   const limpiarFiltros = () => {
     setFiltroEstado('');
     setBuscarId('');
+    setFechaDesde(obtenerFechaHoy());
+    setFechaHasta(obtenerFechaHoy());
   };
 
   return {
@@ -120,10 +133,14 @@ export const useRecepcionLogic = () => {
     error,
     filtroEstado,
     buscarId,
+    fechaDesde,
+    fechaHasta,
 
     // Funciones
     setFiltroEstado,
     setBuscarId,
+    setFechaDesde,
+    setFechaHasta,
     cambiarEstadoPedido,
     cargarDatos,
     limpiarFiltros,

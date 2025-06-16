@@ -1,6 +1,7 @@
 import React from 'react';
 import { PedidoCompletoConDetalles } from '../../../types/Pedido';
 import { formatearNombreFormaPago } from '../../../shared/utils/pedidoUtils';
+import IconoVer from '../../../assets/svgs/icons/IconoVer';
 
 interface TablaRecepcionProps {
   pedidos: PedidoCompletoConDetalles[];
@@ -147,7 +148,7 @@ export const TablaRecepcion: React.FC<TablaRecepcionProps> = ({
                       className="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600 transition-colors"
                       title="Ver detalle"
                     >
-                      👁️
+                      <IconoVer className="inline-block w-4 h-4" />
                     </button>
 
                     {/* Botón Avanzar Estado */}

@@ -1,6 +1,8 @@
 import React from 'react';
 import { PedidoCompletoConDetalles } from '../../../types/Pedido';
 import { formatearNombreFormaPago } from '../../../shared/utils/pedidoUtils';
+import IconoVer from '../../../assets/svgs/icons/IconoVer';
+import IconoChecks from '../../../assets/svgs/icons/IconoChecks';
 
 interface TablaDeliveryProps {
   pedidos: PedidoCompletoConDetalles[];
@@ -13,23 +15,6 @@ export const TablaDelivery: React.FC<TablaDeliveryProps> = ({
   onVerDetalle,
   onMarcarEntregado,
 }) => {
-  const formatearFecha = (fecha: string): string => {
-    return new Date(fecha).toLocaleDateString('es-AR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  const formatearPrecio = (precio: number): string => {
-    return new Intl.NumberFormat('es-AR', {
-      style: 'currency',
-      currency: 'ARS',
-    }).format(precio);
-  };
-
   const obtenerDireccionPrincipal = (pedido: PedidoCompletoConDetalles): string => {
     if (pedido.cliente.domicilios && pedido.cliente.domicilios.length > 0) {
       const domicilio = pedido.cliente.domicilios[0];
@@ -60,22 +45,16 @@ export const TablaDelivery: React.FC<TablaDeliveryProps> = ({
                 Pedido
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Cliente
+                Tiempo Estimado
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Dirección
+                Cliente
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Teléfono
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Total
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Forma Pago
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Hora Pedido
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Acciones
@@ -86,51 +65,41 @@ export const TablaDelivery: React.FC<TablaDeliveryProps> = ({
             {pedidos.map((pedido) => (
               <tr key={pedido.id} className="hover:bg-purple-50">
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-bold text-purple-900">#{pedido.id}</div>
-                  {pedido.horasEstimadaFinalizacion && (
-                    <div className="text-xs text-gray-500">
-                      Est: {pedido.horasEstimadaFinalizacion}
-                    </div>
-                  )}
+                  <div className="text-sm font-bold text-primary">#{pedido.id}</div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-lg font-bold text-primary">
+                    {pedido.horasEstimadaFinalizacion?.split(':').slice(0, 2).join(':') ??
+                      'No disponible'}
+                  </div>
+                  <div className="text-xs text-gray-500">Entrega estimada</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm font-medium text-gray-900">
                     {pedido.cliente.nombre} {pedido.cliente.apellido}
                   </div>
                   <div className="text-sm text-gray-500">{pedido.cliente.email}</div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="text-sm text-gray-900 max-w-xs">
+                  <div className="text-xs text-gray-500 max-w-xs">
                     📍 {obtenerDireccionPrincipal(pedido)}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">
-                    📞 {pedido.cliente.telefono}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-bold text-green-600">
-                    {formatearPrecio(pedido.total)}
-                  </div>
+                  <div className="text-sm font-medium text-gray-900">{pedido.cliente.telefono}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">
                     {formatearNombreFormaPago(pedido.formaPago.nombre)}
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-500">{formatearFecha(pedido.fechaPedido)}</div>
-                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div className="flex space-x-2">
                     {/* Botón Ver Detalle */}
                     <button
                       onClick={() => onVerDetalle(pedido)}
-                      className="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600 transition-colors"
+                      className="bg-primary text-white px-3 py-1 rounded text-xs hover:bg-blue-600 transition-colors"
                       title="Ver detalle completo"
                     >
-                      👁️ Detalle
+                      <IconoVer className="inline-block w-4 h-4" />
                     </button>
 
                     {/* Botón Marcar Entregado */}
@@ -139,7 +108,7 @@ export const TablaDelivery: React.FC<TablaDeliveryProps> = ({
                       className="bg-green-500 text-white px-3 py-1 rounded text-xs hover:bg-green-600 transition-colors"
                       title="Marcar como entregado"
                     >
-                      ✅ Entregado
+                      <IconoChecks className="inline-block w-4 h-4" />
                     </button>
                   </div>
                 </td>

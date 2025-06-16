@@ -24,10 +24,6 @@ const NAV_DATA: NavItemStructure[] = [
     ],
   },
   {
-    title: 'Estadística e Informes',
-    subItems: [{ to: '/admin/historial', label: 'Control' }],
-  },
-  {
     title: 'Informes estadísticos',
     subItems: [
       { to: '/admin/informes/ranking-productos', label: 'Ranking Producto' },
@@ -65,10 +61,7 @@ const NAV_DATA: NavItemStructure[] = [
   },
   {
     title: 'Finanzas',
-    subItems: [
-      { to: '/admin/reportes', label: 'Reportes' },
-      { to: '/admin/control', label: 'Libros Contables' },
-    ],
+    subItems: [{ to: '/admin/control', label: 'Libros Contables' }],
   },
 ];
 
