@@ -134,15 +134,12 @@ export const ModalDetallePedidoCliente: React.FC<ModalDetallePedidoClienteProps>
     >
       <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-gray-200 bg-gradient-to-r from-red-50 to-orange-50">
+        <div className="flex justify-between items-center p-6 border-b border-gray-200 bg-primary">
           <div>
-            <h2 className="text-2xl font-bold text-gray-800">🧾 Detalle del Pedido #{pedido.id}</h2>
-            <p className="text-gray-600 mt-1">{formatearFecha(pedido.fechaPedido)}</p>
+            <h2 className="text-2xl font-bold text-blanco"> Detalle del Pedido #{pedido.id}</h2>
+            <p className="text-blanco mt-1">{formatearFecha(pedido.fechaPedido)}</p>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
-          >
+          <button onClick={onClose} className="text-blanco hover:text-gray-200 text-2xl font-bold">
             ×
           </button>
         </div>
@@ -152,7 +149,7 @@ export const ModalDetallePedidoCliente: React.FC<ModalDetallePedidoClienteProps>
           {/* Datos generales */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
             <div>
-              <strong className="text-gray-700">📦 Estado:</strong>
+              <strong className="text-gray-700">Estado:</strong>
               <span
                 className={`ml-2 px-3 py-1 rounded-full text-sm font-medium ${
                   pedido.estado.nombre === 'PENDIENTE'
@@ -172,39 +169,39 @@ export const ModalDetallePedidoCliente: React.FC<ModalDetallePedidoClienteProps>
               </span>
             </div>
             <div>
-              <strong className="text-gray-700">🚚 Tipo de envío:</strong>
+              <strong className="text-gray-700">Tipo de envío:</strong>
               <span className="ml-2">{pedido.tipoEnvio.nombre}</span>
             </div>
             <div>
-              <strong className="text-gray-700">💳 Forma de pago:</strong>
+              <strong className="text-gray-700">Forma de pago:</strong>
               <span className="ml-2">{formatearNombreFormaPago(pedido.formaPago.nombre)}</span>
             </div>
           </div>
           {/* Datos del cliente */}
           <div className="bg-blue-50 p-4 rounded-lg">
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">👤 Información del Cliente</h3>
+            <h3 className="text-md font-semibold text-gray-800 mb-3">Información</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <strong className="text-gray-700">Nombre:</strong>
-                <span className="ml-2">
+                <strong className="text-gray-700 text-sm">Nombre:</strong>
+                <span className="ml-2 text-sm">
                   {pedido.cliente.nombre} {pedido.cliente.apellido}
                 </span>
               </div>
               <div>
-                <strong className="text-gray-700">Email:</strong>
-                <span className="ml-2">{pedido.cliente.email}</span>
+                <strong className="text-gray-700 text-sm">Email:</strong>
+                <span className="ml-2 text-sm">{pedido.cliente.email}</span>
               </div>
               <div>
-                <strong className="text-gray-700">Teléfono:</strong>
-                <span className="ml-2">{pedido.cliente.telefono}</span>
+                <strong className="text-gray-700 text-sm">Teléfono:</strong>
+                <span className="ml-2 text-sm">{pedido.cliente.telefono}</span>
               </div>
             </div>
           </div>{' '}
           {/* Dirección de entrega */}
           {pedido.cliente.domicilios && pedido.cliente.domicilios.length > 0 && (
             <div className="bg-green-50 p-4 rounded-lg">
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">📍 Dirección de Entrega</h3>
-              <p className="text-gray-700">
+              <h3 className="text-md font-semibold text-gray-800 mb-3">Dirección de Entrega</h3>
+              <p className="text-gray-700 text-sm">
                 {pedido.cliente.domicilios[0].calle} {pedido.cliente.domicilios[0].numero}
               </p>
               <p className="text-gray-600 text-sm mt-1">
@@ -214,8 +211,8 @@ export const ModalDetallePedidoCliente: React.FC<ModalDetallePedidoClienteProps>
             </div>
           )}
           {/* Artículos del pedido */}
-          <div className="bg-orange-50 p-4 rounded-lg">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">🛒 Productos Pedidos</h3>
+          <div className="bg-violet-50 p-4 rounded-lg">
+            <h3 className="text-md font-semibold text-gray-800 mb-4">Productos Pedidos</h3>
 
             <div className="space-y-4">
               {(() => {
@@ -246,19 +243,19 @@ export const ModalDetallePedidoCliente: React.FC<ModalDetallePedidoClienteProps>
                     {promociones.map((promocion) => (
                       <div
                         key={`promocion-${promocion.promocionId}`}
-                        className="border border-orange-200 rounded-lg p-4 bg-white"
+                        className="border border-violet-200 rounded-lg p-4 bg-white"
                       >
                         <div className="flex justify-between items-start mb-3">
                           <div className="flex-1">
-                            <h5 className="font-medium text-orange-800">
+                            <h5 className="font-medium text-violet-800">
                               {promocion.denominacion}
                             </h5>
-                            <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded">
+                            <span className="text-xs bg-violet-100 text-violet-800 px-2 py-1 rounded">
                               🎉 Promoción
                             </span>
                           </div>
                           <div className="text-right">
-                            <span className="text-orange-600 font-bold">
+                            <span className="text-red-600 font-bold">
                               {formatearPrecio(promocion.precioPromocional)}
                             </span>
                             <p className="text-sm text-gray-600">
@@ -275,7 +272,7 @@ export const ModalDetallePedidoCliente: React.FC<ModalDetallePedidoClienteProps>
                               className="flex justify-between items-center bg-orange-50 p-2 rounded"
                             >
                               <span className="text-sm">{articulo.articulo.denominacion}</span>
-                              <span className="text-xs text-orange-600">
+                              <span className="text-xs text-violet-600">
                                 {articulo.cantidadConPromocion > 0 &&
                                   `${articulo.cantidadConPromocion} incluidos`}
                               </span>
@@ -292,8 +289,8 @@ export const ModalDetallePedidoCliente: React.FC<ModalDetallePedidoClienteProps>
           {/* Total del pedido */}
           <div className="bg-red-50 p-4 rounded-lg border-2 border-red-200">
             <div className="flex justify-between items-center">
-              <span className="text-xl font-bold text-gray-800">💰 Total del Pedido:</span>
-              <span className="text-2xl font-bold text-red-600">
+              <span className="text-xl font-bold text-gray-800">Total del Pedido:</span>
+              <span className="text-2xl font-bold text-primary">
                 {formatearPrecio(pedido.total)}
               </span>
             </div>

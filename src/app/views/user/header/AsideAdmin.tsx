@@ -18,7 +18,7 @@ export interface NavItemStructure {
 const NAV_DATA: NavItemStructure[] = [
   {
     title: 'Usuario',
-    subItems: [{ to: '/admin/historial-pedidos', label: 'Mis Pedidos' }],
+    subItems: [{ to: '/admin/mis-pedidos', label: 'Mis Pedidos' }],
   },
   {
     title: 'Recepción y Gestión',

@@ -4,6 +4,22 @@ import React, { useState, useEffect } from 'react';
 import { PedidoCompletoConDetalles } from '../../../types/Pedido';
 import { getPedidosByCliente } from '../../../shared/services/pedidoService';
 import { ModalDetallePedidoCliente } from './ModalDetallePedidoCliente';
+import IconoVer from '../../../assets/svgs/icons/IconoVer';
+
+export const getEstadoBadgeColor = (estado: string): string => {
+  // Colores basados en TablaRecepcion.tsx y adaptados si es necesario
+  const colors: Record<string, string> = {
+    PENDIENTE: 'bg-yellow-100 text-yellow-800',
+    CONFIRMADO: 'bg-blue-100 text-blue-800',
+    EN_PREPARACION: 'bg-orange-100 text-orange-800',
+    LISTO: 'bg-green-100 text-green-800',
+    EN_DELIVERY: 'bg-purple-100 text-purple-800',
+    ENTREGADO: 'bg-gray-100 text-gray-800',
+    CANCELADO: 'bg-red-100 text-red-800',
+    DEMORADO: 'bg-red-200 text-red-900',
+  };
+  return colors[estado.toUpperCase()] || 'bg-gray-100 text-gray-800';
+};
 
 export const HistorialPedidosCliente: React.FC = () => {
   // 🚧 HARDCODEADO TEMPORALMENTE - Usuario ID 5 para pruebas
@@ -59,6 +75,9 @@ export const HistorialPedidosCliente: React.FC = () => {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
+      // Añadimos hora y minutos para consistencia si se desea, o se puede quitar.
+      // hour: '2-digit',
+      // minute: '2-digit',
     });
   };
 
@@ -102,7 +121,7 @@ export const HistorialPedidosCliente: React.FC = () => {
         <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
           <div className="flex flex-col md:flex-row md:justify-between md:items-center">
             <div>
-              <h1 className="text-3xl font-bold text-gray-800">📋 Mis Pedidos</h1>
+              <h1 className="text-3xl font-bold text-gray-800">Mis Pedidos</h1>
               <p className="text-gray-600 mt-2">Bienvenido/a, {CLIENTE_NOMBRE}</p>
             </div>
             <div className="mt-4 md:mt-0 text-right">
@@ -125,13 +144,15 @@ export const HistorialPedidosCliente: React.FC = () => {
             <p className="text-gray-500">¡Realiza tu primer pedido y aparecerá aquí!</p>
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gradient-to-r from-red-50 to-orange-50">
+                <thead className="bg-gray-50">
+                  {' '}
+                  {/* Estilo de TablaRecepcion.tsx */}
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Pedido
+                      Pedido ID
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Fecha
@@ -140,62 +161,41 @@ export const HistorialPedidosCliente: React.FC = () => {
                       Estado
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Envío
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Total
                     </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Acciones
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {pedidos.map((pedido) => (
-                    <tr key={pedido.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm">
-                          <div className="font-medium text-gray-900">#{pedido.id}</div>
-                          <div className="text-gray-500">
-                            {pedido.detallesCompletos?.length || 0} productos
-                          </div>
-                        </div>
+                    <tr key={pedido.id} className="hover:bg-gray-50">
+                      {' '}
+                      {/* Estilo de TablaRecepcion.tsx */}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        #{pedido.id}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {formatearFecha(pedido.fechaPedido)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
-                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            pedido.estado.nombre === 'PENDIENTE'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : pedido.estado.nombre === 'EN_PREPARACION'
-                                ? 'bg-blue-100 text-blue-800'
-                                : pedido.estado.nombre === 'LISTO'
-                                  ? 'bg-green-100 text-green-800'
-                                  : pedido.estado.nombre === 'ENTREGADO'
-                                    ? 'bg-green-200 text-green-900'
-                                    : pedido.estado.nombre === 'CANCELADO'
-                                      ? 'bg-red-100 text-red-800'
-                                      : 'bg-gray-100 text-gray-800'
-                          }`}
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getEstadoBadgeColor(pedido.estado.nombre)}`}
                         >
-                          {pedido.estado.nombre.replace('_', ' ')}
+                          {pedido.estado.nombre.replace(/_/g, ' ')}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {pedido.tipoEnvio.nombre}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-red-600">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-negro">
                         {formatearPrecio(pedido.total)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <button
                           onClick={() => manejarVerDetalle(pedido)}
-                          className="text-red-600 hover:text-red-900 hover:bg-red-50 p-2 rounded-full transition-colors"
-                          title="Ver detalles del pedido"
+                          className="bg-primary text-white px-3 py-1 rounded text-xs transition-colors"
+                          title="Ver detalle"
                         >
-                          👁️
+                          <IconoVer className="inline-block w-4 h-4" />
                         </button>
                       </td>
                     </tr>
