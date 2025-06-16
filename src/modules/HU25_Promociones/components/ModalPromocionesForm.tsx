@@ -197,6 +197,22 @@ const ModalPromocionesForm: React.FC<ModalPromocionesFormProps> = ({
                 <label className="block text-sm font-medium mb-1">Hora Hasta</label>
                 <div className="w-full border rounded px-3 py-2 bg-gray-100">{form.horaHasta}</div>
               </div>
+              {/* Checkbox de habilitado en modo view (centrado) */}
+              <div className="flex items-center justify-center mt-2">
+                <input
+                  id="disponibleCheckPromoView"
+                  type="checkbox"
+                  className="mr-2"
+                  checked={isDisponible}
+                  disabled
+                />
+                <label
+                  htmlFor="disponibleCheckPromoView"
+                  className="text-base select-none cursor-default"
+                >
+                  Habilitado
+                </label>
+              </div>
             </div>
             <div className="flex-1 p-4 max-h-96 overflow-y-auto border-l">
               <h3 className="text-lg font-medium mb-2">Combo Promoción</h3>
@@ -221,6 +237,17 @@ const ModalPromocionesForm: React.FC<ModalPromocionesFormProps> = ({
               )}
             </div>
           </div>
+          {/* Imagen solo en modo view, centrada debajo de las columnas */}
+          {imagenPreview && (
+            <div className="flex flex-col items-center mt-4">
+              <label className="block text-sm font-medium mb-1">Imagen</label>
+              <img
+                src={imagenPreview}
+                alt="Imagen de la promoción"
+                className="mb-2 rounded max-h-32 object-contain border"
+              />
+            </div>
+          )}
           <div className="flex justify-center gap-2 p-4 border-t">
             <button
               type="button"
@@ -403,7 +430,23 @@ const ModalPromocionesForm: React.FC<ModalPromocionesFormProps> = ({
                           onClick={() => handleRemoveArticulo(index)}
                           title="Eliminar artículo"
                         >
-                          🗑️
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M3 6h18" />
+                            <path d="M8 6v-2a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+                            <path d="M10 11v6" />
+                            <path d="M14 11v6" />
+                          </svg>
                         </button>
                       </div>
                     )}
@@ -481,7 +524,6 @@ const ModalPromocionesForm: React.FC<ModalPromocionesFormProps> = ({
               />
             </div>
           )}
-          {/* Botones al final del modal */}
           <div className="flex justify-center gap-2 p-4 border-t mt-4">
             <button
               type="button"

@@ -24,6 +24,7 @@ import ScreenCategoriaPadreInsumo from './modules/HU20_CRUD_CategoriasPadresInsu
 import ScreenPromociones from './modules/HU25_Promociones/components/ScreenPromociones';
 import { Recepcion } from './modules/HU14_Recepcion/components/Recepcion.tsx';
 import { Delivery } from './modules/HU16_Delivery/components/Delivery.tsx';
+import ScreenCompraIngredientes from './modules/HU24_CompraIngredientes/components/ScreenCompraIngredientes';
 import { CallbackPage } from './app/views/CallbackPage.tsx';
 
 createRoot(document.getElementById('root')!).render(
@@ -205,6 +206,14 @@ createRoot(document.getElementById('root')!).render(
             element={
               <ProtectedRoute>
                 <Delivery />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="compra-insumos"
+            element={
+              <ProtectedRoute>
+                <ScreenCompraIngredientes />
               </ProtectedRoute>
             }
           />
