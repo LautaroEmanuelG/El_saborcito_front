@@ -23,10 +23,11 @@ import ScreenSubcategoriasInsumos from './modules/HU20_CRUD_SubcategoriasInsumos
 import ScreenCategoriaPadreInsumo from './modules/HU20_CRUD_CategoriasPadresInsumos/components/ScreenCategoriaPadreInsumo';
 import { Recepcion } from './modules/HU14_Recepcion/components/Recepcion.tsx';
 import { Delivery } from './modules/HU16_Delivery/components/Delivery.tsx';
+import { CallbackPage } from './app/views/CallbackPage.tsx';
 
 createRoot(document.getElementById('root')!).render(
-  <AppProviders>
-    <BrowserRouter>
+  <BrowserRouter>
+    <AppProviders>
       <Routes>
         <Route
           path="/"
@@ -61,7 +62,7 @@ createRoot(document.getElementById('root')!).render(
                 <Historial />
               </ProtectedRoute>
             }
-          />{' '}
+          />
           <Route
             path="recepcion"
             element={
@@ -199,8 +200,9 @@ createRoot(document.getElementById('root')!).render(
             }
           />
         </Route>
+        <Route path="/callback" element={<CallbackPage />} />
         <Route path="*" element={<Navigate replace to="/" />} />
       </Routes>
-    </BrowserRouter>
-  </AppProviders>
+    </AppProviders>
+  </BrowserRouter>
 );

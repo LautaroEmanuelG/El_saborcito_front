@@ -10,9 +10,8 @@ import IconoMenuHamburguesa from '../../../../assets/svgs/icons/IconoMenuHamburg
 import { LoginModal } from '../../../../modules/HU1_2_Registro_Login/components/loggin/LoginModal';
 import { RegistroModal } from '../../../../modules/HU1_2_Registro_Login/components/registro/RegistroModal';
 import { Buscador } from '../../../../modules/HU9_10_Landing_Busqueda/Buscador';
-import { loginConAuth0 } from '../../../../shared/services/authService';
 import { useAuth0 } from '@auth0/auth0-react';
-import axiosInstance from '../../../../shared/services/axiosConfig';
+import { syncUserWithBackend, loginAfterSync } from '../../../../shared/services/auth0SyncService';
 
 type Props = {
   onSearch?: (query: string | string[]) => void; // Modificado para aceptar string o string[]
@@ -79,45 +78,20 @@ export const Header = ({ onSearch }: Props) => {
       if (isAuthenticated && auth0User) {
         try {
           const token = await getAccessTokenSilently();
-          const response = await loginConAuth0(token);
-          console.log('Respuesta completa backend loginConAuth0:', response);
 
-          // Intenta ambos destructurings para ver cuál es correcto
-          const { usuario, token: backendToken } = response;
-          if (usuario) {
-            setUser(usuario);
-            localStorage.setItem('token', backendToken);
-          } else if (response && response.token) {
-            setUser(response); // Si el backend devuelve solo el usuario
-            localStorage.setItem('token', response.token);
+          // Primero sincronizamos el usuario
+          await syncUserWithBackend(auth0User);
+
+          // Luego hacemos login para obtener el token JWT
+          const loginResponse = await loginAfterSync(token, auth0User);
+
+          if (loginResponse.usuario) {
+            setUser(loginResponse.usuario);
           }
         } catch (error: any) {
           console.error('Error sincronizando usuario con backend:', error);
-          // Si hay un conflicto, intentamos registrar/actualizar el usuario
-          if (error.response?.status === 409 || error.response?.status === 400) {
-            try {
-              // Intentamos registrar/actualizar el usuario
-              const registroResponse = await axiosInstance.post('/clientes/auth0', {
-                sub: auth0User.sub,
-                email: auth0User.email,
-                givenName: auth0User.given_name,
-                familyName: auth0User.family_name,
-                domicilios: [],
-              });
-
-              if (registroResponse.data) {
-                setUser(registroResponse.data);
-                localStorage.setItem('token', registroResponse.data.token);
-              }
-            } catch (registroError) {
-              console.error('Error registrando usuario:', registroError);
-              // Si falla el registro, cerramos sesión
-              auth0Logout({ logoutParams: { returnTo: window.location.origin } });
-            }
-          } else {
-            // Para otros errores, cerramos sesión
-            auth0Logout({ logoutParams: { returnTo: window.location.origin } });
-          }
+          // Si hay un error, cerramos sesión
+          auth0Logout({ logoutParams: { returnTo: window.location.origin } });
         }
       }
     };

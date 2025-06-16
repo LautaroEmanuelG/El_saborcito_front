@@ -1,8 +1,8 @@
 import { useAuth0 } from '@auth0/auth0-react';
 import axiosInstance from './axiosConfig';
 
-export const syncUserWithBackend = async (user: any, token: string) => {
-  // Adapta los campos según lo que espera tu backend
+// Sincronizar usuario con el backend
+export const syncUserWithBackend = async (user: any) => {
   const userData = {
     sub: user.sub,
     email: user.email ?? '',
@@ -11,16 +11,38 @@ export const syncUserWithBackend = async (user: any, token: string) => {
     domicilios: [], // Puedes dejar vacío o pedir más datos luego
   };
 
-  const response = await axiosInstance.post('/clientes/login/auth0', userData, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
+  try {
+    const response = await axiosInstance.post('/clientes/auth0', userData);
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.status === 409) {
+      throw new Error('Este email ya está registrado con otro método de autenticación');
+    }
+    throw error;
+  }
+};
 
-  // Puedes guardar el usuario y token de tu backend si lo necesitas
-  localStorage.setItem('user', JSON.stringify(response.data.usuario));
-  localStorage.setItem('token', response.data.token);
+// Login después de sincronización
+export const loginAfterSync = async (token: string, user: any) => {
+  try {
+    const response = await axiosInstance.post('/clientes/login/auth0', {
+      token,
+      email: user.email,
+      auth0Id: user.sub,
+    });
 
-  return response.data;
+    // Guardar datos del usuario y token
+    localStorage.setItem('user', JSON.stringify(response.data.usuario));
+    localStorage.setItem('token', response.data.token);
+
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.status === 400) {
+      throw new Error('Este usuario no se autentica con Auth0');
+    }
+    if (error.response?.status === 403) {
+      throw new Error('Usuario dado de baja');
+    }
+    throw error;
+  }
 };

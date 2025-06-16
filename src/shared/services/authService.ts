@@ -48,13 +48,13 @@ export const loginManual = async (credentials: Login) => {
 };
 
 // 🌐 Login con Auth0
-export const loginConAuth0 = async (token: string) => {
+export const loginConAuth0 = async (token: string, auth0User: any) => {
   try {
     // Obtener el token de Auth0
     const response = await axiosInstance.post('/clientes/login/auth0', {
       token,
-      email: auth0User?.email,
-      sub: auth0User?.sub, // ID único de Auth0
+      email: auth0User.email,
+      sub: auth0User.sub, // ID único de Auth0
     });
     return response.data;
   } catch (error: any) {
@@ -66,6 +66,25 @@ export const loginConAuth0 = async (token: string) => {
     }
     if (error.response?.status === 403) {
       throw new Error('Usuario dado de baja');
+    }
+    throw error;
+  }
+};
+
+// Sincronizar usuario con Auth0
+export const sincronizarUsuarioAuth0 = async (auth0User: any) => {
+  try {
+    const response = await axiosInstance.post('/clientes/auth0', {
+      sub: auth0User.sub,
+      email: auth0User.email,
+      givenName: auth0User.given_name,
+      familyName: auth0User.family_name,
+      domicilios: [],
+    });
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.status === 409) {
+      throw new Error('Este email ya está registrado con otro método de autenticación');
     }
     throw error;
   }
