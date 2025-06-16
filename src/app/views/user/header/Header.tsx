@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { CarritoContext } from '../../../../shared/providers/CarritoProvider';
 import { useProductStore } from '../../../../shared/providers/ProductProvider';
@@ -10,6 +10,9 @@ import IconoMenuHamburguesa from '../../../../assets/svgs/icons/IconoMenuHamburg
 import { LoginModal } from '../../../../modules/HU1_2_Registro_Login/components/loggin/LoginModal';
 import { RegistroModal } from '../../../../modules/HU1_2_Registro_Login/components/registro/RegistroModal';
 import { Buscador } from '../../../../modules/HU9_10_Landing_Busqueda/Buscador';
+import { loginConAuth0 } from '../../../../shared/services/authService';
+import { useAuth0 } from '@auth0/auth0-react';
+import axiosInstance from '../../../../shared/services/axiosConfig';
 
 type Props = {
   onSearch?: (query: string | string[]) => void; // Modificado para aceptar string o string[]
@@ -22,7 +25,13 @@ export const Header = ({ onSearch }: Props) => {
   const [isRegistroOpen, setIsRegistroOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const { user, logout } = useUser();
+  const { user, setUser, logout } = useUser();
+  const {
+    user: auth0User,
+    isAuthenticated,
+    getAccessTokenSilently,
+    logout: auth0Logout,
+  } = useAuth0();
 
   const carritoContext = useContext(CarritoContext);
   if (!carritoContext) {
@@ -65,6 +74,55 @@ export const Header = ({ onSearch }: Props) => {
     handleLogoClick(); // Limpiar búsqueda
     toggleMenu(); // Cerrar menú
   };
+  useEffect(() => {
+    const syncUser = async () => {
+      if (isAuthenticated && auth0User) {
+        try {
+          const token = await getAccessTokenSilently();
+          const response = await loginConAuth0(token);
+          console.log('Respuesta completa backend loginConAuth0:', response);
+
+          // Intenta ambos destructurings para ver cuál es correcto
+          const { usuario, token: backendToken } = response;
+          if (usuario) {
+            setUser(usuario);
+            localStorage.setItem('token', backendToken);
+          } else if (response && response.token) {
+            setUser(response); // Si el backend devuelve solo el usuario
+            localStorage.setItem('token', response.token);
+          }
+        } catch (error: any) {
+          console.error('Error sincronizando usuario con backend:', error);
+          // Si hay un conflicto, intentamos registrar/actualizar el usuario
+          if (error.response?.status === 409 || error.response?.status === 400) {
+            try {
+              // Intentamos registrar/actualizar el usuario
+              const registroResponse = await axiosInstance.post('/clientes/auth0', {
+                sub: auth0User.sub,
+                email: auth0User.email,
+                givenName: auth0User.given_name,
+                familyName: auth0User.family_name,
+                domicilios: [],
+              });
+
+              if (registroResponse.data) {
+                setUser(registroResponse.data);
+                localStorage.setItem('token', registroResponse.data.token);
+              }
+            } catch (registroError) {
+              console.error('Error registrando usuario:', registroError);
+              // Si falla el registro, cerramos sesión
+              auth0Logout({ logoutParams: { returnTo: window.location.origin } });
+            }
+          } else {
+            // Para otros errores, cerramos sesión
+            auth0Logout({ logoutParams: { returnTo: window.location.origin } });
+          }
+        }
+      }
+    };
+    syncUser();
+  }, [isAuthenticated, auth0User, getAccessTokenSilently, setUser, auth0Logout]);
 
   return (
     <>
@@ -90,6 +148,15 @@ export const Header = ({ onSearch }: Props) => {
                   className="flex items-center gap-2 text-white hover:text-blanco"
                   onClick={toggleUserMenu}
                 >
+                  {auth0User?.picture ? (
+                    <img src={auth0User.picture} alt="Avatar" className="w-8 h-8 rounded-full" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
+                      <span className="text-primary font-bold">
+                        {user.nombre?.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  )}
                   <span>{user.nombre}</span>
                   <svg
                     className={`w-4 h-4 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`}
@@ -196,7 +263,16 @@ export const Header = ({ onSearch }: Props) => {
         {/* Menú móvil para usuario */}
         {user ? (
           <div className="p-4 border-t border-gray-700">
-            <div className="mb-4">
+            <div className="mb-4 flex items-center gap-2">
+              {auth0User?.picture ? (
+                <img src={auth0User.picture} alt="Avatar" className="w-8 h-8 rounded-full" />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
+                  <span className="text-primary font-bold">
+                    {user.nombre?.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              )}
               <span className="text-lg font-semibold">{user.nombre}</span>
             </div>
             <Link to="/perfil" className="block py-2 hover:bg-gray-700" onClick={toggleMenu}>

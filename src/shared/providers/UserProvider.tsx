@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { Usuario } from '../../types/Usuario';
+import { useAuth0 } from '@auth0/auth0-react';
 
 interface UserContextType {
   user: Usuario | null;
@@ -19,10 +20,13 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     return storedUser ? JSON.parse(storedUser) : null;
   });
 
+  const { logout: auth0Logout } = useAuth0();
+
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
+    auth0Logout({ returnTo: window.location.origin });
   };
 
   return <UserContext.Provider value={{ user, setUser, logout }}>{children}</UserContext.Provider>;

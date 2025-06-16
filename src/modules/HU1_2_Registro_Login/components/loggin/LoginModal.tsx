@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { loginManual } from '../../../../shared/services/authService';
 import { useUser } from '../../../../shared/providers/UserProvider';
 import emailjs from 'emailjs-com';
+import { useAuth0 } from '@auth0/auth0-react';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ export const LoginModal = ({ isOpen, onClose, onOpenRegistro }: LoginModalProps)
   const [blockTime, setBlockTime] = useState(0);
   const navigate = useNavigate();
   const { setUser } = useUser();
+  const { loginWithRedirect } = useAuth0();
 
   useEffect(() => {
     let timer: number;
@@ -67,10 +69,9 @@ export const LoginModal = ({ isOpen, onClose, onOpenRegistro }: LoginModalProps)
     }
   };
 
-  // Placeholder para login con Google
-  const handleGoogleLogin = () => {
-    // Aquí irá la integración con Google Auth
-    alert('Funcionalidad de Google pendiente de implementar');
+  const handleGoogleLogin = async () => {
+    // Solo login con Auth0, sin argumentos para máxima compatibilidad
+    await loginWithRedirect();
   };
 
   const sendEmail = () => {

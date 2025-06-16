@@ -2,8 +2,6 @@ import { isValidEmail, isValidPassword } from '../../modules/HU1_2_Registro_Logi
 import { Login, RegistroCliente } from '../../modules/HU1_2_Registro_Login/models';
 import axiosInstance from './axiosConfig';
 
-const API_BASE_URL = 'http://localhost:5252/api'; //no creo llamar bien a la url
-
 // Registrar cliente usando el backend
 export const registrarCliente = async (dto: RegistroCliente): Promise<any> => {
   try {
@@ -29,7 +27,7 @@ export const registrarCliente = async (dto: RegistroCliente): Promise<any> => {
     }
 
     // Llamar al backend
-    const response = await axiosInstance.post(`${API_BASE_URL}/clientes/registro`, dto);
+    const response = await axiosInstance.post('/clientes/registro', dto);
     return response.data;
   } catch (error: any) {
     if (
@@ -45,12 +43,30 @@ export const registrarCliente = async (dto: RegistroCliente): Promise<any> => {
 
 // 🔐 Login manual
 export const loginManual = async (credentials: Login) => {
-  const response = await axiosInstance.post(`${API_BASE_URL}/clientes/login/manual`, credentials);
+  const response = await axiosInstance.post('/clientes/login/manual', credentials);
   return response.data; // Debería devolver token + datos del usuario
 };
 
 // 🌐 Login con Auth0
-export const loginConAuth0 = async (token: Login) => {
-  const response = await axiosInstance.post(`${API_BASE_URL}/login/auth0`, token);
-  return response.data; // También devuelve el token y usuario (ya validado por backend)
+export const loginConAuth0 = async (token: string) => {
+  try {
+    // Obtener el token de Auth0
+    const response = await axiosInstance.post('/clientes/login/auth0', {
+      token,
+      email: auth0User?.email,
+      sub: auth0User?.sub, // ID único de Auth0
+    });
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.status === 409) {
+      throw new Error('Este email ya está registrado con otro método de autenticación');
+    }
+    if (error.response?.status === 400) {
+      throw new Error('Este usuario no se autentica con Auth0');
+    }
+    if (error.response?.status === 403) {
+      throw new Error('Usuario dado de baja');
+    }
+    throw error;
+  }
 };

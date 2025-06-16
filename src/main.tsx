@@ -22,175 +22,180 @@ import ScreenCategoriasArticulos from './modules/HU21_CRUD_CategoriasArticulos/c
 import ScreenCategoriaPadreArticulo from './modules/HU21_CRUD_CategoriasPadresArticulos/components/ScreenCategoriaPadreArticulo';
 import ScreenSubcategoriasInsumos from './modules/HU20_CRUD_SubcategoriasInsumos/components/ScreenSubcategoriasInsumos';
 import ScreenCategoriaPadreInsumo from './modules/HU20_CRUD_CategoriasPadresInsumos/components/ScreenCategoriaPadreInsumo';
+import { Auth0ProviderWithNavigate } from './shared/providers/auth/Auth0ProviderWithNavigate.tsx';
+import { CallbackPage } from './app/views/CallbackPage.tsx';
 createRoot(document.getElementById('root')!).render(
   <AppProviders>
     <BrowserRouter>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <CarritoProvider>
-              <Web />
-            </CarritoProvider>
-          }
-        />
-        <Route
-          path="/carrito"
-          element={
-            <CarritoProvider>
-              <ProtectedCarrito>
-                <VistaCarrito />
-              </ProtectedCarrito>
-            </CarritoProvider>
-          }
-        />
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute>
-              <LayoutAdmin />
-            </ProtectedRoute>
-          }
-        >
+      <Auth0ProviderWithNavigate>
+        <Routes>
           <Route
-            path="historial"
+            path="/"
             element={
-              <ProtectedRoute>
-                <Historial />
-              </ProtectedRoute>
+              <CarritoProvider>
+                <Web />
+              </CarritoProvider>
             }
           />
           <Route
-            path="articulos"
+            path="/carrito"
             element={
-              <ProtectedRoute>
-                <ScreenArticulosManufacturados />
-              </ProtectedRoute>
+              <CarritoProvider>
+                <ProtectedCarrito>
+                  <VistaCarrito />
+                </ProtectedCarrito>
+              </CarritoProvider>
             }
           />
           <Route
-            path="productos"
+            path="/admin"
             element={
               <ProtectedRoute>
-                <Productos />
+                <LayoutAdmin />
               </ProtectedRoute>
             }
-          />
-          <Route
-            path="subcategorias-articulos"
-            element={
-              <ProtectedRoute>
-                <ScreenCategoriasArticulos />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="reportes"
-            element={
-              <ProtectedRoute>
-                <RankingProductos />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="movimientos"
-            element={
-              <ProtectedRoute>
-                <MovimientosMonetarios />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="ranking-clientes"
-            element={
-              <ProtectedRoute>
-                <RankingCliente />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="informes/ranking-productos"
-            element={
-              <ProtectedRoute>
-                <RankingProductos />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="informes/ranking-clientes"
-            element={
-              <ProtectedRoute>
-                <RankingCliente />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="informes/movimientos-monetarios"
-            element={
-              <ProtectedRoute>
-                <MovimientosMonetarios />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="control"
-            element={
-              <ProtectedRoute>
-                <Control />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="insumos"
-            element={
-              <ProtectedRoute>
-                <ScreenInsumos />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="cocina"
-            element={
-              <ProtectedRoute>
-                <Cocina />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="historial-cocina"
-            element={
-              <ProtectedRoute>
-                <HistorialCocina />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="categorias-articulos"
-            element={
-              <ProtectedRoute>
-                <ScreenCategoriaPadreArticulo />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="subcategorias-insumos"
-            element={
-              <ProtectedRoute>
-                <ScreenSubcategoriasInsumos />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="categorias-insumos"
-            element={
-              <ProtectedRoute>
-                <ScreenCategoriaPadreInsumo />
-              </ProtectedRoute>
-            }
-          />
-        </Route>
-        <Route path="*" element={<Navigate replace to="/" />} />
-      </Routes>
+          >
+            <Route
+              path="historial"
+              element={
+                <ProtectedRoute>
+                  <Historial />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="articulos"
+              element={
+                <ProtectedRoute>
+                  <ScreenArticulosManufacturados />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="productos"
+              element={
+                <ProtectedRoute>
+                  <Productos />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="subcategorias-articulos"
+              element={
+                <ProtectedRoute>
+                  <ScreenCategoriasArticulos />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="reportes"
+              element={
+                <ProtectedRoute>
+                  <RankingProductos />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="movimientos"
+              element={
+                <ProtectedRoute>
+                  <MovimientosMonetarios />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="ranking-clientes"
+              element={
+                <ProtectedRoute>
+                  <RankingCliente />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="informes/ranking-productos"
+              element={
+                <ProtectedRoute>
+                  <RankingProductos />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="informes/ranking-clientes"
+              element={
+                <ProtectedRoute>
+                  <RankingCliente />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="informes/movimientos-monetarios"
+              element={
+                <ProtectedRoute>
+                  <MovimientosMonetarios />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="control"
+              element={
+                <ProtectedRoute>
+                  <Control />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="insumos"
+              element={
+                <ProtectedRoute>
+                  <ScreenInsumos />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="cocina"
+              element={
+                <ProtectedRoute>
+                  <Cocina />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="historial-cocina"
+              element={
+                <ProtectedRoute>
+                  <HistorialCocina />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="categorias-articulos"
+              element={
+                <ProtectedRoute>
+                  <ScreenCategoriaPadreArticulo />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="subcategorias-insumos"
+              element={
+                <ProtectedRoute>
+                  <ScreenSubcategoriasInsumos />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="categorias-insumos"
+              element={
+                <ProtectedRoute>
+                  <ScreenCategoriaPadreInsumo />
+                </ProtectedRoute>
+              }
+            />
+          </Route>
+          <Route path="/callback" element={<CallbackPage />} />
+          <Route path="*" element={<Navigate replace to="/" />} />
+        </Routes>
+      </Auth0ProviderWithNavigate>
     </BrowserRouter>
   </AppProviders>
 );

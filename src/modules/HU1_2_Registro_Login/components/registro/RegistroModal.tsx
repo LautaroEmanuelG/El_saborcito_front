@@ -4,6 +4,7 @@ import { getLocalidades } from '../../../../shared/services/localidadService';
 import { isValidEmail, isValidPassword } from '../../logic';
 import { RegistroCliente, Domicilio, Localidad } from '../../models';
 import { useUser } from '../../../../shared/providers/UserProvider';
+import { useAuth0 } from '@auth0/auth0-react';
 
 interface RegistroModalProps {
   isOpen: boolean;
@@ -72,11 +73,11 @@ export const RegistroModal = ({ isOpen, onClose }: RegistroModalProps) => {
       }));
     }
   };
-
+  const { loginWithRedirect } = useAuth0();
   // Placeholder para registro con Google
-  const handleGoogleRegister = () => {
+  const handleGoogleRegister = async () => {
     // Aquí irá la integración con Google Auth
-    alert('Funcionalidad de Google pendiente de implementar');
+    await loginWithRedirect();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
