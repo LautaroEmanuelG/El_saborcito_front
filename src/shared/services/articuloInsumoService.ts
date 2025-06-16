@@ -1,12 +1,13 @@
 import axiosInstance from './axiosConfig';
 import type { ArticuloInsumo } from '../../types/Articulo';
+import { uploadImageToArticuloInsumo } from './cloudinaryService';
 
 const API_BASE_URL = '/insumos';
 
 // 🆕 **SERVICIOS ADAPTADOS PARA ELIMINACIÓN LÓGICA (SOFT DELETE)**
 
-// Función para crear un nuevo artículo insumo (POST sin ID)
-export const createArticuloInsumo = async (data: Partial<ArticuloInsumo>) => {
+// Función para crear un nuevo artículo insumo con imagen opcional
+export const createArticuloInsumo = async (data: Partial<ArticuloInsumo>, imageFile?: File) => {
   // Para crear, no incluir ID en la URL, solo en el body como 0
   const payload = {
     ...data,
@@ -14,25 +15,63 @@ export const createArticuloInsumo = async (data: Partial<ArticuloInsumo>) => {
   };
 
   const response = await axiosInstance.post(API_BASE_URL, payload);
-  return response.data;
+  const newInsumo = response.data;
+
+  // Si hay una imagen, subirla después de crear el insumo
+  if (imageFile && newInsumo?.id) {
+    try {
+      const imageResult = await uploadImageToArticuloInsumo(newInsumo.id, imageFile);
+      if (imageResult.cloudinaryUrl) {
+        // Actualizar el objeto con la información de la imagen
+        newInsumo.imagen = {
+          id: imageResult.imagenId,
+          url: imageResult.cloudinaryUrl,
+        };
+      }
+    } catch (imageError) {
+      console.warn('Insumo creado pero falló la subida de imagen:', imageError);
+      // No lanzar error para que el insumo se mantenga creado
+    }
+  }
+
+  return newInsumo;
 };
 
-// Función para actualizar un artículo insumo existente (PUT con ID)
-export const updateArticuloInsumo = async (data: Partial<ArticuloInsumo>) => {
+// Función para actualizar un artículo insumo existente con imagen opcional
+export const updateArticuloInsumo = async (data: Partial<ArticuloInsumo>, imageFile?: File) => {
   if (!data.id) {
     throw new Error('ID es requerido para actualizar');
   }
 
   const response = await axiosInstance.put(`${API_BASE_URL}/${data.id}`, data);
-  return response.data;
+  const updatedInsumo = response.data;
+
+  // Si hay una imagen, subirla después de actualizar el insumo
+  if (imageFile && data.id) {
+    try {
+      const imageResult = await uploadImageToArticuloInsumo(data.id, imageFile);
+      if (imageResult.cloudinaryUrl) {
+        // Actualizar el objeto con la información de la imagen
+        updatedInsumo.imagen = {
+          id: imageResult.imagenId,
+          url: imageResult.cloudinaryUrl,
+        };
+      }
+    } catch (imageError) {
+      console.warn('Insumo actualizado pero falló la subida de imagen:', imageError);
+      // No lanzar error para que la actualización se mantenga
+    }
+  }
+
+  return updatedInsumo;
 };
 
-// Función genérica que decide entre create o update
-export const saveArticuloInsumo = async (data: Partial<ArticuloInsumo>) => {
+// Función genérica que decide entre create o update con imagen opcional
+export const saveArticuloInsumo = async (data: Partial<ArticuloInsumo>, imageFile?: File) => {
   if (data.id && data.id > 0) {
-    return updateArticuloInsumo(data);
+    return updateArticuloInsumo(data, imageFile);
   } else {
-    return createArticuloInsumo(data);
+    return createArticuloInsumo(data, imageFile);
   }
 };
 

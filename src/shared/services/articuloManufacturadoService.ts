@@ -1,12 +1,16 @@
 import axiosInstance from './axiosConfig';
 import type { ArticuloManufacturado } from '../../types/Articulo';
+import { uploadImageToArticuloManufacturado } from './cloudinaryService';
 
 const API_BASE_URL = '/manufacturados';
 
 // 🆕 **SERVICIOS ADAPTADOS PARA ELIMINACIÓN LÓGICA (SOFT DELETE)**
 
-// Función para crear un nuevo artículo manufacturado (POST sin ID)
-export const createArticuloManufacturado = async (data: Partial<ArticuloManufacturado>) => {
+// Función para crear un nuevo artículo manufacturado con imagen opcional
+export const createArticuloManufacturado = async (
+  data: Partial<ArticuloManufacturado>,
+  imageFile?: File
+) => {
   // Para crear, no incluir ID en la URL, solo en el body como 0
   const payload = {
     ...data,
@@ -17,11 +21,33 @@ export const createArticuloManufacturado = async (data: Partial<ArticuloManufact
   };
 
   const response = await axiosInstance.post(API_BASE_URL, payload);
-  return response.data;
+  const newArticulo = response.data;
+
+  // Si hay una imagen, subirla después de crear el artículo
+  if (imageFile && newArticulo?.id) {
+    try {
+      const imageResult = await uploadImageToArticuloManufacturado(newArticulo.id, imageFile);
+      if (imageResult.cloudinaryUrl) {
+        // Actualizar el objeto con la información de la imagen
+        newArticulo.imagen = {
+          id: imageResult.imagenId,
+          url: imageResult.cloudinaryUrl,
+        };
+      }
+    } catch (imageError) {
+      console.warn('Artículo creado pero falló la subida de imagen:', imageError);
+      // No lanzar error para que el artículo se mantenga creado
+    }
+  }
+
+  return newArticulo;
 };
 
-// Función para actualizar un artículo manufacturado existente (PUT con ID)
-export const updateArticuloManufacturado = async (data: Partial<ArticuloManufacturado>) => {
+// Función para actualizar un artículo manufacturado existente con imagen opcional
+export const updateArticuloManufacturado = async (
+  data: Partial<ArticuloManufacturado>,
+  imageFile?: File
+) => {
   if (!data.id) {
     throw new Error('ID es requerido para actualizar');
   }
@@ -33,15 +59,37 @@ export const updateArticuloManufacturado = async (data: Partial<ArticuloManufact
   };
 
   const response = await axiosInstance.put(`${API_BASE_URL}/${data.id}`, payload);
-  return response.data;
+  const updatedArticulo = response.data;
+
+  // Si hay una imagen, subirla después de actualizar el artículo
+  if (imageFile && data.id) {
+    try {
+      const imageResult = await uploadImageToArticuloManufacturado(data.id, imageFile);
+      if (imageResult.cloudinaryUrl) {
+        // Actualizar el objeto con la información de la imagen
+        updatedArticulo.imagen = {
+          id: imageResult.imagenId,
+          url: imageResult.cloudinaryUrl,
+        };
+      }
+    } catch (imageError) {
+      console.warn('Artículo actualizado pero falló la subida de imagen:', imageError);
+      // No lanzar error para que la actualización se mantenga
+    }
+  }
+
+  return updatedArticulo;
 };
 
-// Función genérica que decide entre create o update
-export const saveArticuloManufacturado = async (data: Partial<ArticuloManufacturado>) => {
+// Función genérica que decide entre create o update con imagen opcional
+export const saveArticuloManufacturado = async (
+  data: Partial<ArticuloManufacturado>,
+  imageFile?: File
+) => {
   if (data.id && data.id > 0) {
-    return updateArticuloManufacturado(data);
+    return updateArticuloManufacturado(data, imageFile);
   } else {
-    return createArticuloManufacturado(data);
+    return createArticuloManufacturado(data, imageFile);
   }
 };
 
