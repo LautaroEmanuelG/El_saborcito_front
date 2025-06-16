@@ -1,7 +1,32 @@
 // Interfaces para el módulo de generación de facturas
 
-// DTO que se envía al backend para generar la factura
+// DTO que se recibe del backend al consultar una factura
 export interface FacturaDTO {
+  id?: number;
+  fechaFacturacion?: string;
+  totalVenta: number;
+  clienteEmail?: string;
+  pedido?: {
+    id: number;
+    cliente?: {
+      nombre: string;
+      email: string;
+    };
+  };
+  formaPago?: {
+    id: number;
+    nombre?: string;
+  };
+  // Datos opcionales de Mercado Pago si aplica
+  mercadoPagoData?: {
+    transactionId?: string;
+    paymentStatus?: string;
+    paymentMethod?: string;
+  };
+}
+
+// DTO que se envía al backend para crear una factura (DEPRECADO - ahora se crea automáticamente)
+export interface FacturaCreateDTO {
   pedido: {
     id: number;
   };
@@ -10,7 +35,6 @@ export interface FacturaDTO {
   };
   totalVenta: number;
   clienteEmail?: string;
-  // Datos opcionales de Mercado Pago si aplica
   mercadoPagoData?: {
     transactionId?: string;
     paymentStatus?: string;

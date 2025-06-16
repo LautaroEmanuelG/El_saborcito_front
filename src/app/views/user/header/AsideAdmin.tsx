@@ -50,6 +50,10 @@ const NAV_DATA: NavItemStructure[] = [
           { to: '/admin/subcategorias-insumos', label: 'Subcategorías de Insumos' },
         ],
       },
+      {
+        title: 'Promociones',
+        subItems: [{ to: '/admin/promociones', label: 'Promociones' }],
+      },
     ],
   },
   {
@@ -79,7 +83,7 @@ export const AsideAdmin = () => {
   return (
     <>
       <button
-        className="fixed top-4 right-4 md:hidden text-negro text-2xl p-2 z-30 bg-blanco rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-primary"
+        className={`fixed top-22 mt-1 left-1 lg:mt-0 lg:top-6 xl:hidden text-negro text-2xl p-2 z-30 rounded shadow-lg lg:shadow-none focus:outline-none bg-primary ${isOpen ? 'bg-primarydark' : ''}`}
         onClick={toggleMenu}
         aria-label="Abrir menú"
         aria-expanded={isOpen}
@@ -87,9 +91,9 @@ export const AsideAdmin = () => {
         <IconoMenuHamburguesa />
       </button>
       <aside
-        className={`bg-primary text-negro transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 transition-transform duration-300 ease-in-out md:flex flex-col shrink-0 w-72 h-full min-h-screen fixed md:sticky top-0 shadow-xl md:shadow-none z-20 p-4 pt-6 overflow-y-auto`}
+        className={`bg-primary text-negro transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} xl:translate-x-0 transition-transform duration-300 ease-in-out xl:flex flex-col shrink-0 w-72 h-full min-h-screen fixed xl:sticky top-0 shadow-xl xl:shadow-none z-50 p-4 pt-6 overflow-y-auto`}
       >
-        <ul className="mt-12 md:mt-0">
+        <ul className="mt-12 xl:mt-0">
           {NAV_DATA.map((navItem) => (
             <CollapsibleNavItem key={navItem.title} itemData={navItem} onLinkClick={closeMenu} />
           ))}
@@ -97,7 +101,7 @@ export const AsideAdmin = () => {
       </aside>
       {/* Overlay for mobile menu */}
       {isOpen && (
-        <div className="fixed inset-0 bg-black opacity-50 md:hidden z-10" onClick={closeMenu}></div>
+        <div className="fixed inset-0 bg-black opacity-50 xl:hidden z-40" onClick={closeMenu}></div>
       )}
     </>
   );

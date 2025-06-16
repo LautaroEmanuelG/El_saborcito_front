@@ -3,6 +3,7 @@ import { PedidoCompletoConDetalles } from '../../../types/Pedido';
 import { formatearNombreFormaPago } from '../../../shared/utils/pedidoUtils';
 import { getPromocionById } from '../../../shared/services/promocionService';
 import { IconoArrowRight } from '../../../assets/svgs/icons/IconoArrowRight';
+import { GestionFacturaRecepcion } from './GestionFacturaRecepcion';
 
 interface ModalDetallePedidoProps {
   pedido: PedidoCompletoConDetalles;
@@ -17,6 +18,7 @@ interface PromocionConArticulos {
   promocionId: number;
   denominacion?: string;
   articulos: any[]; // Usar any[] para compatibilidad con ambos tipos
+  precioPromocional: number;
 }
 
 interface ArticulosAgrupados {
@@ -33,7 +35,6 @@ export const ModalDetallePedido: React.FC<ModalDetallePedidoProps> = ({
   obtenerProximoEstado,
 }) => {
   const [promocionesDetalle, setPromocionesDetalle] = useState<Record<number, any>>({});
-  const [cargandoPromociones, setCargandoPromociones] = useState(false);
 
   if (!isOpen) return null;
 
@@ -74,9 +75,7 @@ export const ModalDetallePedido: React.FC<ModalDetallePedidoProps> = ({
       cargarDetallesPromociones();
     }
   }, [isOpen, pedido.detallesCompletos]);
-
   const cargarDetallesPromociones = async () => {
-    setCargandoPromociones(true);
     try {
       const promocionesUnicas = Array.from(
         new Set(
@@ -98,8 +97,6 @@ export const ModalDetallePedido: React.FC<ModalDetallePedidoProps> = ({
       setPromocionesDetalle(detallesPromociones);
     } catch (error) {
       console.error('Error cargando detalles de promociones:', error);
-    } finally {
-      setCargandoPromociones(false);
     }
   };
   const agruparArticulos = (): ArticulosAgrupados => {
@@ -115,7 +112,7 @@ export const ModalDetallePedido: React.FC<ModalDetallePedidoProps> = ({
         if (!promocionesMap.has(detalle.promocionOrigenId)) {
           promocionesMap.set(detalle.promocionOrigenId, []);
         }
-        promocionesMap.get(detalle.promocionOrigenId)!.push(detalle);
+        promocionesMap.get(detalle.promocionOrigenId)?.push(detalle);
       } else {
         individuales.push(detalle);
       }
@@ -128,24 +125,22 @@ export const ModalDetallePedido: React.FC<ModalDetallePedidoProps> = ({
         const promocionInfo = pedido.detallesCompletos?.find(
           (detalle) => detalle.promocionOrigenId === promocionId
         );
-
+        // Tomar el precio promocional fijo desde detallesPromociones
+        const precioPromocional = promocionesDetalle?.[promocionId]?.precioPromocional ?? 0;
         return {
           promocionId,
           denominacion:
             promocionInfo?.articulo?.denominacion ||
-            promocionesDetalle[promocionId]?.denominacion ||
+            promocionesDetalle?.[promocionId]?.denominacion ||
             `Promoción ${promocionId}`,
           articulos,
+          precioPromocional,
         };
       }
     );
 
     return { promociones, individuales };
   };
-
-  const { promociones, individuales } = agruparArticulos();
-  console.log('promociones :>> ', promociones);
-  console.log('individuales :>> ', individuales);
 
   return (
     <div
@@ -263,62 +258,65 @@ export const ModalDetallePedido: React.FC<ModalDetallePedidoProps> = ({
                       ))}
 
                       {/* Promociones */}
-                      {promociones.map((promocion) => (
-                        <div
-                          key={`promocion-${promocion.promocionId}`}
-                          className="bg-purple-50 border border-purple-200 rounded-lg p-4"
-                        >
-                          <div className="flex items-center mb-3">
-                            <div className="flex-1">
-                              <p className="font-medium text-purple-900">
-                                {promocion.denominacion}
-                              </p>
-                              <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">
-                                🎉 Promoción
-                              </span>
-                            </div>
-                            <div className="text-right">
-                              <p className="font-medium text-purple-900">
-                                Cantidad: {promocion.articulos[0]?.cantidad || 1}
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Artículos dentro de la promoción */}
-                          <div className="ml-6 space-y-2">
-                            {promocion.articulos.map((detalle, artIndex) => (
-                              <div
-                                key={`promo-art-${artIndex}`}
-                                className="flex items-center justify-between bg-white bg-opacity-50 rounded p-2"
-                              >
-                                <div className="flex items-center">
-                                  <span className="text-sm text-gray-700">
-                                    {detalle.articulo.denominacion}
+                      {promociones.map(
+                        (promocion) => (
+                          console.log('promocion :>> ', promocion),
+                          (
+                            <div
+                              key={`promocion-${promocion.promocionId}`}
+                              className="bg-purple-50 border border-purple-200 rounded-lg p-4"
+                            >
+                              <div className="flex items-center mb-3">
+                                <div className="flex-1">
+                                  <p className="font-medium text-purple-900">
+                                    {promocion.denominacion}
+                                  </p>
+                                  <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">
+                                    🎉 Promoción
                                   </span>
                                 </div>
-                                <span className="text-xs text-purple-600">
-                                  {detalle.cantidadConPromocion > 0 &&
-                                    `${detalle.cantidadConPromocion} incluidos`}
-                                </span>
+                                <div className="text-right">
+                                  <p className="font-medium text-purple-900">
+                                    Cantidad: {promocion.articulos[0]?.cantidad || 1}
+                                  </p>
+                                </div>
                               </div>
-                            ))}
-                          </div>
 
-                          {/* Total de la promoción */}
-                          <div className="mt-3 pt-2 border-t border-purple-200">
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm font-medium text-purple-800">
-                                Total promoción:
-                              </span>
-                              <span className="font-medium text-purple-900">
-                                {formatearPrecio(
-                                  promocion.articulos.reduce((sum, art) => sum + art.subtotal, 0)
-                                )}
-                              </span>
+                              {/* Artículos dentro de la promoción */}
+                              <div className="ml-6 space-y-2">
+                                {promocion.articulos.map((detalle, artIndex) => (
+                                  <div
+                                    key={`promo-art-${artIndex}`}
+                                    className="flex items-center justify-between bg-white bg-opacity-50 rounded p-2"
+                                  >
+                                    <div className="flex items-center">
+                                      <span className="text-sm text-gray-700">
+                                        {detalle.articulo.denominacion}
+                                      </span>
+                                    </div>
+                                    <span className="text-xs text-purple-600">
+                                      {detalle.cantidadConPromocion > 0 &&
+                                        `${detalle.cantidadConPromocion} incluidos`}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+
+                              {/* Total de la promoción */}
+                              <div className="mt-3 pt-2 border-t border-purple-200">
+                                <div className="flex justify-between items-center">
+                                  <span className="text-sm font-medium text-purple-800">
+                                    Total promoción:
+                                  </span>
+                                  <span className="font-medium text-purple-900">
+                                    {formatearPrecio(promocion.precioPromocional)}
+                                  </span>
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        </div>
-                      ))}
+                          )
+                        )
+                      )}
 
                       {/* Total general */}
                       <div className="bg-green-50 border border-green-200 rounded-lg p-4">
@@ -397,9 +395,19 @@ export const ModalDetallePedido: React.FC<ModalDetallePedidoProps> = ({
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                </table>{' '}
               </div>
             )}
+          </div>
+          {/* Gestión de Factura */}
+          <div className="mb-6">
+            {' '}
+            <GestionFacturaRecepcion
+              pedidoId={pedido.id}
+              clienteNombre={`${pedido.cliente.nombre} ${pedido.cliente.apellido}`}
+              clienteEmail={pedido.cliente.email}
+              className="w-full"
+            />
           </div>
           {/* Botones de Acción */}
           <div className="flex justify-end space-x-4 pt-4 border-t">

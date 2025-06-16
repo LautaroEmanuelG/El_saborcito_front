@@ -12,7 +12,7 @@ const Modal: React.FC<ModalProps> = ({ open, onClose, title, children, maxWidth 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-negro bg-opacity-40">
+    <div className="fixed inset-0 z-30 flex items-center justify-center bg-negro bg-opacity-40">
       <div
         className={`bg-blanco rounded-lg shadow-lg w-full ${maxWidth || 'max-w-3xl'} p-6 relative animate-fade-in`}
       >
