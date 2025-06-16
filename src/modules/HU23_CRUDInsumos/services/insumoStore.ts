@@ -11,8 +11,8 @@ interface InsumoState {
   fetchInsumos: () => Promise<void>;
   fetchDeletedInsumos: () => Promise<void>;
   toggleShowDeleted: () => void;
-  addInsumo: (data: Partial<ArticuloInsumo>) => Promise<void>;
-  updateInsumo: (data: Partial<ArticuloInsumo>) => Promise<void>;
+  addInsumo: (data: Partial<ArticuloInsumo>, imageFile?: File) => Promise<void>;
+  updateInsumo: (data: Partial<ArticuloInsumo>, imageFile?: File) => Promise<void>;
   deleteInsumo: (id: number) => Promise<void>;
   restoreInsumo: (id: number) => Promise<void>;
 }
@@ -56,21 +56,20 @@ export const useInsumoStore = create<InsumoState>((set) => ({
       fetchInsumos();
     }
   },
-
-  addInsumo: async (data) => {
+  addInsumo: async (data, imageFile) => {
     set({ loading: true, error: null });
     try {
-      await service.saveArticuloInsumo(data);
+      await service.saveArticuloInsumo(data, imageFile);
       await useInsumoStore.getState().fetchInsumos();
     } catch (error) {
       set({ error: (error as Error)?.message ?? 'Error al agregar insumo', loading: false });
     }
   },
 
-  updateInsumo: async (data) => {
+  updateInsumo: async (data, imageFile) => {
     set({ loading: true, error: null });
     try {
-      await service.saveArticuloInsumo(data);
+      await service.saveArticuloInsumo(data, imageFile);
       await Promise.all([
         useInsumoStore.getState().fetchInsumos(),
         useInsumoStore.getState().fetchDeletedInsumos(),

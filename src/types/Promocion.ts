@@ -62,10 +62,11 @@ export interface Promocion {
   horaDesde: string | null;
   horaHasta: string | null;
   descuento: number | null;
-  precioPromocional: number;
+  precioPromocional: number | null;
   sucursal: Sucursal;
   imagen: Imagen;
   promocionDetalles: PromocionDetalle[];
+  eliminado: boolean;
   articulo: any | null; // El backend siempre devuelve null para promociones
 }
 

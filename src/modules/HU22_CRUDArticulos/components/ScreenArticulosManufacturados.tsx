@@ -147,10 +147,9 @@ const ScreenArticulosManufacturados = () => {
   const handleRestore = (id: number) => {
     restoreArticulo(id);
   };
-
-  const handleSubmit = (values: Partial<ArticuloManufacturado>) => {
+  const handleSubmit = (values: Partial<ArticuloManufacturado>, imageFile?: File) => {
     if (modalMode === 'add') {
-      addArticulo(values);
+      addArticulo(values, imageFile);
     } else if (modalMode === 'edit') {
       // Lógica de soft delete/restaurar
       if (
@@ -166,7 +165,7 @@ const ScreenArticulosManufacturados = () => {
           restoreArticulo(values.id);
         }
       } else {
-        updateArticulo(values);
+        updateArticulo(values, imageFile);
       }
     }
     setOpenModal(false);
