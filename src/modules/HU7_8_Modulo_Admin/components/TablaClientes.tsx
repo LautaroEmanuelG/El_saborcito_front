@@ -2,8 +2,6 @@ import { useState } from 'react';
 import { ClienteDTO } from '../model';
 import IconoEditar from '../../../assets/svgs/icons/IconoEditar';
 import IconoEliminar from '../../../assets/svgs/icons/IconoEliminar';
-import IconoAgregar from '../../../assets/svgs/icons/IconoAgregar';
-
 import { formatearFecha } from '../logic';
 import IconoVer from '../../../assets/svgs/icons/IconoVer';
 
@@ -159,18 +157,10 @@ export const TablaClientes = ({
                       </button>
                       <button
                         onClick={() => onEliminarCliente(cliente)}
-                        className={`transition-colors ${
-                          cliente.estado
-                            ? 'text-red-600 hover:text-red-900'
-                            : 'text-green-600 hover:text-green-900'
-                        }`}
-                        title={cliente.estado ? 'Dar de baja' : 'Dar de alta'}
+                        className="text-red-600 hover:text-red-900"
+                        title="Eliminar cliente"
                       >
-                        {cliente.estado ? (
-                          <IconoEliminar className="w-4 h-4" />
-                        ) : (
-                          <IconoAgregar className="w-4 h-4" />
-                        )}
+                        <IconoEliminar className="w-4 h-4" />
                       </button>
                     </div>
                   </td>
