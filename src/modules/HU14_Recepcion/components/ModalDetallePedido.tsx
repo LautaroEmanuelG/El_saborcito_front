@@ -4,6 +4,7 @@ import { formatearNombreFormaPago } from '../../../shared/utils/pedidoUtils';
 import { getPromocionById } from '../../../shared/services/promocionService';
 import { IconoArrowRight } from '../../../assets/svgs/icons/IconoArrowRight';
 import { GestionFacturaRecepcion } from './GestionFacturaRecepcion';
+import { IconoBasura } from '../../../assets/svgs/icons/IconoBasura';
 
 interface ModalDetallePedidoProps {
   pedido: PedidoCompletoConDetalles;
@@ -11,6 +12,7 @@ interface ModalDetallePedidoProps {
   onClose: () => void;
   onCambiarEstado: (pedidoId: number, nuevoEstado: string) => void;
   onAvanzarEstado: (pedidoId: number) => void;
+  onCancelarPedido: (pedidoId: number) => void;
   puedeAvanzarEstado: (estadoActual: string, tipoEnvio: string) => boolean;
   obtenerProximoEstado: (estadoActual: string, tipoEnvio: string) => string | null;
 }
@@ -33,6 +35,7 @@ export const ModalDetallePedido: React.FC<ModalDetallePedidoProps> = ({
   onClose,
   onCambiarEstado,
   onAvanzarEstado,
+  onCancelarPedido,
   puedeAvanzarEstado,
   obtenerProximoEstado,
 }) => {
@@ -139,6 +142,19 @@ export const ModalDetallePedido: React.FC<ModalDetallePedidoProps> = ({
     );
 
     return { promociones, individuales };
+  };
+
+  const puedeCancelarPedido = (estadoActual: string): boolean => {
+    // Solo se pueden cancelar pedidos en estados específicos
+    const estadosCancelables = ['PENDIENTE', 'CONFIRMADO', 'EN_PREPARACION'];
+    return estadosCancelables.includes(estadoActual);
+  };
+
+  const manejarCancelarPedido = () => {
+    if (confirm(`¿Está seguro que desea cancelar el pedido #${pedido.id}?`)) {
+      onCancelarPedido(pedido.id);
+      onClose();
+    }
   };
 
   return (
@@ -410,6 +426,16 @@ export const ModalDetallePedido: React.FC<ModalDetallePedidoProps> = ({
           </div>
           {/* Botones de Acción */}
           <div className="flex justify-end space-x-4 pt-4 border-t">
+            {puedeCancelarPedido(pedido.estado.nombre) && (
+              <button
+                onClick={manejarCancelarPedido}
+                className="px-4 py-2 gap-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors flex items-center"
+              >
+                <IconoBasura />
+                Cancelar Pedido
+              </button>
+            )}
+
             <button
               onClick={onClose}
               className="px-6 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"

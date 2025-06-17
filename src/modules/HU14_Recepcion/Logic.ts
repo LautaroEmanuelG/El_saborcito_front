@@ -3,7 +3,11 @@ import {
   updateEstadoPedido,
   getPedidosDetalladosCompletos,
 } from '../../shared/services/pedidoService';
-import { getAllEstados, avanzarEstadoPedidoGenerico } from '../../shared/services/estadoService';
+import {
+  getAllEstados,
+  avanzarEstadoPedidoGenerico,
+  cancelarPedidoGenerico,
+} from '../../shared/services/estadoService';
 import { PedidoCompletoConDetalles, Estado } from '../../types/Pedido';
 import { obtenerFechaHoy } from '../../shared/utils/fechaUtils';
 
@@ -115,6 +119,33 @@ export const useRecepcionLogic = () => {
     }
   };
 
+  /**
+   * Cancela un pedido
+   */
+  const cancelarPedido = async (pedidoId: number) => {
+    try {
+      setLoading(true);
+      const pedidoActualizado = await cancelarPedidoGenerico(pedidoId);
+
+      // Actualizar el pedido en el estado local
+      setPedidos((prevPedidos) =>
+        prevPedidos.map((pedido) =>
+          pedido.id === pedidoId ? { ...pedido, estado: pedidoActualizado.estado } : pedido
+        )
+      );
+
+      return true;
+    } catch (err) {
+      setError(
+        `Error al cancelar pedido: ${err instanceof Error ? err.message : 'Error desconocido'}`
+      );
+      console.error('Error cancelando pedido:', err);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getEstadoSiguiente = (estadoActual: string): string | null => {
     const flujoEstados: Record<string, string> = {
       PENDIENTE: 'CONFIRMADO',
@@ -172,5 +203,6 @@ export const useRecepcionLogic = () => {
     limpiarFiltros,
     puedeAvanzarEstado,
     obtenerProximoEstado,
+    cancelarPedido,
   };
 };

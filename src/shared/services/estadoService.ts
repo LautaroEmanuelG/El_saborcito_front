@@ -67,3 +67,26 @@ export const marcarPedidoEntregado = async (pedidoId: number): Promise<any> => {
     );
   }
 };
+
+/**
+ * Cancelar un pedido
+ * @param pedidoId ID del pedido a cancelar
+ */
+export const cancelarPedidoGenerico = async (pedidoId: number): Promise<any> => {
+  try {
+    const response = await axiosInstance.put(`/cocina/pedidos/${pedidoId}/cancelar`);
+    return response.data;
+  } catch (error) {
+    let errorMessage = `Error al cancelar pedido #${pedidoId}`;
+
+    if (error && typeof error === 'object' && 'response' in error) {
+      const axiosError = error as AxiosError;
+      const errorData = axiosError.response?.data as any;
+      errorMessage = errorData?.message || errorData?.error || errorMessage;
+    } else if (error instanceof Error) {
+      errorMessage = `${errorMessage}: ${error.message}`;
+    }
+
+    throw new Error(errorMessage);
+  }
+};

@@ -3,13 +3,16 @@ import { PedidoCompletoConDetalles } from '../../../types/Pedido';
 import { formatearNombreFormaPago } from '../../../shared/utils/pedidoUtils';
 import IconoVer from '../../../assets/svgs/icons/IconoVer';
 import { IconoArrowRight } from '../../../assets/svgs/icons/IconoArrowRight';
+import { IconoTimeOut } from '../../../assets/svgs/icons/IconoTimeOut';
 import { getEstadoBadgeColor } from '../../HU13_MisPedidos/components/HistorialPedidosCliente';
+import { IconoBasura } from '../../../assets/svgs/icons/IconoBasura';
 
 interface TablaRecepcionProps {
   pedidos: PedidoCompletoConDetalles[];
   onVerDetalle: (pedido: PedidoCompletoConDetalles) => void;
   onCambiarEstado: (pedidoId: number, nuevoEstado: string) => void;
   onAvanzarEstado: (pedidoId: number) => void;
+  onCancelarPedido: (pedidoId: number) => void;
   puedeAvanzarEstado: (estadoActual: string, tipoEnvio: string) => boolean;
   obtenerProximoEstado: (estadoActual: string, tipoEnvio: string) => string | null;
 }
@@ -19,6 +22,7 @@ export const TablaRecepcion: React.FC<TablaRecepcionProps> = ({
   onVerDetalle,
   onCambiarEstado,
   onAvanzarEstado,
+  onCancelarPedido,
   puedeAvanzarEstado,
   obtenerProximoEstado,
 }) => {
@@ -47,6 +51,12 @@ export const TablaRecepcion: React.FC<TablaRecepcionProps> = ({
   };
   const manejarAvanzarEstado = (pedido: PedidoCompletoConDetalles) => {
     onAvanzarEstado(pedido.id);
+  };
+
+  const puedeCancelarPedido = (estadoActual: string): boolean => {
+    // Solo se pueden cancelar pedidos en estados específicos
+    const estadosCancelables = ['PENDIENTE', 'CONFIRMADO', 'EN_PREPARACION'];
+    return estadosCancelables.includes(estadoActual);
   };
 
   if (pedidos.length === 0) {
@@ -142,6 +152,17 @@ export const TablaRecepcion: React.FC<TablaRecepcionProps> = ({
                         title={`Cambiar a ${obtenerProximoEstado(pedido.estado.nombre, pedido.tipoEnvio.nombre)}`}
                       >
                         <IconoArrowRight />
+                      </button>
+                    )}
+
+                    {/* Botón Cancelar Pedido */}
+                    {puedeCancelarPedido(pedido.estado.nombre) && (
+                      <button
+                        onClick={() => onCancelarPedido(pedido.id)}
+                        className="bg-red-600 text-white px-3 py-1 rounded text-xs hover:bg-red-700 transition-colors"
+                        title="Cancelar pedido"
+                      >
+                        <IconoBasura />
                       </button>
                     )}
                   </div>

@@ -26,6 +26,7 @@ export const ScreenRecepcion: React.FC = () => {
     limpiarFiltros,
     puedeAvanzarEstado,
     obtenerProximoEstado,
+    cancelarPedido,
   } = useRecepcionLogic();
   const [pedidoSeleccionado, setPedidoSeleccionado] = useState<PedidoCompletoConDetalles | null>(
     null
@@ -50,6 +51,16 @@ export const ScreenRecepcion: React.FC = () => {
     if (exito) {
       // Recargar datos para mostrar el estado actualizado
       cargarDatos();
+    }
+  };
+
+  const manejarCancelarPedido = async (pedidoId: number) => {
+    if (confirm(`¿Está seguro que desea cancelar el pedido #${pedidoId}?`)) {
+      const exito = await cancelarPedido(pedidoId);
+      if (exito) {
+        // Recargar datos para mostrar el estado actualizado
+        cargarDatos();
+      }
     }
   };
 
@@ -137,6 +148,7 @@ export const ScreenRecepcion: React.FC = () => {
         onAvanzarEstado={manejarAvanzarEstado}
         puedeAvanzarEstado={puedeAvanzarEstado}
         obtenerProximoEstado={obtenerProximoEstado}
+        onCancelarPedido={manejarCancelarPedido}
       />
       {/* Modal de detalle */}
       {modalDetalle && pedidoSeleccionado && (
@@ -146,6 +158,7 @@ export const ScreenRecepcion: React.FC = () => {
           onClose={cerrarDetalle}
           onCambiarEstado={manejarCambioEstado}
           onAvanzarEstado={manejarAvanzarEstado}
+          onCancelarPedido={manejarCancelarPedido}
           puedeAvanzarEstado={puedeAvanzarEstado}
           obtenerProximoEstado={obtenerProximoEstado}
         />
