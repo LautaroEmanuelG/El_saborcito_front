@@ -48,18 +48,16 @@ export const AsideCliente = ({ onMenuSelect, activeView }: AsideClienteProps) =>
         {/* Perfil del usuario */}
         <div className="flex items-center gap-3 px-4 py-6 border-b border-white/20">
           {user?.imagen ? (
-            <img 
-              src={user.imagen} 
-              alt="Avatar" 
-              className="w-12 h-12 rounded-full object-cover"
-            />
+            <img src={user.imagen} alt="Avatar" className="w-12 h-12 rounded-full object-cover" />
           ) : (
             <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
               <IconoUsuario className="w-6 h-6 text-white" />
             </div>
           )}
           <div className="text-white">
-            <p className="font-medium">{user?.nombre} {user?.apellido}</p>
+            <p className="font-medium">
+              {user?.nombre} {user?.apellido}
+            </p>
             <p className="text-sm text-white/70">{user?.email}</p>
           </div>
         </div>
@@ -89,4 +87,4 @@ export const AsideCliente = ({ onMenuSelect, activeView }: AsideClienteProps) =>
       )}
     </>
   );
-}; 
+};

@@ -43,7 +43,7 @@ export const MisDirecciones = () => {
     calle: '',
     numero: '',
     cp: '',
-    localidad: undefined
+    localidad: undefined,
   });
 
   useEffect(() => {
@@ -66,7 +66,7 @@ export const MisDirecciones = () => {
         calle: domicilio.calle,
         numero: domicilio.numero,
         cp: domicilio.cp,
-        localidad: domicilio.localidad
+        localidad: domicilio.localidad,
       });
     } else {
       setEditingDomicilio(null);
@@ -74,7 +74,7 @@ export const MisDirecciones = () => {
         calle: '',
         numero: '',
         cp: '',
-        localidad: undefined
+        localidad: undefined,
       });
     }
     setIsModalOpen(true);
@@ -90,8 +90,8 @@ export const MisDirecciones = () => {
         numero: formData.numero,
         cp: formData.cp,
         localidad: {
-          id: formData.localidad.id
-        }
+          id: formData.localidad.id,
+        },
       };
 
       const currentDomicilios = [...(user.domicilios || [])];
@@ -99,7 +99,7 @@ export const MisDirecciones = () => {
 
       if (editingDomicilio) {
         // Si estamos editando, reemplazamos el domicilio existente
-        updatedDomicilios = currentDomicilios.map(d => 
+        updatedDomicilios = currentDomicilios.map((d) =>
           d.id === editingDomicilio.id ? { ...domicilioToSend, id: d.id } : d
         );
       } else {
@@ -123,8 +123,8 @@ export const MisDirecciones = () => {
 
     try {
       // Filtramos el domicilio a eliminar
-      const updatedDomicilios = user.domicilios?.filter(d => d.id !== id) || [];
-      
+      const updatedDomicilios = user.domicilios?.filter((d) => d.id !== id) || [];
+
       // Enviamos la lista actualizada al backend
       const response = await updateCliente(user.id, { domicilios: updatedDomicilios });
       setUser(response);
@@ -148,11 +148,7 @@ export const MisDirecciones = () => {
         </button>
       </div>
 
-      {error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
-          {error}
-        </div>
-      )}
+      {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">{error}</div>}
 
       <div className="space-y-4">
         {user?.domicilios?.map((domicilio) => (
@@ -232,9 +228,7 @@ export const MisDirecciones = () => {
                 <select
                   value={formData.localidad?.id || ''}
                   onChange={(e) => {
-                    const localidad = localidades.find(
-                      (l) => l.id === Number(e.target.value)
-                    );
+                    const localidad = localidades.find((l) => l.id === Number(e.target.value));
                     setFormData({ ...formData, localidad });
                   }}
                   className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
@@ -269,4 +263,4 @@ export const MisDirecciones = () => {
       )}
     </div>
   );
-}; 
+};

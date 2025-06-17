@@ -83,11 +83,7 @@ export const MiCuenta = () => {
     <div className="max-w-xl mx-auto bg-white rounded-lg shadow-md p-8">
       <h2 className="text-2xl font-bold mb-6 text-center">Mi Cuenta</h2>
 
-      {error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
-          {error}
-        </div>
-      )}
+      {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">{error}</div>}
 
       {/* Email Section */}
       <div className="mb-8">
@@ -165,9 +161,7 @@ export const MiCuenta = () => {
             <input
               type="password"
               value={passwordForm.newPassword}
-              onChange={(e) =>
-                setPasswordForm({ ...passwordForm, newPassword: e.target.value })
-              }
+              onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="Nueva contraseña"
               required
@@ -183,7 +177,8 @@ export const MiCuenta = () => {
               required
             />
             <p className="text-sm text-gray-500">
-              La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un símbolo
+              La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un
+              símbolo
             </p>
             <div className="flex justify-end gap-2">
               <button
@@ -205,4 +200,4 @@ export const MiCuenta = () => {
       </div>
     </div>
   );
-}; 
+};
