@@ -1,15 +1,23 @@
-import { useState, useEffect } from 'react';
-import { EmpleadoFormData, ROLES_EMPLEADO, EmpleadoDTO } from '../model';
+import React, { useState, useEffect } from 'react';
+import {
+  EmpleadoFormData,
+  ROLES_EMPLEADO,
+  EmpleadoDTO,
+  ActualizarEmpleadoAdminDTO,
+} from '../model';
 import { validarFormularioEmpleado, formDataToRegistroEmpleado, cleanFormData } from '../logic';
 import { registrarEmpleado } from '../../../shared/services/empleadoService';
 import { getAllSucursales } from '../../../shared/services/sucursalService';
 import { Sucursal } from '../../../types/Sucursal';
 import IconoAgregar from '../../../assets/svgs/icons/IconoAgregar';
 import { IconoCerrar } from '../../../assets/svgs/icons/IconoCerrar';
-import { useNotificacionContext } from '../../../shared/providers/NotificacionProvider';
+import { useNotificacion } from '../../../shared/hooks/useNotificacion';
 import { useEmpleado } from '../../../shared/providers/EmpleadoProvider';
 import { ModalConfirm } from '../../../shared/components/utils/ModalConfirm';
 import { Rol } from '../../HU1_2_Registro_Login/models';
+import IconoVer from '../../../assets/svgs/icons/IconoVer';
+import IconoEditar from '../../../assets/svgs/icons/IconoEditar';
+import IconoEliminar from '../../../assets/svgs/icons/IconoEliminar';
 
 export const GestionEmpleados = () => {
   // Estados del provider
@@ -20,6 +28,7 @@ export const GestionEmpleados = () => {
     cargarEmpleados,
     actualizarEstadoEmpleado,
     agregarEmpleado,
+    actualizarEmpleado,
   } = useEmpleado();
 
   // Estados locales para el modal y filtros
@@ -46,7 +55,21 @@ export const GestionEmpleados = () => {
   const [sucursales, setSucursales] = useState<Sucursal[]>([]);
   const [loadingSucursales, setLoadingSucursales] = useState(false);
 
-  const { mostrarNotificacion } = useNotificacionContext();
+  // Estados locales para los modales de ver y editar
+  const [modalVer, setModalVer] = useState(false);
+  const [modalEditar, setModalEditar] = useState(false);
+  const [formEditar, setFormEditar] = useState<EmpleadoFormData>({
+    nombre: '',
+    apellido: '',
+    telefono: '',
+    email: '',
+    password: '',
+    confirmarPassword: '',
+    rol: '' as '' | Rol,
+    sucursal: undefined,
+  });
+
+  const { mostrarNotificacion } = useNotificacion();
 
   // Cargar empleados al montar el componente
   useEffect(() => {
@@ -69,7 +92,7 @@ export const GestionEmpleados = () => {
     };
 
     cargarSucursales();
-  }, [mostrarNotificacion]);
+  }, []);
 
   // Mostrar error si hay
   useEffect(() => {
@@ -178,7 +201,6 @@ export const GestionEmpleados = () => {
   // Cambiar estado del empleado (usando el provider)
   const handleCambiarEstado = async () => {
     if (!empleadoSeleccionado) return;
-
     try {
       await actualizarEstadoEmpleado(empleadoSeleccionado.id!, !empleadoSeleccionado.estado);
       mostrarNotificacion(
@@ -212,6 +234,58 @@ export const GestionEmpleados = () => {
     if (!loadingForm) {
       resetearFormulario();
       setModalRegistro(false);
+    }
+  };
+
+  // Función para abrir modal de ver detalles
+  const handleVerDetalles = (empleado: EmpleadoDTO) => {
+    setEmpleadoSeleccionado(empleado);
+    setModalVer(true);
+  };
+
+  // Función para abrir modal de edición
+  const handleEditarEmpleado = (empleado: EmpleadoDTO) => {
+    setEmpleadoSeleccionado(empleado);
+    setModalEditar(true);
+  };
+
+  // Sincronizar datos al abrir modal de edición
+  useEffect(() => {
+    if (modalEditar && empleadoSeleccionado) {
+      setFormEditar({
+        nombre: empleadoSeleccionado.nombre || '',
+        apellido: empleadoSeleccionado.apellido || '',
+        telefono: empleadoSeleccionado.telefono || '',
+        email: empleadoSeleccionado.email || '',
+        password: '',
+        confirmarPassword: '',
+        rol: (empleadoSeleccionado.rol as '' | Rol) || '',
+        sucursal: empleadoSeleccionado.sucursal,
+      });
+    }
+  }, [modalEditar, empleadoSeleccionado]);
+
+  // Guardar cambios (simulado)
+  const handleSubmitEditarEmpleado = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!empleadoSeleccionado) return;
+    try {
+      const dto: ActualizarEmpleadoAdminDTO = {
+        empleadoId: empleadoSeleccionado.id!,
+        nombre: formEditar.nombre,
+        apellido: formEditar.apellido,
+        telefono: formEditar.telefono,
+        email: formEditar.email,
+        domicilios: empleadoSeleccionado.domicilios as any, // Ajustar si hay edición de domicilios
+        rol: formEditar.rol as Rol,
+        sucursalId: formEditar.sucursal?.id,
+        estado: empleadoSeleccionado.estado,
+      };
+      await actualizarEmpleado(empleadoSeleccionado.id!, dto);
+      mostrarNotificacion('Empleado actualizado correctamente', 'success');
+      setModalEditar(false);
+    } catch (error: any) {
+      mostrarNotificacion(error.message || 'Error al actualizar el empleado', 'error');
     }
   };
 
@@ -473,23 +547,42 @@ export const GestionEmpleados = () => {
 
                         {/* Columna Acciones - Siempre visible */}
                         <td className="px-3 sm:px-6 py-4 text-center">
-                          <div className="flex flex-col space-y-2">
+                          <div className="flex space-x-2 justify-center">
+                            <button
+                              onClick={() => handleVerDetalles(empleado)}
+                              className="text-blue-600 hover:text-blue-900"
+                              title="Ver detalles"
+                            >
+                              <IconoVer className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleEditarEmpleado(empleado)}
+                              className="text-primary hover:text-primarydark"
+                              title="Editar empleado"
+                            >
+                              <IconoEditar className="w-4 h-4" />
+                            </button>
                             <button
                               onClick={() => abrirModalConfirm(empleado)}
-                              className={`px-2 py-1 rounded-md text-xs font-medium transition-colors ${
+                              className={`transition-colors ${
                                 empleado.estado
-                                  ? 'bg-red-100 text-red-800 hover:bg-red-200'
-                                  : 'bg-green-100 text-green-800 hover:bg-green-200'
+                                  ? 'text-red-600 hover:text-red-900'
+                                  : 'text-green-600 hover:text-green-900'
                               }`}
+                              title={empleado.estado ? 'Dar de baja' : 'Dar de alta'}
                             >
-                              {empleado.estado ? 'Desactivar' : 'Activar'}
+                              {empleado.estado ? (
+                                <IconoEliminar className="w-4 h-4" />
+                              ) : (
+                                <IconoAgregar className="w-4 h-4" />
+                              )}
                             </button>
-                            {/* Mostrar fecha en móvil debajo del botón */}
-                            <div className="text-xs text-gray-400 md:hidden">
-                              {empleado.fechaIngreso
-                                ? new Date(empleado.fechaIngreso).toLocaleDateString()
-                                : '-'}
-                            </div>
+                          </div>
+                          {/* Mostrar fecha en móvil debajo del botón */}
+                          <div className="text-xs text-gray-400 md:hidden">
+                            {empleado.fechaIngreso
+                              ? new Date(empleado.fechaIngreso).toLocaleDateString()
+                              : '-'}
                           </div>
                         </td>
                       </tr>
@@ -719,6 +812,168 @@ export const GestionEmpleados = () => {
         message={`¿Estás seguro que deseas ${empleadoSeleccionado?.estado ? 'desactivar' : 'activar'} al empleado ${empleadoSeleccionado?.nombre} ${empleadoSeleccionado?.apellido}?`}
         confirmText={empleadoSeleccionado?.estado ? 'Desactivar' : 'Activar'}
       />
+
+      {/* Modal de Ver Detalles */}
+      {modalVer && empleadoSeleccionado && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-lg flex justify-between items-center">
+              <h2 className="text-xl font-bold text-gray-900">Detalles del Empleado</h2>
+              <button
+                onClick={() => setModalVer(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <IconoCerrar color="#6B7280" />
+              </button>
+            </div>
+            <div className="p-6 space-y-3">
+              <div>
+                <b>Nombre:</b> {empleadoSeleccionado.nombre}
+              </div>
+              <div>
+                <b>Apellido:</b> {empleadoSeleccionado.apellido}
+              </div>
+              <div>
+                <b>Email:</b> {empleadoSeleccionado.email}
+              </div>
+              <div>
+                <b>Teléfono:</b> {empleadoSeleccionado.telefono}
+              </div>
+              <div>
+                <b>Rol:</b> {getRolLabel(empleadoSeleccionado.rol)}
+              </div>
+              <div>
+                <b>Sucursal:</b> {empleadoSeleccionado.sucursal?.nombre || '-'}
+              </div>
+              <div>
+                <b>Legajo:</b> {empleadoSeleccionado.legajo || '-'}
+              </div>
+              <div>
+                <b>Estado:</b> {empleadoSeleccionado.estado ? 'Activo' : 'Inactivo'}
+              </div>
+              <div>
+                <b>Fecha de ingreso:</b>{' '}
+                {empleadoSeleccionado.fechaIngreso
+                  ? new Date(empleadoSeleccionado.fechaIngreso).toLocaleDateString()
+                  : '-'}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Editar Empleado */}
+      {modalEditar && empleadoSeleccionado && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-lg flex justify-between items-center">
+              <h2 className="text-xl font-bold text-gray-900">Editar Empleado</h2>
+              <button
+                onClick={() => setModalEditar(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <IconoCerrar color="#6B7280" />
+              </button>
+            </div>
+            <form className="p-6 space-y-4" onSubmit={handleSubmitEditarEmpleado}>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  value={formEditar.nombre}
+                  onChange={(e) => setFormEditar((f) => ({ ...f, nombre: e.target.value }))}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Apellido *</label>
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  value={formEditar.apellido}
+                  onChange={(e) => setFormEditar((f) => ({ ...f, apellido: e.target.value }))}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono *</label>
+                <input
+                  type="tel"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  value={formEditar.telefono}
+                  onChange={(e) => setFormEditar((f) => ({ ...f, telefono: e.target.value }))}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                <input
+                  type="email"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  value={formEditar.email}
+                  onChange={(e) => setFormEditar((f) => ({ ...f, email: e.target.value }))}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Rol *</label>
+                <select
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  value={formEditar.rol}
+                  onChange={(e) =>
+                    setFormEditar((f) => ({ ...f, rol: e.target.value as '' | Rol }))
+                  }
+                  required
+                >
+                  <option value="">Seleccione un rol</option>
+                  {ROLES_EMPLEADO.map((rol) => (
+                    <option key={rol.value} value={rol.value}>
+                      {rol.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Sucursal *</label>
+                <select
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  value={formEditar.sucursal?.id || ''}
+                  onChange={(e) =>
+                    setFormEditar((f) => ({
+                      ...f,
+                      sucursal: sucursales.find((s) => s.id === parseInt(e.target.value)),
+                    }))
+                  }
+                  required
+                >
+                  <option value="">Seleccione una sucursal</option>
+                  {sucursales.map((sucursal) => (
+                    <option key={sucursal.id} value={sucursal.id}>
+                      {sucursal.nombre}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex gap-3 mt-6 pt-4 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => setModalEditar(false)}
+                  className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2 bg-primary text-white hover:bg-primarydark rounded-md"
+                >
+                  Guardar Cambios
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

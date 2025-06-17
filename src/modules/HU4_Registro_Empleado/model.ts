@@ -1,5 +1,6 @@
 import { Domicilio, Rol } from '../HU1_2_Registro_Login/models';
 import { Sucursal } from '../../types/Sucursal';
+import { DomicilioDTO } from '../HU6_Perfil_Empleado/model';
 
 export interface RegistroEmpleado {
   nombre: string;
@@ -56,4 +57,16 @@ export interface EmpleadoFormData {
   confirmarPassword: string;
   rol: Rol | '';
   sucursal?: Sucursal;
+}
+
+export interface ActualizarEmpleadoAdminDTO {
+  empleadoId: number;
+  nombre: string;
+  apellido: string;
+  telefono?: string;
+  email: string;
+  domicilios?: DomicilioDTO[];
+  rol: Rol;
+  sucursalId?: number;
+  estado?: boolean;
 }

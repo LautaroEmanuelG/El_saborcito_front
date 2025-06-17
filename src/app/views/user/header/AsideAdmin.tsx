@@ -71,7 +71,10 @@ const NAV_DATA: NavItemStructure[] = [
   },
   {
     title: 'Gestión de Personal',
-    subItems: [{ to: '/admin/empleados', label: 'Empleados' }],
+    subItems: [
+      { to: '/admin/empleados', label: 'Empleados' },
+      { to: '/admin/clientes', label: 'Clientes' },
+    ],
   },
   {
     title: 'Finanzas',

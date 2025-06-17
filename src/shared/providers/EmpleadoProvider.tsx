@@ -7,7 +7,11 @@ import React, {
   useEffect,
 } from 'react';
 import { EmpleadoDTO } from '../../modules/HU4_Registro_Empleado/model';
-import { getAllEmpleados, cambiarEstadoEmpleado } from '../services/empleadoService';
+import {
+  getAllEmpleados,
+  cambiarEstadoEmpleado,
+  updateEmpleado,
+} from '../services/empleadoService';
 import { Empleado } from '../../modules/HU5_Login_Empleado/model';
 
 interface EmpleadoContextType {
@@ -18,6 +22,7 @@ interface EmpleadoContextType {
   actualizarEstadoEmpleado: (id: number, estado: boolean) => Promise<void>;
   agregarEmpleado: (empleado: EmpleadoDTO) => void;
   setEmpleados: (empleados: EmpleadoDTO[]) => void;
+  actualizarEmpleado: (id: number, data: Partial<EmpleadoDTO>) => Promise<void>;
   // Auth empleados
   empleadoAutenticado: Empleado | null;
   isAuthenticated: boolean;
@@ -65,6 +70,15 @@ export const EmpleadoProvider: React.FC<EmpleadoProviderProps> = ({ children }) 
 
   const agregarEmpleado = useCallback((empleado: EmpleadoDTO) => {
     setEmpleados((prev) => [...prev, empleado]);
+  }, []);
+
+  const actualizarEmpleado = useCallback(async (id: number, data: Partial<EmpleadoDTO>) => {
+    try {
+      const empleadoActualizado = await updateEmpleado(id, data);
+      setEmpleados((prev) => prev.map((emp) => (emp.id === id ? empleadoActualizado : emp)));
+    } catch (err: any) {
+      throw new Error(err.message || 'Error al actualizar el empleado');
+    }
   }, []);
 
   // Funciones de autenticación
@@ -139,6 +153,7 @@ export const EmpleadoProvider: React.FC<EmpleadoProviderProps> = ({ children }) 
     actualizarEstadoEmpleado,
     agregarEmpleado,
     setEmpleados,
+    actualizarEmpleado,
     // Auth empleados
     empleadoAutenticado,
     isAuthenticated: !!empleadoAutenticado,
