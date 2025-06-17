@@ -61,7 +61,7 @@ const MapaInteractivo: React.FC<MapaInteractivoProps> = ({
   };
 
   return (
-    <div className="w-full h-[300px] rounded-lg overflow-hidden border">
+    <div className="w-full h-[300px] rounded-lg opacity-90 overflow-hidden border">
       <MapContainer
         center={position}
         zoom={13}
