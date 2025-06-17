@@ -3,6 +3,7 @@ import {
   RegistroEmpleado,
   AuthEmpleadoResponse,
   EmpleadoDTO,
+  ActualizarEmpleadoAdminDTO,
 } from '../../modules/HU4_Registro_Empleado/model';
 
 const API_BASE_URL = '/empleados';
@@ -67,12 +68,21 @@ export const getAllEmpleados = async (): Promise<EmpleadoDTO[]> => {
   return response.data;
 };
 
-// Actualizar empleado
+// Actualizar empleado (admin)
 export const updateEmpleado = async (
+  id: number,
+  data: ActualizarEmpleadoAdminDTO
+): Promise<EmpleadoDTO> => {
+  const response = await axiosInstance.put(`${API_BASE_URL}/admin/${id}`, data);
+  return response.data;
+};
+
+// Actualización parcial de datos personales (autogestión)
+export const updateEmpleadoParcial = async (
   id: number,
   data: Partial<EmpleadoDTO>
 ): Promise<EmpleadoDTO> => {
-  const response = await axiosInstance.put(`${API_BASE_URL}/${id}`, data);
+  const response = await axiosInstance.patch(`${API_BASE_URL}/${id}`, data);
   return response.data;
 };
 

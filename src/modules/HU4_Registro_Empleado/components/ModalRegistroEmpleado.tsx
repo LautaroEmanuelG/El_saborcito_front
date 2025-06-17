@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { EmpleadoFormData, ROLES_EMPLEADO } from '../model';
 import { validarFormularioEmpleado, formDataToRegistroEmpleado, cleanFormData } from '../logic';
 import { registrarEmpleado } from '../../../shared/services/empleadoService';
 import { IconoCerrar } from '../../../assets/svgs/icons/IconoCerrar';
-import { useNotificacionContext } from '../../../shared/providers/NotificacionProvider';
+import { useNotificacion } from '../../../shared/hooks/useNotificacion';
 
 interface ModalRegistroEmpleadoProps {
   isOpen: boolean;
@@ -24,11 +24,12 @@ export const ModalRegistroEmpleado = ({
     password: '',
     confirmarPassword: '',
     rol: '',
+    sucursal: undefined,
   });
 
   const [loading, setLoading] = useState(false);
   const [errores, setErrores] = useState<string[]>([]);
-  const { mostrarNotificacion } = useNotificacionContext();
+  const { mostrarNotificacion } = useNotificacion();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -74,6 +75,7 @@ export const ModalRegistroEmpleado = ({
         password: '',
         confirmarPassword: '',
         rol: '',
+        sucursal: undefined,
       });
 
       // Notificar al componente padre y cerrar modal
@@ -98,6 +100,7 @@ export const ModalRegistroEmpleado = ({
         password: '',
         confirmarPassword: '',
         rol: '',
+        sucursal: undefined,
       });
       setErrores([]);
       onClose();
@@ -114,10 +117,10 @@ export const ModalRegistroEmpleado = ({
             <h2 className="text-xl font-bold text-gray-900">Registrar Nuevo Empleado</h2>
             <button
               onClick={handleClose}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
               disabled={loading}
-              className="text-gray-400 hover:text-gray-600 disabled:opacity-50"
             >
-              <IconoCerrar />
+              <IconoCerrar color="white" />
             </button>
           </div>
         </div>

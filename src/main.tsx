@@ -31,6 +31,7 @@ import { PerfilClienteDashboard } from './modules/HU3_Perfil_Cliente/components/
 import ScreenStockInsumos from './modules/HU25_ControlStockInsumos/components/ScreenStockInsumos';
 import { GestionEmpleados } from './modules/HU4_Registro_Empleado';
 import { PerfilEmpleadoDashboard } from './modules/HU6_Perfil_Empleado/components/PerfilEmpleadoDashboard.tsx';
+import GestionClientes from './app/views/admin/GestionClientes.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <BrowserRouter>
@@ -235,6 +236,14 @@ createRoot(document.getElementById('root')!).render(
             element={
               <ProtectedRoute>
                 <GestionEmpleados />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="clientes"
+            element={
+              <ProtectedRoute>
+                <GestionClientes />
               </ProtectedRoute>
             }
           />
