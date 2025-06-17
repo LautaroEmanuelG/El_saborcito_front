@@ -6,7 +6,6 @@ import { VistaCarrito } from './modules/HU11_12_Carrito_Confirmacion/VistaCarrit
 import { CarritoProvider } from './shared/providers/CarritoProvider';
 import { LayoutAdmin } from './app/layout/LayoutAdmin.tsx';
 import ProtectedRoute from './app/routes/ProtectedRoute.tsx';
-import ProtectedCarrito from './app/routes/ProtectCarrito.tsx';
 import { AppProviders } from './shared/providers/AppProviders.tsx';
 import { RankingProductos } from './modules/HU26_28_informes/components/RankingProductos.tsx';
 import ScreenArticulosManufacturados from './modules/HU22_CRUDArticulos/components/ScreenArticulosManufacturados.tsx';

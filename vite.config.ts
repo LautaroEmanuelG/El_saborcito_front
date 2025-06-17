@@ -27,6 +27,7 @@ export default defineConfig({
       },
     },
     // Configuración para mejor rendimiento en Vercel
+    chunkSizeWarningLimit: 800,
     target: 'esnext',
   },
   server: {
