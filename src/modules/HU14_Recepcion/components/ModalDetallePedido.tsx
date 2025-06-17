@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { PedidoCompletoConDetalles } from '../../../types/Pedido';
 import { formatearNombreFormaPago } from '../../../shared/utils/pedidoUtils';
 import { getPromocionById } from '../../../shared/services/promocionService';
@@ -33,7 +33,6 @@ export const ModalDetallePedido: React.FC<ModalDetallePedidoProps> = ({
   pedido,
   isOpen,
   onClose,
-  onCambiarEstado,
   onAvanzarEstado,
   onCancelarPedido,
   puedeAvanzarEstado,

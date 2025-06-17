@@ -25,7 +25,7 @@ export const ModalVerDetallesCliente = ({
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600 transition-colors"
             >
-              <IconoCerrar />
+              <IconoCerrar color="currentColor" />
             </button>
           </div>
         </div>
@@ -78,7 +78,6 @@ export const ModalVerDetallesCliente = ({
                 </div>
               </div>
             </div>
-
             {/* Información del Sistema */}
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Información del Sistema</h3>
@@ -98,10 +97,10 @@ export const ModalVerDetallesCliente = ({
                   </div>
                 </div>
               </div>
-            </div>
-
+            </div>{' '}
             {/* Información Adicional */}
-            {cliente.imagen && (
+            {/* ClienteDTO no incluye imagen por el momento */}
+            {/* {cliente.imagen && (
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Imagen de Perfil</h3>
                 <div className="flex justify-center">
@@ -112,7 +111,7 @@ export const ModalVerDetallesCliente = ({
                   />
                 </div>
               </div>
-            )}
+            )} */}
           </div>
 
           {/* Botones */}

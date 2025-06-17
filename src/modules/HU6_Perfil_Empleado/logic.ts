@@ -6,7 +6,6 @@ import {
   EditarDatosEmpleadoForm,
   CambiarContraseñaForm,
   PerfilEmpleadoData,
-  ActualizarEmpleadoResponse,
 } from './model';
 
 // Validaciones para editar datos personales del empleado

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { loginManual, loginAdmin } from '../../../../shared/services/authService';
+import { loginManual } from '../../../../shared/services/authService';
 import { useUser } from '../../../../shared/providers/UserProvider';
 import emailjs from 'emailjs-com';
 import { useAuth0 } from '@auth0/auth0-react';

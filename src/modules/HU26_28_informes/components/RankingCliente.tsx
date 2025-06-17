@@ -11,7 +11,6 @@ import {
   formatearMonto,
   validarRangoFechas,
   obtenerFechasPorDefecto,
-  calcularSubtotal,
   obtenerTextoOrdenamiento,
 } from '../logic';
 import { TableGeneric } from '../../../shared/components/abmGenerica/components/TableGeneric/TableGeneric';

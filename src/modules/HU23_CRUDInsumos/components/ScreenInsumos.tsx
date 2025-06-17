@@ -27,7 +27,6 @@ export const ScreenInsumos = () => {
     error,
     showDeleted,
     fetchInsumos,
-    fetchDeletedInsumos,
     addInsumo,
     updateInsumo,
     deleteInsumo,

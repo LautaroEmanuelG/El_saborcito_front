@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type {
   ArticuloManufacturado,
   ArticuloInsumo,
@@ -146,14 +146,13 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
       prev.map((detalle, i) => (i === index ? { ...detalle, cantidad: nuevaCantidad } : detalle))
     );
   };
-
   // Calcular el costo estimado total de los insumos
-  const calcularCostoEstimado = (): number => {
-    return detalles.reduce((total, detalle) => {
-      const precioUnitario = detalle.articuloInsumo?.precioCompra ?? 0;
-      return total + precioUnitario * detalle.cantidad;
-    }, 0);
-  };
+  // const calcularCostoEstimado = (): number => {
+  //   return detalles.reduce((total, detalle) => {
+  //     const precioUnitario = detalle.articuloInsumo?.precioCompra ?? 0;
+  //     return total + precioUnitario * detalle.cantidad;
+  //   }, 0);
+  // };
 
   // Obtener el título del modal según el modo
   const getModalTitle = () => {
@@ -604,7 +603,7 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
           onClose={() => setModalEditar({ open: false, index: null })}
           nombre={detalles[modalEditar.index].articuloInsumo?.denominacion || ''}
           cantidad={detalles[modalEditar.index].cantidad}
-          onSave={(nuevaCantidad) => handleEditCantidad(modalEditar.index!, nuevaCantidad)}
+          onSave={(nuevaCantidad: number) => handleEditCantidad(modalEditar.index!, nuevaCantidad)}
         />
       )}
     </Modal>

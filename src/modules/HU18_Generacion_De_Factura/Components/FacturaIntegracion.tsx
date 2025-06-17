@@ -1,5 +1,4 @@
-import React from 'react';
-import { PedidoFacturacion } from '../model';
+import { useEffect, useState } from 'react';
 import { useFacturacion } from '../logic';
 
 // Props optimizadas para integración con carrito y Mercado Pago
@@ -45,8 +44,8 @@ interface FacturaIntegracionProps {
  */
 const FacturaIntegracion: React.FC<FacturaIntegracionProps> = ({
   pedidoId,
-  clienteId,
-  clienteNombre,
+  clienteId: _clienteId, // Prefijo _ para indicar que no se usa
+  clienteNombre: _clienteNombre, // Prefijo _ para indicar que no se usa
   clienteEmail,
   totalVenta,
   estadoPedido,
@@ -56,19 +55,18 @@ const FacturaIntegracion: React.FC<FacturaIntegracionProps> = ({
   onFacturaGenerada,
   onError,
   onIntegracionCompleta,
-  mostrarSiempre = false,
   textoBoton,
   className = '',
 }) => {
-  // Construir objeto pedido compatible
-  const pedido: PedidoFacturacion = {
-    id: pedidoId,
-    clienteId,
-    clienteNombre,
-    clienteEmail,
-    totalVenta,
-    estado: estadoPedido,
-  };
+  // Construir objeto pedido compatible (para uso futuro)
+  // const pedido: PedidoFacturacion = {
+  //   id: pedidoId,
+  //   clienteId,
+  //   clienteNombre,
+  //   clienteEmail,
+  //   totalVenta,
+  //   estado: estadoPedido,
+  // };
 
   // Preparar datos de Mercado Pago si existen
   const mercadoPagoData = mercadoPago
@@ -78,9 +76,8 @@ const FacturaIntegracion: React.FC<FacturaIntegracionProps> = ({
         paymentMethod: mercadoPago.paymentMethod,
       }
     : undefined;
-
   // Hook de facturación
-  const { status, error, response, generarFactura, isLoading, isSuccess, isError, resetear } =
+  const { error, response, generarFactura, isLoading, isSuccess, isError, resetear } =
     useFacturacion();
 
   // Handler para generar factura
@@ -95,7 +92,7 @@ const FacturaIntegracion: React.FC<FacturaIntegracionProps> = ({
   };
 
   // Efecto para callbacks
-  React.useEffect(() => {
+  useEffect(() => {
     if (isSuccess && response?.numeroFactura) {
       onFacturaGenerada?.({
         numeroFactura: response.numeroFactura,
@@ -162,10 +159,10 @@ export default FacturaIntegracion;
 export type { FacturaIntegracionProps };
 
 // Hook personalizado para facilitar el uso
-export const useFacturaIntegracion = (pedidoId: number) => {
-  const [facturaGenerada, setFacturaGenerada] = React.useState<string | null>(null);
-  const [error, setError] = React.useState<string | null>(null);
-  const [procesando, setProcesando] = React.useState(false);
+export const useFacturaIntegracion = () => {
+  const [facturaGenerada, setFacturaGenerada] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [procesando, setProcesando] = useState(false);
 
   const resetear = () => {
     setFacturaGenerada(null);

@@ -30,7 +30,7 @@ export const Header = ({ onSearch }: Props) => {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const { user, setUser, logout } = useUser();
-  const { empleadoAutenticado, setEmpleado: setEmpleadoAuth, logoutEmpleado } = useEmpleado();
+  const { empleadoAutenticado, logoutEmpleado } = useEmpleado();
   const navigate = useNavigate();
   const {
     user: auth0User,

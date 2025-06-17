@@ -32,7 +32,6 @@ export const RegistroModal = ({ isOpen, onClose }: RegistroModalProps) => {
     cp: '',
     localidad: undefined,
   });
-
   const [localidades, setLocalidades] = useState<Localidad[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -356,7 +355,7 @@ export const RegistroModal = ({ isOpen, onClose }: RegistroModalProps) => {
                 Ubicación en el mapa
               </label>
               <MapaInteractivo
-                onUbicacionSeleccionada={(lat, lng) => {
+                onUbicacionSeleccionada={(lat: number, lng: number) => {
                   setDomicilio((prev) => ({ ...prev, latitud: lat, longitud: lng }));
                 }}
                 ubicacionActual={
