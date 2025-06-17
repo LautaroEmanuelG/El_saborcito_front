@@ -14,7 +14,7 @@ import ScreenArticulosManufacturados from './modules/HU22_CRUDArticulos/componen
 import ScreenInsumos from './modules/HU23_CRUDInsumos/components/ScreenInsumos';
 import { Cocina } from './app/views/admin/Cocina.tsx';
 import { HistorialCocina } from './app/views/admin/HistorialCocina.tsx';
-import { MovimientosMonetarios } from './modules/HU26_28_informes/components/MovimientosMonetarios.tsx';
+import MovimientosMonetarios from './modules/HU26_28_informes/components/MovimientosMonetarios.tsx';
 import { RankingCliente } from './modules/HU26_28_informes/components/RankingCliente.tsx';
 import ScreenCategoriasArticulos from './modules/HU21_CRUD_CategoriasArticulos/components/ScreenCategoriasArticulos';
 import ScreenCategoriaPadreArticulo from './modules/HU21_CRUD_CategoriasPadresArticulos/components/ScreenCategoriaPadreArticulo';
@@ -27,6 +27,9 @@ import ScreenCompraIngredientes from './modules/HU24_CompraIngredientes/componen
 import { CallbackPage } from './app/views/CallbackPage.tsx';
 import { HistorialPedidosCliente } from './modules/HU13_MisPedidos/index.ts';
 import PedidoExitoso from './pages/PedidoExitoso.tsx';
+import { PerfilClienteDashboard } from './modules/HU3_Perfil_Cliente/components/PerfilClienteDashboard.tsx';
+import ScreenStockInsumos from './modules/HU25_ControlStockInsumos/components/ScreenStockInsumos';
+import { GestionEmpleados } from './modules/HU4_Registro_Empleado';
 
 createRoot(document.getElementById('root')!).render(
   <BrowserRouter>
@@ -218,9 +221,26 @@ createRoot(document.getElementById('root')!).render(
               </ProtectedRoute>
             }
           />
+          <Route
+            path="control-stock-insumos"
+            element={
+              <ProtectedRoute>
+                <ScreenStockInsumos />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="empleados"
+            element={
+              <ProtectedRoute>
+                <GestionEmpleados />
+              </ProtectedRoute>
+            }
+          />
         </Route>
         <Route path="/callback" element={<CallbackPage />} />
         <Route path="/pedido-exitoso" element={<PedidoExitoso />} />
+        <Route path="/perfil" element={<PerfilClienteDashboard />} />
         <Route path="*" element={<Navigate replace to="/" />} />
       </Routes>
     </AppProviders>

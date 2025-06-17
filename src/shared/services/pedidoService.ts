@@ -152,3 +152,21 @@ export const getPedidosDetalladosCompletos = async () => {
     return getAllPedidos();
   }
 };
+
+/**
+ * Añadir tiempo adicional a un pedido
+ * @param pedidoId ID del pedido
+ * @param minutosAdicionales Minutos a agregar al tiempo estimado
+ * @returns Pedido actualizado
+ */
+export const añadirTiempoPedido = async (pedidoId: number, minutosAdicionales: number) => {
+  try {
+    const response = await axiosInstance.put(
+      `${API_BASE_URL}/${pedidoId}/añadir-tiempo?minutosAdicionales=${minutosAdicionales}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error(`Error añadiendo tiempo al pedido ${pedidoId}:`, error);
+    throw error;
+  }
+};

@@ -1,24 +1,43 @@
-// Modelos y tipos específicos para la HU24
-// Puedes importar y extender los modelos de HU23_CRUDInsumos/model.ts si es necesario
+// HU24_CompraIngredientes/model.ts
 
-// Modelo de vista para Compras de Insumos
-export interface CompraInsumoView {
-  id: number;
-  fecha: string;
-  denominacion: string; // Concatenación de insumos o solo el principal
-  total: number;
-  insumos: {
-    id: number;
-    denominacion: string;
-    cantidad: number;
-    precioCosto: number;
-    unidadMedida: string;
-  }[];
+import { formatearMonto } from './logic';
+
+/** Columnas para TableGeneric en ScreenCompraIngredientes */
+export const COMPRA_INSUMO_COLUMNS = [
+  { label: 'ID', key: 'id' },
+  { label: 'Denominación', key: 'denominacion' },
+  {
+    label: 'Fecha',
+    key: 'fechaCompra',
+    render: (c: { fechaCompra: string }) => c.fechaCompra.split('-').reverse().join('/'),
+  },
+  {
+    label: 'Total',
+    key: 'totalCompra',
+    render: (c: { totalCompra: number }) => formatearMonto(c.totalCompra),
+  },
+];
+
+export interface CompraDetalleDTO {
+  insumoId: number;
+  cantidad: number;
+  precioUnitario: number;
+  subtotal: number;
 }
 
-export const COMPRA_INSUMO_COLUMNS = [
-  { label: 'Denominación', key: 'denominacion' },
-  { label: 'Fecha', key: 'fecha' },
-  { label: 'Total', key: 'total', render: (row: CompraInsumoView) => `$${row.total}` },
-  // La columna de acciones (view) se maneja en el componente si la tabla lo permite
-];
+export interface CompraInsumoDTO {
+  id: number;
+  denominacion: string;
+  fechaCompra: string;
+  totalCompra: number;
+  detalles: CompraDetalleDTO[];
+}
+
+export interface NuevaCompraDTO {
+  denominacion: string;
+  detalles: {
+    insumoId: number;
+    cantidad: number;
+    precioUnitario: number;
+  }[];
+}

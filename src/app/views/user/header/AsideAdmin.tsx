@@ -53,6 +53,7 @@ const NAV_DATA: NavItemStructure[] = [
           { to: '/admin/categorias-insumos', label: 'Categorías de Insumos' },
           { to: '/admin/subcategorias-insumos', label: 'Subcategorías de Insumos' },
           { to: '/admin/compra-insumos', label: 'Compra de Insumos' }, // Nuevo menú
+          { to: '/admin/control-stock-insumos', label: 'Control Stock Insumos' }, // NUEVO
         ],
       },
       {
@@ -67,6 +68,10 @@ const NAV_DATA: NavItemStructure[] = [
       { to: '/admin/cocina', label: 'Administrar Cocina' },
       { to: '/admin/historial-cocina', label: 'Historial' },
     ],
+  },
+  {
+    title: 'Gestión de Personal',
+    subItems: [{ to: '/admin/empleados', label: 'Empleados' }],
   },
   {
     title: 'Finanzas',

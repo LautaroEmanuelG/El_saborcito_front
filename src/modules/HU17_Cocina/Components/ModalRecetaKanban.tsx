@@ -77,7 +77,7 @@ export const ModalRecetaKanban: React.FC<ModalRecetaKanbanProps> = ({
                 {/* Mostrar receta solo si es manufacturado */}
                 {item.esManufacturado && item.receta.length > 0 && (
                   <div>
-                    <h4 className="text-md font-medium text-gray-700 mb-2">🧑‍🍳 Receta:</h4>
+                    <h4 className="text-md font-medium text-gray-700 mb-2">Receta:</h4>
                     <div className="bg-gray-50 rounded-lg p-3">
                       <ul className="space-y-1">
                         {item.receta.map((ingrediente, idx) => (
@@ -97,7 +97,7 @@ export const ModalRecetaKanban: React.FC<ModalRecetaKanbanProps> = ({
                 {!item.esManufacturado && (
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
                     <p className="text-sm text-yellow-800">
-                      📦 Este es un producto simple (no manufacturado)
+                      Este es un producto simple (no manufacturado)
                     </p>
                   </div>
                 )}
