@@ -1,8 +1,9 @@
 import { useState, useContext, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { CarritoContext } from '../../../../shared/providers/CarritoProvider';
 import { useProductStore } from '../../../../shared/providers/ProductProvider';
 import { useUser } from '../../../../shared/providers/UserProvider';
+import { useEmpleado } from '../../../../shared/providers/EmpleadoProvider';
 import IconoLogoSaborcito from '../../../../assets/svgs/icons/IconoLogoSaborcito';
 import IconoLoggin from '../../../../assets/svgs/icons/IconoLoggin';
 import IconoCarrito from '../../../../assets/svgs/icons/IconoCarrito';
@@ -12,6 +13,13 @@ import { RegistroModal } from '../../../../modules/HU1_2_Registro_Login/componen
 import { Buscador } from '../../../../modules/HU9_10_Landing_Busqueda/Buscador';
 import { useAuth0 } from '@auth0/auth0-react';
 import { syncUserWithBackend, loginAfterSync } from '../../../../shared/services/auth0SyncService';
+import {
+  loginEmpleado,
+  validarLoginEmpleado,
+  cambiarContraseñaEmpleado,
+  validarCambioContraseña,
+} from '../../../../modules/HU5_Login_Empleado/logic';
+import { EstadoLoginEmpleado, Empleado } from '../../../../modules/HU5_Login_Empleado/model';
 
 type Props = {
   onSearch?: (query: string | string[]) => void; // Modificado para aceptar string o string[]
@@ -22,9 +30,31 @@ export const Header = ({ onSearch }: Props) => {
   const [hoverCarrito, setHoverCarrito] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRegistroOpen, setIsRegistroOpen] = useState(false);
+  const [isLoginEmpleadoOpen, setIsLoginEmpleadoOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  // Estados para login de empleados
+  const [emailEmpleado, setEmailEmpleado] = useState('');
+  const [contraseñaEmpleado, setContraseñaEmpleado] = useState('');
+  const [errorEmpleado, setErrorEmpleado] = useState('');
+  const [estadoEmpleado, setEstadoEmpleado] = useState<EstadoLoginEmpleado>(
+    EstadoLoginEmpleado.INICIAL
+  );
+  const [attemptsEmpleado, setAttemptsEmpleado] = useState(0);
+  const [isBlockedEmpleado, setIsBlockedEmpleado] = useState(false);
+  const [blockTimeEmpleado, setBlockTimeEmpleado] = useState(0);
+
+  // Estados para cambio de contraseña
+  const [empleadoTemp, setEmpleadoTemp] = useState<Empleado | null>(null);
+  const [contraseñaActual, setContraseñaActual] = useState('');
+  const [nuevaContraseña, setNuevaContraseña] = useState('');
+  const [confirmarNuevaContraseña, setConfirmarNuevaContraseña] = useState('');
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+
   const { user, setUser, logout } = useUser();
+  const { setEmpleado: setEmpleadoAuth } = useEmpleado();
+  const navigate = useNavigate();
   const {
     user: auth0User,
     isAuthenticated,
@@ -49,6 +79,14 @@ export const Header = ({ onSearch }: Props) => {
     setIsRegistroOpen(!isRegistroOpen);
   };
 
+  const toggleLoginEmpleadoModal = () => {
+    setIsLoginEmpleadoOpen(!isLoginEmpleadoOpen);
+    // Limpiar estado cuando se cierre
+    if (isLoginEmpleadoOpen) {
+      limpiarFormularioEmpleado();
+    }
+  };
+
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
   };
@@ -59,6 +97,26 @@ export const Header = ({ onSearch }: Props) => {
 
   // Acceder al resetFilters desde el store
   const { resetFilters } = useProductStore();
+
+  // Efecto para manejar el bloqueo de empleados
+  useEffect(() => {
+    let timer: number;
+    if (isBlockedEmpleado && blockTimeEmpleado > 0) {
+      timer = setInterval(() => {
+        setBlockTimeEmpleado((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            setIsBlockedEmpleado(false);
+            setAttemptsEmpleado(0);
+            setEstadoEmpleado(EstadoLoginEmpleado.INICIAL);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [isBlockedEmpleado, blockTimeEmpleado]);
 
   const handleLogoClick = () => {
     // Limpiar búsqueda y resetear los filtros cuando se hace clic en el logo
@@ -73,6 +131,162 @@ export const Header = ({ onSearch }: Props) => {
     handleLogoClick(); // Limpiar búsqueda
     toggleMenu(); // Cerrar menú
   };
+
+  // Función para manejar login de empleados
+  const handleLoginEmpleado = async () => {
+    try {
+      setEstadoEmpleado(EstadoLoginEmpleado.AUTENTICANDO);
+      setErrorEmpleado('');
+
+      // Validaciones
+      const errorValidacion = validarLoginEmpleado({
+        email: emailEmpleado,
+        password: contraseñaEmpleado,
+      });
+      if (errorValidacion) {
+        setErrorEmpleado(errorValidacion);
+        setEstadoEmpleado(EstadoLoginEmpleado.ERROR);
+        return;
+      }
+
+      const response = await loginEmpleado({ email: emailEmpleado, password: contraseñaEmpleado });
+
+      if (response.cambioRequerido) {
+        // Es primer login, necesita cambiar contraseña
+        setEstadoEmpleado(EstadoLoginEmpleado.CAMBIO_CONTRASEÑA);
+        setEmpleadoTemp(response.empleado);
+        setContraseñaActual(contraseñaEmpleado); // Guardar la contraseña actual
+      } else {
+        // Login exitoso
+        setEstadoEmpleado(EstadoLoginEmpleado.EXITOSO);
+        if (response.token) {
+          localStorage.setItem('empleadoToken', response.token);
+          setEmpleadoAuth(response.empleado);
+
+          // Redirigir según el rol
+          switch (response.empleado.rol) {
+            case 'ADMIN':
+              navigate('/admin/historial');
+              break;
+            case 'CAJERO':
+              navigate('/admin/recepcion');
+              break;
+            case 'COCINERO':
+              navigate('/admin/cocina');
+              break;
+            case 'DELIVERY':
+              navigate('/admin/delivery');
+              break;
+            default:
+              navigate('/admin');
+          }
+        }
+        // Limpiar form y cerrar modal
+        setEmailEmpleado('');
+        setContraseñaEmpleado('');
+        setIsLoginEmpleadoOpen(false);
+      }
+    } catch (error: any) {
+      setErrorEmpleado(error.message);
+      setEstadoEmpleado(EstadoLoginEmpleado.ERROR);
+      setAttemptsEmpleado((prev) => prev + 1);
+
+      if (attemptsEmpleado + 1 >= 3) {
+        setIsBlockedEmpleado(true);
+        setBlockTimeEmpleado(30);
+        setEstadoEmpleado(EstadoLoginEmpleado.BLOQUEADO);
+      }
+    }
+  };
+
+  // Función para manejar cambio de contraseña
+  const handleCambiarContraseña = async () => {
+    try {
+      setErrorEmpleado('');
+
+      if (!empleadoTemp?.id) {
+        setErrorEmpleado('Error: datos de empleado no válidos');
+        return;
+      }
+
+      const datosValidacion = validarCambioContraseña({
+        currentPassword: contraseñaActual,
+        newPassword: nuevaContraseña,
+        confirmPassword: confirmarNuevaContraseña,
+      });
+
+      if (datosValidacion) {
+        setErrorEmpleado(datosValidacion);
+        return;
+      }
+
+      setIsChangingPassword(true);
+
+      await cambiarContraseñaEmpleado(empleadoTemp.id, {
+        currentPassword: contraseñaActual,
+        newPassword: nuevaContraseña,
+        confirmPassword: confirmarNuevaContraseña,
+      });
+
+      // Contraseña cambiada exitosamente, hacer login automático
+      try {
+        const loginResponse = await loginEmpleado({
+          email: emailEmpleado,
+          password: nuevaContraseña,
+        });
+
+        if (loginResponse.token) {
+          localStorage.setItem('empleadoToken', loginResponse.token);
+          setEmpleadoAuth(loginResponse.empleado);
+
+          // Redirigir según el rol
+          switch (loginResponse.empleado.rol) {
+            case 'ADMIN':
+              navigate('/admin/historial');
+              break;
+            case 'CAJERO':
+              navigate('/admin/recepcion');
+              break;
+            case 'COCINERO':
+              navigate('/admin/cocina');
+              break;
+            case 'DELIVERY':
+              navigate('/admin/delivery');
+              break;
+            default:
+              navigate('/admin');
+          }
+        }
+
+        // Limpiar formulario y cerrar modal
+        limpiarFormularioEmpleado();
+        setIsLoginEmpleadoOpen(false);
+      } catch (error: any) {
+        setErrorEmpleado(
+          'Contraseña cambiada, pero error en login automático. Intente ingresar manualmente.'
+        );
+      }
+    } catch (error: any) {
+      setErrorEmpleado(error.message);
+      setEstadoEmpleado(EstadoLoginEmpleado.ERROR);
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
+  // Función para limpiar el formulario
+  const limpiarFormularioEmpleado = () => {
+    setEmailEmpleado('');
+    setContraseñaEmpleado('');
+    setErrorEmpleado('');
+    setEstadoEmpleado(EstadoLoginEmpleado.INICIAL);
+    setAttemptsEmpleado(0);
+    setEmpleadoTemp(null);
+    setContraseñaActual('');
+    setNuevaContraseña('');
+    setConfirmarNuevaContraseña('');
+  };
+
   useEffect(() => {
     const syncUser = async () => {
       if (isAuthenticated && auth0User) {
@@ -164,6 +378,17 @@ export const Header = ({ onSearch }: Props) => {
                     >
                       Historial de Compras
                     </Link>
+                    <hr className="my-1 border-gray-200" />
+                    <button
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        toggleLoginEmpleadoModal();
+                      }}
+                      className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+                    >
+                      Acceso Empleados
+                    </button>
+                    <hr className="my-1 border-gray-200" />
                     <button
                       onClick={() => {
                         logout();
@@ -177,14 +402,24 @@ export const Header = ({ onSearch }: Props) => {
                 )}
               </div>
             ) : (
-              <button
-                className="relative flex items-center justify-center gap-4 w-10 h-10 rounded-full hover:bg-blanco"
-                onMouseEnter={() => setHoverLogin(true)}
-                onMouseLeave={() => setHoverLogin(false)}
-                onClick={toggleLoginModal}
-              >
-                <IconoLoggin color={hoverLogin ? '#E11D48' : 'white'} />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  className="relative flex items-center justify-center gap-4 w-10 h-10 rounded-full hover:bg-blanco"
+                  onMouseEnter={() => setHoverLogin(true)}
+                  onMouseLeave={() => setHoverLogin(false)}
+                  onClick={toggleLoginModal}
+                  title="Iniciar Sesión Cliente"
+                >
+                  <IconoLoggin color={hoverLogin ? '#E11D48' : 'white'} />
+                </button>
+                <button
+                  className="text-white text-sm font-medium hover:text-blanco px-2 py-1 rounded"
+                  onClick={toggleLoginEmpleadoModal}
+                  title="Acceso Empleados"
+                >
+                  Empleados
+                </button>
+              </div>
             )}
 
             {window.location.pathname !== '/carrito' && totalItems > 0 ? (
@@ -214,6 +449,155 @@ export const Header = ({ onSearch }: Props) => {
         onOpenRegistro={toggleRegistroModal}
       />
       <RegistroModal isOpen={isRegistroOpen} onClose={toggleRegistroModal} />
+
+      {/* Modal de Login para Empleados */}
+      {isLoginEmpleadoOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg w-[500px] max-h-[90vh] overflow-y-auto shadow-lg relative p-8">
+            <button
+              className="absolute font-bold top-6 right-8 text-negro text-xl hover:text-blanco hover:bg-primary rounded-full w-10 h-10"
+              onClick={toggleLoginEmpleadoModal}
+            >
+              X
+            </button>
+
+            {estadoEmpleado === EstadoLoginEmpleado.CAMBIO_CONTRASEÑA ? (
+              // Formulario de cambio de contraseña
+              <>
+                <h2 className="text-2xl font-bold mb-6 text-negro">Cambiar Contraseña</h2>
+                <p className="text-gris mb-6">
+                  Como es tu primer acceso, debes establecer una nueva contraseña.
+                </p>
+
+                <div className="mb-4">
+                  <label className="block text-negro text-sm font-bold mb-2">
+                    Contraseña Actual
+                  </label>
+                  <input
+                    type="password"
+                    placeholder="Tu contraseña actual"
+                    className="w-full px-4 py-2 border border-gris rounded-lg text-negro focus:outline-none focus:ring-2 focus:ring-primary"
+                    value={contraseñaActual}
+                    onChange={(e) => setContraseñaActual(e.target.value)}
+                    disabled={isChangingPassword}
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-negro text-sm font-bold mb-2">
+                    Nueva Contraseña
+                  </label>
+                  <input
+                    type="password"
+                    placeholder="Mínimo 8 caracteres, 1 mayúscula, 1 minúscula y 1 símbolo"
+                    className="w-full px-4 py-2 border border-gris rounded-lg text-negro focus:outline-none focus:ring-2 focus:ring-primary"
+                    value={nuevaContraseña}
+                    onChange={(e) => setNuevaContraseña(e.target.value)}
+                    disabled={isChangingPassword}
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-negro text-sm font-bold mb-2">
+                    Confirmar Nueva Contraseña
+                  </label>
+                  <input
+                    type="password"
+                    placeholder="Confirma tu nueva contraseña"
+                    className="w-full px-4 py-2 border border-gris rounded-lg text-negro focus:outline-none focus:ring-2 focus:ring-primary"
+                    value={confirmarNuevaContraseña}
+                    onChange={(e) => setConfirmarNuevaContraseña(e.target.value)}
+                    disabled={isChangingPassword}
+                  />
+                </div>
+
+                {errorEmpleado && <p className="text-primary mb-4">{errorEmpleado}</p>}
+
+                <button
+                  className={`w-full bg-primary text-blanco py-2 rounded-lg mb-2 ${
+                    isChangingPassword ? 'opacity-50' : 'cursor-pointer'
+                  }`}
+                  onClick={handleCambiarContraseña}
+                  disabled={isChangingPassword}
+                >
+                  {isChangingPassword ? 'Cambiando contraseña...' : 'Cambiar Contraseña'}
+                </button>
+
+                <button
+                  className="w-full bg-secondary text-negro py-2 rounded-lg cursor-pointer"
+                  onClick={() => {
+                    setEstadoEmpleado(EstadoLoginEmpleado.INICIAL);
+                    setEmpleadoTemp(null);
+                    setContraseñaActual('');
+                    setNuevaContraseña('');
+                    setConfirmarNuevaContraseña('');
+                    setErrorEmpleado('');
+                  }}
+                >
+                  Volver al Login
+                </button>
+              </>
+            ) : (
+              // Formulario de login normal
+              <>
+                <h2 className="text-2xl font-bold mb-6 text-negro">Acceso Empleados</h2>
+
+                <div className="mb-4">
+                  <label className="block text-negro text-sm font-bold mb-2">Email</label>
+                  <input
+                    type="email"
+                    placeholder="Ingresa tu email"
+                    className="w-full px-4 py-2 border border-gris rounded-lg text-negro focus:outline-none focus:ring-2 focus:ring-primary"
+                    value={emailEmpleado}
+                    onChange={(e) => setEmailEmpleado(e.target.value)}
+                    disabled={
+                      isBlockedEmpleado || estadoEmpleado === EstadoLoginEmpleado.AUTENTICANDO
+                    }
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-negro text-sm font-bold mb-2">Contraseña</label>
+                  <input
+                    type="password"
+                    placeholder="Ingresa tu contraseña"
+                    className="w-full px-4 py-2 border border-gris rounded-lg text-negro focus:outline-none focus:ring-2 focus:ring-primary"
+                    value={contraseñaEmpleado}
+                    onChange={(e) => setContraseñaEmpleado(e.target.value)}
+                    disabled={
+                      isBlockedEmpleado || estadoEmpleado === EstadoLoginEmpleado.AUTENTICANDO
+                    }
+                  />
+                </div>
+
+                {errorEmpleado && <p className="text-primary mb-4">{errorEmpleado}</p>}
+
+                <button
+                  className={`w-full bg-primary text-blanco py-2 rounded-lg ${
+                    isBlockedEmpleado || estadoEmpleado === EstadoLoginEmpleado.AUTENTICANDO
+                      ? 'opacity-50'
+                      : 'cursor-pointer'
+                  }`}
+                  onClick={handleLoginEmpleado}
+                  disabled={
+                    isBlockedEmpleado || estadoEmpleado === EstadoLoginEmpleado.AUTENTICANDO
+                  }
+                >
+                  {isBlockedEmpleado
+                    ? `Bloqueado (${blockTimeEmpleado}s)`
+                    : estadoEmpleado === EstadoLoginEmpleado.AUTENTICANDO
+                      ? 'Verificando...'
+                      : 'Ingresar'}
+                </button>
+
+                <div className="mt-4 text-center text-sm text-gris">
+                  <p>Solo para personal autorizado</p>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       <div
         className={`fixed top-0 left-0 h-full bg-primary text-white transition-transform duration-300 ease-in-out z-20 ${
@@ -272,15 +656,26 @@ export const Header = ({ onSearch }: Props) => {
             </button>
           </div>
         ) : (
-          <button
-            onClick={() => {
-              toggleMenu();
-              toggleLoginModal();
-            }}
-            className="block w-full text-left p-4 hover:bg-gray-700"
-          >
-            Iniciar Sesión
-          </button>
+          <div className="p-4 border-t border-gray-700">
+            <button
+              onClick={() => {
+                toggleMenu();
+                toggleLoginModal();
+              }}
+              className="block w-full text-left py-2 hover:bg-gray-700"
+            >
+              Iniciar Sesión
+            </button>
+            <button
+              onClick={() => {
+                toggleMenu();
+                toggleLoginEmpleadoModal();
+              }}
+              className="block w-full text-left py-2 hover:bg-gray-700"
+            >
+              Acceso Empleados
+            </button>
+          </div>
         )}
       </div>
 
