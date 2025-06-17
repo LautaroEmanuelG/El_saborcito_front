@@ -9,6 +9,8 @@ import { ProductSummary } from './ProductSummary';
 import { IconoLocation } from '../../assets/svgs/icons/IconoLocation';
 import { getAllFormaPagos, type FormaPago } from '../../shared/services/formaPagoService';
 import { createPedido, type CreatePedidoRequest } from '../../shared/services/pedidoService';
+import { crearPreferencia, abrirCheckoutMP } from '../../shared/services/mercadoPagoService';
+import MercadoPagoLoader from './components/MercadoPagoLoader';
 import {
   getIconoFormaPago,
   formatearNombreFormaPago,
@@ -56,6 +58,7 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
   );
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
   const [tiempoEstimado, setTiempoEstimado] = useState(0);
+  const [procesandoMercadoPago, setProcesandoMercadoPago] = useState(false);
 
   if (!carritoContext) {
     throw new Error('MetodoPagoModal must be used within a CarritoProvider');
@@ -191,8 +194,60 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
       const response = await createPedido(pedidoData);
       console.log('✅ Pedido creado exitosamente:', response);
 
-      // Mostrar confirmación
-      setMostrarConfirmacion(true);
+      // 🚀 NUEVO: Verificar si es pago con Mercado Pago
+      const esMercadoPago = metodoPagoId === 2; // ID 2 = Mercado Pago según constantes
+
+      console.log('🔍 Verificando Mercado Pago:', {
+        esMercadoPago,
+        metodoPagoId,
+        responseId: response?.id,
+        responsePedidoId: response?.pedido?.id,
+        responseStructure: Object.keys(response || {}),
+        fullResponse: response,
+      });
+
+      if (esMercadoPago && response?.pedido?.id) {
+        console.log('💳 Procesando pago con Mercado Pago...');
+        console.log('📋 ID del pedido para MP:', response.pedido.id);
+
+        try {
+          // Mostrar loader de Mercado Pago
+          setProcesandoMercadoPago(true);
+
+          // Crear preferencia de pago
+          console.log('🚀 Llamando a crearPreferenciaPago con ID:', response.pedido.id);
+          const preferencia = await crearPreferencia(response.pedido.id);
+          console.log('✅ Preferencia creada:', preferencia);
+
+          // Breve pausa para mostrar el loader
+          await new Promise((resolve) => setTimeout(resolve, 1500));
+
+          console.log('🔄 Cerrando modal y limpiando carrito...');
+
+          // Cerrar el modal actual
+          cerrarModal();
+
+          // Limpiar carrito antes de abrir checkout
+          clearCarrito();
+
+          console.log('🚀 Modal cerrado y carrito limpio. Abriendo Mercado Pago...');
+
+          // Abrir checkout de Mercado Pago
+          abrirCheckoutMP(preferencia.initPoint);
+        } catch (mpError) {
+          console.error('❌ Error al procesar Mercado Pago:', mpError);
+          alert(
+            'Error al procesar el pago con Mercado Pago. El pedido fue creado, pero no se pudo iniciar el pago.'
+          );
+          // Mostrar confirmación normal como fallback
+          setMostrarConfirmacion(true);
+        } finally {
+          setProcesandoMercadoPago(false);
+        }
+      } else {
+        // Para otros métodos de pago, mostrar confirmación normal
+        setMostrarConfirmacion(true);
+      }
     } catch (error) {
       console.error('❌ Error en el proceso de compra:', error);
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
@@ -456,11 +511,21 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
                     : undefined
               }
             >
-              {loading ? 'Procesando...' : 'Pagar'}
+              {loading
+                ? 'Procesando...'
+                : metodoPagoId === 2
+                  ? '💳 Pagar con Mercado Pago'
+                  : 'Confirmar Pedido'}
             </button>
           </div>
         </div>
       </div>
+
+      {/* Loader de Mercado Pago */}
+      <MercadoPagoLoader
+        isVisible={procesandoMercadoPago}
+        mensaje="Preparando tu pago con Mercado Pago..."
+      />
     </div>
   );
 };

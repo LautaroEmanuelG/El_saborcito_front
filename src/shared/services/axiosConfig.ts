@@ -1,7 +1,7 @@
 // axiosConfig.ts
 import axios from 'axios';
 
-const API_URL = import.meta.env.BACK_API_BASE_URL || 'http://localhost:5252/api'; // URL base de la API
+const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5252/api'; // URL base de la API
 
 // Crear una instancia de Axios con la configuración base
 const axiosInstance = axios.create({
@@ -23,21 +23,15 @@ axiosInstance.interceptors.request.use(
     return config;
   },
   (error) => {
-    console.error('Error en la petición:', error);
-    // Manejo de errores antes de que se envíe la solicitud
     return Promise.reject(error);
   }
 );
 
 axiosInstance.interceptors.response.use(
   (response) => {
-    // console.log('Respuesta recibida:', response.data);
-    // Puedes modificar la respuesta antes de retornarla
     return response;
   },
   (error) => {
-    console.error('Error en la respuesta:', error.response?.data);
-    // Manejo de errores de respuesta
     return Promise.reject(error);
   }
 );
