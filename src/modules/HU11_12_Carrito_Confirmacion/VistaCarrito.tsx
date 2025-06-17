@@ -5,6 +5,8 @@ import { useCart } from '../../shared/hooks/useCart';
 import { CarritoContext } from '../../shared/providers/CarritoProvider';
 import type { ArticuloManufacturado } from '../../types/Articulo';
 import MetodoPagoModal from './MetodoPagoModal';
+import { LoginModal } from '../HU1_2_Registro_Login/components/loggin/LoginModal';
+import { RegistroModal } from '../HU1_2_Registro_Login/components/registro/RegistroModal';
 import BtnCantidadProducto from '../HU9_10_Landing_Busqueda/articulos/btnCantidadProducto';
 import BtnCantidadPromocion from './BtnCantidadPromocion';
 import { useUser } from '../../shared/providers/UserProvider';
@@ -13,6 +15,8 @@ import { useNotificacion } from '../../shared/hooks/useNotificacion';
 export const VistaCarrito = () => {
   const { carrito, promocionesEnCarrito, removeFromCart, removePromocionFromCart } = useCart();
   const [isMetodoPagoOpen, setMetodoPagoOpen] = useState(false);
+  const [isLoginModalOpen, setLoginModalOpen] = useState(false);
+  const [isRegistroModalOpen, setRegistroModalOpen] = useState(false);
 
   const carritoContext = useContext(CarritoContext);
   if (!carritoContext) {
@@ -79,7 +83,6 @@ export const VistaCarrito = () => {
       return false;
     });
   };
-
   // 🚀 **FUNCIÓN OPTIMIZADA PARA MANEJAR COMPRA**
   const handleComprarClick = async () => {
     // No permitir compra si se está analizando
@@ -88,8 +91,16 @@ export const VistaCarrito = () => {
       return;
     }
 
+    // 🔐 **VALIDAR AUTENTICACIÓN DEL USUARIO**
+    if (!user) {
+      console.log('❌ Usuario no autenticado, abriendo modal de login');
+      mostrarNotificacion('Debes iniciar sesión para realizar una compra', 'warning', 4000);
+      setLoginModalOpen(true);
+      return;
+    }
+
     // 🚫 Validar baja lógica del cliente
-    if (user && user.estado === false) {
+    if (user.estado === false) {
       mostrarNotificacion(
         'No puedes realizar pedidos porque estás dado de baja. Contacta al administrador.',
         'error',
@@ -292,8 +303,8 @@ export const VistaCarrito = () => {
               </button>
             )}
           </div>
-        </div>
-        {/* Modal de método de pago */}{' '}
+        </div>{' '}
+        {/* Modal de método de pago */}
         <MetodoPagoModal
           isOpen={isMetodoPagoOpen}
           onClose={() => setMetodoPagoOpen(false)}
@@ -302,6 +313,17 @@ export const VistaCarrito = () => {
             0
           )}
         />
+        {/* Modal de login */}
+        <LoginModal
+          isOpen={isLoginModalOpen}
+          onClose={() => setLoginModalOpen(false)}
+          onOpenRegistro={() => {
+            setLoginModalOpen(false);
+            setRegistroModalOpen(true);
+          }}
+        />{' '}
+        {/* Modal de registro */}
+        <RegistroModal isOpen={isRegistroModalOpen} onClose={() => setRegistroModalOpen(false)} />
       </div>
     </>
   );

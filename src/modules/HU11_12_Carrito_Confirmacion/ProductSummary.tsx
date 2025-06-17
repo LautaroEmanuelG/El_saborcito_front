@@ -78,7 +78,7 @@ export const ProductSummary: React.FC<ProductSummaryProps> = ({
 
   return (
     <div>
-      <h3 className="text-lg font-semibold mb-4">📋 Resumen de productos</h3>
+      <h3 className="text-lg font-semibold mb-4">Resumen de productos</h3>
       <div className="bg-gray-50 rounded-lg p-4 max-h-64 overflow-y-auto">
         {todosLosItems.length > 0 ? (
           todosLosItems.map((item, index) => <ItemRow key={index} item={item} index={index} />)

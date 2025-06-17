@@ -29,6 +29,7 @@ export interface CreatePedidoRequest {
   formaPagoId: number;
   sucursalId: number;
   domicilio?: DomicilioPedido;
+  domicilioExistenteId?: number;
   detalles: DetallePedido[];
   promocionesSeleccionadas?: PromocionSeleccionada[];
 }

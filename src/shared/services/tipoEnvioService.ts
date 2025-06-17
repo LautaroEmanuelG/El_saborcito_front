@@ -18,6 +18,27 @@ export const getTipoEnvioById = async (id: number) => {
 };
 
 export const getAllTipoEnvios = async () => {
-  const response = await axiosInstance.get(`${API_BASE_URL}`);
-  return response.data;
+  try {
+    const response = await axiosInstance.get(`${API_BASE_URL}`);
+    const data = response.data;
+
+    // Validar que los datos sean válidos
+    if (!data || !Array.isArray(data) || data.length === 0) {
+      console.warn('⚠️ tipoEnvioService: API devolvió datos inválidos:', data);
+      // Retornar fallback con tipos básicos
+      return [
+        { id: 1, nombre: 'DELIVERY' },
+        { id: 2, nombre: 'TAKE_AWAY' },
+      ];
+    }
+
+    return data;
+  } catch (error) {
+    console.error('❌ tipoEnvioService: Error en getAllTipoEnvios:', error);
+    // En caso de error, retornar fallback
+    return [
+      { id: 1, nombre: 'DELIVERY' },
+      { id: 2, nombre: 'TAKE_AWAY' },
+    ];
+  }
 };

@@ -11,8 +11,29 @@ export interface FormaPago {
  * Obtener todas las formas de pago disponibles
  */
 export const getAllFormaPagos = async (): Promise<FormaPago[]> => {
-  const response = await axiosInstance.get(`${API_BASE_URL}`);
-  return response.data;
+  try {
+    const response = await axiosInstance.get(`${API_BASE_URL}`);
+    const data = response.data;
+
+    // Validar que los datos sean válidos
+    if (!data || !Array.isArray(data) || data.length === 0) {
+      console.warn('⚠️ formaPagoService: API devolvió datos inválidos:', data);
+      // Retornar fallback con formas de pago básicas
+      return [
+        { id: 1, nombre: 'EFECTIVO' },
+        { id: 2, nombre: 'MERCADO_PAGO' },
+      ];
+    }
+
+    return data;
+  } catch (error) {
+    console.error('❌ formaPagoService: Error en getAllFormaPagos:', error);
+    // En caso de error, retornar fallback
+    return [
+      { id: 1, nombre: 'EFECTIVO' },
+      { id: 2, nombre: 'MERCADO_PAGO' },
+    ];
+  }
 };
 
 /**
