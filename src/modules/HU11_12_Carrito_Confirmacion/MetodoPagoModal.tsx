@@ -18,6 +18,10 @@ import {
   extraerDireccionDeUbicacion,
 } from '../../shared/utils/pedidoUtils';
 import { DEFAULT_VALUES, DOMICILIO_DEFAULT } from './constants/pedidoConstants';
+import {
+  formatearTiempoEstimado as formatearTiempo,
+  calcularTiempoRestante,
+} from '../HU17_Cocina/utils/tiempoUtils';
 
 interface MetodoPagoModalProps {
   isOpen: boolean;
@@ -103,38 +107,28 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
     ? total * (1 - DEFAULT_VALUES.DESCUENTO_RETIRO)
     : total;
 
-  // Función para formatear el tiempo estimado desde el backend
-  const formatearTiempoEstimado = (
+  // Función para procesar tiempo estimado desde el backend usando tiempoUtils
+  const procesarTiempoEstimado = (
     horasEstimadas: string
   ): { minutos: number; horaEntrega: string } => {
     try {
-      const [horas, minutos, segundos] = horasEstimadas.split(':').map(Number);
-      const hoy = new Date();
-      const horaEntrega = new Date(hoy);
-      horaEntrega.setHours(horas, minutos, Math.floor(segundos), 0);
-
-      const ahora = new Date();
-      let diferenciaMs = horaEntrega.getTime() - ahora.getTime();
-      let diferenciaMinutos = Math.round(diferenciaMs / (1000 * 60));
-
-      if (diferenciaMinutos < -30) {
-        horaEntrega.setDate(horaEntrega.getDate() + 1);
-        diferenciaMs = horaEntrega.getTime() - ahora.getTime();
-        diferenciaMinutos = Math.round(diferenciaMs / (1000 * 60));
+      if (!horasEstimadas) {
+        return {
+          minutos: DEFAULT_VALUES.TIEMPO_ESTIMADO_DEFAULT,
+          horaEntrega: '',
+        };
       }
 
-      if (diferenciaMinutos <= 0) {
-        diferenciaMinutos = 0;
-      }
-
-      const horaFormateada = `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}`;
+      // Usar las utilidades de tiempo del módulo de cocina
+      const minutosRestantes = calcularTiempoRestante(horasEstimadas);
+      const horaFormateada = formatearTiempo(horasEstimadas);
 
       return {
-        minutos: diferenciaMinutos,
+        minutos: Math.max(0, minutosRestantes), // No mostrar tiempo negativo
         horaEntrega: horaFormateada,
       };
     } catch (error) {
-      console.error('Error al formatear tiempo estimado:', error);
+      console.error('Error al procesar tiempo estimado:', error);
       return {
         minutos: DEFAULT_VALUES.TIEMPO_ESTIMADO_DEFAULT,
         horaEntrega: '',
@@ -308,9 +302,9 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
       const response = await createPedido(pedidoData);
       console.log('✅ Pedido creado exitosamente:', response);
 
-      // Procesar tiempo estimado del backend
+      // Procesar tiempo estimado del backend usando las utilidades de tiempo
       if (response?.pedido?.horasEstimadaFinalizacion) {
-        const { minutos, horaEntrega } = formatearTiempoEstimado(
+        const { minutos, horaEntrega } = procesarTiempoEstimado(
           response.pedido.horasEstimadaFinalizacion
         );
         setTiempoEstimado(minutos);
@@ -385,9 +379,7 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
   const irAlPerfil = () => {
     clearCarrito();
     cerrarModal();
-    console.log('Navegando al perfil del usuario...');
-    alert('La pantalla de perfil aún no está implementada. Redirigiendo al inicio...');
-    window.location.href = '/';
+    window.location.href = '/cliente/mis-pedidos';
   };
 
   if (!isOpen) return null;
@@ -399,40 +391,47 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
         className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4"
         onClick={handleClickOutside}
       >
-        <div className="bg-white rounded-lg shadow-lg max-w-lg w-full p-8 text-center">
-          <div className="mb-6">
-            <div className="mx-auto mb-4 w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-              <span className="text-green-500 text-2xl">✅</span>
-            </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">¡Pedido confirmado!</h2>
-            <p className="text-gray-600">Tu pedido ha sido procesado exitosamente</p>
-          </div>
+        <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4 text-center">
+          <h2 className="text-2xl font-bold text-primary mb-4">¡Gracias por su compra! 🎉</h2>
 
-          {tiempoEstimado > 0 && (
-            <div className="mb-6 p-4 bg-blue-50 rounded-lg">
-              <p className="text-blue-800 font-medium">
-                ⏱️ Tiempo estimado: {tiempoEstimado} minutos
-              </p>
+          {tiempoEstimado <= 0 ? (
+            // Caso cuando el pedido está listo para retirar
+            <>
+              <p className="text-2xl font-bold text-green-600 mb-4">¡Su pedido está listo! ✅</p>
+              <p className="text-lg text-gray-700 mb-4">Puede pasar a retirarlo cuando guste</p>
               {horaEstimadaEntrega && (
-                <p className="text-blue-600 text-sm">
-                  Listo aproximadamente a las {horaEstimadaEntrega}
+                <p className="text-lg text-gray-600 mb-4">
+                  Hora estimada: <span className="font-semibold">{horaEstimadaEntrega}</span>
                 </p>
               )}
-            </div>
+            </>
+          ) : (
+            // Caso normal con tiempo de espera
+            <>
+              <p className="text-lg mb-2 text-gray-700">Su pedido estará listo en</p>
+              <p className="text-4xl font-bold text-primary mb-2">{tiempoEstimado} minutos</p>
+              {horaEstimadaEntrega && (
+                <p className="text-lg text-gray-600 mb-4">
+                  Aproximadamente a las <span className="font-semibold">{horaEstimadaEntrega}</span>
+                </p>
+              )}
+            </>
           )}
+
+          <p className="text-gray-600 mb-6">Te llegará un aviso</p>
 
           <div className="flex gap-3 justify-center">
             <button
               onClick={irAlInicio}
-              className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition"
+              className="px-6 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition-colors"
             >
-              Ir al inicio
+              Confirmar
             </button>
             <button
               onClick={irAlPerfil}
-              className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition"
+              className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
             >
-              Ver mis pedidos
+              Ir a mi perfil
             </button>
           </div>
         </div>
@@ -490,7 +489,7 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
         <div className="p-6">
           {/* Header */}
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">🛒 Finalizar compra</h2>
+            <h2 className="text-2xl font-bold text-gray-800">Finalizar compra</h2>
             <button
               onClick={cerrarModal}
               className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
@@ -539,32 +538,6 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
           )}{' '}
           {/* Resumen y botón de confirmación */}
           <div className="mt-8 space-y-4">
-            {/* Resumen de productos compacto */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h4 className="text-sm font-semibold text-gray-700 mb-3">📋 Tu pedido:</h4>
-              <div className="space-y-1 max-h-32 overflow-y-auto">
-                {carrito.map((producto, index) => (
-                  <div key={index} className="flex justify-between text-sm">
-                    <span>
-                      {producto.cantidad}x {producto.denominacion}
-                    </span>
-                    <span>${(producto.precioVenta * producto.cantidad).toFixed(2)}</span>
-                  </div>
-                ))}
-                {promocionesEnCarrito.map((promo, index) => (
-                  <div key={`promo-${index}`} className="flex justify-between text-sm">
-                    <span className="flex items-center gap-1">
-                      {promo.cantidad}x {promo.promocion?.denominacion || 'Promoción'}
-                      <span className="bg-red-500 text-white px-1 py-0.5 rounded text-xs">🎁</span>
-                    </span>
-                    <span>
-                      ${((promo.promocion?.precioPromocional || 0) * promo.cantidad).toFixed(2)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
             {/* Total y descuento */}
             <div className="p-4 bg-gray-50 rounded-lg">
               <div className="flex justify-between items-center mb-4">

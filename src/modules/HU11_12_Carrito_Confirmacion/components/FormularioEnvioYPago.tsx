@@ -45,11 +45,11 @@ export const FormularioEnvioYPago: React.FC<FormularioEnvioYPagoProps> = ({
   const getNombreTipoEnvio = (nombre: string): string => {
     switch (nombre) {
       case 'DELIVERY':
-        return '🚚 Delivery a domicilio';
+        return 'Delivery a domicilio';
       case 'TAKE_AWAY':
-        return '🏪 Retiro en local (10% descuento)';
+        return 'Retiro en local (10% descuento)';
       case 'EN_LOCAL':
-        return '🍽️ Consumir en el local';
+        return 'Consumir en el local';
       default:
         return nombre;
     }
@@ -58,13 +58,13 @@ export const FormularioEnvioYPago: React.FC<FormularioEnvioYPagoProps> = ({
   const getNombreFormaPago = (nombre: string): string => {
     switch (nombre) {
       case 'EFECTIVO':
-        return '💵 Efectivo';
+        return 'Efectivo';
       case 'MERCADO_PAGO':
-        return '💳 Mercado Pago';
-      case 'TARJETA_DEBITO':
-        return '💳 Tarjeta de débito';
-      case 'TARJETA_CREDITO':
-        return '💳 Tarjeta de crédito';
+        return 'Mercado Pago';
+      case 'TARJETA':
+        return 'Tarjeta de débito/crédito';
+      case 'TRANSFERENCIA':
+        return 'Transferencia bancaria';
       default:
         return nombre;
     }
@@ -72,50 +72,9 @@ export const FormularioEnvioYPago: React.FC<FormularioEnvioYPagoProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Tipos de Envío */}
-      <div>
-        <h3 className="text-lg font-semibold mb-4">🚚 Tipo de envío</h3>
-        {loadingTiposEnvio ? (
-          <div className="flex items-center justify-center py-4">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-            <span className="ml-2 text-gray-600">Cargando tipos de envío...</span>
-          </div>
-        ) : tiposEnvio?.length > 0 ? (
-          <div className="space-y-3">
-            {tiposEnvio.map((tipo) => (
-              <div
-                key={tipo.id}
-                className={`p-3 border rounded-lg transition-colors ${
-                  tipoEnvioSeleccionado === tipo.id
-                    ? 'border-primary bg-primary/5'
-                    : 'border-gray-300 hover:border-gray-400'
-                }`}
-              >
-                <RadioOption
-                  name="tipoEnvio"
-                  value={tipo.id.toString()}
-                  checked={tipoEnvioSeleccionado === tipo.id}
-                  onChange={(value) => onTipoEnvioChange(parseInt(value))}
-                >
-                  <span className="text-gray-800 font-medium">
-                    {getNombreTipoEnvio(tipo.nombre)}
-                  </span>
-                </RadioOption>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <p className="text-yellow-800 text-sm">
-              ⚠️ No se pudieron cargar los tipos de envío. Intenta recargar la página.
-            </p>
-          </div>
-        )}
-      </div>
-
       {/* Formas de Pago */}
       <div>
-        <h3 className="text-lg font-semibold mb-4">💰 Forma de pago</h3>
+        <h3 className="text-lg font-semibold mb-4">Forma de pago</h3>
         {loadingFormasPago ? (
           <div className="flex items-center justify-center py-4">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
@@ -149,6 +108,46 @@ export const FormularioEnvioYPago: React.FC<FormularioEnvioYPagoProps> = ({
           <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
             <p className="text-yellow-800 text-sm">
               ⚠️ No se pudieron cargar las formas de pago. Intenta recargar la página.
+            </p>
+          </div>
+        )}
+      </div>
+      {/* Tipos de Envío */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Tipo de envío</h3>
+        {loadingTiposEnvio ? (
+          <div className="flex items-center justify-center py-4">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+            <span className="ml-2 text-gray-600">Cargando tipos de envío...</span>
+          </div>
+        ) : tiposEnvio?.length > 0 ? (
+          <div className="space-y-3">
+            {tiposEnvio.map((tipo) => (
+              <div
+                key={tipo.id}
+                className={`p-3 border rounded-lg transition-colors ${
+                  tipoEnvioSeleccionado === tipo.id
+                    ? 'border-primary bg-primary/5'
+                    : 'border-gray-300 hover:border-gray-400'
+                }`}
+              >
+                <RadioOption
+                  name="tipoEnvio"
+                  value={tipo.id.toString()}
+                  checked={tipoEnvioSeleccionado === tipo.id}
+                  onChange={(value) => onTipoEnvioChange(parseInt(value))}
+                >
+                  <span className="text-gray-800 font-medium">
+                    {getNombreTipoEnvio(tipo.nombre)}
+                  </span>
+                </RadioOption>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-yellow-800 text-sm">
+              ⚠️ No se pudieron cargar los tipos de envío. Intenta recargar la página.
             </p>
           </div>
         )}

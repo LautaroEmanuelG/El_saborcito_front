@@ -51,8 +51,8 @@ export const SeleccionDomicilio: React.FC<SeleccionDomicilioProps> = ({
   }
 
   return (
-    <div className="mb-6">
-      <h3 className="text-lg font-semibold mb-4">🏠 Seleccionar dirección de entrega</h3>
+    <div className="my-4">
+      <h3 className="text-lg font-semibold mb-4">Seleccionar dirección de entrega</h3>
       {/* Lista de domicilios existentes */}
       <div className="space-y-3 mb-4">
         {domicilios.map((domicilio) => (
