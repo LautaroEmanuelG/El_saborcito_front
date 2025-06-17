@@ -133,59 +133,85 @@ export const PerfilClienteDashboard = () => {
           <div className="max-w-xl mx-auto bg-white rounded-lg shadow-md p-8">
             <h2 className="text-2xl font-bold mb-6 text-center">Mis Datos</h2>
             <div className="space-y-4">
-              <div className="flex items-center justify-between border-b pb-2">
-                <span className="font-medium flex items-center">
-                  {' '}
-                  <IconoLoggin color="currentColor" />
+              {/* Nombre */}
+              <div className="flex items-center justify-between border-b pb-3">
+                <span className="flex items-center font-medium text-gray-700">
+                  <span className="inline-flex items-center justify-center bg-primary/10 rounded-full p-2 mr-3">
+                    <IconoLoggin color="#E11D48" />
+                  </span>
                   Nombre
                 </span>
-                <span>{user.nombre}</span>
-                <button onClick={() => setModal('nombre')}>
+                <span className="text-gray-900 font-semibold">{user.nombre}</span>
+                <button
+                  onClick={() => setModal('nombre')}
+                  className="ml-3 p-1 rounded hover:bg-primary/10 transition"
+                >
                   <IconoEditar className="w-5 h-5 text-primary" />
                 </button>
               </div>
-              <div className="flex items-center justify-between border-b pb-2">
-                <span className="font-medium flex items-center">
-                  {' '}
-                  <IconoLoggin color="currentColor" />
+              {/* Apellido */}
+              <div className="flex items-center justify-between border-b pb-3">
+                <span className="flex items-center font-medium text-gray-700">
+                  <span className="inline-flex items-center justify-center bg-primary/10 rounded-full p-2 mr-3">
+                    <IconoLoggin color="#E11D48" />
+                  </span>
                   Apellido
                 </span>
-                <span>{user.apellido}</span>
-                <button onClick={() => setModal('apellido')}>
+                <span className="text-gray-900 font-semibold">{user.apellido}</span>
+                <button
+                  onClick={() => setModal('apellido')}
+                  className="ml-3 p-1 rounded hover:bg-primary/10 transition"
+                >
                   <IconoEditar className="w-5 h-5 text-primary" />
                 </button>
               </div>
-              <div className="flex items-center justify-between border-b pb-2">
-                <span className="font-medium flex items-center">
-                  {' '}
-                  <IconoUbicacion />
+              {/* Dirección de Entrega */}
+              <div className="flex items-center justify-between border-b pb-3">
+                <span className="flex items-center font-medium text-gray-700">
+                  <span className="inline-flex items-center justify-center bg-primary/10 rounded-full p-2 mr-3">
+                    <IconoUbicacion />
+                  </span>
                   Dirección de Entrega
                 </span>
-                <span>
+                <span className="text-gray-900 font-semibold">
                   {domicilio
                     ? `${domicilio.calle} ${domicilio.numero}, ${domicilio.localidad?.nombre || ''}`
                     : 'No especificada'}
                 </span>
-                <button onClick={() => setModal('direccion')}>
+                <button
+                  onClick={() => setModal('direccion')}
+                  className="ml-3 p-1 rounded hover:bg-primary/10 transition"
+                >
                   <IconoEditar className="w-5 h-5 text-primary" />
                 </button>
               </div>
-              <div className="flex items-center justify-between border-b pb-2">
-                <span className="font-medium flex items-center">
-                  {' '}
-                  <IconoLoggin color="currentColor" />
+              {/* Teléfono */}
+              <div className="flex items-center justify-between border-b pb-3">
+                <span className="flex items-center font-medium text-gray-700">
+                  <span className="inline-flex items-center justify-center bg-primary/10 rounded-full p-2 mr-3">
+                    <IconoLoggin color="#E11D48" />
+                  </span>
                   Teléfono
                 </span>
-                <span>{user.telefono ?? 'No especificado'}</span>
-                <button onClick={() => setModal('telefono')}>
+                <span className="text-gray-900 font-semibold">
+                  {user.telefono ?? 'No especificado'}
+                </span>
+                <button
+                  onClick={() => setModal('telefono')}
+                  className="ml-3 p-1 rounded hover:bg-primary/10 transition"
+                >
                   <IconoEditar className="w-5 h-5 text-primary" />
                 </button>
               </div>
+              {/* Botón cerrar sesión */}
               <button
-                className="w-full mt-6 bg-primary text-white py-2 rounded flex items-center justify-center gap-2"
+                className="w-full mt-6 bg-primary text-white py-2 rounded-lg flex items-center justify-center gap-2 font-semibold shadow hover:bg-primary/90 transition"
                 onClick={logout}
               >
-                <IconoCerrar color="currentColor" /> Cerrar Sesión
+                <span className="inline-flex items-center justify-center bg-white/20 rounded-full p-1">
+                  <IconoCerrar color="#fff" />
+                </span>
+                Cerrar Sesión
               </button>
             </div>
           </div>

@@ -7,6 +7,7 @@ import IconoEditar from '../../../assets/svgs/icons/IconoEditar';
 import IconoEliminar from '../../../assets/svgs/icons/IconoEliminar';
 import IconoUbicacion from '../../../assets/svgs/icons/IconoUbicacion';
 import MapaInteractivo from '../../HU11_12_Carrito_Confirmacion/MapaInteractivo';
+import { ModalConfirm } from '../../../shared/components/utils/ModalConfirm';
 
 interface Provincia {
   id: number;
@@ -55,6 +56,8 @@ export const MisDirecciones = () => {
   const [direccionSeleccionada, setDireccionSeleccionada] = useState<number | undefined>(
     user?.domicilios && user.domicilios.length > 0 ? user.domicilios[0].id : undefined
   );
+  const [modalConfirmOpen, setModalConfirmOpen] = useState(false);
+  const [domicilioAEliminar, setDomicilioAEliminar] = useState<number | null>(null);
 
   useEffect(() => {
     const cargarLocalidades = async () => {
@@ -145,12 +148,10 @@ export const MisDirecciones = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (!user?.id || !window.confirm('¿Estás seguro de eliminar esta dirección?')) return;
-
+    if (!user?.id) return;
     try {
       // Filtramos el domicilio a eliminar
       const updatedDomicilios = user.domicilios?.filter((d) => d.id !== id) || [];
-
       // Enviamos la lista actualizada al backend
       const response = await updateCliente(user.id, { domicilios: updatedDomicilios });
       setUser(response);
@@ -256,7 +257,10 @@ export const MisDirecciones = () => {
                 <IconoEditar className="w-5 h-5 text-primary" />
               </button>
               <button
-                onClick={() => domicilio.id && handleDelete(domicilio.id)}
+                onClick={() => {
+                  setDomicilioAEliminar(domicilio.id!);
+                  setModalConfirmOpen(true);
+                }}
                 className="p-2 hover:bg-gray-100 rounded-full"
               >
                 <IconoEliminar className="w-5 h-5 text-red-500" />
@@ -268,7 +272,7 @@ export const MisDirecciones = () => {
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="bg-white rounded-lg w-full max-w-md sm:max-w-lg p-4 sm:p-6 max-h-[90vh] overflow-y-auto shadow-lg">
             <h3 className="text-xl font-bold mb-4">
               {editingDomicilio ? 'Editar' : 'Agregar'} Dirección
             </h3>
@@ -357,6 +361,19 @@ export const MisDirecciones = () => {
           </div>
         </div>
       )}
+
+      {/* Modal de confirmación para eliminar dirección */}
+      <ModalConfirm
+        isOpen={modalConfirmOpen}
+        setIsOpen={setModalConfirmOpen}
+        onConfirm={() => {
+          if (domicilioAEliminar) handleDelete(domicilioAEliminar);
+          setModalConfirmOpen(false);
+        }}
+        title="Eliminar dirección"
+        message="¿Estás seguro que deseas eliminar esta dirección?"
+        confirmText="Eliminar"
+      />
     </div>
   );
 };
