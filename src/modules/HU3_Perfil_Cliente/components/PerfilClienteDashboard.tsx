@@ -13,6 +13,7 @@ import { AsideCliente } from './AsideCliente';
 import { MiCuenta } from './MiCuenta';
 import { MisDirecciones } from './MisDirecciones';
 import { MisPedidos } from './MisPedidos';
+import { useNotificacion } from '../../../shared/hooks/useNotificacion';
 
 interface Provincia {
   id: number;
@@ -49,6 +50,7 @@ export const PerfilClienteDashboard = () => {
   const [activeView, setActiveView] = useState<'datos' | 'cuenta' | 'direcciones' | 'pedidos'>(
     (location.state as any)?.activeView || 'datos'
   );
+  const { mostrarNotificacion } = useNotificacion();
 
   useEffect(() => {
     const cargarLocalidades = async () => {
@@ -72,7 +74,12 @@ export const PerfilClienteDashboard = () => {
   if (!user) return <div>Cargando...</div>;
 
   // Dirección principal
-  const domicilio = user.domicilios?.[0];
+  let domicilio = user.domicilios?.[0];
+  const direccionPrincipalId = Number(localStorage.getItem('direccionPrincipalId'));
+  if (user.domicilios && direccionPrincipalId) {
+    const encontrada = user.domicilios.find((d) => d.id === direccionPrincipalId);
+    if (encontrada) domicilio = encontrada;
+  }
 
   // Configuración de campos para cada modal
   const fieldsNombre = [{ name: 'nombre', label: 'Nombre', type: 'text', required: true }];
@@ -119,7 +126,9 @@ export const PerfilClienteDashboard = () => {
       const updated = await updateCliente(user.id, dataToSend);
       setUser(updated);
       setModal(null);
+      mostrarNotificacion('¡Datos actualizados correctamente!', 'success');
     } catch (err) {
+      mostrarNotificacion('Error al actualizar. Intenta nuevamente.', 'error');
       alert('Error al actualizar. Intenta nuevamente.');
     } finally {
       setLoading(false);

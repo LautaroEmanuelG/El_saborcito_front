@@ -36,6 +36,7 @@ export const RegistroModal = ({ isOpen, onClose }: RegistroModalProps) => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const { setUser } = useUser();
+  const { mostrarNotificacion } = useNotificacion();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -117,6 +118,7 @@ export const RegistroModal = ({ isOpen, onClose }: RegistroModalProps) => {
       // Guardar usuario en contexto global
       setUser(response.usuario || response);
       setSuccess(true);
+      mostrarNotificacion('¡Registro exitoso!', 'success');
       setTimeout(() => {
         onClose();
       }, 1200);
@@ -124,10 +126,13 @@ export const RegistroModal = ({ isOpen, onClose }: RegistroModalProps) => {
       const backendMsg = error.response?.data?.message;
       if (backendMsg) {
         setError(backendMsg);
+        mostrarNotificacion(backendMsg, 'error');
       } else if (typeof error.message === 'string') {
         setError(error.message);
+        mostrarNotificacion(error.message, 'error');
       } else {
         setError('Error al registrar el usuario');
+        mostrarNotificacion('Error al registrar el usuario', 'error');
       }
     } finally {
       setLoading(false);
@@ -296,6 +301,25 @@ export const RegistroModal = ({ isOpen, onClose }: RegistroModalProps) => {
                   </option>
                 ))}
               </select>
+            </div>
+            {/* Mapa para seleccionar ubicación */}
+            <div className="mt-4">
+              <label className="block text-negro text-sm font-bold mb-2">
+                Ubicación en el mapa
+              </label>
+              <MapaInteractivo
+                onUbicacionSeleccionada={(lat, lng) => {
+                  setDomicilio((prev) => ({ ...prev, latitud: lat, longitud: lng }));
+                }}
+                ubicacionActual={
+                  domicilio.latitud && domicilio.longitud
+                    ? { lat: domicilio.latitud, lng: domicilio.longitud }
+                    : undefined
+                }
+              />
+              <div className="text-xs text-gray-500 mt-1">
+                Selecciona la ubicación exacta de tu domicilio en el mapa.
+              </div>
             </div>
           </div>
           {error && <div className="text-primary text-sm mt-2">{error}</div>}

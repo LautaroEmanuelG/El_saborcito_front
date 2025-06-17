@@ -6,7 +6,7 @@ import { getAllSucursales } from '../../../shared/services/sucursalService';
 import { Sucursal } from '../../../types/Sucursal';
 import IconoAgregar from '../../../assets/svgs/icons/IconoAgregar';
 import { IconoCerrar } from '../../../assets/svgs/icons/IconoCerrar';
-import { useNotificacion } from '../../../shared/hooks/useNotificacion';
+import { useNotificacionContext } from '../../../shared/providers/NotificacionProvider';
 import { useEmpleado } from '../../../shared/providers/EmpleadoProvider';
 import { ModalConfirm } from '../../../shared/components/utils/ModalConfirm';
 import { Rol } from '../../HU1_2_Registro_Login/models';
@@ -46,7 +46,7 @@ export const GestionEmpleados = () => {
   const [sucursales, setSucursales] = useState<Sucursal[]>([]);
   const [loadingSucursales, setLoadingSucursales] = useState(false);
 
-  const { mostrarNotificacion } = useNotificacion();
+  const { mostrarNotificacion } = useNotificacionContext();
 
   // Cargar empleados al montar el componente
   useEffect(() => {

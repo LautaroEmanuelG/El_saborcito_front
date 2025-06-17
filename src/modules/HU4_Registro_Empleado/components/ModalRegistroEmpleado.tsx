@@ -3,7 +3,7 @@ import { EmpleadoFormData, ROLES_EMPLEADO } from '../model';
 import { validarFormularioEmpleado, formDataToRegistroEmpleado, cleanFormData } from '../logic';
 import { registrarEmpleado } from '../../../shared/services/empleadoService';
 import { IconoCerrar } from '../../../assets/svgs/icons/IconoCerrar';
-import { useNotificacion } from '../../../shared/hooks/useNotificacion';
+import { useNotificacionContext } from '../../../shared/providers/NotificacionProvider';
 
 interface ModalRegistroEmpleadoProps {
   isOpen: boolean;
@@ -28,7 +28,7 @@ export const ModalRegistroEmpleado = ({
 
   const [loading, setLoading] = useState(false);
   const [errores, setErrores] = useState<string[]>([]);
-  const { mostrarNotificacion } = useNotificacion();
+  const { mostrarNotificacion } = useNotificacionContext();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
