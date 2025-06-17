@@ -20,6 +20,7 @@ import {
   validarCambioContraseña,
 } from '../../../../modules/HU5_Login_Empleado/logic';
 import { EstadoLoginEmpleado, Empleado } from '../../../../modules/HU5_Login_Empleado/model';
+import { obtenerNombreRol } from '../../../../modules/HU6_Perfil_Empleado/logic';
 
 type Props = {
   onSearch?: (query: string | string[]) => void; // Modificado para aceptar string o string[]
@@ -53,7 +54,7 @@ export const Header = ({ onSearch }: Props) => {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   const { user, setUser, logout } = useUser();
-  const { setEmpleado: setEmpleadoAuth } = useEmpleado();
+  const { empleadoAutenticado, setEmpleado: setEmpleadoAuth, logoutEmpleado } = useEmpleado();
   const navigate = useNavigate();
   const {
     user: auth0User,
@@ -163,23 +164,8 @@ export const Header = ({ onSearch }: Props) => {
           localStorage.setItem('empleadoToken', response.token);
           setEmpleadoAuth(response.empleado);
 
-          // Redirigir según el rol
-          switch (response.empleado.rol) {
-            case 'ADMIN':
-              navigate('/admin/historial');
-              break;
-            case 'CAJERO':
-              navigate('/admin/recepcion');
-              break;
-            case 'COCINERO':
-              navigate('/admin/cocina');
-              break;
-            case 'DELIVERY':
-              navigate('/admin/delivery');
-              break;
-            default:
-              navigate('/admin');
-          }
+          // Redirigir siempre al perfil de empleado
+          navigate('/empleado/perfil');
         }
         // Limpiar form y cerrar modal
         setEmailEmpleado('');
@@ -239,23 +225,8 @@ export const Header = ({ onSearch }: Props) => {
           localStorage.setItem('empleadoToken', loginResponse.token);
           setEmpleadoAuth(loginResponse.empleado);
 
-          // Redirigir según el rol
-          switch (loginResponse.empleado.rol) {
-            case 'ADMIN':
-              navigate('/admin/historial');
-              break;
-            case 'CAJERO':
-              navigate('/admin/recepcion');
-              break;
-            case 'COCINERO':
-              navigate('/admin/cocina');
-              break;
-            case 'DELIVERY':
-              navigate('/admin/delivery');
-              break;
-            default:
-              navigate('/admin');
-          }
+          // Redirigir siempre al perfil de empleado tras cambio de contraseña
+          navigate('/empleado/perfil');
         }
 
         // Limpiar formulario y cerrar modal
@@ -330,7 +301,85 @@ export const Header = ({ onSearch }: Props) => {
 
           {/* Iconos de login y carrito siempre visibles en desktop */}
           <div className="hidden md:flex items-center gap-4">
-            {user ? (
+            {/* Verificar si hay empleado autenticado primero */}
+            {empleadoAutenticado ? (
+              <div className="relative">
+                <button
+                  className="flex items-center gap-2 text-white hover:text-blanco"
+                  onClick={toggleUserMenu}
+                >
+                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                    <span className="text-white font-bold">
+                      {empleadoAutenticado.nombre?.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <span>
+                    {empleadoAutenticado.nombre} ({obtenerNombreRol(empleadoAutenticado.rol)})
+                  </span>
+                  <svg
+                    className={`w-4 h-4 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </button>
+
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
+                    <Link
+                      to="/empleado/perfil"
+                      className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      Mi Perfil
+                    </Link>
+                    <button
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        // Redirigir según el rol del empleado
+                        switch (empleadoAutenticado.rol) {
+                          case 'ADMIN':
+                            navigate('/admin/historial');
+                            break;
+                          case 'CAJERO':
+                            navigate('/admin/recepcion');
+                            break;
+                          case 'COCINERO':
+                            navigate('/admin/cocina');
+                            break;
+                          case 'DELIVERY':
+                            navigate('/admin/delivery');
+                            break;
+                          default:
+                            navigate('/admin');
+                        }
+                      }}
+                      className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+                    >
+                      Mi Área de Trabajo
+                    </button>
+                    <hr className="my-1 border-gray-200" />
+                    <button
+                      onClick={() => {
+                        logoutEmpleado();
+                        setUserMenuOpen(false);
+                        navigate('/');
+                      }}
+                      className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+                    >
+                      Cerrar Sesión
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : user ? (
               <div className="relative">
                 <button
                   className="flex items-center gap-2 text-white hover:text-blanco"
@@ -378,16 +427,6 @@ export const Header = ({ onSearch }: Props) => {
                     >
                       Historial de Compras
                     </Link>
-                    <hr className="my-1 border-gray-200" />
-                    <button
-                      onClick={() => {
-                        setUserMenuOpen(false);
-                        toggleLoginEmpleadoModal();
-                      }}
-                      className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
-                    >
-                      Acceso Empleados
-                    </button>
                     <hr className="my-1 border-gray-200" />
                     <button
                       onClick={() => {

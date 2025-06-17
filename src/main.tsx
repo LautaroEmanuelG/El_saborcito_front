@@ -28,6 +28,7 @@ import { CallbackPage } from './app/views/CallbackPage.tsx';
 import { HistorialPedidosCliente } from './modules/HU13_MisPedidos/index.ts';
 import { PerfilClienteDashboard } from './modules/HU3_Perfil_Cliente/components/PerfilClienteDashboard.tsx';
 import { GestionEmpleados } from './modules/HU4_Registro_Empleado/components/GestionEmpleados.tsx';
+import { PerfilEmpleadoDashboard } from './modules/HU6_Perfil_Empleado/components/PerfilEmpleadoDashboard.tsx';
 createRoot(document.getElementById('root')!).render(
   <BrowserRouter>
     <AppProviders>
@@ -229,6 +230,7 @@ createRoot(document.getElementById('root')!).render(
         </Route>
         <Route path="/callback" element={<CallbackPage />} />
         <Route path="/perfil" element={<PerfilClienteDashboard />} />
+        <Route path="/empleado/perfil" element={<PerfilEmpleadoDashboard />} />
         <Route path="*" element={<Navigate replace to="/" />} />
       </Routes>
     </AppProviders>

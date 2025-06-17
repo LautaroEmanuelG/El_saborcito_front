@@ -4,6 +4,7 @@ import { updateCliente } from '../../../shared/services/clienteService';
 import IconoEditar from '../../../assets/svgs/icons/IconoEditar';
 import IconoEmail from '../../../assets/svgs/icons/IconoEmail';
 import IconoPassword from '../../../assets/svgs/icons/IconoPassword';
+import { useAuth0 } from '@auth0/auth0-react';
 
 interface PasswordForm {
   currentPassword: string;
@@ -13,6 +14,7 @@ interface PasswordForm {
 
 export const MiCuenta = () => {
   const { user, setUser } = useUser();
+  const { user: auth0User } = useAuth0();
   const [isEditingEmail, setIsEditingEmail] = useState(false);
   const [isEditingPassword, setIsEditingPassword] = useState(false);
   const [newEmail, setNewEmail] = useState(user?.email || '');
@@ -22,6 +24,9 @@ export const MiCuenta = () => {
     confirmPassword: '',
   });
   const [error, setError] = useState('');
+
+  // Detectar si es usuario social (Google, Facebook, etc)
+  const esUsuarioSocial = auth0User?.sub && !auth0User.sub.startsWith('auth0|');
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,11 +88,7 @@ export const MiCuenta = () => {
     <div className="max-w-xl mx-auto bg-white rounded-lg shadow-md p-8">
       <h2 className="text-2xl font-bold mb-6 text-center">Mi Cuenta</h2>
 
-      {error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
-          {error}
-        </div>
-      )}
+      {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">{error}</div>}
 
       {/* Email Section */}
       <div className="mb-8">
@@ -142,67 +143,76 @@ export const MiCuenta = () => {
             <IconoPassword className="w-5 h-5 mr-2 text-primary" />
             <h3 className="text-lg font-semibold">Contraseña</h3>
           </div>
-          <button
-            onClick={() => setIsEditingPassword(!isEditingPassword)}
-            className="text-primary hover:text-primarydark"
-          >
-            <IconoEditar className="w-5 h-5" />
-          </button>
+          {/* Solo mostrar el botón de editar si NO es usuario social */}
+          {!esUsuarioSocial && (
+            <button
+              onClick={() => setIsEditingPassword(!isEditingPassword)}
+              className="text-primary hover:text-primarydark"
+            >
+              <IconoEditar className="w-5 h-5" />
+            </button>
+          )}
         </div>
-
-        {isEditingPassword && (
-          <form onSubmit={handlePasswordSubmit} className="space-y-4">
-            <input
-              type="password"
-              value={passwordForm.currentPassword}
-              onChange={(e) =>
-                setPasswordForm({ ...passwordForm, currentPassword: e.target.value })
-              }
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Contraseña actual"
-              required
-            />
-            <input
-              type="password"
-              value={passwordForm.newPassword}
-              onChange={(e) =>
-                setPasswordForm({ ...passwordForm, newPassword: e.target.value })
-              }
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Nueva contraseña"
-              required
-            />
-            <input
-              type="password"
-              value={passwordForm.confirmPassword}
-              onChange={(e) =>
-                setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })
-              }
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Confirmar nueva contraseña"
-              required
-            />
-            <p className="text-sm text-gray-500">
-              La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un símbolo
-            </p>
-            <div className="flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setIsEditingPassword(false)}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800"
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primarydark"
-              >
-                Guardar
-              </button>
-            </div>
-          </form>
+        {/* Si es usuario social, mostrar mensaje informativo */}
+        {esUsuarioSocial ? (
+          <div className="p-4 bg-yellow-50 text-yellow-800 rounded-lg">
+            Tu cuenta está vinculada a un proveedor externo (por ejemplo, Google). Para cambiar tu
+            contraseña, debes hacerlo desde la configuración de tu cuenta de ese proveedor.
+          </div>
+        ) : (
+          isEditingPassword && (
+            <form onSubmit={handlePasswordSubmit} className="space-y-4">
+              <input
+                type="password"
+                value={passwordForm.currentPassword}
+                onChange={(e) =>
+                  setPasswordForm({ ...passwordForm, currentPassword: e.target.value })
+                }
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Contraseña actual"
+                required
+              />
+              <input
+                type="password"
+                value={passwordForm.newPassword}
+                onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Nueva contraseña"
+                required
+              />
+              <input
+                type="password"
+                value={passwordForm.confirmPassword}
+                onChange={(e) =>
+                  setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })
+                }
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Confirmar nueva contraseña"
+                required
+              />
+              <p className="text-sm text-gray-500">
+                La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un
+                símbolo
+              </p>
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsEditingPassword(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primarydark"
+                >
+                  Guardar
+                </button>
+              </div>
+            </form>
+          )
         )}
       </div>
     </div>
   );
-}; 
+};
