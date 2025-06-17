@@ -1,6 +1,8 @@
 import { PedidoDTO, PedidoConRecetasDTO } from '../../modules/HU17_Cocina/Model';
 
-const BASE_URL = 'http://localhost:5252/api/historial';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5252';
+
+const BASE_URL = `${API_BASE_URL}/api/historial`;
 
 export const historialCocinaService = {
   // Obtener todos los pedidos finalizados
