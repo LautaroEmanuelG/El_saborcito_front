@@ -28,6 +28,7 @@ import { CallbackPage } from './app/views/CallbackPage.tsx';
 import { HistorialPedidosCliente } from './modules/HU13_MisPedidos/index.ts';
 import { PerfilClienteDashboard } from './modules/HU3_Perfil_Cliente/components/PerfilClienteDashboard.tsx';
 import ScreenStockInsumos from './modules/HU25_ControlStockInsumos/components/ScreenStockInsumos';
+import { GestionEmpleados } from './modules/HU4_Registro_Empleado';
 
 createRoot(document.getElementById('root')!).render(
   <BrowserRouter>
@@ -224,6 +225,14 @@ createRoot(document.getElementById('root')!).render(
             element={
               <ProtectedRoute>
                 <ScreenStockInsumos />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="empleados"
+            element={
+              <ProtectedRoute>
+                <GestionEmpleados />
               </ProtectedRoute>
             }
           />
