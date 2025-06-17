@@ -62,7 +62,7 @@ export interface Promocion {
   horaDesde: string | null;
   horaHasta: string | null;
   descuento: number | null;
-  precioPromocional: number | null;
+  precioPromocional: number | null | undefined;
   sucursal: Sucursal;
   imagen: Imagen;
   promocionDetalles: PromocionDetalle[];
@@ -76,6 +76,8 @@ export interface PromocionEnCarrito {
   promocion: Promocion;
   cantidad: number;
   disponible: boolean;
+  denominacion?: string;
+  precioPromocional?: number;
 }
 
 // 📊 **TIPOS PARA ANÁLISIS DE PROMOCIONES**

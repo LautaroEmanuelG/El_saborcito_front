@@ -1,20 +1,11 @@
 import type React from 'react';
+import type { PromocionEnCarrito } from '../../types/Promocion';
 
 interface ProductoResumen {
   denominacion: string;
   cantidad: number;
   precioVenta: number;
   tipo?: 'producto' | 'promocion';
-  precioPromocional?: number;
-}
-
-interface PromocionEnCarrito {
-  promocion: {
-    denominacion?: string;
-    precioPromocional?: number;
-  };
-  cantidad: number;
-  denominacion?: string;
   precioPromocional?: number;
 }
 

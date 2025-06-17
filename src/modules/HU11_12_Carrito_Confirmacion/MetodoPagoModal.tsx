@@ -9,7 +9,7 @@ import { ProductSummary } from './ProductSummary';
 import { IconoLocation } from '../../assets/svgs/icons/IconoLocation';
 import { getAllFormaPagos, type FormaPago } from '../../shared/services/formaPagoService';
 import { createPedido, type CreatePedidoRequest } from '../../shared/services/pedidoService';
-import { crearPreferenciaPago, abrirCheckout } from '../../shared/services/mercadoPagoService';
+import { crearPreferencia, abrirCheckoutMP } from '../../shared/services/mercadoPagoService';
 import MercadoPagoLoader from './components/MercadoPagoLoader';
 import {
   getIconoFormaPago,
@@ -216,7 +216,7 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
 
           // Crear preferencia de pago
           console.log('🚀 Llamando a crearPreferenciaPago con ID:', response.pedido.id);
-          const preferencia = await crearPreferenciaPago(response.pedido.id);
+          const preferencia = await crearPreferencia(response.pedido.id);
           console.log('✅ Preferencia creada:', preferencia);
 
           // Breve pausa para mostrar el loader
@@ -233,7 +233,7 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
           console.log('🚀 Modal cerrado y carrito limpio. Abriendo Mercado Pago...');
 
           // Abrir checkout de Mercado Pago
-          abrirCheckout(preferencia.initPoint);
+          abrirCheckoutMP(preferencia.initPoint);
         } catch (mpError) {
           console.error('❌ Error al procesar Mercado Pago:', mpError);
           alert(
