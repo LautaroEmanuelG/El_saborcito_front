@@ -1,4 +1,3 @@
-import React from 'react';
 import { KanbanBoard } from '../../../modules/HU17_Cocina/Components/KanbanBoard';
 
 export const Cocina: React.FC = () => {
