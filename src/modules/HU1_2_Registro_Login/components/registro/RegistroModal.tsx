@@ -5,7 +5,6 @@ import { isValidEmail, isValidPassword } from '../../logic';
 import { RegistroCliente, Domicilio, Localidad } from '../../models';
 import { useUser } from '../../../../shared/providers/UserProvider';
 import { useAuth0 } from '@auth0/auth0-react';
-import { useNotificacion } from '../../../../shared/hooks/useNotificacion';
 
 interface RegistroModalProps {
   isOpen: boolean;
@@ -302,6 +301,25 @@ export const RegistroModal = ({ isOpen, onClose }: RegistroModalProps) => {
                   </option>
                 ))}
               </select>
+            </div>
+            {/* Mapa para seleccionar ubicación */}
+            <div className="mt-4">
+              <label className="block text-negro text-sm font-bold mb-2">
+                Ubicación en el mapa
+              </label>
+              <MapaInteractivo
+                onUbicacionSeleccionada={(lat, lng) => {
+                  setDomicilio((prev) => ({ ...prev, latitud: lat, longitud: lng }));
+                }}
+                ubicacionActual={
+                  domicilio.latitud && domicilio.longitud
+                    ? { lat: domicilio.latitud, lng: domicilio.longitud }
+                    : undefined
+                }
+              />
+              <div className="text-xs text-gray-500 mt-1">
+                Selecciona la ubicación exacta de tu domicilio en el mapa.
+              </div>
             </div>
           </div>
           {error && <div className="text-primary text-sm mt-2">{error}</div>}

@@ -74,7 +74,12 @@ export const PerfilClienteDashboard = () => {
   if (!user) return <div>Cargando...</div>;
 
   // Dirección principal
-  const domicilio = user.domicilios?.[0];
+  let domicilio = user.domicilios?.[0];
+  const direccionPrincipalId = Number(localStorage.getItem('direccionPrincipalId'));
+  if (user.domicilios && direccionPrincipalId) {
+    const encontrada = user.domicilios.find((d) => d.id === direccionPrincipalId);
+    if (encontrada) domicilio = encontrada;
+  }
 
   // Configuración de campos para cada modal
   const fieldsNombre = [{ name: 'nombre', label: 'Nombre', type: 'text', required: true }];
