@@ -5,7 +5,6 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { VistaCarrito } from './modules/HU11_12_Carrito_Confirmacion/VistaCarrito.tsx';
 import { CarritoProvider } from './shared/providers/CarritoProvider';
 import { LayoutAdmin } from './app/layout/LayoutAdmin.tsx';
-import { Control } from './app/views/admin/Control.tsx';
 import ProtectedRoute from './app/routes/ProtectedRoute.tsx';
 import ProtectedCarrito from './app/routes/ProtectCarrito.tsx';
 import { AppProviders } from './shared/providers/AppProviders.tsx';
@@ -140,14 +139,6 @@ createRoot(document.getElementById('root')!).render(
             element={
               <ProtectedRoute>
                 <MovimientosMonetarios />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="control"
-            element={
-              <ProtectedRoute>
-                <Control />
               </ProtectedRoute>
             }
           />
