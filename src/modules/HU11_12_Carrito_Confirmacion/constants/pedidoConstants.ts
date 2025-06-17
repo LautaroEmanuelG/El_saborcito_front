@@ -1,7 +1,5 @@
 // 🎯 Constantes para el sistema de pedidos y pagos
 
-import { info } from 'console';
-
 // IDs por defecto (pueden ser configurables desde variables de entorno)
 export const DEFAULT_VALUES = {
   CLIENTE_ID: 5,

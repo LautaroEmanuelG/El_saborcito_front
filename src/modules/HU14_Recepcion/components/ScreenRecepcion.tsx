@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useRecepcionLogic } from '../Logic';
 import { PedidoCompletoConDetalles } from '../../../types/Pedido';
 import { FiltrosRecepcion } from './FiltrosRecepcion';
@@ -144,7 +144,6 @@ export const ScreenRecepcion: React.FC = () => {
       <TablaRecepcion
         pedidos={pedidosFiltrados}
         onVerDetalle={abrirDetalle}
-        onCambiarEstado={manejarCambioEstado}
         onAvanzarEstado={manejarAvanzarEstado}
         puedeAvanzarEstado={puedeAvanzarEstado}
         obtenerProximoEstado={obtenerProximoEstado}

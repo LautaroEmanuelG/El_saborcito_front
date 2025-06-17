@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  loginEmpleado,
   cambiarContraseñaEmpleado,
+  loginEmpleado,
   validarLoginEmpleado,
   validarNuevaContraseña,
 } from '../logic';
-import { EstadoLoginEmpleado, Empleado } from '../model';
+import { EstadoLoginEmpleado, type Empleado } from '../model';
 import { useEmpleado } from '../../../shared/providers/EmpleadoProvider';
 import emailjs from 'emailjs-com';
 import { loginAdmin } from '../../../shared/services/authService';
@@ -142,7 +142,11 @@ export const LoginEmpleadoModal = ({ isOpen, onClose }: LoginEmpleadoModalProps)
       if (errorValidacion) {
         setError(errorValidacion);
         return;
-      }
+      } // TODO: Implementar cambio de contraseña correctamente
+      // await cambiarContraseñaEmpleado(empleadoId, {
+      //   contraseñaActual: contraseña,
+      //   contraseñaNueva: nuevaContraseña,
+      // });
 
       if (empleadoTemp && empleadoTemp.id) {
         await cambiarContraseñaEmpleado(empleadoTemp.id, {

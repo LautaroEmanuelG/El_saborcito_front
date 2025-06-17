@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ClienteDTO, ClienteFormData } from '../model';
 import { validarFormularioCliente, formDataToActualizarClienteDTO, cleanFormData } from '../logic';
 import { actualizarClienteAdmin } from '../../../shared/services/clienteAdminService';
@@ -12,12 +12,12 @@ interface ModalEditarClienteProps {
   onClienteActualizado: (cliente: ClienteDTO) => void;
 }
 
-export const ModalEditarCliente: React.FC<ModalEditarClienteProps> = ({
+export const ModalEditarCliente = ({
   isOpen,
   setIsOpen,
   cliente,
   onClienteActualizado,
-}) => {
+}: ModalEditarClienteProps) => {
   const [formData, setFormData] = useState<ClienteFormData>({
     nombre: '',
     apellido: '',
@@ -109,7 +109,7 @@ export const ModalEditarCliente: React.FC<ModalEditarClienteProps> = ({
             className="text-gray-400 hover:text-gray-600 transition-colors"
             disabled={loading}
           >
-            <IconoCerrar />
+            <IconoCerrar color="currentColor" />
           </button>
         </div>
 

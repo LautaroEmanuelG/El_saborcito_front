@@ -25,7 +25,7 @@ export const normalizePromocionToProduct = (promocion: Promocion): PromocionNorm
   return {
     id: promocion.id,
     denominacion: promocion.denominacion,
-    precioVenta: promocion.precioPromocional,
+    precioVenta: promocion.precioPromocional ?? 0,
     imagen: promocion.imagen,
     tipo: 'promocion',
     promocionOriginal: promocion,

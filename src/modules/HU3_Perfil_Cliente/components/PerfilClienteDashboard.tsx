@@ -26,21 +26,6 @@ interface Localidad {
   provincia: Provincia;
 }
 
-interface Domicilio {
-  calle: string;
-  numero: string;
-  cp: string;
-  localidad?: Localidad;
-}
-
-interface Usuario {
-  id: number;
-  nombre: string;
-  apellido: string;
-  telefono: string;
-  domicilios?: Domicilio[];
-}
-
 export const PerfilClienteDashboard = () => {
   const { user, logout, setUser } = useUser();
   const location = useLocation();

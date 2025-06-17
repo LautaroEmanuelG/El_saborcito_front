@@ -1,10 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import {
-  EmpleadoFormData,
-  ROLES_EMPLEADO,
-  EmpleadoDTO,
-  ActualizarEmpleadoAdminDTO,
-} from '../model';
+import { useState, useEffect } from 'react';
+import { EmpleadoFormData, ROLES_EMPLEADO, EmpleadoDTO } from '../model';
 import { validarFormularioEmpleado, formDataToRegistroEmpleado, cleanFormData } from '../logic';
 import { registrarEmpleado } from '../../../shared/services/empleadoService';
 import { getAllSucursales } from '../../../shared/services/sucursalService';
@@ -282,13 +277,14 @@ export const GestionEmpleados = () => {
       }));
       // Llama al provider con el tipo correcto
       await actualizarEmpleado(empleadoSeleccionado.id!, {
+        empleadoId: empleadoSeleccionado.id!,
         nombre: formEditar.nombre,
         apellido: formEditar.apellido,
         telefono: formEditar.telefono,
         email: formEditar.email,
         domicilios: domiciliosConvertidos,
         rol: formEditar.rol as Rol,
-        sucursal: formEditar.sucursal,
+        sucursalId: formEditar.sucursal?.id,
         estado: empleadoSeleccionado.estado,
       });
       mostrarNotificacion('Empleado actualizado correctamente', 'success');
