@@ -25,12 +25,9 @@ import { Recepcion } from './modules/HU14_Recepcion/components/Recepcion.tsx';
 import { Delivery } from './modules/HU16_Delivery/components/Delivery.tsx';
 import ScreenCompraIngredientes from './modules/HU24_CompraIngredientes/components/ScreenCompraIngredientes';
 import { CallbackPage } from './app/views/CallbackPage.tsx';
-<<<<<<< Updated upstream
 import { HistorialPedidosCliente } from './modules/HU13_MisPedidos/index.ts';
 import { PerfilClienteDashboard } from './modules/HU3_Perfil_Cliente/components/PerfilClienteDashboard.tsx';
-=======
-import { PerfilClienteDashboard } from './modules/HU3_Perfil_Cliente/components/PerfilClienteDashboard';
->>>>>>> Stashed changes
+import { GestionEmpleados } from './modules/HU4_Registro_Empleado';
 
 createRoot(document.getElementById('root')!).render(
   <BrowserRouter>
@@ -219,6 +216,14 @@ createRoot(document.getElementById('root')!).render(
             element={
               <ProtectedRoute>
                 <ScreenCompraIngredientes />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="empleados"
+            element={
+              <ProtectedRoute>
+                <GestionEmpleados />
               </ProtectedRoute>
             }
           />
