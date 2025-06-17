@@ -52,10 +52,11 @@ export const ScreenStockInsumos = () => {
   const handleDelete = () => {};
   const setOpenModal = () => {};
   const setSelectedItem = () => {};
-
   return (
     <div className="container mx-auto p-4">
-      <h2 className="text-2xl font-bold mb-6 text-center">Control de Stock de Insumos</h2>
+      <div className="flex w-full justify-start items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">Control Stock Insumos</h1>
+      </div>
       <TableGeneric
         columns={COLUMNS}
         rows={insumosFiltrados}

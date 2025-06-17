@@ -77,10 +77,29 @@ const ScreenCompraIngredientes = () => {
 
   // Validación de rango de fechas
   const isInvalidRange = new Date(desde) > new Date(hasta);
-
   return (
     <div className="container mx-auto p-4">
-      <div className="flex w-full justify-between items-center mb-6 flex-wrap gap-4">
+      <div className="flex w-full justify-between items-center mb-8">
+        <h1 className="text-2xl font-bold text-gray-800">Compra de Insumos</h1>
+        <button
+          className="bg-primary hover:bg-primarydark text-blanco font-bold py-2 px-4 rounded-lg shadow-lg transition-all duration-200 transform hover:scale-105"
+          onClick={handleOpenModal}
+        >
+          Realizar Compra
+        </button>{' '}
+      </div>
+      <div className="flex w-full justify-between items-center mb-6">
+        <div className="bg-primary border border-primarydark text-white px-3 py-2 rounded-lg shadow text-base font-semibold text-right min-w-[140px]">
+          Gastos realizados:
+          <br />
+          <span className="text-lg">
+            $
+            {totalGastos.toLocaleString('es-AR', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </span>
+        </div>
         <div className="flex gap-4 bg-gray-200 p-2 rounded-lg items-center">
           <div>
             <label className="block text-sm text-gray-600 font-medium mb-1">Desde:</label>
@@ -100,25 +119,6 @@ const ScreenCompraIngredientes = () => {
               className="border border-gray-300 px-2 py-1 rounded"
             />
           </div>
-        </div>
-        <button
-          className="bg-primary hover:bg-primarydark text-blanco font-bold py-2 px-4 rounded-lg shadow-lg transition-all duration-200 transform hover:scale-105"
-          onClick={handleOpenModal}
-        >
-          Realizar Compra
-        </button>
-      </div>
-      <div className="flex justify-start mb-4">
-        <div className="bg-primary border border-primarydark text-white px-3 py-2 rounded-lg shadow text-base font-semibold text-right min-w-[140px]">
-          Gastos realizados:
-          <br />
-          <span className="text-lg">
-            $
-            {totalGastos.toLocaleString('es-AR', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
-          </span>
         </div>
       </div>
 

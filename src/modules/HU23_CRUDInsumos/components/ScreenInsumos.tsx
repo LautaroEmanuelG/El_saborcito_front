@@ -158,10 +158,10 @@ export const ScreenInsumos = () => {
     }
     setOpenModal(false);
   };
-
   return (
     <div className="container mx-auto p-4">
-      <div className="flex w-full justify-end items-center mb-6">
+      <div className="flex w-full justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">Insumos</h1>
         <button
           className="bg-primary hover:bg-primarydark text-blanco font-bold py-2 px-4 rounded-lg shadow-lg transition-all duration-200 transform hover:scale-105"
           onClick={handleAdd}
