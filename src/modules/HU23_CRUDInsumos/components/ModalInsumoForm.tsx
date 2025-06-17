@@ -136,14 +136,18 @@ export const ModalInsumoForm = ({
       return;
     }
     const { eliminado, categoria, ...rest } = form;
-    // Asegurar que el id esté presente en el payload si existe
-    const payload = {
+    let payload: any = {
       ...rest,
       id: form.id, // importante para update
       eliminado: !isHabilitado,
       categoriaId: form.categoria.id,
       unidadMedida: form.unidadMedida,
     };
+    // Si es modo 'add', asegurar que precioCompra y stockActual estén presentes (pueden ser 0)
+    if (mode === 'add') {
+      payload.precioCompra = Number(form.precioCompra) || 0;
+      payload.stockActual = Number(form.stockActual) || 0;
+    }
     onSubmit(payload, selectedImageFile ?? undefined);
   };
 
@@ -171,22 +175,8 @@ export const ModalInsumoForm = ({
               autoFocus
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1" htmlFor="precioCompra">
-              Precio Compra<span className="text-red-500">*</span>
-            </label>
-            <input
-              id="precioCompra"
-              name="precioCompra"
-              type="number"
-              value={form.precioCompra ?? 0}
-              onChange={handleChange}
-              disabled={mode === 'view'}
-              className="w-full border rounded px-3 py-2"
-              required
-              min={0}
-            />
-          </div>
+          {/* Eliminado campo Precio Compra */}
+          {/* Eliminado campo Stock Actual */}
           <div>
             <label className="block text-sm font-medium mb-1" htmlFor="precioVenta">
               Precio Venta<span className="text-red-500">*</span>
@@ -196,22 +186,6 @@ export const ModalInsumoForm = ({
               name="precioVenta"
               type="number"
               value={form.precioVenta ?? 0}
-              onChange={handleChange}
-              disabled={mode === 'view'}
-              className="w-full border rounded px-3 py-2"
-              required
-              min={0}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1" htmlFor="stockActual">
-              Stock Actual<span className="text-red-500">*</span>
-            </label>
-            <input
-              id="stockActual"
-              name="stockActual"
-              type="number"
-              value={form.stockActual ?? 0}
               onChange={handleChange}
               disabled={mode === 'view'}
               className="w-full border rounded px-3 py-2"
