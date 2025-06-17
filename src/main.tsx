@@ -30,6 +30,7 @@ import PedidoExitoso from './pages/PedidoExitoso.tsx';
 import { PerfilClienteDashboard } from './modules/HU3_Perfil_Cliente/components/PerfilClienteDashboard.tsx';
 import ScreenStockInsumos from './modules/HU25_ControlStockInsumos/components/ScreenStockInsumos';
 import { GestionEmpleados } from './modules/HU4_Registro_Empleado';
+import { PerfilEmpleadoDashboard } from './modules/HU6_Perfil_Empleado/components/PerfilEmpleadoDashboard.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <BrowserRouter>
@@ -241,6 +242,7 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/callback" element={<CallbackPage />} />
         <Route path="/pedido-exitoso" element={<PedidoExitoso />} />
         <Route path="/perfil" element={<PerfilClienteDashboard />} />
+        <Route path="/empleado/perfil" element={<PerfilEmpleadoDashboard />} />
         <Route path="*" element={<Navigate replace to="/" />} />
       </Routes>
     </AppProviders>
