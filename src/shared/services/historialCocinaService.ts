@@ -1,41 +1,35 @@
+import axiosInstance from './axiosConfig';
 import { PedidoDTO, PedidoConRecetasDTO } from '../../modules/HU17_Cocina/Model';
 
-const BASE_URL = 'http://localhost:5252/api/historial';
+const BASE_URL = '/historial';
 
 export const historialCocinaService = {
   // Obtener todos los pedidos finalizados
-  async obtenerPedidosFinalizados(): Promise<PedidoDTO[]> {
-    const response = await fetch(`${BASE_URL}/pedidos`);
-    if (!response.ok) {
-      throw new Error('Error al obtener pedidos finalizados');
-    }
-    return response.json();
+  obtenerPedidosFinalizados: async (): Promise<PedidoDTO[]> => {
+    const response = await axiosInstance.get(`${BASE_URL}/pedidos`);
+    return response.data;
   },
 
   // Obtener detalle completo de un pedido con recetas
-  async obtenerDetalleCompleto(id: number): Promise<PedidoConRecetasDTO> {
-    const response = await fetch(`${BASE_URL}/pedidos/${id}/detalle-completo`);
-    if (!response.ok) {
-      throw new Error('Error al obtener detalle del pedido');
-    }
-    return response.json();
+  obtenerDetalleCompleto: async (id: number): Promise<PedidoConRecetasDTO> => {
+    const response = await axiosInstance.get(`${BASE_URL}/pedidos/${id}/detalle-completo`);
+    return response.data;
   },
 
   // Descargar PDF de un pedido
-  async descargarPDF(id: number): Promise<void> {
-    const response = await fetch(`${BASE_URL}/pedidos/${id}/pdf`);
-    if (!response.ok) {
-      throw new Error('Error al generar PDF');
-    }
+  descargarPDF: async (id: number): Promise<void> => {
+    const response = await axiosInstance.get(`${BASE_URL}/pedidos/${id}/pdf`, {
+      responseType: 'blob',
+    });
 
-    const blob = await response.blob();
+    const blob = new Blob([response.data], { type: 'application/pdf' });
     const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `pedido_${id}.pdf`;
-    document.body.appendChild(a);
-    a.click();
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `pedido-${id}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
   },
 };

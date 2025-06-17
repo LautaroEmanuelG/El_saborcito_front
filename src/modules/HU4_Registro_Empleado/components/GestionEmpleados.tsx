@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { EmpleadoFormData, ROLES_EMPLEADO, EmpleadoDTO } from '../model';
+import {
+  EmpleadoFormData,
+  ROLES_EMPLEADO,
+  EmpleadoDTO,
+  ActualizarEmpleadoAdminDTO,
+} from '../model';
 import { validarFormularioEmpleado, formDataToRegistroEmpleado, cleanFormData } from '../logic';
 import { registrarEmpleado } from '../../../shared/services/empleadoService';
 import { getAllSucursales } from '../../../shared/services/sucursalService';

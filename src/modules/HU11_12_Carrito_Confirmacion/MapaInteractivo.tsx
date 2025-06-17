@@ -34,7 +34,13 @@ const MapaInteractivo: React.FC<MapaInteractivoProps> = ({
   ubicacionActual,
 }) => {
   // Coordenadas de UTN Facultad Regional Mendoza como centro por defecto
-  const position: [number, number] = [-32.89341341972979, -68.84846922641435];
+  const defaultPosition: [number, number] = [-32.89341341972979, -68.84846922641435];
+
+  // Si hay una ubicación actual, usarla como centro, sino usar la posición por defecto
+  const centerPosition: [number, number] = ubicacionActual
+    ? [ubicacionActual.lat, ubicacionActual.lng]
+    : defaultPosition;
+
   const [markerPosition, setMarkerPosition] = useState<[number, number] | null>(
     ubicacionActual ? [ubicacionActual.lat, ubicacionActual.lng] : null
   );
@@ -63,10 +69,11 @@ const MapaInteractivo: React.FC<MapaInteractivoProps> = ({
   return (
     <div className="w-full h-[300px] rounded-lg opacity-90 overflow-hidden border">
       <MapContainer
-        center={position}
-        zoom={13}
+        center={centerPosition}
+        zoom={ubicacionActual ? 16 : 13} // Zoom más cercano si hay ubicación preseleccionada
         style={{ height: '100%', width: '100%' }}
         className="rounded-lg"
+        key={`${centerPosition[0]}-${centerPosition[1]}`} // Forzar re-render cuando cambia el centro
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -81,7 +88,10 @@ const MapaInteractivo: React.FC<MapaInteractivoProps> = ({
       </MapContainer>
 
       <div className="mt-2 text-sm text-gray-600 text-center">
-        📍 Haz clic en el mapa para seleccionar tu ubicación
+        📍{' '}
+        {ubicacionActual
+          ? 'Ubicación seleccionada - Haz clic para cambiarla'
+          : 'Haz clic en el mapa para seleccionar tu ubicación'}
       </div>
     </div>
   );

@@ -76,10 +76,6 @@ const NAV_DATA: NavItemStructure[] = [
       { to: '/admin/clientes', label: 'Clientes' },
     ],
   },
-  {
-    title: 'Finanzas',
-    subItems: [{ to: '/admin/control', label: 'Libros Contables' }],
-  },
 ];
 
 export const AsideAdmin = () => {

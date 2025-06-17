@@ -43,6 +43,18 @@ Desktop.ini
 .env.test.local
 .env.production.local
 
+# 🚀 VERCEL DEPLOYMENT
+.vercel
+
+# 🔐 SENSITIVE FILES (nunca commitear)
+.env.production
+config/keys.json
+
+# 📊 ANALYTICS & MONITORING
+.next/
+.nuxt/
+.cache/
+
 # TypeScript
 *.tsbuildinfo
 
