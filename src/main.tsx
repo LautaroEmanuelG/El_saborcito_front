@@ -27,6 +27,7 @@ import ScreenCompraIngredientes from './modules/HU24_CompraIngredientes/componen
 import { CallbackPage } from './app/views/CallbackPage.tsx';
 import { HistorialPedidosCliente } from './modules/HU13_MisPedidos/index.ts';
 import { PerfilClienteDashboard } from './modules/HU3_Perfil_Cliente/components/PerfilClienteDashboard.tsx';
+import ScreenStockInsumos from './modules/HU25_ControlStockInsumos/components/ScreenStockInsumos';
 import { GestionEmpleados } from './modules/HU4_Registro_Empleado';
 
 createRoot(document.getElementById('root')!).render(
@@ -216,6 +217,14 @@ createRoot(document.getElementById('root')!).render(
             element={
               <ProtectedRoute>
                 <ScreenCompraIngredientes />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="control-stock-insumos"
+            element={
+              <ProtectedRoute>
+                <ScreenStockInsumos />
               </ProtectedRoute>
             }
           />
