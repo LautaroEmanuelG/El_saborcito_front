@@ -7,15 +7,6 @@ type ProductProps = {
   setProductoModal: (producto: ArticuloManufacturado | ArticuloInsumo | null) => void;
 };
 
-/**
- * Determina si un artículo es de tipo ArticuloManufacturado
- */
-const isArticuloManufacturado = (
-  articulo: ArticuloInsumo | ArticuloManufacturado
-): articulo is ArticuloManufacturado => {
-  return 'categoriaId' in articulo && 'descripcion' in articulo;
-};
-
 export const CardProducto = ({ articulo, setProductoModal }: ProductProps) => {
   const productAvailability = useProductStore((state) => state.productAvailability);
 
@@ -44,19 +35,19 @@ export const CardProducto = ({ articulo, setProductoModal }: ProductProps) => {
               className="object-cover w-full h-full"
             />
           </picture>{' '}
-          {isArticuloManufacturado(articulo) && !isAvailable && (
+          {!isAvailable && (
             <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
               Sin stock de insumos
             </div>
           )}
-        </div>
+        </div>{' '}
         <BtnAgregarCarrito
           position={'right'}
           articulo={articulo}
           cantidadProducto={1}
           setCantidadProducto={() => {}}
           onClose={() => {}}
-          disabledOverride={isArticuloManufacturado(articulo) && !isAvailable}
+          disabledOverride={!isAvailable}
         />
       </div>
       <div className="p-4 text-left">
