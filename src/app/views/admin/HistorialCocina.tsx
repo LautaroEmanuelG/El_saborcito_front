@@ -1,4 +1,3 @@
-import React from 'react';
 import IconoVer from '../../../assets/svgs/icons/IconoVer';
 import IconoFileTypePdf from '../../../assets/svgs/icons/IconoFileTypePdf';
 import { useHistorialCocina, useDetalleCompleto } from '../../../shared/hooks/useHistorialCocina';

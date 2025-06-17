@@ -48,8 +48,14 @@ export const CallbackPage = () => {
     handleAuth();
   }, [isLoading, isAuthenticated, auth0User, getAccessTokenSilently, setUser, navigate]);
 
-  if (isLoading) return <div>Cargando...</div>;
+  if (isLoading)
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[300px]">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-red-600 mx-auto mb-4"></div>
+        <p className="text-gray-600">Procesando autenticación...</p>
+      </div>
+    );
   if (error) return <div>Error: {error.message}</div>;
 
-  return <div>Procesando autenticación...</div>;
+  return null;
 };

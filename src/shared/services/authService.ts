@@ -109,3 +109,19 @@ export const sincronizarUsuarioAuth0 = async (auth0User: any) => {
     throw error;
   }
 };
+
+// 🔐 Login manual de admin
+export const loginAdmin = async (credentials: Login) => {
+  try {
+    const response = await axiosInstance.post('/admin/login', credentials);
+    return response.data; // Debería devolver token + datos del usuario
+  } catch (error: any) {
+    if (error.response?.status === 403) {
+      throw new Error('Acceso denegado');
+    }
+    if (error.response?.status === 401) {
+      throw new Error('Usuario o contraseña incorrectos');
+    }
+    throw new Error('Error en el servidor. Intente nuevamente');
+  }
+};

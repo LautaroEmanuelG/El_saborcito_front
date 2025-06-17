@@ -69,7 +69,7 @@ export const ModalProducto: React.FC<Props> = ({ articulo = null, isOpen, onClos
               >
                 Volver
               </button>{' '}
-              {isArticuloManufacturado(articulo) && !isAvailable && (
+              {!isAvailable && (
                 <div className="bg-negro/80 text-white text-nowrap text-xs px-3 py-1 rounded absolute bottom-16 right-3">
                   Sin stock de insumos
                 </div>
@@ -79,7 +79,7 @@ export const ModalProducto: React.FC<Props> = ({ articulo = null, isOpen, onClos
                 cantidadProducto={cantidadProducto}
                 setCantidadProducto={setCantidadProducto}
                 onClose={onClose}
-                disabledOverride={isArticuloManufacturado(articulo) && !isAvailable}
+                disabledOverride={!isAvailable}
               />
             </div>
           </aside>

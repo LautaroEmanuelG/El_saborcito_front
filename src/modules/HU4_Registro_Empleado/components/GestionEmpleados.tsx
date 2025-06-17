@@ -190,7 +190,7 @@ export const GestionEmpleados = () => {
       resetearFormulario();
       setModalRegistro(false);
     } catch (error: any) {
-      const mensaje = error.message || 'Error al registrar el empleado';
+      const mensaje = error.message ?? 'Error al registrar el empleado';
       setErrores([mensaje]);
       mostrarNotificacion(mensaje, 'error');
     } finally {
@@ -210,7 +210,7 @@ export const GestionEmpleados = () => {
       setModalConfirm(false);
       setEmpleadoSeleccionado(null);
     } catch (error: any) {
-      mostrarNotificacion(error.message || 'Error al cambiar estado del empleado', 'error');
+      mostrarNotificacion(error.message ?? 'Error al cambiar estado del empleado', 'error');
       setModalConfirm(false);
     }
   };
@@ -253,13 +253,13 @@ export const GestionEmpleados = () => {
   useEffect(() => {
     if (modalEditar && empleadoSeleccionado) {
       setFormEditar({
-        nombre: empleadoSeleccionado.nombre || '',
-        apellido: empleadoSeleccionado.apellido || '',
-        telefono: empleadoSeleccionado.telefono || '',
-        email: empleadoSeleccionado.email || '',
+        nombre: empleadoSeleccionado.nombre ?? '',
+        apellido: empleadoSeleccionado.apellido ?? '',
+        telefono: empleadoSeleccionado.telefono ?? '',
+        email: empleadoSeleccionado.email ?? '',
         password: '',
         confirmarPassword: '',
-        rol: (empleadoSeleccionado.rol as '' | Rol) || '',
+        rol: (empleadoSeleccionado.rol as '' | Rol) ?? '',
         sucursal: empleadoSeleccionado.sucursal,
       });
     }
@@ -270,22 +270,31 @@ export const GestionEmpleados = () => {
     e.preventDefault();
     if (!empleadoSeleccionado) return;
     try {
-      const dto: ActualizarEmpleadoAdminDTO = {
-        empleadoId: empleadoSeleccionado.id!,
+      // Convierte los domicilios a tipo Domicilio (modelo frontend)
+      const domiciliosConvertidos = (empleadoSeleccionado.domicilios as any)?.map((d: any) => ({
+        id: d.id,
+        calle: d.calle,
+        numero: d.numero ? Number(d.numero) : undefined,
+        cp: d.cp,
+        localidad: d.localidad ?? (d.localidadId ? { id: d.localidadId } : undefined),
+        latitud: d.latitud,
+        longitud: d.longitud,
+      }));
+      // Llama al provider con el tipo correcto
+      await actualizarEmpleado(empleadoSeleccionado.id!, {
         nombre: formEditar.nombre,
         apellido: formEditar.apellido,
         telefono: formEditar.telefono,
         email: formEditar.email,
-        domicilios: empleadoSeleccionado.domicilios as any, // Ajustar si hay edición de domicilios
+        domicilios: domiciliosConvertidos,
         rol: formEditar.rol as Rol,
-        sucursalId: formEditar.sucursal?.id,
+        sucursal: formEditar.sucursal,
         estado: empleadoSeleccionado.estado,
-      };
-      await actualizarEmpleado(empleadoSeleccionado.id!, dto);
+      });
       mostrarNotificacion('Empleado actualizado correctamente', 'success');
       setModalEditar(false);
     } catch (error: any) {
-      mostrarNotificacion(error.message || 'Error al actualizar el empleado', 'error');
+      mostrarNotificacion(error.message ?? 'Error al actualizar el empleado', 'error');
     }
   };
 
@@ -462,131 +471,134 @@ export const GestionEmpleados = () => {
                       </td>
                     </tr>
                   ) : (
-                    empleadosFiltrados.map((empleado) => (
-                      <tr
-                        key={empleado.id}
-                        className="hover:bg-gray-50 transition-colors duration-150"
-                      >
-                        {/* Columna Empleado - Siempre visible */}
-                        <td className="px-3 sm:px-6 py-4">
-                          <div className="flex flex-col">
-                            <div className="text-sm font-medium text-gray-900 break-words">
-                              {empleado.nombre} {empleado.apellido}
+                    empleadosFiltrados.map((empleado) => {
+                      let rolClass = 'bg-gray-100 text-gray-800';
+                      if (empleado.rol === Rol.CAJERO) rolClass = 'bg-blue-100 text-blue-800';
+                      else if (empleado.rol === Rol.COCINERO)
+                        rolClass = 'bg-green-100 text-green-800';
+                      else if (empleado.rol === Rol.DELIVERY)
+                        rolClass = 'bg-yellow-100 text-yellow-800';
+
+                      return (
+                        <tr
+                          key={empleado.id}
+                          className="hover:bg-gray-50 transition-colors duration-150"
+                        >
+                          {/* Columna Empleado - Siempre visible */}
+                          <td className="px-3 sm:px-6 py-4">
+                            <div className="flex flex-col">
+                              <div className="text-sm font-medium text-gray-900 break-words">
+                                {empleado.nombre} {empleado.apellido}
+                              </div>
+                              <div className="text-sm text-gray-500 break-words">
+                                {empleado.telefono}
+                              </div>
+                              {/* Mostrar legajo en móvil */}
+                              <div className="text-xs text-gray-400 sm:hidden mt-1">
+                                {empleado.legajo ? `Legajo: ${empleado.legajo}` : ''}
+                              </div>
                             </div>
-                            <div className="text-sm text-gray-500 break-words">
-                              {empleado.telefono}
-                            </div>
-                            {/* Mostrar legajo en móvil */}
-                            <div className="text-xs text-gray-400 sm:hidden mt-1">
-                              {empleado.legajo ? `Legajo: ${empleado.legajo}` : ''}
-                            </div>
-                          </div>
-                        </td>
+                          </td>
 
-                        {/* Columna Legajo - Oculta en móvil */}
-                        <td className="px-3 sm:px-6 py-4 hidden sm:table-cell">
-                          <span className="text-sm text-gray-900">{empleado.legajo || '-'}</span>
-                        </td>
+                          {/* Columna Legajo - Oculta en móvil */}
+                          <td className="px-3 sm:px-6 py-4 hidden sm:table-cell">
+                            <span className="text-sm text-gray-900">{empleado.legajo ?? '-'}</span>
+                          </td>
 
-                        {/* Columna Rol - Siempre visible */}
-                        <td className="px-3 sm:px-6 py-4">
-                          <span
-                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                              empleado.rol === Rol.CAJERO
-                                ? 'bg-blue-100 text-blue-800'
-                                : empleado.rol === Rol.COCINERO
-                                  ? 'bg-green-100 text-green-800'
-                                  : empleado.rol === Rol.DELIVERY
-                                    ? 'bg-yellow-100 text-yellow-800'
-                                    : 'bg-gray-100 text-gray-800'
-                            }`}
-                          >
-                            {getRolLabel(empleado.rol)}
-                          </span>
-                        </td>
-
-                        {/* Columna Sucursal - Oculta en tablets y móviles */}
-                        <td className="px-3 sm:px-6 py-4 hidden md:table-cell">
-                          <span className="text-sm text-gray-500">
-                            {empleado.sucursal?.nombre || '-'}
-                          </span>
-                        </td>
-
-                        {/* Columna Email - Oculta en tablets y móviles */}
-                        <td className="px-3 sm:px-6 py-4 hidden lg:table-cell">
-                          <span className="text-sm text-gray-500 break-all">{empleado.email}</span>
-                        </td>
-
-                        {/* Columna Estado - Siempre visible */}
-                        <td className="px-3 sm:px-6 py-4">
-                          <div className="flex flex-col">
+                          {/* Columna Rol - Siempre visible */}
+                          <td className="px-3 sm:px-6 py-4">
                             <span
-                              className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full w-fit ${
-                                empleado.estado
-                                  ? 'bg-green-100 text-green-800'
-                                  : 'bg-red-100 text-red-800'
-                              }`}
+                              className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${rolClass}`}
                             >
-                              {empleado.estado ? 'Activo' : 'Inactivo'}
+                              {getRolLabel(empleado.rol)}
                             </span>
-                            {/* Mostrar email en móvil/tablet debajo del estado */}
-                            <div className="text-xs text-gray-400 lg:hidden mt-1 break-all">
+                          </td>
+
+                          {/* Columna Sucursal - Oculta en tablets y móviles */}
+                          <td className="px-3 sm:px-6 py-4 hidden md:table-cell">
+                            <span className="text-sm text-gray-500">
+                              {empleado.sucursal?.nombre ?? '-'}
+                            </span>
+                          </td>
+
+                          {/* Columna Email - Oculta en tablets y móviles */}
+                          <td className="px-3 sm:px-6 py-4 hidden lg:table-cell">
+                            <span className="text-sm text-gray-500 break-all">
                               {empleado.email}
+                            </span>
+                          </td>
+
+                          {/* Columna Estado - Siempre visible */}
+                          <td className="px-3 sm:px-6 py-4">
+                            <div className="flex flex-col">
+                              <span
+                                className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full w-fit ${
+                                  empleado.estado
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-red-100 text-red-800'
+                                }`}
+                              >
+                                {empleado.estado ? 'Activo' : 'Inactivo'}
+                              </span>
+                              {/* Mostrar email en móvil/tablet debajo del estado */}
+                              <div className="text-xs text-gray-400 lg:hidden mt-1 break-all">
+                                {empleado.email}
+                              </div>
                             </div>
-                          </div>
-                        </td>
+                          </td>
 
-                        {/* Columna Fecha - Oculta en móvil */}
-                        <td className="px-3 sm:px-6 py-4 hidden md:table-cell">
-                          <span className="text-sm text-gray-500">
-                            {empleado.fechaIngreso
-                              ? new Date(empleado.fechaIngreso).toLocaleDateString()
-                              : '-'}
-                          </span>
-                        </td>
+                          {/* Columna Fecha - Oculta en móvil */}
+                          <td className="px-3 sm:px-6 py-4 hidden md:table-cell">
+                            <span className="text-sm text-gray-500">
+                              {empleado.fechaIngreso
+                                ? new Date(empleado.fechaIngreso).toLocaleDateString()
+                                : '-'}
+                            </span>
+                          </td>
 
-                        {/* Columna Acciones - Siempre visible */}
-                        <td className="px-3 sm:px-6 py-4 text-center">
-                          <div className="flex space-x-2 justify-center">
-                            <button
-                              onClick={() => handleVerDetalles(empleado)}
-                              className="text-blue-600 hover:text-blue-900"
-                              title="Ver detalles"
-                            >
-                              <IconoVer className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleEditarEmpleado(empleado)}
-                              className="text-primary hover:text-primarydark"
-                              title="Editar empleado"
-                            >
-                              <IconoEditar className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => abrirModalConfirm(empleado)}
-                              className={`transition-colors ${
-                                empleado.estado
-                                  ? 'text-red-600 hover:text-red-900'
-                                  : 'text-green-600 hover:text-green-900'
-                              }`}
-                              title={empleado.estado ? 'Dar de baja' : 'Dar de alta'}
-                            >
-                              {empleado.estado ? (
-                                <IconoEliminar className="w-4 h-4" />
-                              ) : (
-                                <IconoAgregar className="w-4 h-4" />
-                              )}
-                            </button>
-                          </div>
-                          {/* Mostrar fecha en móvil debajo del botón */}
-                          <div className="text-xs text-gray-400 md:hidden">
-                            {empleado.fechaIngreso
-                              ? new Date(empleado.fechaIngreso).toLocaleDateString()
-                              : '-'}
-                          </div>
-                        </td>
-                      </tr>
-                    ))
+                          {/* Columna Acciones - Siempre visible */}
+                          <td className="px-3 sm:px-6 py-4 text-center">
+                            <div className="flex space-x-2 justify-center">
+                              <button
+                                onClick={() => handleVerDetalles(empleado)}
+                                className="text-blue-600 hover:text-blue-900"
+                                title="Ver detalles"
+                              >
+                                <IconoVer className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleEditarEmpleado(empleado)}
+                                className="text-primary hover:text-primarydark"
+                                title="Editar empleado"
+                              >
+                                <IconoEditar className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => abrirModalConfirm(empleado)}
+                                className={`transition-colors ${
+                                  empleado.estado
+                                    ? 'text-red-600 hover:text-red-900'
+                                    : 'text-green-600 hover:text-green-900'
+                                }`}
+                                title={empleado.estado ? 'Dar de baja' : 'Dar de alta'}
+                              >
+                                {empleado.estado ? (
+                                  <IconoEliminar className="w-4 h-4" />
+                                ) : (
+                                  <IconoAgregar className="w-4 h-4" />
+                                )}
+                              </button>
+                            </div>
+                            {/* Mostrar fecha en móvil debajo del botón */}
+                            <div className="text-xs text-gray-400 md:hidden">
+                              {empleado.fechaIngreso
+                                ? new Date(empleado.fechaIngreso).toLocaleDateString()
+                                : '-'}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>
@@ -617,8 +629,8 @@ export const GestionEmpleados = () => {
               {errores.length > 0 && (
                 <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
                   <ul className="text-sm text-red-600 space-y-1">
-                    {errores.map((error, index) => (
-                      <li key={index}>• {error}</li>
+                    {errores.map((error) => (
+                      <li key={error}>• {error}</li>
                     ))}
                   </ul>
                 </div>
@@ -626,9 +638,7 @@ export const GestionEmpleados = () => {
 
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-1">
-                    Nombre *
-                  </label>
+                  <label htmlFor="nombre">Nombre *</label>
                   <input
                     type="text"
                     id="nombre"
@@ -642,12 +652,7 @@ export const GestionEmpleados = () => {
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="apellido"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Apellido *
-                  </label>
+                  <label htmlFor="apellido">Apellido *</label>
                   <input
                     type="text"
                     id="apellido"
@@ -661,12 +666,7 @@ export const GestionEmpleados = () => {
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="telefono"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Teléfono *
-                  </label>
+                  <label htmlFor="telefono">Teléfono *</label>
                   <input
                     type="tel"
                     id="telefono"
@@ -680,9 +680,7 @@ export const GestionEmpleados = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                    Email *
-                  </label>
+                  <label htmlFor="email">Email *</label>
                   <input
                     type="email"
                     id="email"
@@ -696,9 +694,7 @@ export const GestionEmpleados = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="rol" className="block text-sm font-medium text-gray-700 mb-1">
-                    Rol *
-                  </label>
+                  <label htmlFor="rol">Rol *</label>
                   <select
                     id="rol"
                     name="rol"
@@ -717,16 +713,11 @@ export const GestionEmpleados = () => {
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="sucursal"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Sucursal *
-                  </label>
+                  <label htmlFor="sucursal">Sucursal *</label>
                   <select
                     id="sucursal"
                     name="sucursal"
-                    value={formData.sucursal?.id || ''}
+                    value={formData.sucursal?.id ?? ''}
                     onChange={handleInputChange}
                     disabled={loadingForm || loadingSucursales}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
@@ -743,12 +734,7 @@ export const GestionEmpleados = () => {
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="password"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Contraseña Provisoria *
-                  </label>
+                  <label htmlFor="password">Contraseña Provisoria *</label>
                   <input
                     type="password"
                     id="password"
@@ -762,12 +748,7 @@ export const GestionEmpleados = () => {
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="confirmarPassword"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Confirmar Contraseña *
-                  </label>
+                  <label htmlFor="confirmarPassword">Confirmar Contraseña *</label>
                   <input
                     type="password"
                     id="confirmarPassword"
@@ -843,10 +824,10 @@ export const GestionEmpleados = () => {
                 <b>Rol:</b> {getRolLabel(empleadoSeleccionado.rol)}
               </div>
               <div>
-                <b>Sucursal:</b> {empleadoSeleccionado.sucursal?.nombre || '-'}
+                <b>Sucursal:</b> {empleadoSeleccionado.sucursal?.nombre ?? '-'}
               </div>
               <div>
-                <b>Legajo:</b> {empleadoSeleccionado.legajo || '-'}
+                <b>Legajo:</b> {empleadoSeleccionado.legajo ?? '-'}
               </div>
               <div>
                 <b>Estado:</b> {empleadoSeleccionado.estado ? 'Activo' : 'Inactivo'}
@@ -877,7 +858,7 @@ export const GestionEmpleados = () => {
             </div>
             <form className="p-6 space-y-4" onSubmit={handleSubmitEditarEmpleado}>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+                <label htmlFor="nombre">Nombre *</label>
                 <input
                   type="text"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
@@ -887,7 +868,7 @@ export const GestionEmpleados = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Apellido *</label>
+                <label htmlFor="apellido">Apellido *</label>
                 <input
                   type="text"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
@@ -897,7 +878,7 @@ export const GestionEmpleados = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono *</label>
+                <label htmlFor="telefono">Teléfono *</label>
                 <input
                   type="tel"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
@@ -907,7 +888,7 @@ export const GestionEmpleados = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                <label htmlFor="email">Email *</label>
                 <input
                   type="email"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
@@ -917,7 +898,7 @@ export const GestionEmpleados = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Rol *</label>
+                <label htmlFor="rol">Rol *</label>
                 <select
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   value={formEditar.rol}
@@ -935,10 +916,10 @@ export const GestionEmpleados = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Sucursal *</label>
+                <label htmlFor="sucursal">Sucursal *</label>
                 <select
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  value={formEditar.sucursal?.id || ''}
+                  value={formEditar.sucursal?.id ?? ''}
                   onChange={(e) =>
                     setFormEditar((f) => ({
                       ...f,

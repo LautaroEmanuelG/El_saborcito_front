@@ -8,7 +8,7 @@ import {
   getAllArticuloManufacturados,
   canBeManufactured,
 } from '../services/articuloManufacturadoService';
-import { getAllArticuloInsumoNoEsParaElaborar } from '../services/articuloInsumoService';
+import { getAllArticuloInsumoNoEsParaElaborar, canBeSold } from '../services/articuloInsumoService';
 import {
   getAllPromocionesVigentes,
   normalizePromociones,
@@ -136,11 +136,37 @@ export const useProductStore = create<ProductState>((set, get) => ({
         [productId]: available,
       },
     }));
-  },
-  // Nueva función para verificar disponibilidad de un producto específico en background
+  }, // Nueva función para verificar disponibilidad de un producto específico en background
   checkSingleProductAvailability: async (productId: number) => {
     try {
-      const available = await canBeManufactured(productId);
+      // Buscar si es un artículo manufacturado
+      const { allProducts } = get();
+      const product = allProducts.find((p) => p.id === productId);
+
+      let available = false;
+
+      if (product) {
+        // Verificar si es ArticuloInsumo (tiene stockActual)
+        if ('stockActual' in product) {
+          // Es un insumo, verificar stock
+          available = await canBeSold(productId);
+        } else {
+          // Es un manufacturado, verificar si puede fabricarse
+          available = await canBeManufactured(productId);
+        }
+      } else {
+        // Si no encontramos el producto, intentar ambos endpoints
+        try {
+          available = await canBeManufactured(productId);
+        } catch {
+          try {
+            available = await canBeSold(productId);
+          } catch {
+            available = false;
+          }
+        }
+      }
+
       get().updateProductAvailability(productId, available);
     } catch (error) {
       console.error(`Error checking availability for product ${productId}:`, error);
@@ -254,18 +280,10 @@ export const useProductStore = create<ProductState>((set, get) => ({
       const combinedProducts = [...manufacturadosData, ...insumosData] as (
         | ArticuloManufacturado
         | ArticuloInsumo
-      )[];
-
-      // Verificar disponibilidad inicial para todos los productos manufacturados
+      )[]; // Verificar disponibilidad inicial para todos los productos
       const initialAvailability: Record<number, boolean> = {};
-      // Primero marcamos todos los insumos como disponibles
-      insumosData.forEach((insumo: ArticuloInsumo) => {
-        if (insumo.id) {
-          initialAvailability[insumo.id] = true;
-        }
-      });
 
-      // Verificar disponibilidad de manufacturados en paralelo
+      // Verificar disponibilidad de manufacturados e insumos en paralelo
       const manufacturadosChecks = manufacturadosData.map(
         async (manufacturado: ArticuloManufacturado) => {
           if (manufacturado.id) {
@@ -280,8 +298,21 @@ export const useProductStore = create<ProductState>((set, get) => ({
         }
       );
 
+      // Verificar disponibilidad de insumos en paralelo
+      const insumosChecks = insumosData.map(async (insumo: ArticuloInsumo) => {
+        if (insumo.id) {
+          try {
+            const available = await canBeSold(insumo.id);
+            initialAvailability[insumo.id] = available;
+          } catch (error) {
+            console.error(`Error checking availability for insumo ${insumo.id}:`, error);
+            initialAvailability[insumo.id] = false;
+          }
+        }
+      });
+
       // Esperar todas las verificaciones
-      await Promise.all(manufacturadosChecks); // Ordenar productos por disponibilidad dentro de cada categoría
+      await Promise.all([...manufacturadosChecks, ...insumosChecks]); // Ordenar productos por disponibilidad dentro de cada categoría
       const sortedProducts = [...combinedProducts].sort((a, b) => {
         const catA = getArticuloCategoriaId(a);
         const catB = getArticuloCategoriaId(b);
