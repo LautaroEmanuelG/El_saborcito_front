@@ -10,6 +10,7 @@ interface ModalDetallePedidoProps {
   isOpen: boolean;
   onClose: () => void;
   onCambiarEstado: (pedidoId: number, nuevoEstado: string) => void;
+  onAvanzarEstado: (pedidoId: number) => void;
   puedeAvanzarEstado: (estadoActual: string, tipoEnvio: string) => boolean;
   obtenerProximoEstado: (estadoActual: string, tipoEnvio: string) => string | null;
 }
@@ -31,6 +32,7 @@ export const ModalDetallePedido: React.FC<ModalDetallePedidoProps> = ({
   isOpen,
   onClose,
   onCambiarEstado,
+  onAvanzarEstado,
   puedeAvanzarEstado,
   obtenerProximoEstado,
 }) => {
@@ -56,11 +58,8 @@ export const ModalDetallePedido: React.FC<ModalDetallePedidoProps> = ({
   };
 
   const manejarAvanzarEstado = () => {
-    const proximoEstado = obtenerProximoEstado(pedido.estado.nombre, pedido.tipoEnvio.nombre);
-    if (proximoEstado) {
-      onCambiarEstado(pedido.id, proximoEstado);
-      onClose();
-    }
+    onAvanzarEstado(pedido.id);
+    onClose();
   };
 
   const handleClickOutside = (e: React.MouseEvent<HTMLDivElement>) => {

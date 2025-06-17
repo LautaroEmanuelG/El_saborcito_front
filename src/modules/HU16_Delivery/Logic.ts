@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
-import {
-  getPedidosDetalladosCompletos,
-  updateEstadoPedido,
-} from '../../shared/services/pedidoService';
+import { getPedidosDetalladosCompletos } from '../../shared/services/pedidoService';
+import { marcarPedidoEntregado } from '../../shared/services/estadoService';
 import { PedidoCompletoConDetalles } from '../../types/Pedido';
 
 export const useDeliveryLogic = () => {
@@ -33,17 +31,18 @@ export const useDeliveryLogic = () => {
       setLoading(false);
     }
   };
-
   const marcarComoEntregado = async (pedidoId: number) => {
     try {
       setLoading(true);
-      await updateEstadoPedido(pedidoId, 'ENTREGADO');
+      await marcarPedidoEntregado(pedidoId);
 
       // Remover el pedido de la lista de delivery
       setPedidosDelivery((prevPedidos) => prevPedidos.filter((pedido) => pedido.id !== pedidoId));
     } catch (err) {
-      setError(`Error al marcar como entregado: ${err}`);
-      console.error('Error updating estado:', err);
+      setError(
+        `Error al marcar como entregado: ${err instanceof Error ? err.message : 'Error desconocido'}`
+      );
+      console.error('Error marcando como entregado:', err);
     } finally {
       setLoading(false);
     }

@@ -9,6 +9,7 @@ interface TablaRecepcionProps {
   pedidos: PedidoCompletoConDetalles[];
   onVerDetalle: (pedido: PedidoCompletoConDetalles) => void;
   onCambiarEstado: (pedidoId: number, nuevoEstado: string) => void;
+  onAvanzarEstado: (pedidoId: number) => void;
   puedeAvanzarEstado: (estadoActual: string, tipoEnvio: string) => boolean;
   obtenerProximoEstado: (estadoActual: string, tipoEnvio: string) => string | null;
 }
@@ -17,6 +18,7 @@ export const TablaRecepcion: React.FC<TablaRecepcionProps> = ({
   pedidos,
   onVerDetalle,
   onCambiarEstado,
+  onAvanzarEstado,
   puedeAvanzarEstado,
   obtenerProximoEstado,
 }) => {
@@ -43,12 +45,8 @@ export const TablaRecepcion: React.FC<TablaRecepcionProps> = ({
       currency: 'ARS',
     }).format(precio);
   };
-
   const manejarAvanzarEstado = (pedido: PedidoCompletoConDetalles) => {
-    const proximoEstado = obtenerProximoEstado(pedido.estado.nombre, pedido.tipoEnvio.nombre);
-    if (proximoEstado) {
-      onCambiarEstado(pedido.id, proximoEstado);
-    }
+    onAvanzarEstado(pedido.id);
   };
 
   if (pedidos.length === 0) {

@@ -21,6 +21,7 @@ export const ScreenRecepcion: React.FC = () => {
     setFechaDesde,
     setFechaHasta,
     cambiarEstadoPedido,
+    avanzarEstadoPedido,
     cargarDatos,
     limpiarFiltros,
     puedeAvanzarEstado,
@@ -40,9 +41,16 @@ export const ScreenRecepcion: React.FC = () => {
     setPedidoSeleccionado(null);
     setModalDetalle(false);
   };
-
   const manejarCambioEstado = async (pedidoId: number, nuevoEstado: string) => {
     await cambiarEstadoPedido(pedidoId, nuevoEstado);
+  };
+
+  const manejarAvanzarEstado = async (pedidoId: number) => {
+    const exito = await avanzarEstadoPedido(pedidoId);
+    if (exito) {
+      // Recargar datos para mostrar el estado actualizado
+      cargarDatos();
+    }
   };
 
   if (loading) {
@@ -120,12 +128,13 @@ export const ScreenRecepcion: React.FC = () => {
           <h3 className="font-semibold text-gray-800">Total</h3>
           <p className="text-2xl font-bold text-gray-900">{pedidosFiltrados.length}</p>
         </div>
-      </div>
+      </div>{' '}
       {/* Tabla */}
       <TablaRecepcion
         pedidos={pedidosFiltrados}
         onVerDetalle={abrirDetalle}
         onCambiarEstado={manejarCambioEstado}
+        onAvanzarEstado={manejarAvanzarEstado}
         puedeAvanzarEstado={puedeAvanzarEstado}
         obtenerProximoEstado={obtenerProximoEstado}
       />
@@ -136,6 +145,7 @@ export const ScreenRecepcion: React.FC = () => {
           isOpen={modalDetalle}
           onClose={cerrarDetalle}
           onCambiarEstado={manejarCambioEstado}
+          onAvanzarEstado={manejarAvanzarEstado}
           puedeAvanzarEstado={puedeAvanzarEstado}
           obtenerProximoEstado={obtenerProximoEstado}
         />
