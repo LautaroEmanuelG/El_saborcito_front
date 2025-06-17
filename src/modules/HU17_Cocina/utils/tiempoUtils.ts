@@ -9,22 +9,11 @@ export const formatearTiempoEstimado = (tiempo: string): string => {
   try {
     if (!tiempo) return 'Sin tiempo';
 
-    // Si contiene millisegundos (ej: 12:11:17.067)
-    if (tiempo.includes('.')) {
-      const [hms] = tiempo.split('.');
-      const [horas, minutos] = hms.split(':');
-      return `${horas.padStart(2, '0')}:${minutos.padStart(2, '0')}`;
-    }
+    // Extraer horas y minutos directamente (formato: "02:30:29.2489166")
+    const [horas, minutos] = tiempo.split(':').map(Number);
 
-    // Si es formato HH:MM:SS
-    if (tiempo.split(':').length === 3) {
-      const [horas, minutos] = tiempo.split(':');
-      return `${horas.padStart(2, '0')}:${minutos.padStart(2, '0')}`;
-    }
-
-    // Si ya es HH:MM
-    const [horas, minutos] = tiempo.split(':');
-    return `${horas.padStart(2, '0')}:${minutos.padStart(2, '0')}`;
+    // Formatear como HH:MM
+    return `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}`;
   } catch {
     return 'Formato inválido';
   }
@@ -37,35 +26,28 @@ export const calcularTiempoRestante = (tiempoEstimado: string): number => {
   try {
     if (!tiempoEstimado) return 0;
 
-    const ahora = new Date();
+    // Extraer horas, minutos y segundos del tiempo estimado
+    const [horas, minutos, segundos] = tiempoEstimado.split(':').map(Number);
+
+    // Crear fecha de hoy con la hora estimada
     const hoy = new Date();
+    const horaEntrega = new Date(hoy);
+    horaEntrega.setHours(horas, minutos, Math.floor(segundos || 0), 0);
 
-    // Extraer horas y minutos del tiempo estimado
-    let horas: number, minutos: number;
+    // Calcular diferencia inicial
+    const ahora = new Date();
+    let diferenciaMs = horaEntrega.getTime() - ahora.getTime();
+    let diferenciaMinutos = Math.round(diferenciaMs / (1000 * 60));
 
-    if (tiempoEstimado.includes('.')) {
-      // Formato con millisegundos
-      const [hms] = tiempoEstimado.split('.');
-      [horas, minutos] = hms.split(':').map(Number);
-    } else {
-      // Formato HH:MM o HH:MM:SS
-      [horas, minutos] = tiempoEstimado.split(':').map(Number);
+    // Si la diferencia es negativa o muy pequeña (menos de -30 minutos),
+    // probablemente sea del día siguiente
+    if (diferenciaMinutos < -30) {
+      horaEntrega.setDate(horaEntrega.getDate() + 1);
+      diferenciaMs = horaEntrega.getTime() - ahora.getTime();
+      diferenciaMinutos = Math.round(diferenciaMs / (1000 * 60));
     }
 
-    // Crear fecha con el tiempo estimado
-    const tiempoEstimadoDate = new Date(hoy);
-    tiempoEstimadoDate.setHours(horas, minutos, 0, 0);
-
-    // Si el tiempo estimado ya pasó, asumir que es para mañana
-    if (tiempoEstimadoDate < ahora) {
-      tiempoEstimadoDate.setDate(tiempoEstimadoDate.getDate() + 1);
-    }
-
-    // Calcular diferencia en minutos
-    const diferenciaMilisegundos = tiempoEstimadoDate.getTime() - ahora.getTime();
-    const diferenciaMinutos = Math.floor(diferenciaMilisegundos / (1000 * 60));
-
-    return Math.max(0, diferenciaMinutos);
+    return diferenciaMinutos; // Puede ser negativo si está demorado
   } catch {
     return 0;
   }
@@ -81,6 +63,7 @@ export const getEstadoTiempo = (
   mensaje: string;
   emoji: string;
 } => {
+  // Si es negativo, está demorado
   if (tiempoRestante < 0) {
     return {
       estado: 'demorado',
@@ -89,6 +72,16 @@ export const getEstadoTiempo = (
     };
   }
 
+  // Si es 0, está listo
+  if (tiempoRestante === 0) {
+    return {
+      estado: 'proximo',
+      mensaje: 'Listo ahora',
+      emoji: '✅',
+    };
+  }
+
+  // Si es muy poco tiempo, está próximo
   if (tiempoRestante <= 15) {
     return {
       estado: 'proximo',
@@ -97,6 +90,7 @@ export const getEstadoTiempo = (
     };
   }
 
+  // Tiempo normal
   return {
     estado: 'en-tiempo',
     mensaje: `${tiempoRestante} min`,

@@ -3,7 +3,11 @@ import {
   updateEstadoPedido,
   getPedidosDetalladosCompletos,
 } from '../../shared/services/pedidoService';
-import { getAllEstados } from '../../shared/services/estadoService';
+import {
+  getAllEstados,
+  avanzarEstadoPedidoGenerico,
+  cancelarPedidoGenerico,
+} from '../../shared/services/estadoService';
 import { PedidoCompletoConDetalles, Estado } from '../../types/Pedido';
 import { obtenerFechaHoy } from '../../shared/utils/fechaUtils';
 
@@ -69,7 +73,6 @@ export const useRecepcionLogic = () => {
 
     setPedidosFiltrados(pedidosFiltrados);
   };
-
   const cambiarEstadoPedido = async (pedidoId: number, nuevoEstado: string) => {
     try {
       setLoading(true);
@@ -84,6 +87,60 @@ export const useRecepcionLogic = () => {
     } catch (err) {
       setError(`Error al actualizar el estado: ${err}`);
       console.error('Error updating estado:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Avanza automáticamente el estado de un pedido usando la lógica del backend
+   */
+  const avanzarEstadoPedido = async (pedidoId: number) => {
+    try {
+      setLoading(true);
+      const pedidoActualizado = await avanzarEstadoPedidoGenerico(pedidoId);
+
+      // Actualizar el pedido en el estado local
+      setPedidos((prevPedidos) =>
+        prevPedidos.map((pedido) =>
+          pedido.id === pedidoId ? { ...pedido, estado: pedidoActualizado.estado } : pedido
+        )
+      );
+
+      return true;
+    } catch (err) {
+      setError(
+        `Error al avanzar estado: ${err instanceof Error ? err.message : 'Error desconocido'}`
+      );
+      console.error('Error avanzando estado:', err);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Cancela un pedido
+   */
+  const cancelarPedido = async (pedidoId: number) => {
+    try {
+      setLoading(true);
+      const pedidoActualizado = await cancelarPedidoGenerico(pedidoId);
+
+      // Actualizar el pedido en el estado local
+      setPedidos((prevPedidos) =>
+        prevPedidos.map((pedido) =>
+          pedido.id === pedidoId ? { ...pedido, estado: pedidoActualizado.estado } : pedido
+        )
+      );
+
+      return true;
+    } catch (err) {
+      setError(
+        `Error al cancelar pedido: ${err instanceof Error ? err.message : 'Error desconocido'}`
+      );
+      console.error('Error cancelando pedido:', err);
+      return false;
     } finally {
       setLoading(false);
     }
@@ -124,7 +181,6 @@ export const useRecepcionLogic = () => {
     setFechaDesde(obtenerFechaHoy());
     setFechaHasta(obtenerFechaHoy());
   };
-
   return {
     // Estados
     pedidosFiltrados,
@@ -142,9 +198,11 @@ export const useRecepcionLogic = () => {
     setFechaDesde,
     setFechaHasta,
     cambiarEstadoPedido,
+    avanzarEstadoPedido,
     cargarDatos,
     limpiarFiltros,
     puedeAvanzarEstado,
     obtenerProximoEstado,
+    cancelarPedido,
   };
 };

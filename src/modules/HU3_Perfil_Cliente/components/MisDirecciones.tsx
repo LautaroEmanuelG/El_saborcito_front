@@ -6,6 +6,7 @@ import IconoAgregar from '../../../assets/svgs/icons/IconoAgregar';
 import IconoEditar from '../../../assets/svgs/icons/IconoEditar';
 import IconoEliminar from '../../../assets/svgs/icons/IconoEliminar';
 import IconoUbicacion from '../../../assets/svgs/icons/IconoUbicacion';
+import MapaInteractivo from '../../HU11_12_Carrito_Confirmacion/MapaInteractivo';
 
 interface Provincia {
   id: number;
@@ -24,6 +25,8 @@ interface Domicilio {
   numero: string;
   cp: string;
   localidad: Localidad;
+  latitud?: number;
+  longitud?: number;
 }
 
 interface FormData {
@@ -31,6 +34,8 @@ interface FormData {
   numero: string;
   cp: string;
   localidad?: Localidad;
+  latitud?: number;
+  longitud?: number;
 }
 
 export const MisDirecciones = () => {
@@ -44,7 +49,12 @@ export const MisDirecciones = () => {
     numero: '',
     cp: '',
     localidad: undefined,
+    latitud: undefined,
+    longitud: undefined,
   });
+  const [direccionSeleccionada, setDireccionSeleccionada] = useState<number | undefined>(
+    user?.domicilios && user.domicilios.length > 0 ? user.domicilios[0].id : undefined
+  );
 
   useEffect(() => {
     const cargarLocalidades = async () => {
@@ -59,14 +69,26 @@ export const MisDirecciones = () => {
     cargarLocalidades();
   }, []);
 
+  useEffect(() => {
+    if (user?.domicilios && user.domicilios.length > 0) {
+      setDireccionSeleccionada(user.domicilios[0].id);
+    }
+  }, [user?.domicilios]);
+
   const handleOpenModal = (domicilio?: Domicilio) => {
     if (domicilio) {
       setEditingDomicilio(domicilio);
       setFormData({
-        calle: domicilio.calle,
-        numero: domicilio.numero,
-        cp: domicilio.cp,
-        localidad: domicilio.localidad,
+        calle: domicilio.calle || '',
+        numero: String(domicilio.numero ?? ''),
+        cp: domicilio.cp || '',
+        localidad: domicilio.localidad || {
+          id: 0,
+          nombre: '',
+          provincia: { id: 0, nombre: '', pais: { id: 0, nombre: '' } },
+        },
+        latitud: domicilio.latitud,
+        longitud: domicilio.longitud,
       });
     } else {
       setEditingDomicilio(null);
@@ -75,6 +97,8 @@ export const MisDirecciones = () => {
         numero: '',
         cp: '',
         localidad: undefined,
+        latitud: undefined,
+        longitud: undefined,
       });
     }
     setIsModalOpen(true);
@@ -92,6 +116,8 @@ export const MisDirecciones = () => {
         localidad: {
           id: formData.localidad.id,
         },
+        latitud: formData.latitud,
+        longitud: formData.longitud,
       };
 
       const currentDomicilios = [...(user.domicilios || [])];
@@ -150,6 +176,46 @@ export const MisDirecciones = () => {
 
       {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">{error}</div>}
 
+      {user?.domicilios && user.domicilios.length > 1 && (
+        <div className="mb-6">
+          <label className="block text-sm font-medium mb-1">
+            Selecciona tu dirección de entrega principal:
+          </label>
+          <select
+            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            value={direccionSeleccionada}
+            onChange={(e) => {
+              setDireccionSeleccionada(Number(e.target.value));
+              localStorage.setItem('direccionPrincipalId', e.target.value);
+            }}
+          >
+            {user.domicilios.map((dom) => (
+              <option key={dom.id} value={dom.id}>
+                {dom.calle} {dom.numero} - {dom.localidad?.nombre}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {user?.domicilios && user.domicilios.length > 0 && direccionSeleccionada && (
+        <div className="mb-4 p-4 bg-green-50 border-l-4 border-green-400 rounded">
+          <div className="font-semibold mb-1">Dirección de entrega seleccionada:</div>
+          <div>
+            {(() => {
+              const dom = user.domicilios.find((d) => d.id === direccionSeleccionada);
+              if (!dom) return null;
+              return (
+                <span>
+                  {dom.calle} {dom.numero}, CP: {dom.cp} - {dom.localidad?.nombre},{' '}
+                  {dom.localidad?.provincia.nombre}
+                </span>
+              );
+            })()}
+          </div>
+        </div>
+      )}
+
       <div className="space-y-4">
         {user?.domicilios?.map((domicilio) => (
           <div
@@ -157,20 +223,34 @@ export const MisDirecciones = () => {
             className="bg-white p-4 rounded-lg shadow-md flex items-center justify-between"
           >
             <div className="flex items-center gap-3">
-              <IconoUbicacion className="w-6 h-6 text-primary" />
+              <IconoUbicacion />
               <div>
                 <p className="font-medium">
                   {domicilio.calle} {domicilio.numero}
                 </p>
                 <p className="text-sm text-gray-600">
-                  CP: {domicilio.cp} - {domicilio.localidad.nombre},{' '}
-                  {domicilio.localidad.provincia.nombre}
+                  CP: {domicilio.cp}
+                  {domicilio.localidad
+                    ? ` - ${domicilio.localidad.nombre}, ${domicilio.localidad.provincia.nombre}`
+                    : ''}
                 </p>
               </div>
             </div>
             <div className="flex gap-2">
               <button
-                onClick={() => handleOpenModal(domicilio)}
+                onClick={() =>
+                  handleOpenModal({
+                    ...domicilio,
+                    calle: domicilio.calle || '',
+                    numero: String(domicilio.numero ?? ''),
+                    cp: domicilio.cp || '',
+                    localidad: domicilio.localidad || {
+                      id: 0,
+                      nombre: '',
+                      provincia: { id: 0, nombre: '', pais: { id: 0, nombre: '' } },
+                    },
+                  })
+                }
                 className="p-2 hover:bg-gray-100 rounded-full"
               >
                 <IconoEditar className="w-5 h-5 text-primary" />
@@ -207,7 +287,7 @@ export const MisDirecciones = () => {
                 <label className="block text-sm font-medium mb-1">Número</label>
                 <input
                   type="text"
-                  value={formData.numero}
+                  value={String(formData.numero)}
                   onChange={(e) => setFormData({ ...formData, numero: e.target.value })}
                   className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                   required
@@ -241,6 +321,22 @@ export const MisDirecciones = () => {
                     </option>
                   ))}
                 </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Ubicación en el mapa</label>
+                <MapaInteractivo
+                  onUbicacionSeleccionada={(lat, lng) => {
+                    setFormData((prev) => ({ ...prev, latitud: lat, longitud: lng }));
+                  }}
+                  ubicacionActual={
+                    formData.latitud && formData.longitud
+                      ? { lat: formData.latitud, lng: formData.longitud }
+                      : undefined
+                  }
+                />
+                <div className="text-xs text-gray-500 mt-1">
+                  Selecciona la ubicación exacta de la dirección en el mapa.
+                </div>
               </div>
               <div className="flex justify-end gap-2 mt-6">
                 <button
