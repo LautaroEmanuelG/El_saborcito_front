@@ -7,6 +7,8 @@ import type { ArticuloManufacturado } from '../../types/Articulo';
 import MetodoPagoModal from './MetodoPagoModal';
 import BtnCantidadProducto from '../HU9_10_Landing_Busqueda/articulos/btnCantidadProducto';
 import BtnCantidadPromocion from './BtnCantidadPromocion';
+import { useUser } from '../../shared/providers/UserProvider';
+import { useNotificacion } from '../../shared/hooks/useNotificacion';
 
 export const VistaCarrito = () => {
   const { carrito, promocionesEnCarrito, removeFromCart, removePromocionFromCart } = useCart();
@@ -19,6 +21,9 @@ export const VistaCarrito = () => {
 
   const { analizarCarrito, limitacionesProduccion, promocionesProblematicas, isAnalyzing } =
     carritoContext;
+
+  const { user } = useUser();
+  const { mostrarNotificacion } = useNotificacion();
 
   // Combinar productos y promociones para mostrar
   const todosLosItems = [
@@ -80,6 +85,16 @@ export const VistaCarrito = () => {
     // No permitir compra si se está analizando
     if (isAnalyzing) {
       console.log('⏳ Análisis en curso, esperando...');
+      return;
+    }
+
+    // 🚫 Validar baja lógica del cliente
+    if (user && user.estado === false) {
+      mostrarNotificacion(
+        'No puedes realizar pedidos porque estás dado de baja. Contacta al administrador.',
+        'error',
+        6000
+      );
       return;
     }
 

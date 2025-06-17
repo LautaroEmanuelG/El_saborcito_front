@@ -5,6 +5,8 @@ import { isValidEmail, isValidPassword } from '../../logic';
 import { RegistroCliente, Domicilio, Localidad } from '../../models';
 import { useUser } from '../../../../shared/providers/UserProvider';
 import { useAuth0 } from '@auth0/auth0-react';
+import { useNotificacion } from '../../../../shared/hooks/useNotificacion';
+import MapaInteractivo from '../../../HU11_12_Carrito_Confirmacion/MapaInteractivo';
 
 interface RegistroModalProps {
   isOpen: boolean;
