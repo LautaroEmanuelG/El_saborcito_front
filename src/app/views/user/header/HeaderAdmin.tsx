@@ -3,18 +3,20 @@ import { Link, useNavigate } from 'react-router-dom';
 import IconoLogoSaborcito from '../../../../assets/svgs/icons/IconoLogoSaborcito';
 import { IconoCerrar } from '../../../../assets/svgs/icons/IconoCerrar';
 import { ModalConfirm } from '../../../../shared/components/utils/ModalConfirm';
+import { useEmpleado } from '../../../../shared/providers/EmpleadoProvider';
 
 export const HeaderAdmin = () => {
   const [hoverLogin, setHoverLogin] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const navigate = useNavigate();
+  const { logoutEmpleado } = useEmpleado();
 
   const toggleLoginModal = () => {
     setIsLoginOpen(!isLoginOpen);
   };
 
   const handleCerrarSesion = () => {
-    localStorage.removeItem('token');
+    logoutEmpleado();
     navigate('/');
   };
 
@@ -22,7 +24,7 @@ export const HeaderAdmin = () => {
     <>
       <header className="bg-primary flex w-full h-22 text-primary-foreground py-4 shadow-md">
         <div className="container mx-auto flex items-center justify-between px-4 md:px-6">
-          <Link to="/admin/control" className="flex items-center gap-4">
+          <Link to="/admin/articulos" className="flex ml-6 items-center gap-4">
             <IconoLogoSaborcito />
             <span className="text-2xl font-bold text-white">El Saborcito</span>
           </Link>

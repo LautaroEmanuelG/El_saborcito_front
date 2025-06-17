@@ -5,7 +5,6 @@ import { isValidEmail, isValidPassword } from '../../logic';
 import { RegistroCliente, Domicilio, Localidad } from '../../models';
 import { useUser } from '../../../../shared/providers/UserProvider';
 import { useAuth0 } from '@auth0/auth0-react';
-import MapaInteractivo from '../../../HU11_12_Carrito_Confirmacion/MapaInteractivo';
 
 interface RegistroModalProps {
   isOpen: boolean;
@@ -37,6 +36,7 @@ export const RegistroModal = ({ isOpen, onClose }: RegistroModalProps) => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const { setUser } = useUser();
+  const { mostrarNotificacion } = useNotificacion();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -118,6 +118,7 @@ export const RegistroModal = ({ isOpen, onClose }: RegistroModalProps) => {
       // Guardar usuario en contexto global
       setUser(response.usuario || response);
       setSuccess(true);
+      mostrarNotificacion('¡Registro exitoso!', 'success');
       setTimeout(() => {
         onClose();
       }, 1200);
@@ -125,10 +126,13 @@ export const RegistroModal = ({ isOpen, onClose }: RegistroModalProps) => {
       const backendMsg = error.response?.data?.message;
       if (backendMsg) {
         setError(backendMsg);
+        mostrarNotificacion(backendMsg, 'error');
       } else if (typeof error.message === 'string') {
         setError(error.message);
+        mostrarNotificacion(error.message, 'error');
       } else {
         setError('Error al registrar el usuario');
+        mostrarNotificacion('Error al registrar el usuario', 'error');
       }
     } finally {
       setLoading(false);

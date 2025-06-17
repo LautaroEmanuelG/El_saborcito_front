@@ -4,6 +4,7 @@ import { loginManual } from '../../../../shared/services/authService';
 import { useUser } from '../../../../shared/providers/UserProvider';
 import emailjs from 'emailjs-com';
 import { useAuth0 } from '@auth0/auth0-react';
+import { useNotificacion } from '../../../../shared/hooks/useNotificacion';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ export const LoginModal = ({ isOpen, onClose, onOpenRegistro }: LoginModalProps)
   const navigate = useNavigate();
   const { setUser } = useUser();
   const { loginWithRedirect } = useAuth0();
+  const { mostrarNotificacion } = useNotificacion();
 
   useEffect(() => {
     let timer: number;
@@ -45,17 +47,18 @@ export const LoginModal = ({ isOpen, onClose, onOpenRegistro }: LoginModalProps)
   const handleLogin = async () => {
     try {
       const response = await loginManual({ email, password: contraseña });
-
       const { token, usuario } = response;
-
-      // 🚨 Validación adicional: verificar que no sea un empleado
       if (usuario?.rol && ['CAJERO', 'COCINERO', 'DELIVERY', 'ADMIN'].includes(usuario.rol)) {
         setError('Este usuario es un empleado. Use el acceso de empleados en el menú.');
+        mostrarNotificacion(
+          'Este usuario es un empleado. Use el acceso de empleados en el menú.',
+          'error'
+        );
         return;
       }
-
       localStorage.setItem('token', token);
       setUser(usuario);
+      mostrarNotificacion('¡Login exitoso!', 'success');
       if (usuario.rol === 'ADMIN') {
         navigate('/admin/historial');
       } else {
@@ -63,8 +66,8 @@ export const LoginModal = ({ isOpen, onClose, onOpenRegistro }: LoginModalProps)
       }
       onClose();
     } catch (error: any) {
-      // El servicio authService ya procesa los errores y devuelve mensajes apropiados
       setError(error.message || 'Error en el servidor. Intente nuevamente.');
+      mostrarNotificacion(error.message || 'Error en el servidor. Intente nuevamente.', 'error');
       setAttempts((prev) => prev + 1);
       if (attempts + 1 >= 3) {
         setIsBlocked(true);
