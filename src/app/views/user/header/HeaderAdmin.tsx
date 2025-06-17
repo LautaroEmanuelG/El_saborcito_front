@@ -3,18 +3,20 @@ import { Link, useNavigate } from 'react-router-dom';
 import IconoLogoSaborcito from '../../../../assets/svgs/icons/IconoLogoSaborcito';
 import { IconoCerrar } from '../../../../assets/svgs/icons/IconoCerrar';
 import { ModalConfirm } from '../../../../shared/components/utils/ModalConfirm';
+import { useEmpleado } from '../../../../shared/providers/EmpleadoProvider';
 
 export const HeaderAdmin = () => {
   const [hoverLogin, setHoverLogin] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const navigate = useNavigate();
+  const { logoutEmpleado } = useEmpleado();
 
   const toggleLoginModal = () => {
     setIsLoginOpen(!isLoginOpen);
   };
 
   const handleCerrarSesion = () => {
-    localStorage.removeItem('token');
+    logoutEmpleado();
     navigate('/');
   };
 
