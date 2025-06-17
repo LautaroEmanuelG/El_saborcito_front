@@ -4,6 +4,8 @@ export interface DomicilioDTO {
   numero: string;
   cp: string;
   localidadId: number;
+  latitud?: number;
+  longitud?: number;
 }
 
 export interface ActualizarDatosClienteDTO {
