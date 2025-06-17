@@ -6,6 +6,7 @@ import { type State, WagmiProvider } from 'wagmi';
 import { ProductProvider } from './ProductProvider';
 import { CarritoProvider } from './CarritoProvider';
 import { UserProvider } from './UserProvider';
+import { EmpleadoProvider } from './EmpleadoProvider';
 import NotificacionWrapper from '../components/utils/NotificacionWrapper';
 
 import { getConfig } from '../../wagmi'; // your import path may vary
@@ -24,10 +25,12 @@ export function AppProviders(props: { children: ReactNode; initialState?: State 
           >
             <UserProvider>
               <ProductProvider>
-                <CarritoProvider>
-                  {props.children}
-                  <NotificacionWrapper />
-                </CarritoProvider>
+                <EmpleadoProvider>
+                  <CarritoProvider>
+                    {props.children}
+                    <NotificacionWrapper />
+                  </CarritoProvider>
+                </EmpleadoProvider>
               </ProductProvider>
             </UserProvider>
           </OnchainKitProvider>
