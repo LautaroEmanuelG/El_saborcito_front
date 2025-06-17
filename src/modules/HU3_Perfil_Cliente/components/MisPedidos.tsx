@@ -50,7 +50,7 @@ export const MisPedidos = () => {
       month: '2-digit',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
@@ -114,14 +114,10 @@ export const MisPedidos = () => {
                       {calcularTotalItems(pedido)} items
                     </span>
                   </div>
-                  <div className="text-gray-500 text-sm">
-                    {formatearFecha(pedido.fechaPedido)}
-                  </div>
+                  <div className="text-gray-500 text-sm">{formatearFecha(pedido.fechaPedido)}</div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-gray-700 font-medium">
-                    Total: ${pedido.total}
-                  </span>
+                  <span className="text-gray-700 font-medium">Total: ${pedido.total}</span>
                   <span
                     className={`px-3 py-1 rounded-full text-sm font-medium ${
                       pedido.estado.nombre === 'ENTREGADO'
@@ -139,4 +135,4 @@ export const MisPedidos = () => {
       </div>
     </div>
   );
-}; 
+};

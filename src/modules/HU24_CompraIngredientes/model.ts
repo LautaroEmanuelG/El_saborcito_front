@@ -9,7 +9,7 @@ export const COMPRA_INSUMO_COLUMNS = [
   {
     label: 'Fecha',
     key: 'fechaCompra',
-    render: (c: { fechaCompra: string }) => new Date(c.fechaCompra).toLocaleDateString(),
+    render: (c: { fechaCompra: string }) => c.fechaCompra.split('-').reverse().join('/'),
   },
   {
     label: 'Total',

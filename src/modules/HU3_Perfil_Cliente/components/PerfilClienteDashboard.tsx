@@ -75,47 +75,43 @@ export const PerfilClienteDashboard = () => {
   const domicilio = user.domicilios?.[0];
 
   // Configuración de campos para cada modal
-  const fieldsNombre = [
-    { name: 'nombre', label: 'Nombre', type: 'text', required: true }
-  ];
-  const fieldsApellido = [
-    { name: 'apellido', label: 'Apellido', type: 'text', required: true }
-  ];
-  const fieldsTelefono = [
-    { name: 'telefono', label: 'Teléfono', type: 'text', required: true }
-  ];
+  const fieldsNombre = [{ name: 'nombre', label: 'Nombre', type: 'text', required: true }];
+  const fieldsApellido = [{ name: 'apellido', label: 'Apellido', type: 'text', required: true }];
+  const fieldsTelefono = [{ name: 'telefono', label: 'Teléfono', type: 'text', required: true }];
   const fieldsDireccion = [
     { name: 'calle', label: 'Calle', type: 'text', required: true },
     { name: 'numero', label: 'Número', type: 'text', required: true },
     { name: 'cp', label: 'Código Postal', type: 'text', required: true },
-    { 
-      name: 'localidad', 
-      label: 'Localidad', 
-      type: 'select', 
+    {
+      name: 'localidad',
+      label: 'Localidad',
+      type: 'select',
       required: true,
-      options: localidades.map(l => ({
+      options: localidades.map((l) => ({
         value: l.id,
-        label: `${l.nombre}, ${l.provincia.nombre}`
-      }))
-    }
+        label: `${l.nombre}, ${l.provincia.nombre}`,
+      })),
+    },
   ];
 
   // Handlers para submit de cada modal
   const handleSubmit = async (values: any, campo: string) => {
     if (!user.id) return;
-    
+
     setLoading(true);
     try {
       let dataToSend: any = {};
       if (campo === 'direccion') {
-        const localidadSeleccionada = localidades.find(l => l.id === Number(values.localidad));
-        dataToSend = { 
-          domicilios: [{
-            calle: values.calle,
-            numero: values.numero,
-            cp: values.cp,
-            localidad: localidadSeleccionada
-          }] 
+        const localidadSeleccionada = localidades.find((l) => l.id === Number(values.localidad));
+        dataToSend = {
+          domicilios: [
+            {
+              calle: values.calle,
+              numero: values.numero,
+              cp: values.cp,
+              localidad: localidadSeleccionada,
+            },
+          ],
         };
       } else {
         dataToSend = { [campo]: values[campo] };
@@ -145,7 +141,8 @@ export const PerfilClienteDashboard = () => {
             <div className="space-y-4">
               <div className="flex items-center justify-between border-b pb-2">
                 <span className="font-medium flex items-center">
-                  <IconoLoggin className="w-5 h-5 mr-2 text-primary" />Nombre
+                  <IconoLoggin className="w-5 h-5 mr-2 text-primary" />
+                  Nombre
                 </span>
                 <span>{user.nombre}</span>
                 <button onClick={() => setModal('nombre')}>
@@ -154,7 +151,8 @@ export const PerfilClienteDashboard = () => {
               </div>
               <div className="flex items-center justify-between border-b pb-2">
                 <span className="font-medium flex items-center">
-                  <IconoLoggin className="w-5 h-5 mr-2 text-primary" />Apellido
+                  <IconoLoggin className="w-5 h-5 mr-2 text-primary" />
+                  Apellido
                 </span>
                 <span>{user.apellido}</span>
                 <button onClick={() => setModal('apellido')}>
@@ -163,7 +161,8 @@ export const PerfilClienteDashboard = () => {
               </div>
               <div className="flex items-center justify-between border-b pb-2">
                 <span className="font-medium flex items-center">
-                  <IconoUbicacion className="w-5 h-5 mr-2 text-primary" />Dirección de Entrega
+                  <IconoUbicacion className="w-5 h-5 mr-2 text-primary" />
+                  Dirección de Entrega
                 </span>
                 <span>
                   {domicilio
@@ -176,14 +175,18 @@ export const PerfilClienteDashboard = () => {
               </div>
               <div className="flex items-center justify-between border-b pb-2">
                 <span className="font-medium flex items-center">
-                  <IconoLoggin className="w-5 h-5 mr-2 text-primary" />Teléfono
+                  <IconoLoggin className="w-5 h-5 mr-2 text-primary" />
+                  Teléfono
                 </span>
                 <span>{user.telefono ?? 'No especificado'}</span>
                 <button onClick={() => setModal('telefono')}>
                   <IconoEditar className="w-5 h-5 text-primary" />
                 </button>
               </div>
-              <button className="w-full mt-6 bg-primary text-white py-2 rounded flex items-center justify-center gap-2" onClick={logout}>
+              <button
+                className="w-full mt-6 bg-primary text-white py-2 rounded flex items-center justify-center gap-2"
+                onClick={logout}
+              >
                 <IconoCerrar className="w-5 h-5" /> Cerrar Sesión
               </button>
             </div>
@@ -198,9 +201,7 @@ export const PerfilClienteDashboard = () => {
         <HeaderCliente />
         <div className="flex min-h-[calc(100vh-4.9rem)]">
           <AsideCliente onMenuSelect={setActiveView} activeView={activeView} />
-          <div className="flex-1 p-8">
-            {renderContent()}
-          </div>
+          <div className="flex-1 p-8">{renderContent()}</div>
         </div>
       </main>
 
@@ -241,11 +242,11 @@ export const PerfilClienteDashboard = () => {
           calle: domicilio?.calle ?? '',
           numero: domicilio?.numero ?? '',
           cp: domicilio?.cp ?? '',
-          localidad: domicilio?.localidad?.id ?? ''
+          localidad: domicilio?.localidad?.id ?? '',
         }}
         onSubmit={(values) => handleSubmit(values, 'direccion')}
         readonly={loading}
       />
     </div>
   );
-}; 
+};
