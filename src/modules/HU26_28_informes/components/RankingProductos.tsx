@@ -139,7 +139,7 @@ export const RankingProductos = () => {
       )}
 
       <div className="flex flex-wrap gap-8 justify-evenly items-start">
-        <div className="flex-1 min-w-[600px]">
+        <div className="flex-1 min-w-[600px] max-h-[900px]">
           <h3 className="text-center font-semibold mb-2">Ranking de Productos Más Vendidos</h3>
           <Bar data={barChartData} options={chartOptions} height={300} />
         </div>

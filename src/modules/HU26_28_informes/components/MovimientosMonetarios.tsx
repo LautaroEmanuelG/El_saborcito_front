@@ -138,7 +138,7 @@ const MovimientosMonetarios: React.FC = () => {
   };
 
   return (
-    <div className="bg-white p-8 rounded-xl shadow max-w-full overflow-x-auto">
+    <div className="bg-white p-8 rounded-xl shadow max-w-full overflow-x-auto w-full">
       {/* Cabecera y fechas */}
       <div className="flex flex-wrap justify-between items-center mb-8 border-b pb-4">
         <h2 className="text-2xl font-bold mr-20">Movimientos monetarios</h2>
