@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { EmpleadoFormData, ROLES_EMPLEADO } from '../model';
 import { validarFormularioEmpleado, formDataToRegistroEmpleado, cleanFormData } from '../logic';
 import { registrarEmpleado } from '../../../shared/services/empleadoService';
@@ -58,11 +58,9 @@ export const ModalRegistroEmpleado = ({
         setErrores(erroresValidacion);
         setLoading(false);
         return;
-      }
-
-      // Convertir a DTO y enviar al backend
+      } // Convertir a DTO y enviar al backend
       const registroDto = formDataToRegistroEmpleado(datosLimpios);
-      const response = await registrarEmpleado(registroDto);
+      await registrarEmpleado(registroDto);
 
       mostrarNotificacion('Empleado registrado exitosamente', 'success');
 

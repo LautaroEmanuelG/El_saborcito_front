@@ -3,7 +3,7 @@ import { EmpleadoDTO } from '../model';
 import { Rol } from '../../HU1_2_Registro_Login/models';
 import IconoEditar from '../../../assets/svgs/icons/IconoEditar';
 import IconoEliminar from '../../../assets/svgs/icons/IconoEliminar';
-import { IconoOjo } from '../../../assets/svgs/icons/IconoOjo';
+import IconoVer from '../../../assets/svgs/icons/IconoVer';
 
 interface TablaEmpleadosProps {
   empleados: EmpleadoDTO[];
@@ -195,7 +195,7 @@ export const TablaEmpleados = ({
                         className="text-blue-600 hover:text-blue-900"
                         title="Ver detalles"
                       >
-                        <IconoOjo className="w-4 h-4" />
+                        <IconoVer className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => onEditarEmpleado(empleado)}

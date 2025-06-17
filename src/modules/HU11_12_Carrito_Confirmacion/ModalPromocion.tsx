@@ -1,15 +1,15 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import type { Promocion } from '../../types/Promocion';
 import { useProductStore } from '../../shared/providers/ProductProvider';
 import { BtnAgregarPromocion } from './BtnAgregarPromocion';
 
-type Props = {
+interface Props {
   promocion: Promocion | null;
   isOpen: boolean;
   onClose: () => void;
-};
+}
 
-export const ModalPromocion: React.FC<Props> = ({ promocion = null, isOpen, onClose }) => {
+export const ModalPromocion = ({ promocion = null, isOpen, onClose }: Props) => {
   if (!isOpen || !promocion) return null;
 
   const promocionAvailability = useProductStore((state) => state.promocionAvailability);
@@ -29,8 +29,7 @@ export const ModalPromocion: React.FC<Props> = ({ promocion = null, isOpen, onCl
   const precioNormal = promocion.promocionDetalles.reduce((suma, detalle) => {
     return suma + detalle.articulo.precioVenta * detalle.cantidadRequerida;
   }, 0);
-
-  const ahorro = precioNormal - promocion.precioPromocional;
+  const ahorro = precioNormal - (promocion.precioPromocional ?? 0);
   const porcentajeAhorro = Math.round((ahorro / precioNormal) * 100);
 
   return (

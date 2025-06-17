@@ -26,21 +26,6 @@ interface Localidad {
   provincia: Provincia;
 }
 
-interface Domicilio {
-  calle: string;
-  numero: string;
-  cp: string;
-  localidad?: Localidad;
-}
-
-interface Usuario {
-  id: number;
-  nombre: string;
-  apellido: string;
-  telefono: string;
-  domicilios?: Domicilio[];
-}
-
 export const PerfilClienteDashboard = () => {
   const { user, logout, setUser } = useUser();
   const location = useLocation();
@@ -150,7 +135,8 @@ export const PerfilClienteDashboard = () => {
             <div className="space-y-4">
               <div className="flex items-center justify-between border-b pb-2">
                 <span className="font-medium flex items-center">
-                  <IconoLoggin className="w-5 h-5 mr-2 text-primary" />
+                  {' '}
+                  <IconoLoggin color="currentColor" />
                   Nombre
                 </span>
                 <span>{user.nombre}</span>
@@ -160,7 +146,8 @@ export const PerfilClienteDashboard = () => {
               </div>
               <div className="flex items-center justify-between border-b pb-2">
                 <span className="font-medium flex items-center">
-                  <IconoLoggin className="w-5 h-5 mr-2 text-primary" />
+                  {' '}
+                  <IconoLoggin color="currentColor" />
                   Apellido
                 </span>
                 <span>{user.apellido}</span>
@@ -170,7 +157,8 @@ export const PerfilClienteDashboard = () => {
               </div>
               <div className="flex items-center justify-between border-b pb-2">
                 <span className="font-medium flex items-center">
-                  <IconoUbicacion className="w-5 h-5 mr-2 text-primary" />
+                  {' '}
+                  <IconoUbicacion />
                   Dirección de Entrega
                 </span>
                 <span>
@@ -184,7 +172,8 @@ export const PerfilClienteDashboard = () => {
               </div>
               <div className="flex items-center justify-between border-b pb-2">
                 <span className="font-medium flex items-center">
-                  <IconoLoggin className="w-5 h-5 mr-2 text-primary" />
+                  {' '}
+                  <IconoLoggin color="currentColor" />
                   Teléfono
                 </span>
                 <span>{user.telefono ?? 'No especificado'}</span>
@@ -196,7 +185,7 @@ export const PerfilClienteDashboard = () => {
                 className="w-full mt-6 bg-primary text-white py-2 rounded flex items-center justify-center gap-2"
                 onClick={logout}
               >
-                <IconoCerrar className="w-5 h-5" /> Cerrar Sesión
+                <IconoCerrar color="currentColor" /> Cerrar Sesión
               </button>
             </div>
           </div>

@@ -1,11 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  ReactNode,
-  useCallback,
-  useEffect,
-} from 'react';
+import { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
 import { Usuario } from '../../types/Usuario';
 import { useAuth0 } from '@auth0/auth0-react';
 
@@ -23,7 +16,7 @@ interface UserProviderProps {
   children: ReactNode;
 }
 
-export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
+export const UserProvider = ({ children }: UserProviderProps) => {
   const [user, setUserState] = useState<Usuario | null>(() => {
     const storedUser = localStorage.getItem('user');
     return storedUser ? JSON.parse(storedUser) : null;
@@ -31,12 +24,11 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const [ultimaActividad, setUltimaActividad] = useState<Date>(new Date());
 
   const { logout: auth0Logout } = useAuth0();
-
   const logout = useCallback(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUserState(null);
-    auth0Logout({ returnTo: window.location.origin });
+    auth0Logout();
   }, [auth0Logout]);
 
   const setUser = useCallback((usuario: Usuario | null) => {

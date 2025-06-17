@@ -32,11 +32,9 @@ export const RegistroModal = ({ isOpen, onClose }: RegistroModalProps) => {
     cp: '',
     localidad: undefined,
   });
-
   const [localidades, setLocalidades] = useState<Localidad[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const { setUser } = useUser();
   const { mostrarNotificacion } = useNotificacion();
 
@@ -87,7 +85,6 @@ export const RegistroModal = ({ isOpen, onClose }: RegistroModalProps) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    setSuccess(false);
 
     try {
       // Validaciones
@@ -119,7 +116,6 @@ export const RegistroModal = ({ isOpen, onClose }: RegistroModalProps) => {
       const response = await registrarCliente(formData);
       // Guardar usuario en contexto global
       setUser(response.usuario || response);
-      setSuccess(true);
       mostrarNotificacion('¡Registro exitoso!', 'success');
       setTimeout(() => {
         onClose();
@@ -310,7 +306,7 @@ export const RegistroModal = ({ isOpen, onClose }: RegistroModalProps) => {
                 Ubicación en el mapa
               </label>
               <MapaInteractivo
-                onUbicacionSeleccionada={(lat, lng) => {
+                onUbicacionSeleccionada={(lat: number, lng: number) => {
                   setDomicilio((prev) => ({ ...prev, latitud: lat, longitud: lng }));
                 }}
                 ubicacionActual={

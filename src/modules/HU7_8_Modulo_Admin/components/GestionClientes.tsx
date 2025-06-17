@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { ClienteDTO } from '../model';
 import {
   obtenerTodosLosClientes,
-  actualizarCliente,
   bajaLogicaCliente,
   altaCliente,
 } from '../../../shared/services/clienteAdminService';
@@ -10,7 +9,6 @@ import { useNotificacion } from '../../../shared/hooks/useNotificacion';
 import { ModalConfirm } from '../../../shared/components/utils/ModalConfirm';
 import { ModalEditarCliente } from './ModalEditarCliente';
 import { TablaClientes } from './TablaClientes';
-import IconoAgregar from '../../../assets/svgs/icons/IconoAgregar';
 
 export const GestionClientes = () => {
   const [clientes, setClientes] = useState<ClienteDTO[]>([]);

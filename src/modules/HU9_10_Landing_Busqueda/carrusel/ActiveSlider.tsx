@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 import 'swiper/css';
@@ -16,11 +16,8 @@ interface ActiveSliderProps {
   setPromocionModal?: (promocion: Promocion) => void;
 }
 
-export const ActiveSlider: React.FC<ActiveSliderProps> = ({
-  setArticuloModal,
-  setPromocionModal,
-}) => {
-  const [articulos, setArticulos] = React.useState<ArticuloManufacturado[]>([]);
+export const ActiveSlider = ({ setArticuloModal, setPromocionModal }: ActiveSliderProps) => {
+  const [articulos, setArticulos] = useState<ArticuloManufacturado[]>([]);
 
   // 🎁 Obtener promociones del store
   const { filteredPromociones, promocionAvailability } = useProductStore();
@@ -103,9 +100,9 @@ export const ActiveSlider: React.FC<ActiveSliderProps> = ({
           <div className="absolute bottom-10 left-0 p-4 mb-3 text-white w-full rounded-b-xl flex flex-col items-start">
             <h3 className="text-2xl font-semibold">
               {promocionNormalizada.promocionOriginal.denominacion}
-            </h3>
+            </h3>{' '}
             <p className="text-xl font-bold text-yellow-300">
-              ${promocionNormalizada.promocionOriginal.precioPromocional.toFixed(2)}
+              ${(promocionNormalizada.promocionOriginal.precioPromocional ?? 0).toFixed(2)}
             </p>
           </div>{' '}
           {/* Botón "Agregar al carrito" para promociones */}
@@ -120,7 +117,7 @@ export const ActiveSlider: React.FC<ActiveSliderProps> = ({
       ))}
 
       {/* Slides de productos regulares */}
-      {articulos.map((articulo, index) => (
+      {articulos.map((articulo: ArticuloManufacturado, index: number) => (
         <SwiperSlide
           onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
             e.stopPropagation();

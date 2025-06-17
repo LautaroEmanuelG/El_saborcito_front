@@ -1,16 +1,13 @@
-import React from 'react';
 import { PedidoCompletoConDetalles } from '../../../types/Pedido';
 import { formatearNombreFormaPago } from '../../../shared/utils/pedidoUtils';
 import IconoVer from '../../../assets/svgs/icons/IconoVer';
 import { IconoArrowRight } from '../../../assets/svgs/icons/IconoArrowRight';
-import { IconoTimeOut } from '../../../assets/svgs/icons/IconoTimeOut';
 import { getEstadoBadgeColor } from '../../HU13_MisPedidos/components/HistorialPedidosCliente';
 import { IconoBasura } from '../../../assets/svgs/icons/IconoBasura';
 
 interface TablaRecepcionProps {
   pedidos: PedidoCompletoConDetalles[];
   onVerDetalle: (pedido: PedidoCompletoConDetalles) => void;
-  onCambiarEstado: (pedidoId: number, nuevoEstado: string) => void;
   onAvanzarEstado: (pedidoId: number) => void;
   onCancelarPedido: (pedidoId: number) => void;
   puedeAvanzarEstado: (estadoActual: string, tipoEnvio: string) => boolean;
@@ -20,7 +17,6 @@ interface TablaRecepcionProps {
 export const TablaRecepcion: React.FC<TablaRecepcionProps> = ({
   pedidos,
   onVerDetalle,
-  onCambiarEstado,
   onAvanzarEstado,
   onCancelarPedido,
   puedeAvanzarEstado,

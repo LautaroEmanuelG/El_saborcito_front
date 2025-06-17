@@ -11,21 +11,34 @@ export default defineConfig({
   build: {
     // Optimizaciones para producción
     minify: 'terser',
+    sourcemap: false,
     rollupOptions: {
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
           auth: ['@auth0/auth0-react'],
-          ui: ['@headlessui/react', '@heroicons/react'],
+          router: ['react-router-dom'],
+          charts: ['chart.js', 'react-chartjs-2', 'recharts'],
+          maps: ['leaflet', 'react-leaflet'],
+          swiper: ['swiper'],
+          payments: ['@mercadopago/sdk-react'],
+          utils: ['axios', 'zustand', 'emailjs-com'],
         },
       },
     },
+    // Configuración para mejor rendimiento en Vercel
+    chunkSizeWarningLimit: 1000,
+    target: 'esnext',
   },
   server: {
     // Solo para desarrollo local
     port: 5173,
+    host: true,
   },
   preview: {
     port: 4173,
+    host: true,
   },
+  // Configuración específica para Vercel
+  base: './',
 });
