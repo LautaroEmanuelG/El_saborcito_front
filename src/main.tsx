@@ -14,7 +14,7 @@ import ScreenArticulosManufacturados from './modules/HU22_CRUDArticulos/componen
 import ScreenInsumos from './modules/HU23_CRUDInsumos/components/ScreenInsumos';
 import { Cocina } from './app/views/admin/Cocina.tsx';
 import { HistorialCocina } from './app/views/admin/HistorialCocina.tsx';
-import { MovimientosMonetarios } from './modules/HU26_28_informes/components/MovimientosMonetarios.tsx';
+import MovimientosMonetarios from './modules/HU26_28_informes/components/MovimientosMonetarios.tsx';
 import { RankingCliente } from './modules/HU26_28_informes/components/RankingCliente.tsx';
 import ScreenCategoriasArticulos from './modules/HU21_CRUD_CategoriasArticulos/components/ScreenCategoriasArticulos';
 import ScreenCategoriaPadreArticulo from './modules/HU21_CRUD_CategoriasPadresArticulos/components/ScreenCategoriaPadreArticulo';
@@ -25,12 +25,8 @@ import { Recepcion } from './modules/HU14_Recepcion/components/Recepcion.tsx';
 import { Delivery } from './modules/HU16_Delivery/components/Delivery.tsx';
 import ScreenCompraIngredientes from './modules/HU24_CompraIngredientes/components/ScreenCompraIngredientes';
 import { CallbackPage } from './app/views/CallbackPage.tsx';
-<<<<<<< Updated upstream
 import { HistorialPedidosCliente } from './modules/HU13_MisPedidos/index.ts';
 import { PerfilClienteDashboard } from './modules/HU3_Perfil_Cliente/components/PerfilClienteDashboard.tsx';
-=======
-import { PerfilClienteDashboard } from './modules/HU3_Perfil_Cliente/components/PerfilClienteDashboard';
->>>>>>> Stashed changes
 
 createRoot(document.getElementById('root')!).render(
   <BrowserRouter>

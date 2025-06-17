@@ -49,7 +49,7 @@ export interface PedidoGananciaDetalle {
   total: number;
 }
 
-export interface PedidoCostoDetalle {
+export interface CompraCostoDetalle {
   idPedido: number;
   fechaPedido: string;
   totalCosto: number;
