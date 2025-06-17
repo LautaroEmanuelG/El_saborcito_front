@@ -43,10 +43,9 @@ export const calcularTotalCarrito = (
   const totalProductos = carrito.reduce((total, producto) => {
     return total + producto.precioVenta * producto.cantidad;
   }, 0);
-
   // Total de promociones
   const totalPromociones = promocionesEnCarrito.reduce((total, item) => {
-    return total + item.promocion.precioPromocional * item.cantidad;
+    return total + (item.promocion.precioPromocional ?? 0) * item.cantidad;
   }, 0);
 
   return totalProductos + totalPromociones;
@@ -59,7 +58,7 @@ export const calcularAhorroPromociones = (promocionesEnCarrito: PromocionEnCarri
       return suma + detalle.articulo.precioVenta * detalle.cantidadRequerida;
     }, 0);
 
-    const ahorroUnidad = precioNormal - item.promocion.precioPromocional;
+    const ahorroUnidad = precioNormal - (item.promocion.precioPromocional ?? 0);
     return totalAhorro + ahorroUnidad * item.cantidad;
   }, 0);
 };

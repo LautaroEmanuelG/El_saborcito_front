@@ -1,12 +1,5 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useCallback,
-  ReactNode,
-  useEffect,
-} from 'react';
-import { EmpleadoDTO } from '../../modules/HU4_Registro_Empleado/model';
+import { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
+import { EmpleadoDTO, ActualizarEmpleadoAdminDTO } from '../../modules/HU4_Registro_Empleado/model';
 import {
   getAllEmpleados,
   cambiarEstadoEmpleado,
@@ -22,7 +15,7 @@ interface EmpleadoContextType {
   actualizarEstadoEmpleado: (id: number, estado: boolean) => Promise<void>;
   agregarEmpleado: (empleado: EmpleadoDTO) => void;
   setEmpleados: (empleados: EmpleadoDTO[]) => void;
-  actualizarEmpleado: (id: number, data: Partial<EmpleadoDTO>) => Promise<void>;
+  actualizarEmpleado: (id: number, data: ActualizarEmpleadoAdminDTO) => Promise<void>;
   // Auth empleados
   empleadoAutenticado: Empleado | null;
   isAuthenticated: boolean;
@@ -38,7 +31,7 @@ interface EmpleadoProviderProps {
   children: ReactNode;
 }
 
-export const EmpleadoProvider: React.FC<EmpleadoProviderProps> = ({ children }) => {
+export const EmpleadoProvider = ({ children }: EmpleadoProviderProps) => {
   const [empleados, setEmpleados] = useState<EmpleadoDTO[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -71,8 +64,7 @@ export const EmpleadoProvider: React.FC<EmpleadoProviderProps> = ({ children }) 
   const agregarEmpleado = useCallback((empleado: EmpleadoDTO) => {
     setEmpleados((prev) => [...prev, empleado]);
   }, []);
-
-  const actualizarEmpleado = useCallback(async (id: number, data: Partial<EmpleadoDTO>) => {
+  const actualizarEmpleado = useCallback(async (id: number, data: ActualizarEmpleadoAdminDTO) => {
     try {
       const empleadoActualizado = await updateEmpleado(id, data);
       setEmpleados((prev) => prev.map((emp) => (emp.id === id ? empleadoActualizado : emp)));

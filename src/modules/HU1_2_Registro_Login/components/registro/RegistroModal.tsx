@@ -32,11 +32,9 @@ export const RegistroModal = ({ isOpen, onClose }: RegistroModalProps) => {
     cp: '',
     localidad: undefined,
   });
-
   const [localidades, setLocalidades] = useState<Localidad[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const { setUser } = useUser();
   const { mostrarNotificacion } = useNotificacion();
 
@@ -87,7 +85,6 @@ export const RegistroModal = ({ isOpen, onClose }: RegistroModalProps) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    setSuccess(false);
 
     try {
       // Validaciones
@@ -118,8 +115,7 @@ export const RegistroModal = ({ isOpen, onClose }: RegistroModalProps) => {
       // Llamada al servicio de registro
       const response = await registrarCliente(formData);
       // Guardar usuario en contexto global
-      setUser(response.usuario || response);
-      setSuccess(true);
+      setUser(response.usuario ?? response);
       mostrarNotificacion('¡Registro exitoso!', 'success');
       setTimeout(() => {
         onClose();
@@ -173,7 +169,9 @@ export const RegistroModal = ({ isOpen, onClose }: RegistroModalProps) => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-negro text-sm font-bold mb-2">Nombre *</label>
+              <label htmlFor="registro-nombre" className="block text-negro text-sm font-bold mb-2">
+                Nombre *
+              </label>
               <input
                 type="text"
                 name="nombre"
@@ -181,10 +179,16 @@ export const RegistroModal = ({ isOpen, onClose }: RegistroModalProps) => {
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-gris rounded-lg text-negro focus:outline-none focus:ring-2 focus:ring-primary"
                 required
+                id="registro-nombre"
               />
             </div>
             <div>
-              <label className="block text-negro text-sm font-bold mb-2">Apellido *</label>
+              <label
+                htmlFor="registro-apellido"
+                className="block text-negro text-sm font-bold mb-2"
+              >
+                Apellido *
+              </label>
               <input
                 type="text"
                 name="apellido"
@@ -192,31 +196,43 @@ export const RegistroModal = ({ isOpen, onClose }: RegistroModalProps) => {
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-gris rounded-lg text-negro focus:outline-none focus:ring-2 focus:ring-primary"
                 required
+                id="registro-apellido"
               />
             </div>
           </div>
           <div>
-            <label className="block text-negro text-sm font-bold mb-2">Fecha de Nacimiento</label>
+            <label
+              htmlFor="registro-fechaNacimiento"
+              className="block text-negro text-sm font-bold mb-2"
+            >
+              Fecha de Nacimiento
+            </label>
             <input
               type="date"
               name="fechaNacimiento"
               value={formData.fechaNacimiento}
               onChange={handleChange}
               className="w-full px-4 py-2 border border-gris rounded-lg text-negro focus:outline-none focus:ring-2 focus:ring-primary"
+              id="registro-fechaNacimiento"
             />
           </div>
           <div>
-            <label className="block text-negro text-sm font-bold mb-2">Teléfono</label>
+            <label htmlFor="registro-telefono" className="block text-negro text-sm font-bold mb-2">
+              Teléfono
+            </label>
             <input
               type="tel"
               name="telefono"
               value={formData.telefono}
               onChange={handleChange}
               className="w-full px-4 py-2 border border-gris rounded-lg text-negro focus:outline-none focus:ring-2 focus:ring-primary"
+              id="registro-telefono"
             />
           </div>
           <div>
-            <label className="block text-negro text-sm font-bold mb-2">Email *</label>
+            <label htmlFor="registro-email" className="block text-negro text-sm font-bold mb-2">
+              Email *
+            </label>
             <input
               type="email"
               name="email"
@@ -224,10 +240,13 @@ export const RegistroModal = ({ isOpen, onClose }: RegistroModalProps) => {
               onChange={handleChange}
               className="w-full px-4 py-2 border border-gris rounded-lg text-negro focus:outline-none focus:ring-2 focus:ring-primary"
               required
+              id="registro-email"
             />
           </div>
           <div>
-            <label className="block text-negro text-sm font-bold mb-2">Contraseña *</label>
+            <label htmlFor="registro-password" className="block text-negro text-sm font-bold mb-2">
+              Contraseña *
+            </label>
             <input
               type="password"
               name="password"
@@ -235,13 +254,17 @@ export const RegistroModal = ({ isOpen, onClose }: RegistroModalProps) => {
               onChange={handleChange}
               className="w-full px-4 py-2 border border-gris rounded-lg text-negro focus:outline-none focus:ring-2 focus:ring-primary"
               required
+              id="registro-password"
             />
             <p className="text-sm text-gris mt-1">
               Mínimo 8 caracteres, una mayúscula, una minúscula y un símbolo
             </p>
           </div>
           <div>
-            <label className="block text-negro text-sm font-bold mb-2">
+            <label
+              htmlFor="registro-confirmarPassword"
+              className="block text-negro text-sm font-bold mb-2"
+            >
               Confirmar Contraseña *
             </label>
             <input
@@ -251,6 +274,7 @@ export const RegistroModal = ({ isOpen, onClose }: RegistroModalProps) => {
               onChange={handleChange}
               className="w-full px-4 py-2 border border-gris rounded-lg text-negro focus:outline-none focus:ring-2 focus:ring-primary"
               required
+              id="registro-confirmarPassword"
             />
           </div>
           {/* Sección de Domicilio */}
@@ -258,43 +282,61 @@ export const RegistroModal = ({ isOpen, onClose }: RegistroModalProps) => {
             <h3 className="text-lg font-semibold mb-4 text-negro">Domicilio (Opcional)</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-negro text-sm font-bold mb-2">Calle</label>
+                <label htmlFor="registro-calle" className="block text-negro text-sm font-bold mb-2">
+                  Calle
+                </label>
                 <input
                   type="text"
                   name="calle"
-                  value={domicilio.calle}
+                  value={domicilio.calle ?? ''}
                   onChange={handleDomicilioChange}
                   className="w-full px-4 py-2 border border-gris rounded-lg text-negro focus:outline-none focus:ring-2 focus:ring-primary"
+                  id="registro-calle"
                 />
               </div>
               <div>
-                <label className="block text-negro text-sm font-bold mb-2">Número</label>
+                <label
+                  htmlFor="registro-numero"
+                  className="block text-negro text-sm font-bold mb-2"
+                >
+                  Número
+                </label>
                 <input
                   type="number"
                   name="numero"
-                  value={domicilio.numero}
+                  value={domicilio.numero ?? ''}
                   onChange={handleDomicilioChange}
                   className="w-full px-4 py-2 border border-gris rounded-lg text-negro focus:outline-none focus:ring-2 focus:ring-primary"
+                  id="registro-numero"
                 />
               </div>
             </div>
             <div className="mt-4">
-              <label className="block text-negro text-sm font-bold mb-2">Código Postal</label>
+              <label htmlFor="registro-cp" className="block text-negro text-sm font-bold mb-2">
+                Código Postal
+              </label>
               <input
                 type="text"
                 name="cp"
-                value={domicilio.cp}
+                value={domicilio.cp ?? ''}
                 onChange={handleDomicilioChange}
                 className="w-full px-4 py-2 border border-gris rounded-lg text-negro focus:outline-none focus:ring-2 focus:ring-primary"
+                id="registro-cp"
               />
             </div>
             <div className="mt-4">
-              <label className="block text-negro text-sm font-bold mb-2">Localidad</label>
+              <label
+                htmlFor="registro-localidad"
+                className="block text-negro text-sm font-bold mb-2"
+              >
+                Localidad
+              </label>
               <select
                 name="localidad"
-                value={domicilio.localidad?.id || ''}
+                value={domicilio.localidad?.id ?? ''}
                 onChange={handleDomicilioChange}
                 className="w-full px-4 py-2 border border-gris rounded-lg text-negro focus:outline-none focus:ring-2 focus:ring-primary"
+                id="registro-localidad"
               >
                 <option value="">Seleccione una localidad</option>
                 {localidades.map((localidad) => (
@@ -306,11 +348,14 @@ export const RegistroModal = ({ isOpen, onClose }: RegistroModalProps) => {
             </div>
             {/* Mapa para seleccionar ubicación */}
             <div className="mt-4">
-              <label className="block text-negro text-sm font-bold mb-2">
+              <label
+                htmlFor="registro-ubicacion"
+                className="block text-negro text-sm font-bold mb-2"
+              >
                 Ubicación en el mapa
               </label>
               <MapaInteractivo
-                onUbicacionSeleccionada={(lat, lng) => {
+                onUbicacionSeleccionada={(lat: number, lng: number) => {
                   setDomicilio((prev) => ({ ...prev, latitud: lat, longitud: lng }));
                 }}
                 ubicacionActual={

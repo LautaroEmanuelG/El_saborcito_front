@@ -5,6 +5,7 @@ import { useUser } from '../../../../shared/providers/UserProvider';
 import emailjs from 'emailjs-com';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useNotificacion } from '../../../../shared/hooks/useNotificacion';
+import { isValidEmail, isValidPassword } from '../../logic';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -45,29 +46,51 @@ export const LoginModal = ({ isOpen, onClose, onOpenRegistro }: LoginModalProps)
   if (!isOpen) return null;
 
   const handleLogin = async () => {
+    // Validaciones antes de enviar al backend
+    if (!email.trim()) {
+      setError('El email es obligatorio');
+      mostrarNotificacion('El email es obligatorio', 'error');
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      setError('El formato del email no es válido');
+      mostrarNotificacion('El formato del email no es válido', 'error');
+      return;
+    }
+
+    if (!contraseña.trim()) {
+      setError('La contraseña es obligatoria');
+      mostrarNotificacion('La contraseña es obligatoria', 'error');
+      return;
+    }
+
+    if (!isValidPassword(contraseña)) {
+      setError(
+        'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un símbolo'
+      );
+      mostrarNotificacion(
+        'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un símbolo',
+        'error'
+      );
+      return;
+    }
+
     try {
       const response = await loginManual({ email, password: contraseña });
       const { token, usuario } = response;
-      if (usuario?.rol && ['CAJERO', 'COCINERO', 'DELIVERY', 'ADMIN'].includes(usuario.rol)) {
-        setError('Este usuario es un empleado. Use el acceso de empleados en el menú.');
-        mostrarNotificacion(
-          'Este usuario es un empleado. Use el acceso de empleados en el menú.',
-          'error'
-        );
-        return;
-      }
       localStorage.setItem('token', token);
       setUser(usuario);
       mostrarNotificacion('¡Login exitoso!', 'success');
       if (usuario.rol === 'ADMIN') {
-        navigate('/admin/historial');
+        navigate('/admin');
       } else {
         navigate('/');
       }
       onClose();
     } catch (error: any) {
-      setError(error.message || 'Error en el servidor. Intente nuevamente.');
-      mostrarNotificacion(error.message || 'Error en el servidor. Intente nuevamente.', 'error');
+      setError(error.message ?? 'Error en el servidor. Intente nuevamente.');
+      mostrarNotificacion(error.message ?? 'Error en el servidor. Intente nuevamente.', 'error');
       setAttempts((prev) => prev + 1);
       if (attempts + 1 >= 3) {
         setIsBlocked(true);
@@ -125,8 +148,11 @@ export const LoginModal = ({ isOpen, onClose, onOpenRegistro }: LoginModalProps)
           </div>
         </div>
         <div className="mb-4">
-          <label className="block text-negro text-sm font-bold mb-2">Usuario</label>
+          <label htmlFor="login-usuario" className="block text-negro text-sm font-bold mb-2">
+            Usuario
+          </label>
           <input
+            id="login-usuario"
             type="text"
             placeholder="Ingresa tu usuario"
             className="w-full px-4 py-2 border border-gris rounded-lg text-negro focus:outline-none focus:ring-2 focus:ring-primary"
@@ -136,8 +162,11 @@ export const LoginModal = ({ isOpen, onClose, onOpenRegistro }: LoginModalProps)
           />
         </div>
         <div className="mb-4">
-          <label className="block text-negro text-sm font-bold mb-2">Contraseña</label>
+          <label htmlFor="login-password" className="block text-negro text-sm font-bold mb-2">
+            Contraseña
+          </label>
           <input
+            id="login-password"
             type="password"
             placeholder="Ingresa tu contraseña"
             className="w-full px-4 py-2 border border-gris rounded-lg text-negro focus:outline-none focus:ring-2 focus:ring-primary"

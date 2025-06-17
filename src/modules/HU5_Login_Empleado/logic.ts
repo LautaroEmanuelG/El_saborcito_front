@@ -1,9 +1,4 @@
-import {
-  LoginEmpleado,
-  CambioContraseñaEmpleado,
-  AuthEmpleadoResponse,
-  CambiarPasswordDTO,
-} from './model';
+import { LoginEmpleado, AuthEmpleadoResponse, CambiarPasswordDTO } from './model';
 import axiosInstance from '../../shared/services/axiosConfig';
 import { isValidEmail, isValidPassword } from '../HU1_2_Registro_Login/logic';
 

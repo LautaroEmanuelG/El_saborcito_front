@@ -37,12 +37,11 @@ const ScreenCompraIngredientes = () => {
 
   const handleOpenModal = () => setOpenModal(true);
   const handleCloseModal = () => setOpenModal(false);
-
   /**
    * Cuando el modal devuelve la compra creada,
    * simplemente recargo el listado desde el store y cierro el modal
    */
-  const handleCompraRegistrada = (compra: CompraInsumoDTO) => {
+  const handleCompraRegistrada = () => {
     fetchCompras();
     setOpenModal(false);
   };

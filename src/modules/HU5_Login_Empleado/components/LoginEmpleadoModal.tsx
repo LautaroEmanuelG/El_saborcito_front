@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  loginEmpleado,
   cambiarContraseñaEmpleado,
+  loginEmpleado,
   validarLoginEmpleado,
   validarNuevaContraseña,
 } from '../logic';
-import { EstadoLoginEmpleado, Empleado } from '../model';
+import { EstadoLoginEmpleado, type Empleado } from '../model';
 import { useEmpleado } from '../../../shared/providers/EmpleadoProvider';
 import emailjs from 'emailjs-com';
+import { loginAdmin } from '../../../shared/services/authService';
 
 interface LoginEmpleadoModalProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ export const LoginEmpleadoModal = ({ isOpen, onClose }: LoginEmpleadoModalProps)
   const [isBlocked, setIsBlocked] = useState(false);
   const [blockTime, setBlockTime] = useState(0);
   const [empleadoTemp, setEmpleadoTemp] = useState<Empleado | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const navigate = useNavigate();
   const { setEmpleado } = useEmpleado();
@@ -64,44 +66,65 @@ export const LoginEmpleadoModal = ({ isOpen, onClose }: LoginEmpleadoModalProps)
         return;
       }
 
-      const response = await loginEmpleado({ email, password: contraseña });
-
-      if (response.cambioRequerido) {
-        // Es primer login, necesita cambiar contraseña
-        setEstado(EstadoLoginEmpleado.CAMBIO_CONTRASEÑA);
-        setEmpleadoTemp(response.empleado);
-      } else {
-        // Login exitoso
-        setEstado(EstadoLoginEmpleado.EXITOSO);
-        if (response.token) {
-          localStorage.setItem('empleadoToken', response.token);
-          setEmpleado(response.empleado);
-
-          // Redirigir según el rol
-          switch (response.empleado.rol) {
-            case 'ADMIN':
-              navigate('/admin/historial');
-              break;
-            case 'CAJERO':
-              navigate('/admin/recepcion');
-              break;
-            case 'COCINERO':
-              navigate('/admin/cocina');
-              break;
-            case 'DELIVERY':
-              navigate('/admin/delivery');
-              break;
-            default:
-              navigate('/admin');
+      if (isAdmin) {
+        // Login como admin - usar endpoint /admin/login
+        try {
+          const response = await loginAdmin({ email, password: contraseña });
+          if (response.token && response.usuario) {
+            localStorage.setItem('empleadoToken', response.token);
+            setEmpleado(response.usuario);
+            navigate('/admin');
+            onClose();
+            return;
           }
+        } catch (adminError: any) {
+          setError('No tienes permisos de administrador o credenciales incorrectas');
+          setEstado(EstadoLoginEmpleado.ERROR);
+          return;
         }
-        onClose();
+      } else {
+        // Login como empleado - usar endpoint /empleados/login/manual
+        try {
+          const response = await loginEmpleado({ email, password: contraseña });
+
+          if (response.cambioRequerido) {
+            setEstado(EstadoLoginEmpleado.CAMBIO_CONTRASEÑA);
+            setEmpleadoTemp(response.empleado);
+          } else {
+            setEstado(EstadoLoginEmpleado.EXITOSO);
+            if (response.token) {
+              localStorage.setItem('empleadoToken', response.token);
+              setEmpleado(response.empleado);
+              // Redirigir según el rol de empleado
+              switch (response.empleado.rol) {
+                case 'CAJERO':
+                  navigate('/admin/recepcion');
+                  break;
+                case 'COCINERO':
+                  navigate('/admin/cocina');
+                  break;
+                case 'DELIVERY':
+                  navigate('/admin/delivery');
+                  break;
+                default:
+                  navigate('/admin');
+              }
+            }
+            onClose();
+          }
+        } catch (empleadoError: any) {
+          setError(
+            empleadoError.message ||
+              'Este usuario no es un empleado. Use el checkbox "¿Eres admin?" si es administrador.'
+          );
+          setEstado(EstadoLoginEmpleado.ERROR);
+          return;
+        }
       }
     } catch (error: any) {
-      setError(error.message);
+      setError(error.message || 'Error en el servidor. Intente nuevamente.');
       setEstado(EstadoLoginEmpleado.ERROR);
       setAttempts((prev) => prev + 1);
-
       if (attempts + 1 >= 3) {
         setIsBlocked(true);
         setBlockTime(30);
@@ -119,35 +142,39 @@ export const LoginEmpleadoModal = ({ isOpen, onClose }: LoginEmpleadoModalProps)
       if (errorValidacion) {
         setError(errorValidacion);
         return;
-      }
+      } // TODO: Implementar cambio de contraseña correctamente
+      // await cambiarContraseñaEmpleado(empleadoId, {
+      //   contraseñaActual: contraseña,
+      //   contraseñaNueva: nuevaContraseña,
+      // });
 
-      const response = await cambiarContraseñaEmpleado({
-        email,
-        contraseñaActual: contraseña,
-        contraseñaNueva: nuevaContraseña,
-      });
+      if (empleadoTemp && empleadoTemp.id) {
+        await cambiarContraseñaEmpleado(empleadoTemp.id, {
+          currentPassword: contraseña,
+          newPassword: nuevaContraseña,
+          confirmPassword: confirmarContraseña,
+        });
 
-      // Contraseña cambiada exitosamente, hacer login automático
-      if (response.token) {
-        localStorage.setItem('empleadoToken', response.token);
-        setEmpleado(response.empleado);
+        // Contraseña cambiada exitosamente, hacer login automático
+        const loginResponse = await loginEmpleado({ email, password: nuevaContraseña });
+        if (loginResponse.token) {
+          localStorage.setItem('empleadoToken', loginResponse.token);
+          setEmpleado(loginResponse.empleado);
 
-        // Redirigir según el rol
-        switch (response.empleado.rol) {
-          case 'ADMIN':
-            navigate('/admin/historial');
-            break;
-          case 'CAJERO':
-            navigate('/admin/recepcion');
-            break;
-          case 'COCINERO':
-            navigate('/admin/cocina');
-            break;
-          case 'DELIVERY':
-            navigate('/admin/delivery');
-            break;
-          default:
-            navigate('/admin');
+          // Redirigir según el rol
+          switch (loginResponse.empleado.rol) {
+            case 'CAJERO':
+              navigate('/admin/recepcion');
+              break;
+            case 'COCINERO':
+              navigate('/admin/cocina');
+              break;
+            case 'DELIVERY':
+              navigate('/admin/delivery');
+              break;
+            default:
+              navigate('/admin');
+          }
         }
       }
       onClose();
@@ -171,47 +198,63 @@ export const LoginEmpleadoModal = ({ isOpen, onClose }: LoginEmpleadoModalProps)
       });
   };
 
-  const renderFormularioLogin = () => (
-    <>
-      <h2 className="text-2xl font-bold mb-6 text-negro">Acceso Empleados</h2>
-      <div className="mb-4">
-        <label className="block text-negro text-sm font-bold mb-2">Email</label>
-        <input
-          type="email"
-          placeholder="Ingresa tu email"
-          className="w-full px-4 py-2 border border-gris rounded-lg text-negro focus:outline-none focus:ring-2 focus:ring-primary"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+  const renderFormularioLogin = () => {
+    return (
+      <>
+        <h2 className="text-2xl font-bold mb-6 text-negro">Acceso Empleados</h2>
+        <div className="mb-4">
+          <label className="block text-negro text-sm font-bold mb-2">Email</label>
+          <input
+            type="email"
+            placeholder="Ingresa tu email"
+            className="w-full px-4 py-2 border border-gris rounded-lg text-negro focus:outline-none focus:ring-2 focus:ring-primary"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={isBlocked || estado === EstadoLoginEmpleado.AUTENTICANDO}
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-negro text-sm font-bold mb-2">Contraseña</label>
+          <input
+            type="password"
+            placeholder="Ingresa tu contraseña"
+            className="w-full px-4 py-2 border border-gris rounded-lg text-negro focus:outline-none focus:ring-2 focus:ring-primary"
+            value={contraseña}
+            onChange={(e) => setContraseña(e.target.value)}
+            disabled={isBlocked || estado === EstadoLoginEmpleado.AUTENTICANDO}
+          />
+        </div>
+        <div className="mb-4">
+          <label className="flex items-center text-negro text-sm font-medium cursor-pointer">
+            <input
+              type="checkbox"
+              checked={isAdmin}
+              onChange={() => setIsAdmin(!isAdmin)}
+              className="mr-3 w-4 h-4 text-primary bg-white border-2 border-gris rounded focus:ring-primary focus:ring-2 cursor-pointer"
+              disabled={isBlocked || estado === EstadoLoginEmpleado.AUTENTICANDO}
+            />
+            ¿Eres admin?
+          </label>
+        </div>
+        {error && <p className="text-primary mb-4">{error}</p>}
+        <button
+          className={`w-full bg-primary text-blanco py-2 rounded-lg ${
+            isBlocked || estado === EstadoLoginEmpleado.AUTENTICANDO
+              ? 'opacity-50'
+              : 'cursor-pointer'
+          }`}
+          onClick={handleLogin}
           disabled={isBlocked || estado === EstadoLoginEmpleado.AUTENTICANDO}
-        />
-      </div>
-      <div className="mb-4">
-        <label className="block text-negro text-sm font-bold mb-2">Contraseña</label>
-        <input
-          type="password"
-          placeholder="Ingresa tu contraseña"
-          className="w-full px-4 py-2 border border-gris rounded-lg text-negro focus:outline-none focus:ring-2 focus:ring-primary"
-          value={contraseña}
-          onChange={(e) => setContraseña(e.target.value)}
-          disabled={isBlocked || estado === EstadoLoginEmpleado.AUTENTICANDO}
-        />
-      </div>
-      {error && <p className="text-primary mb-4">{error}</p>}
-      <button
-        className={`w-full bg-primary text-blanco py-2 rounded-lg ${
-          isBlocked || estado === EstadoLoginEmpleado.AUTENTICANDO ? 'opacity-50' : 'cursor-pointer'
-        }`}
-        onClick={handleLogin}
-        disabled={isBlocked || estado === EstadoLoginEmpleado.AUTENTICANDO}
-      >
-        {isBlocked
-          ? `Bloqueado (${blockTime}s)`
-          : estado === EstadoLoginEmpleado.AUTENTICANDO
-            ? 'Verificando...'
-            : 'Ingresar'}
-      </button>
-    </>
-  );
+        >
+          {isBlocked
+            ? `Bloqueado (${blockTime}s)`
+            : estado === EstadoLoginEmpleado.AUTENTICANDO
+              ? 'Verificando...'
+              : 'Ingresar'}
+        </button>
+      </>
+    );
+  };
 
   const renderFormularioCambioContraseña = () => (
     <>

@@ -15,8 +15,7 @@ export const ScreenStockInsumos = () => {
 
   // Filtrar insumos bajos o cerca del mínimo
   const insumosFiltrados = insumos.filter((i) => i.stockActual < i.stockMinimo * PORCENTAJE_AVISO);
-
-  const handleRegistrarCompra = (insumo: ArticuloInsumo) => {
+  const handleRegistrarCompra = () => {
     setOpenCompraModal(true);
   };
 
@@ -37,10 +36,10 @@ export const ScreenStockInsumos = () => {
     {
       label: 'Acciones',
       key: 'acciones',
-      render: (i: ArticuloInsumo) => (
+      render: () => (
         <button
           className="bg-primary hover:bg-primarydark text-white px-3 py-1 rounded shadow"
-          onClick={() => handleRegistrarCompra(i)}
+          onClick={() => handleRegistrarCompra()}
         >
           Registrar Compra
         </button>
