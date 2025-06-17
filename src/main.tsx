@@ -27,7 +27,7 @@ import ScreenCompraIngredientes from './modules/HU24_CompraIngredientes/componen
 import { CallbackPage } from './app/views/CallbackPage.tsx';
 import { HistorialPedidosCliente } from './modules/HU13_MisPedidos/index.ts';
 import { PerfilClienteDashboard } from './modules/HU3_Perfil_Cliente/components/PerfilClienteDashboard.tsx';
-
+import { GestionEmpleados } from './modules/HU4_Registro_Empleado/components/GestionEmpleados.tsx';
 createRoot(document.getElementById('root')!).render(
   <BrowserRouter>
     <AppProviders>
@@ -215,6 +215,14 @@ createRoot(document.getElementById('root')!).render(
             element={
               <ProtectedRoute>
                 <ScreenCompraIngredientes />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="empleados"
+            element={
+              <ProtectedRoute>
+                <GestionEmpleados />
               </ProtectedRoute>
             }
           />
