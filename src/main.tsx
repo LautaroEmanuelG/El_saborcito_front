@@ -48,9 +48,7 @@ createRoot(document.getElementById('root')!).render(
           path="/carrito"
           element={
             <CarritoProvider>
-              <ProtectedCarrito>
-                <VistaCarrito />
-              </ProtectedCarrito>
+              <VistaCarrito />
             </CarritoProvider>
           }
         />
