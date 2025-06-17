@@ -1,17 +1,16 @@
 // HU24_CompraIngredientes/service/compraInsumoService.ts
 
-import axios from 'axios';
+import axiosInstance from '../../../shared/services/axiosConfig';
 import type { CompraInsumoDTO, NuevaCompraDTO } from '../model';
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5252';
 
-const BASE = `${API_BASE_URL}/api/compras-insumos`;
+const BASE = '/compras-insumos';
 
-export async function listarCompras(): Promise<CompraInsumoDTO[]> {
-  const res = await axios.get<CompraInsumoDTO[]>(BASE);
+export const listarCompras = async (): Promise<CompraInsumoDTO[]> => {
+  const res = await axiosInstance.get<CompraInsumoDTO[]>(BASE);
   return res.data;
-}
+};
 
-export async function registrarCompra(dto: NuevaCompraDTO): Promise<CompraInsumoDTO> {
-  const res = await axios.post<CompraInsumoDTO>(BASE, dto);
+export const registrarCompra = async (dto: NuevaCompraDTO): Promise<CompraInsumoDTO> => {
+  const res = await axiosInstance.post<CompraInsumoDTO>(BASE, dto);
   return res.data;
-}
+};
