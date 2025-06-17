@@ -155,3 +155,14 @@ export const getAllArticuloInsumoByCategoriaWithDeleted = async (id: number) => 
   const response = await axiosInstance.get(`${API_BASE_URL}/categoria/${id}/with-deleted`);
   return response.data;
 };
+
+// 🆕 Consultar si un insumo puede venderse (tiene stock suficiente)
+export const canBeSold = async (id: number): Promise<boolean> => {
+  try {
+    const response = await axiosInstance.get(`${API_BASE_URL}/${id}/can-be-sold`);
+    return response.data;
+  } catch (error) {
+    console.error('Error al consultar stock del insumo:', error);
+    return false; // Si hay error, considerar que no se puede vender
+  }
+};
