@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { EmpleadoFormData, ROLES_EMPLEADO, EmpleadoDTO } from '../model';
 import { validarFormularioEmpleado, formDataToRegistroEmpleado, cleanFormData } from '../logic';
 import { registrarEmpleado } from '../../../shared/services/empleadoService';
+import { getAllSucursales } from '../../../shared/services/sucursalService';
+import { Sucursal } from '../../../types/Sucursal';
 import IconoAgregar from '../../../assets/svgs/icons/IconoAgregar';
 import { IconoCerrar } from '../../../assets/svgs/icons/IconoCerrar';
 import { useNotificacion } from '../../../shared/hooks/useNotificacion';
@@ -37,9 +39,12 @@ export const GestionEmpleados = () => {
     password: '',
     confirmarPassword: '',
     rol: '',
+    sucursal: undefined,
   });
   const [errores, setErrores] = useState<string[]>([]);
   const [loadingForm, setLoadingForm] = useState(false);
+  const [sucursales, setSucursales] = useState<Sucursal[]>([]);
+  const [loadingSucursales, setLoadingSucursales] = useState(false);
 
   const { mostrarNotificacion } = useNotificacion();
 
@@ -47,6 +52,24 @@ export const GestionEmpleados = () => {
   useEffect(() => {
     cargarEmpleados();
   }, [cargarEmpleados]);
+
+  // Cargar sucursales al montar el componente
+  useEffect(() => {
+    const cargarSucursales = async () => {
+      setLoadingSucursales(true);
+      try {
+        const sucursalesData = await getAllSucursales();
+        setSucursales(sucursalesData);
+      } catch (error: any) {
+        mostrarNotificacion('Error al cargar sucursales', 'error');
+        console.error('Error al cargar sucursales:', error);
+      } finally {
+        setLoadingSucursales(false);
+      }
+    };
+
+    cargarSucursales();
+  }, [mostrarNotificacion]);
 
   // Mostrar error si hay
   useEffect(() => {
@@ -96,10 +119,20 @@ export const GestionEmpleados = () => {
   // Manejar cambios en el formulario
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+
+    if (name === 'sucursal') {
+      // Manejar selección de sucursal
+      const sucursalSeleccionada = sucursales.find((s) => s.id === parseInt(value));
+      setFormData((prev) => ({
+        ...prev,
+        sucursal: sucursalSeleccionada,
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
 
     if (errores.length > 0) {
       setErrores([]);
@@ -170,6 +203,7 @@ export const GestionEmpleados = () => {
       password: '',
       confirmarPassword: '',
       rol: '',
+      sucursal: undefined,
     });
     setErrores([]);
   };
@@ -313,6 +347,9 @@ export const GestionEmpleados = () => {
                     <th className="px-3 sm:px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b-2 border-gray-200">
                       Rol
                     </th>
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b-2 border-gray-200 hidden md:table-cell">
+                      Sucursal
+                    </th>
                     <th className="px-3 sm:px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b-2 border-gray-200 hidden lg:table-cell">
                       Email
                     </th>
@@ -330,7 +367,7 @@ export const GestionEmpleados = () => {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {empleadosFiltrados.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                      <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
                         <div className="flex flex-col items-center space-y-2">
                           <svg
                             className="h-12 w-12 text-gray-300"
@@ -391,6 +428,13 @@ export const GestionEmpleados = () => {
                             }`}
                           >
                             {getRolLabel(empleado.rol)}
+                          </span>
+                        </td>
+
+                        {/* Columna Sucursal - Oculta en tablets y móviles */}
+                        <td className="px-3 sm:px-6 py-4 hidden md:table-cell">
+                          <span className="text-sm text-gray-500">
+                            {empleado.sucursal?.nombre || '-'}
                           </span>
                         </td>
 
@@ -574,6 +618,32 @@ export const GestionEmpleados = () => {
                     {ROLES_EMPLEADO.map((rol) => (
                       <option key={rol.value} value={rol.value}>
                         {rol.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="sucursal"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Sucursal *
+                  </label>
+                  <select
+                    id="sucursal"
+                    name="sucursal"
+                    value={formData.sucursal?.id || ''}
+                    onChange={handleInputChange}
+                    disabled={loadingForm || loadingSucursales}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
+                  >
+                    <option value="">
+                      {loadingSucursales ? 'Cargando sucursales...' : 'Seleccione una sucursal'}
+                    </option>
+                    {sucursales.map((sucursal) => (
+                      <option key={sucursal.id} value={sucursal.id}>
+                        {sucursal.nombre}
                       </option>
                     ))}
                   </select>

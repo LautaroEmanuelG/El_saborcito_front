@@ -45,6 +45,10 @@ export const validarFormularioEmpleado = (formData: EmpleadoFormData): string[] 
     errores.push('El rol seleccionado no es válido');
   }
 
+  if (!formData.sucursal || !formData.sucursal.id) {
+    errores.push('Debe seleccionar una sucursal');
+  }
+
   return errores;
 };
 

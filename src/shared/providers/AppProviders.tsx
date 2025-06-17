@@ -8,6 +8,8 @@ import { CarritoProvider } from './CarritoProvider';
 import { UserProvider } from './UserProvider';
 import { EmpleadoProvider } from './EmpleadoProvider';
 import NotificacionWrapper from '../components/utils/NotificacionWrapper';
+import { ActivityTracker } from '../components/ActivityTracker';
+import { InactivityWarning } from '../components/InactivityWarning';
 
 import { getConfig } from '../../wagmi'; // your import path may vary
 import { Auth0ProviderWithNavigate } from './auth/Auth0ProviderWithNavigate';
@@ -27,8 +29,11 @@ export function AppProviders(props: { children: ReactNode; initialState?: State 
               <ProductProvider>
                 <EmpleadoProvider>
                   <CarritoProvider>
-                    {props.children}
-                    <NotificacionWrapper />
+                    <ActivityTracker>
+                      {props.children}
+                      <NotificacionWrapper />
+                      <InactivityWarning />
+                    </ActivityTracker>
                   </CarritoProvider>
                 </EmpleadoProvider>
               </ProductProvider>

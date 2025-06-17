@@ -45,7 +45,15 @@ export const LoginModal = ({ isOpen, onClose, onOpenRegistro }: LoginModalProps)
   const handleLogin = async () => {
     try {
       const response = await loginManual({ email, password: contraseña });
+
       const { token, usuario } = response;
+
+      // 🚨 Validación adicional: verificar que no sea un empleado
+      if (usuario?.rol && ['CAJERO', 'COCINERO', 'DELIVERY', 'ADMIN'].includes(usuario.rol)) {
+        setError('Este usuario es un empleado. Use el acceso de empleados en el menú.');
+        return;
+      }
+
       localStorage.setItem('token', token);
       setUser(usuario);
       if (usuario.rol === 'ADMIN') {
@@ -55,11 +63,8 @@ export const LoginModal = ({ isOpen, onClose, onOpenRegistro }: LoginModalProps)
       }
       onClose();
     } catch (error: any) {
-      if (error.response?.status === 403) {
-        setError('Este usuario está dado de baja.');
-      } else {
-        setError('Credenciales inválidas.');
-      }
+      // El servicio authService ya procesa los errores y devuelve mensajes apropiados
+      setError(error.message || 'Error en el servidor. Intente nuevamente.');
       setAttempts((prev) => prev + 1);
       if (attempts + 1 >= 3) {
         setIsBlocked(true);
@@ -157,6 +162,13 @@ export const LoginModal = ({ isOpen, onClose, onOpenRegistro }: LoginModalProps)
           >
             Registrate
           </button>
+        </div>
+
+        <div className="mt-4 text-center text-sm text-gris">
+          <p>
+            ¿Eres empleado?{' '}
+            <span className="text-primary font-medium">Usa el acceso de empleados en el menú</span>
+          </p>
         </div>
       </div>
     </div>

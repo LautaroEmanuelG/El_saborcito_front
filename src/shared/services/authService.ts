@@ -43,8 +43,28 @@ export const registrarCliente = async (dto: RegistroCliente): Promise<any> => {
 
 // 🔐 Login manual
 export const loginManual = async (credentials: Login) => {
-  const response = await axiosInstance.post('/clientes/login/manual', credentials);
-  return response.data; // Debería devolver token + datos del usuario
+  try {
+    const response = await axiosInstance.post('/clientes/login/manual', credentials);
+    return response.data; // Debería devolver token + datos del usuario
+  } catch (error: any) {
+    if (error.response?.status === 403) {
+      const mensaje = error.response?.data?.message || error.response?.data?.error || '';
+      if (mensaje.includes('Es un empleado') || mensaje.includes('empleado válido')) {
+        throw new Error('Este usuario es un empleado. Use el acceso de empleados.');
+      } else if (
+        mensaje.includes('Usuario dado de baja') ||
+        mensaje.includes('cliente dado de baja')
+      ) {
+        throw new Error('Usuario dado de baja');
+      } else {
+        throw new Error('Acceso denegado');
+      }
+    }
+    if (error.response?.status === 401) {
+      throw new Error('Usuario o contraseña incorrectos');
+    }
+    throw new Error('Error en el servidor. Intente nuevamente');
+  }
 };
 
 // 🌐 Login con Auth0
