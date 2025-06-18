@@ -1,10 +1,11 @@
 // 📱 Componente principal para el historial de pedidos del cliente
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { PedidoCompletoConDetalles } from '../../../types/Pedido';
 import { getPedidosByCliente } from '../../../shared/services/pedidoService';
 import { ModalDetallePedidoCliente } from './ModalDetallePedidoCliente';
 import IconoVer from '../../../assets/svgs/icons/IconoVer';
+import { useUser } from '../../../shared/providers/UserProvider';
 
 export const getEstadoBadgeColor = (estado: string): string => {
   // Colores basados en TablaRecepcion.tsx y adaptados si es necesario
@@ -22,9 +23,7 @@ export const getEstadoBadgeColor = (estado: string): string => {
 };
 
 export const HistorialPedidosCliente: React.FC = () => {
-  // 🚧 HARDCODEADO TEMPORALMENTE - Usuario ID 5 para pruebas
-  const CLIENTE_ID = 5;
-  const CLIENTE_NOMBRE = 'María González';
+  const { user } = useUser();
 
   const [pedidos, setPedidos] = useState<PedidoCompletoConDetalles[]>([]);
   const [cargando, setCargando] = useState(true);
@@ -34,17 +33,33 @@ export const HistorialPedidosCliente: React.FC = () => {
   );
   const [mostrandoDetalle, setMostrandoDetalle] = useState(false);
 
-  useEffect(() => {
-    cargarPedidosCliente();
-  }, []);
+  // Verificar que el usuario esté cargado y sea válido
+  if (!user?.id) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Usuario no encontrado</h2>
+          <p className="text-gray-600">
+            Por favor, inicia sesión para ver tu historial de pedidos.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
+  useEffect(() => {
+    if (user?.id) {
+      cargarPedidosCliente();
+    }
+  }, [user?.id]);
   const cargarPedidosCliente = async () => {
+    if (!user?.id) return;
+
     try {
       setCargando(true);
       setError(null);
-      console.log(`🔍 Cargando pedidos para cliente ID: ${CLIENTE_ID}`);
-      const pedidosCliente = await getPedidosByCliente(CLIENTE_ID);
-      console.log('📋 Pedidos cargados:', pedidosCliente);
+      const pedidosCliente = await getPedidosByCliente(user.id);
       const pedidosOrdenados = pedidosCliente.sort(
         (a: PedidoCompletoConDetalles, b: PedidoCompletoConDetalles) =>
           new Date(b.fechaPedido).getTime() - new Date(a.fechaPedido).getTime()
@@ -120,9 +135,12 @@ export const HistorialPedidosCliente: React.FC = () => {
         {/* Header */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
           <div className="flex flex-col md:flex-row md:justify-between md:items-center">
+            {' '}
             <div>
               <h1 className="text-3xl font-bold text-gray-800">Mis Pedidos</h1>
-              <p className="text-gray-600 mt-2">Bienvenido/a, {CLIENTE_NOMBRE}</p>
+              <p className="text-gray-600 mt-2">
+                Bienvenido/a, {user?.nombre} {user?.apellido}
+              </p>
             </div>
             <div className="mt-4 md:mt-0 text-right">
               <p className="text-sm text-gray-500">Total de pedidos</p>
