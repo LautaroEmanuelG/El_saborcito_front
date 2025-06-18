@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
 import { Usuario } from '../../types/Usuario';
 import { logout as authLogout } from '../services/authService';
+import { useAuth0 } from '@auth0/auth0-react';
 
 interface UserContextType {
   user: Usuario | null;
@@ -23,6 +24,7 @@ const USER_STORAGE_KEY = 'user';
 const ULTIMA_ACTIVIDAD_KEY = 'ultimaActividad';
 
 export const UserProvider = ({ children }: UserProviderProps) => {
+  const { logout: auth0Logout, isAuthenticated: isAuth0Authenticated } = useAuth0();
   const [user, setUserState] = useState<Usuario | null>(() => {
     const storedUser = localStorage.getItem(USER_STORAGE_KEY);
     return storedUser ? JSON.parse(storedUser) : null;
@@ -77,7 +79,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
   }, []);
 
   const logout = useCallback(() => {
-    // Limpiar todos los datos del usuario
+    // Limpiar datos del usuario local
     localStorage.removeItem(USER_STORAGE_KEY);
     localStorage.removeItem(ULTIMA_ACTIVIDAD_KEY);
     localStorage.removeItem('userType');
@@ -95,11 +97,20 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     setUserState(null);
     setIsEmployeeUser(false);
 
-    // Usar la función de logout centralizada que maneja token y rol
-    authLogout();
-
-    // Auth0 logout se hace en authLogout, no aquí para evitar conflictos
-  }, []);
+    // Si el usuario está autenticado con Auth0, hacer logout de Auth0
+    if (isAuth0Authenticated) {
+      // No hacer redirección manual, Auth0 se encarga
+      authLogout(true); // skipRedirect = true
+      auth0Logout({
+        logoutParams: {
+          returnTo: window.location.origin,
+        },
+      });
+    } else {
+      // Para usuarios no-Auth0, usar logout normal con redirección
+      authLogout(false);
+    }
+  }, [auth0Logout, isAuth0Authenticated]);
 
   const setUser = useCallback((usuario: Usuario | null) => {
     setUserState(usuario);

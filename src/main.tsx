@@ -31,6 +31,7 @@ import ScreenStockInsumos from './modules/HU25_ControlStockInsumos/components/Sc
 import { GestionEmpleados } from './modules/HU4_Registro_Empleado';
 import { PerfilEmpleadoDashboard } from './modules/HU6_Perfil_Empleado/components/PerfilEmpleadoDashboard';
 import GestionClientes from './app/views/admin/GestionClientes';
+import { AdminRedirect } from './app/views/admin/AdminRedirect';
 import { Rol } from './types/Rol';
 import PedidoExitoso from './modules/HU11_12_Carrito_Confirmacion/components/PedidoExitoso.tsx';
 
@@ -74,6 +75,15 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         >
+          {/* Ruta index que redirige según el rol */}
+          <Route
+            index
+            element={
+              <ProtectedRoute allowedRoles={ALL_STAFF}>
+                <AdminRedirect />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="recepcion"
             element={
@@ -229,6 +239,16 @@ const AppRoutes = () => {
             element={
               <ProtectedRoute allowedRoles={ADMIN}>
                 <GestionClientes />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Ruta específica para historial del admin */}
+          <Route
+            path="historial"
+            element={
+              <ProtectedRoute allowedRoles={ADMIN}>
+                <HistorialCocina />
               </ProtectedRoute>
             }
           />
