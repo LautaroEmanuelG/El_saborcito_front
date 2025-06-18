@@ -1,5 +1,4 @@
 // src/shared/config/navigationConfig.ts
-import { Rol } from '../../modules/HU1_2_Registro_Login/models';
 import { NavItemStructure } from '../components/AsideAdmin/NavItemTypes';
 
 export const getNavigationByRole = (rol: string): NavItemStructure[] => {
