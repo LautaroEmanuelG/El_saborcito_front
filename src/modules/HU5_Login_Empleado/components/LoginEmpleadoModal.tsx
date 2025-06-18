@@ -8,6 +8,7 @@ import {
 } from '../logic';
 import { EstadoLoginEmpleado, type Empleado } from '../model';
 import { useEmpleado } from '../../../shared/providers/EmpleadoProvider';
+import { useRoleRedirection } from '../../../shared/hooks/useRoleRedirection';
 import emailjs from 'emailjs-com';
 import { loginAdmin } from '../../../shared/services/authService';
 
@@ -30,7 +31,8 @@ export const LoginEmpleadoModal = ({ isOpen, onClose }: LoginEmpleadoModalProps)
   const [isAdmin, setIsAdmin] = useState(false);
 
   const navigate = useNavigate();
-  const { setEmpleado } = useEmpleado();
+  const { setEmpleado, empleadoAutenticado } = useEmpleado();
+  const { redirectEmployeeByRole, redirectByRole } = useRoleRedirection();
 
   useEffect(() => {
     let timer: number;
@@ -50,6 +52,31 @@ export const LoginEmpleadoModal = ({ isOpen, onClose }: LoginEmpleadoModalProps)
     }
     return () => clearInterval(timer);
   }, [isBlocked, blockTime]);
+
+  // Función personalizada para manejar el cierre del modal y redirección
+  const handleCloseModal = () => {
+    // Limpiar estados del modal
+    setEmail('');
+    setContraseña('');
+    setNuevaContraseña('');
+    setConfirmarContraseña('');
+    setError('');
+    setEstado(EstadoLoginEmpleado.INICIAL);
+    setEmpleadoTemp(null);
+    setIsAdmin(false);
+
+    // Cerrar el modal
+    onClose();
+
+    // Verificar si hay un empleado autenticado después de un breve delay
+    // para permitir que el estado se actualice
+    setTimeout(() => {
+      const empleadoData = localStorage.getItem('empleadoData');
+      if (empleadoAutenticado || empleadoData) {
+        redirectByRole();
+      }
+    }, 100);
+  };
 
   if (!isOpen) return null;
 
@@ -74,7 +101,7 @@ export const LoginEmpleadoModal = ({ isOpen, onClose }: LoginEmpleadoModalProps)
             localStorage.setItem('empleadoToken', response.token);
             setEmpleado(response.usuario);
             navigate('/admin');
-            onClose();
+            handleCloseModal();
             return;
           }
         } catch (adminError: any) {
@@ -92,25 +119,13 @@ export const LoginEmpleadoModal = ({ isOpen, onClose }: LoginEmpleadoModalProps)
             setEmpleadoTemp(response.empleado);
           } else {
             setEstado(EstadoLoginEmpleado.EXITOSO);
-            if (response.token) {
+            if (response.token && response.empleado) {
               localStorage.setItem('empleadoToken', response.token);
               setEmpleado(response.empleado);
-              // Redirigir según el rol de empleado
-              switch (response.empleado.rol) {
-                case 'CAJERO':
-                  navigate('/admin/recepcion');
-                  break;
-                case 'COCINERO':
-                  navigate('/admin/cocina');
-                  break;
-                case 'DELIVERY':
-                  navigate('/admin/delivery');
-                  break;
-                default:
-                  navigate('/admin');
-              }
+              // Usar la función centralizada de redirección
+              redirectEmployeeByRole(response.empleado);
             }
-            onClose();
+            handleCloseModal();
           }
         } catch (empleadoError: any) {
           setError(
@@ -157,27 +172,14 @@ export const LoginEmpleadoModal = ({ isOpen, onClose }: LoginEmpleadoModalProps)
 
         // Contraseña cambiada exitosamente, hacer login automático
         const loginResponse = await loginEmpleado({ email, password: nuevaContraseña });
-        if (loginResponse.token) {
+        if (loginResponse.token && loginResponse.empleado) {
           localStorage.setItem('empleadoToken', loginResponse.token);
           setEmpleado(loginResponse.empleado);
-
-          // Redirigir según el rol
-          switch (loginResponse.empleado.rol) {
-            case 'CAJERO':
-              navigate('/admin/recepcion');
-              break;
-            case 'COCINERO':
-              navigate('/admin/cocina');
-              break;
-            case 'DELIVERY':
-              navigate('/admin/delivery');
-              break;
-            default:
-              navigate('/admin');
-          }
+          // Usar la función centralizada de redirección
+          redirectEmployeeByRole(loginResponse.empleado);
         }
       }
-      onClose();
+      handleCloseModal();
     } catch (error: any) {
       setError(error.message);
     }
@@ -310,7 +312,7 @@ export const LoginEmpleadoModal = ({ isOpen, onClose }: LoginEmpleadoModalProps)
       <div className="bg-white rounded-lg w-[500px] max-h-[90vh] overflow-y-auto shadow-lg relative p-8">
         <button
           className="absolute font-bold top-6 right-8 text-negro text-xl hover:text-blanco hover:bg-primary rounded-full w-10 h-10"
-          onClick={onClose}
+          onClick={handleCloseModal}
         >
           X
         </button>
