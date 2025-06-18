@@ -10,6 +10,7 @@ import {
   shouldClearAuth,
   logout as authLogout,
 } from '../services/authService';
+import { isPublicRoute } from '../config/routes';
 
 interface UseAuthReturn {
   rol: Rol | null;
@@ -42,14 +43,16 @@ export const useAuth = (): UseAuthReturn => {
       console.log(`🔐 Usuario autenticado: ${newAuthInfo.email} con rol ${newAuthInfo.rol}`);
     } catch (error) {
       console.error('❌ Error al obtener información de autenticación:', error);
-      // Solo limpiar si es un error real de autenticación
-      if (shouldClearAuth(error)) {
+      // Solo limpiar si es un error real de autenticación Y estamos en una ruta protegida
+      const currentPath = window.location.pathname;
+
+      if (shouldClearAuth(error) && !isPublicRoute(currentPath)) {
         console.log('🧹 Limpiando autenticación por error crítico');
         setAuthInfo(null);
         clearAuthData();
       } else {
-        // Para otros errores, mantener el estado actual
-        console.warn('🔄 Error temporal, manteniendo estado actual:', error);
+        // Para otros errores o rutas públicas, mantener el estado actual
+        console.warn('🔄 Error temporal o ruta pública, manteniendo estado actual:', error);
       }
     } finally {
       setIsLoading(false);
@@ -61,7 +64,15 @@ export const useAuth = (): UseAuthReturn => {
   };
 
   useEffect(() => {
-    refreshAuth();
+    // Solo ejecutar refreshAuth si estamos en una ruta protegida o si ya tenemos un token
+    const currentPath = window.location.pathname;
+
+    if (!isPublicRoute(currentPath) || isAuthenticated()) {
+      refreshAuth();
+    } else {
+      // En rutas públicas sin token, solo marcar como no cargando
+      setIsLoading(false);
+    }
   }, []);
 
   return {

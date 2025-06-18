@@ -2,10 +2,11 @@ import { isValidEmail, isValidPassword } from '../../modules/HU1_2_Registro_Logi
 import { Login, RegistroCliente } from '../../modules/HU1_2_Registro_Login/models';
 import { Rol, RolResponse, AuthInfo } from '../../types/Rol';
 import axiosInstance from './axiosConfig';
+import { isPublicRoute } from '../config/routes';
 
 const TOKEN_STORAGE_KEY = 'token';
 const ROL_STORAGE_KEY = 'rol';
-const EMAIL_STORAGE_KEY = 'email'; // Simplificado: solo 'email'
+const EMAIL_STORAGE_KEY = 'email';
 
 export const fetchRol = async (): Promise<AuthInfo> => {
   try {
@@ -88,9 +89,16 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      // Solo redirigir si estamos en una ruta protegida
+      const currentPath = window.location.pathname;
+
       // Token expirado o inválido
       clearAuthData();
-      window.location.href = '/';
+
+      // Solo redirigir si no estamos en una ruta pública
+      if (!isPublicRoute(currentPath)) {
+        window.location.href = '/';
+      }
     }
     return Promise.reject(error);
   }
