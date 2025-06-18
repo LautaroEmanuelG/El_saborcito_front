@@ -58,14 +58,16 @@ export const AsideAdmin = () => {
         className={`bg-primary text-negro transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} xl:translate-x-0 transition-transform duration-300 ease-in-out xl:flex flex-col shrink-0 w-72 h-full min-h-screen fixed xl:sticky top-0 shadow-xl xl:shadow-none z-50 p-4 pt-6 overflow-y-auto`}
       >
         {/* Mostrar información del usuario actual */}
-        <div className="mb-4 p-4 bg-primarydark rounded-lg">
-          <div className="text-sm font-medium text-negro mb-2">
+        <div className="mb-4 p-4 bg-blanco rounded-lg">
+          <div className="text-md font-bold text-negro mb-2">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs opacity-75">Perfil:</span>
-              <span className="px-2 py-1 bg-primary rounded-full text-xs font-bold">{rol}</span>
+              <span className="text-sm opacity-75">Perfil:</span>
+              <span className="px-2 py-1 bg-primary rounded-full text-blanco text-xs font-bold">
+                {rol}
+              </span>
             </div>
             {email && (
-              <div className="text-xs opacity-75 truncate" title={email}>
+              <div className="text-sm opacity-75 truncate" title={email}>
                 👤 {email}
               </div>
             )}
