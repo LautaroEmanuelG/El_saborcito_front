@@ -322,12 +322,9 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = (props: MetodoPagoModalP
         formasPago.find((f) => f.id === metodoPagoId)?.nombre === 'MERCADO_PAGO';
 
       if (esMercadoPago && response?.pedido?.id) {
-        console.log('💳 Procesando pago con Mercado Pago...');
         setProcesandoMercadoPago(true);
         try {
           const preferencia = await crearPreferencia(response.pedido.id);
-
-          console.log('✅ Preferencia de Mercado Pago creada:', preferencia);
           await abrirCheckoutMP(preferencia.initPoint);
         } catch (mpError) {
           console.error('❌ Error con Mercado Pago:', mpError);
