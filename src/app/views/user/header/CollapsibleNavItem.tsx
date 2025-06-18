@@ -9,17 +9,21 @@ interface CollapsibleNavItemProps {
   onLinkClick: () => void;
 }
 
+// Función recursiva para detectar si la ruta está activa en cualquier subitem o submenú anidado
+function isRouteActive(item: NavItemStructure, pathname: string): boolean {
+  if (item.subItems && item.subItems.some((subItem) => pathname.startsWith(subItem.to))) {
+    return true;
+  }
+  if (item.children && item.children.some((child) => isRouteActive(child, pathname))) {
+    return true;
+  }
+  return false;
+}
+
 const CollapsibleNavItem: React.FC<CollapsibleNavItemProps> = ({ itemData, onLinkClick }) => {
   const location = useLocation();
-  // Determinar si algún subitem o submenú está activo
-  const isAnySubItemActive =
-    (itemData.subItems &&
-      itemData.subItems.some((subItem) => location.pathname.startsWith(subItem.to))) ||
-    (itemData.children &&
-      itemData.children.some((child) =>
-        // recursivo: si algún hijo o nieto está activo
-        location.pathname.startsWith('/admin/' + child.title.toLowerCase())
-      ));
+  // Usar la función recursiva para detectar si algún subitem o submenú anidado está activo
+  const isAnySubItemActive = isRouteActive(itemData, location.pathname);
 
   // Solo expandir automáticamente si la ruta activa cambia y pertenece al grupo, pero permitir colapsar manualmente
   const [isExpanded, setIsExpanded] = useState(isAnySubItemActive);

@@ -30,6 +30,7 @@ import ScreenStockInsumos from './modules/HU25_ControlStockInsumos/components/Sc
 import { GestionEmpleados } from './modules/HU4_Registro_Empleado';
 import { PerfilEmpleadoDashboard } from './modules/HU6_Perfil_Empleado/components/PerfilEmpleadoDashboard.tsx';
 import GestionClientes from './app/views/admin/GestionClientes.tsx';
+import AdminBienvenida from './app/views/admin/AdminBienvenida';
 
 createRoot(document.getElementById('root')!).render(
   <BrowserRouter>
@@ -59,6 +60,7 @@ createRoot(document.getElementById('root')!).render(
             </ProtectedRoute>
           }
         >
+          <Route index element={<AdminBienvenida />} />
           <Route
             path="mis-pedidos"
             element={
