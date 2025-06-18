@@ -3,7 +3,6 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { CarritoContext } from '../../../../shared/providers/CarritoProvider';
 import { useProductStore } from '../../../../shared/providers/ProductProvider';
 import { useUser } from '../../../../shared/providers/UserProvider';
-import { useEmpleado } from '../../../../shared/providers/EmpleadoProvider';
 import IconoLogoSaborcito from '../../../../assets/svgs/icons/IconoLogoSaborcito';
 import IconoLoggin from '../../../../assets/svgs/icons/IconoLoggin';
 import IconoCarrito from '../../../../assets/svgs/icons/IconoCarrito';
@@ -14,7 +13,6 @@ import { LoginEmpleadoModal } from '../../../../modules/HU5_Login_Empleado/compo
 import { Buscador } from '../../../../modules/HU9_10_Landing_Busqueda/Buscador';
 import { useAuth0 } from '@auth0/auth0-react';
 import { syncUserWithBackend, loginAfterSync } from '../../../../shared/services/authService';
-import { obtenerNombreRol } from '../../../../modules/HU6_Perfil_Empleado/logic';
 import BackButton from './BackButton';
 
 type Props = {
@@ -31,7 +29,6 @@ export const Header = ({ onSearch }: Props) => {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const { user, setUser, logout } = useUser();
-  const { empleadoAutenticado, logoutEmpleado } = useEmpleado();
   const navigate = useNavigate();
   const {
     user: auth0User,
