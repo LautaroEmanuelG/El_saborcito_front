@@ -100,8 +100,11 @@ export const LoginEmpleadoModal = ({ isOpen, onClose }: LoginEmpleadoModalProps)
           if (response.token && response.usuario) {
             localStorage.setItem('empleadoToken', response.token);
             setEmpleado(response.usuario);
-            navigate('/admin');
-            handleCloseModal();
+            console.log('🔑 Login exitoso para admin:', response.usuario.nombre);
+            redirectEmployeeByRole(response.usuario);
+            setTimeout(() => {
+              handleCloseModal();
+            }, 500);
             return;
           }
         } catch (adminError: any) {
@@ -122,10 +125,21 @@ export const LoginEmpleadoModal = ({ isOpen, onClose }: LoginEmpleadoModalProps)
             if (response.token && response.empleado) {
               localStorage.setItem('empleadoToken', response.token);
               setEmpleado(response.empleado);
+              console.log(
+                '🔑 Login exitoso para empleado:',
+                response.empleado.nombre,
+                'Rol:',
+                response.empleado.rol
+              );
               // Usar la función centralizada de redirección
               redirectEmployeeByRole(response.empleado);
+              // Cerrar modal después de la redirección
+              setTimeout(() => {
+                handleCloseModal();
+              }, 500);
+            } else {
+              handleCloseModal();
             }
-            handleCloseModal();
           }
         } catch (empleadoError: any) {
           setError(
@@ -175,6 +189,12 @@ export const LoginEmpleadoModal = ({ isOpen, onClose }: LoginEmpleadoModalProps)
         if (loginResponse.token && loginResponse.empleado) {
           localStorage.setItem('empleadoToken', loginResponse.token);
           setEmpleado(loginResponse.empleado);
+          console.log(
+            '🔑 Contraseña cambiada y login exitoso:',
+            loginResponse.empleado.nombre,
+            'Rol:',
+            loginResponse.empleado.rol
+          );
           // Usar la función centralizada de redirección
           redirectEmployeeByRole(loginResponse.empleado);
         }

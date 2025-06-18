@@ -30,6 +30,7 @@ import ScreenStockInsumos from './modules/HU25_ControlStockInsumos/components/Sc
 import { GestionEmpleados } from './modules/HU4_Registro_Empleado';
 import { PerfilEmpleadoDashboard } from './modules/HU6_Perfil_Empleado/components/PerfilEmpleadoDashboard';
 import GestionClientes from './app/views/admin/GestionClientes';
+import { AdminRedirect } from './app/views/admin/AdminRedirect';
 import { Rol } from './types/Rol';
 
 // Definición de roles permitidos para cada sección
@@ -70,6 +71,15 @@ createRoot(document.getElementById('root')!).render(
             </ProtectedRoute>
           }
         >
+          {/* Ruta index que redirige según el rol */}
+          <Route
+            index
+            element={
+              <ProtectedRoute allowedRoles={ALL_STAFF}>
+                <AdminRedirect />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="recepcion"
             element={
@@ -225,6 +235,16 @@ createRoot(document.getElementById('root')!).render(
             element={
               <ProtectedRoute allowedRoles={ADMIN}>
                 <GestionClientes />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Ruta específica para historial del admin */}
+          <Route
+            path="historial"
+            element={
+              <ProtectedRoute allowedRoles={ADMIN}>
+                <HistorialCocina />
               </ProtectedRoute>
             }
           />
