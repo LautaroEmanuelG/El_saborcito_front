@@ -14,6 +14,7 @@ import { Buscador } from '../../../../modules/HU9_10_Landing_Busqueda/Buscador';
 import { useAuth0 } from '@auth0/auth0-react';
 import { syncUserWithBackend, loginAfterSync } from '../../../../shared/services/authService';
 import BackButton from './BackButton';
+import { useNotificacion } from '../../../../shared/hooks/useNotificacion';
 
 type Props = {
   onSearch?: (query: string | string[]) => void; // Modificado para aceptar string o string[]
@@ -30,6 +31,7 @@ export const Header = ({ onSearch }: Props) => {
 
   const { user, setUser, logout } = useUser();
   const navigate = useNavigate();
+  const { mostrarNotificacion } = useNotificacion();
   const {
     user: auth0User,
     isAuthenticated,
@@ -281,8 +283,20 @@ export const Header = ({ onSearch }: Props) => {
             )}
 
             {window.location.pathname !== '/carrito' && totalItems > 0 ? (
-              <Link
-                to="/carrito"
+              <button
+                onClick={() => {
+                  // 🔐 **VALIDAR AUTENTICACIÓN DEL USUARIO**
+                  if (!user) {
+                    mostrarNotificacion(
+                      'Debes iniciar sesión para acceder al carrito',
+                      'warning',
+                      4000
+                    );
+                    setIsLoginOpen(true);
+                    return;
+                  }
+                  navigate('/carrito');
+                }}
                 className="relative flex items-center justify-center gap-4 w-10 h-10 rounded-full hover:bg-blanco"
                 onMouseEnter={() => setHoverCarrito(true)}
                 onMouseLeave={() => setHoverCarrito(false)}
@@ -291,7 +305,7 @@ export const Header = ({ onSearch }: Props) => {
                 <div className="absolute text-blanco -top-3 -right-3 bg-primary text-primary-foreground rounded-full px-2 py-1 text-xs font-bold hover:bg-blanco hover:text-primary ">
                   {totalItems}
                 </div>
-              </Link>
+              </button>
             ) : null}
           </div>
 
