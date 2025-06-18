@@ -6,13 +6,13 @@ import { ModalConfirm } from '../../../shared/components/utils/ModalConfirm';
 import { useEmpleado } from '../../../shared/providers/EmpleadoProvider';
 
 export const HeaderEmpleado = () => {
-  const [hoverLogout, setHoverLogout] = useState(false);
-  const [isLogoutOpen, setIsLogoutOpen] = useState(false);
+  const [hoverLogin, setHoverLogin] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
   const navigate = useNavigate();
   const { logoutEmpleado } = useEmpleado();
 
-  const toggleLogoutModal = () => {
-    setIsLogoutOpen(!isLogoutOpen);
+  const toggleLoginModal = () => {
+    setIsLoginOpen(!isLoginOpen);
   };
 
   const handleCerrarSesion = () => {
@@ -32,20 +32,20 @@ export const HeaderEmpleado = () => {
           <div className="absolute top-4 right-14 md:right-4 md:flex items-center gap-4">
             <button
               className="relative flex items-center justify-center gap-4 w-10 h-10 rounded-full hover:bg-blanco"
-              onMouseEnter={() => setHoverLogout(true)}
-              onMouseLeave={() => setHoverLogout(false)}
-              onClick={toggleLogoutModal}
+              onMouseEnter={() => setHoverLogin(true)}
+              onMouseLeave={() => setHoverLogin(false)}
+              onClick={toggleLoginModal}
               title="Cerrar Sesión"
             >
-              <IconoCerrar color={hoverLogout ? '#E11D48' : 'white'} />
+              <IconoCerrar color={hoverLogin ? '#E11D48' : 'white'} />
             </button>
           </div>
         </div>
       </header>
 
       <ModalConfirm
-        isOpen={isLogoutOpen}
-        setIsOpen={setIsLogoutOpen}
+        isOpen={isLoginOpen}
+        setIsOpen={setIsLoginOpen}
         onConfirm={handleCerrarSesion}
         title="Cerrar Sesión"
         message="¿Estás seguro que deseas cerrar sesión?"
