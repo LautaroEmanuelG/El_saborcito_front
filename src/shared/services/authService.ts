@@ -2,6 +2,18 @@ import { isValidEmail, isValidPassword } from '../../modules/HU1_2_Registro_Logi
 import { Login, RegistroCliente } from '../../modules/HU1_2_Registro_Login/models';
 import axiosInstance from './axiosConfig';
 
+import axios from 'axios';
+
+const API = axios.create({ baseURL: '/api' });
+
+export async function fetchRol(): Promise<string> {
+  const token = localStorage.getItem('token');
+  const res = await API.get<string>('/auth/rol', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data;
+}
+
 // Registrar cliente usando el backend
 export const registrarCliente = async (dto: RegistroCliente): Promise<any> => {
   try {
