@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useEmpleado } from '../../../shared/providers/EmpleadoProvider';
+import { useUser } from '../../../shared/providers/UserProvider';
 import IconoMenuHamburguesa from '../../../assets/svgs/icons/IconoMenuHamburguesa';
 import IconoUsuario from '../../../assets/svgs/icons/IconoUsuario';
 import IconoPassword from '../../../assets/svgs/icons/IconoPassword';
@@ -14,7 +14,7 @@ interface AsideEmpleadoProps {
 }
 
 export const AsideEmpleado = ({ onMenuSelect, activeView }: AsideEmpleadoProps) => {
-  const { empleadoAutenticado } = useEmpleado();
+  const { user } = useUser();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isPerfilExpanded, setIsPerfilExpanded] = useState(true);
@@ -40,12 +40,31 @@ export const AsideEmpleado = ({ onMenuSelect, activeView }: AsideEmpleadoProps) 
     },
   ] as const;
 
+  const shouldShowAreaTrabajo = (): boolean => {
+    // 🐛 **DEBUG: Ver qué datos tenemos**
+    console.log('🔍 AsideEmpleado - shouldShowAreaTrabajo:', {
+      user,
+      rol: user?.rol,
+      localStorage_user: localStorage.getItem('user'),
+      localStorage_userType: localStorage.getItem('userType'),
+      localStorage_empleadoData: localStorage.getItem('empleadoData'),
+    });
+
+    if (!user || !user.rol) return false;
+
+    // Mostrar "Mi Área de Trabajo" para todos los roles EXCEPTO ADMIN y CLIENTE
+    const rolesExcluidos = ['ADMIN', 'CLIENTE'];
+    const result = !rolesExcluidos.includes(user.rol);
+
+    console.log('🔍 Resultado shouldShowAreaTrabajo:', result, 'para rol:', user.rol);
+    return result;
+  };
+
   const handleAreaTrabajo = () => {
-    if (!empleadoAutenticado) return;
+    if (!user) return;
 
     closeMenu();
-    // Redirigir según el rol del empleado
-    switch (empleadoAutenticado.rol) {
+    switch (user.rol) {
       case 'ADMIN':
         navigate('/admin/historial');
         break;
@@ -72,8 +91,17 @@ export const AsideEmpleado = ({ onMenuSelect, activeView }: AsideEmpleadoProps) 
     setIsPerfilExpanded(!isPerfilExpanded);
   };
 
-  if (!empleadoAutenticado) {
-    return <div>Cargando...</div>;
+  if (!user) {
+    return (
+      <div className="bg-primary text-negro xl:flex flex-col shrink-0 w-72 h-full min-h-screen fixed xl:sticky top-0 shadow-xl xl:shadow-none z-50 p-4 pt-6">
+        <div className="flex items-center justify-center mt-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
+            <p className="mt-2 text-white text-sm">Cargando...</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -98,20 +126,21 @@ export const AsideEmpleado = ({ onMenuSelect, activeView }: AsideEmpleadoProps) 
             </div>
             <div className="text-white">
               <p className="font-medium">
-                {empleadoAutenticado.nombre} {empleadoAutenticado.apellido}
+                {user.nombre} {user.apellido}
               </p>
-              <p className="text-sm text-white/70">{empleadoAutenticado.email}</p>
+              <p className="text-sm text-white/70">{user.email}</p>
             </div>
           </div>
 
           {/* Información del empleado */}
           <div className="text-white text-sm space-y-1">
             <p>
-              <span className="font-medium">Rol:</span> {obtenerNombreRol(empleadoAutenticado.rol)}
+              <span className="font-medium">Rol:</span>{' '}
+              {user.rol ? obtenerNombreRol(user.rol) : 'Sin rol'}
             </p>
-            {empleadoAutenticado.telefono && (
+            {user.telefono && (
               <p>
-                <span className="font-medium">Teléfono:</span> {empleadoAutenticado.telefono}
+                <span className="font-medium">Teléfono:</span> {user.telefono}
               </p>
             )}
           </div>
@@ -167,23 +196,26 @@ export const AsideEmpleado = ({ onMenuSelect, activeView }: AsideEmpleadoProps) 
                   </li>
                 ))}
 
-                {/* Separador */}
-                <li className="py-2">
-                  <hr className="border-gray-200" />
-                </li>
+                {shouldShowAreaTrabajo() && (
+                  <li className="py-2">
+                    <hr className="border-gray-200" />
+                  </li>
+                )}
 
-                {/* Botón para ir al área de trabajo */}
-                <li className="my-1.5">
-                  <div className="flex items-center justify-between p-2.5 rounded-md transition-colors duration-150 ease-in-out hover:bg-gray-100 text-negro">
-                    <button
-                      onClick={handleAreaTrabajo}
-                      className="flex items-center gap-3 w-full text-md font-medium text-left"
-                    >
-                      <IconoUbicacion />
-                      <span>Mi Área de Trabajo</span>
-                    </button>
-                  </div>
-                </li>
+                {shouldShowAreaTrabajo() && (
+                  <li className="my-1.5">
+                    <div className="flex items-center justify-between p-2.5 rounded-md transition-colors duration-150 ease-in-out hover:bg-gray-100 text-negro">
+                      <button
+                        onClick={handleAreaTrabajo}
+                        className="flex items-center gap-3 w-full text-md font-medium text-left"
+                        title={`Ir al área de trabajo de ${user.rol}`}
+                      >
+                        <IconoUbicacion />
+                        <span>Mi Área de Trabajo</span>
+                      </button>
+                    </div>
+                  </li>
+                )}
               </ul>
             )}
           </li>
@@ -194,6 +226,12 @@ export const AsideEmpleado = ({ onMenuSelect, activeView }: AsideEmpleadoProps) 
           <div className="text-white/70 text-xs px-4">
             <p>Panel de Empleado</p>
             <p>El Saborcito</p>
+            {process.env.NODE_ENV === 'development' && (
+              <div className="mt-2 text-yellow-300 text-xs">
+                <p>Rol: {user.rol}</p>
+                <p>Mostrar Área: {shouldShowAreaTrabajo() ? 'Sí' : 'No'}</p>
+              </div>
+            )}
           </div>
         </div>
       </aside>

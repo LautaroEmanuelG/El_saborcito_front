@@ -24,14 +24,24 @@ const ULTIMA_ACTIVIDAD_KEY = 'ultimaActividad';
 
 export const UserProvider = ({ children }: UserProviderProps) => {
   const [user, setUserState] = useState<Usuario | null>(() => {
+    // 🔄 **INICIALIZACIÓN MEJORADA DESDE LOCALSTORAGE**
     const storedUser = localStorage.getItem(USER_STORAGE_KEY);
-    return storedUser ? JSON.parse(storedUser) : null;
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      console.log('🔄 Usuario recuperado desde localStorage:', parsedUser);
+      return parsedUser;
+    }
+    return null;
   });
   const [ultimaActividad, setUltimaActividad] = useState<Date>(() => {
     const stored = localStorage.getItem(ULTIMA_ACTIVIDAD_KEY);
     return stored ? new Date(stored) : new Date();
   });
-  const [isEmployeeUser, setIsEmployeeUser] = useState<boolean>(false);
+  const [isEmployeeUser, setIsEmployeeUser] = useState<boolean>(() => {
+    // 🔄 **DETECTAR SI ES EMPLEADO DESDE LOCALSTORAGE**
+    const userType = localStorage.getItem('userType');
+    return userType === 'employee';
+  });
 
   // 🚀 **FUNCIÓN PARA SINCRONIZAR DESDE EMPLEADO**
   const syncFromEmpleado = useCallback((empleado: any) => {
@@ -140,17 +150,26 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     const userType = localStorage.getItem('userType');
     const empleadoData = localStorage.getItem('empleadoData');
 
-    if (userType === 'employee' && empleadoData) {
+    console.log('🔍 Verificando sincronización inicial:', {
+      userType,
+      hasEmpleadoData: !!empleadoData,
+      currentUser: user,
+      isEmployeeUser,
+    });
+
+    // Solo sincronizar si es empleado Y no tenemos usuario actual O el usuario actual no tiene rol
+    if (userType === 'employee' && empleadoData && (!user || !user.rol)) {
       try {
         const empleado = JSON.parse(empleadoData);
+        console.log('🔄 Sincronizando desde empleadoData:', empleado);
         syncFromEmpleado(empleado);
-        console.log('🔄 Sincronización inicial desde empleadoData');
       } catch (error) {
-        console.error('Error al sincronizar empleado inicial:', error);
+        console.error('❌ Error al sincronizar empleado inicial:', error);
         localStorage.removeItem('userType');
+        localStorage.removeItem('empleadoData');
       }
     }
-  }, [syncFromEmpleado]);
+  }, [syncFromEmpleado, user, isEmployeeUser]);
 
   // Sincronizar con el sistema de autenticación - solo observar, no limpiar
   useEffect(() => {

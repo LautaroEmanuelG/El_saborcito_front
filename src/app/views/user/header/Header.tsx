@@ -224,29 +224,72 @@ export const Header = ({ onSearch }: Props) => {
 
                 {userMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
-                    <Link
-                      to="/perfil"
-                      className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
-                      onClick={() => setUserMenuOpen(false)}
-                    >
-                      Mi Perfil
-                    </Link>
-                    <Link
-                      to="/perfil"
-                      state={{ activeView: 'pedidos' }}
-                      className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
-                      onClick={() => setUserMenuOpen(false)}
-                    >
-                      Historial de Compras
-                    </Link>
-                    {/* Mostrar solo si el usuario es ADMIN */}
-                    {user.rol === 'ADMIN' && (
-                      <Link
-                        to="/admin/empleados"
-                        className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
-                      >
-                        Ir a Admin
-                      </Link>
+                    {/* 🔐 **MENÚ CONDICIONAL SEGÚN TIPO DE USUARIO** */}
+                    {user.rol === 'CLIENTE' ? (
+                      <>
+                        {/* Opciones para CLIENTES */}
+                        <Link
+                          to="/perfil"
+                          className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+                          onClick={() => setUserMenuOpen(false)}
+                        >
+                          Mi Perfil
+                        </Link>
+                        <Link
+                          to="/perfil"
+                          state={{ activeView: 'pedidos' }}
+                          className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+                          onClick={() => setUserMenuOpen(false)}
+                        >
+                          Historial de Compras
+                        </Link>
+                      </>
+                    ) : (
+                      <>
+                        {/* Opciones para EMPLEADOS */}
+                        <Link
+                          to="/empleado/perfil"
+                          className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+                          onClick={() => setUserMenuOpen(false)}
+                        >
+                          Mi Perfil
+                        </Link>
+                        {/* Mostrar área de trabajo solo para roles específicos */}
+                        {user.rol && !['ADMIN', 'CLIENTE'].includes(user.rol) && (
+                          <button
+                            onClick={() => {
+                              setUserMenuOpen(false);
+                              // Navegar según el rol
+                              switch (user.rol) {
+                                case 'CAJERO':
+                                  navigate('/admin/recepcion');
+                                  break;
+                                case 'COCINERO':
+                                  navigate('/admin/cocina');
+                                  break;
+                                case 'DELIVERY':
+                                  navigate('/admin/delivery');
+                                  break;
+                                default:
+                                  navigate('/admin');
+                              }
+                            }}
+                            className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+                          >
+                            Mi Área de Trabajo
+                          </button>
+                        )}
+                        {/* Mostrar panel admin solo para ADMIN */}
+                        {user.rol === 'ADMIN' && (
+                          <Link
+                            to="/admin/empleados"
+                            className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+                            onClick={() => setUserMenuOpen(false)}
+                          >
+                            Panel de Admin
+                          </Link>
+                        )}
+                      </>
                     )}
                     <hr className="my-1 border-gray-200" />
                     <button
@@ -359,17 +402,69 @@ export const Header = ({ onSearch }: Props) => {
               )}
               <span className="text-lg font-semibold">{user.nombre}</span>
             </div>
-            <Link to="/perfil" className="block py-2 hover:bg-gray-700" onClick={toggleMenu}>
-              Mi Perfil
-            </Link>
-            <Link
-              to="/perfil"
-              state={{ activeView: 'pedidos' }}
-              className="block py-2 hover:bg-gray-700"
-              onClick={toggleMenu}
-            >
-              Historial de Compras
-            </Link>
+            {/* 🔐 **MENÚ MÓVIL CONDICIONAL SEGÚN TIPO DE USUARIO** */}
+            {user.rol === 'CLIENTE' ? (
+              <>
+                {/* Opciones para CLIENTES */}
+                <Link to="/perfil" className="block py-2 hover:bg-gray-700" onClick={toggleMenu}>
+                  Mi Perfil
+                </Link>
+                <Link
+                  to="/perfil"
+                  state={{ activeView: 'pedidos' }}
+                  className="block py-2 hover:bg-gray-700"
+                  onClick={toggleMenu}
+                >
+                  Historial de Compras
+                </Link>
+              </>
+            ) : (
+              <>
+                {/* Opciones para EMPLEADOS */}
+                <Link
+                  to="/empleado/perfil"
+                  className="block py-2 hover:bg-gray-700"
+                  onClick={toggleMenu}
+                >
+                  Mi Perfil
+                </Link>
+                {/* Mostrar área de trabajo solo para roles específicos */}
+                {user.rol && !['ADMIN', 'CLIENTE'].includes(user.rol) && (
+                  <button
+                    onClick={() => {
+                      toggleMenu();
+                      // Navegar según el rol
+                      switch (user.rol) {
+                        case 'CAJERO':
+                          navigate('/admin/recepcion');
+                          break;
+                        case 'COCINERO':
+                          navigate('/admin/cocina');
+                          break;
+                        case 'DELIVERY':
+                          navigate('/admin/delivery');
+                          break;
+                        default:
+                          navigate('/admin');
+                      }
+                    }}
+                    className="block w-full text-left py-2 hover:bg-gray-700"
+                  >
+                    Mi Área de Trabajo
+                  </button>
+                )}
+                {/* Mostrar panel admin solo para ADMIN */}
+                {user.rol === 'ADMIN' && (
+                  <Link
+                    to="/admin/empleados"
+                    className="block py-2 hover:bg-gray-700"
+                    onClick={toggleMenu}
+                  >
+                    Panel de Admin
+                  </Link>
+                )}
+              </>
+            )}
             <button
               onClick={() => {
                 handleLogout();
