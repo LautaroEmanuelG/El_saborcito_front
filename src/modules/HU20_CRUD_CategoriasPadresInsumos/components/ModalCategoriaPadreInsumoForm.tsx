@@ -36,7 +36,6 @@ const ModalCategoriaPadreInsumoForm: React.FC<ModalCategoriaPadreInsumoFormProps
           tipoCategoria: null,
           sucursal: { id: 1 },
         };
-        console.log('Payload enviado:', payload); // Log para depuración
         await onSubmit(payload);
       } catch (error: any) {
         setErrorMsg(

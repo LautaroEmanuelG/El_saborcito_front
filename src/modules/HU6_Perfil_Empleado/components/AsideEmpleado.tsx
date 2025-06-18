@@ -17,6 +17,7 @@ export const AsideEmpleado = ({ onMenuSelect, activeView }: AsideEmpleadoProps) 
   const { empleadoAutenticado } = useEmpleado();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const [isPerfilExpanded, setIsPerfilExpanded] = useState(true);
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -67,6 +68,10 @@ export const AsideEmpleado = ({ onMenuSelect, activeView }: AsideEmpleadoProps) 
     closeMenu();
   };
 
+  const togglePerfil = () => {
+    setIsPerfilExpanded(!isPerfilExpanded);
+  };
+
   if (!empleadoAutenticado) {
     return <div>Cargando...</div>;
   }
@@ -74,7 +79,7 @@ export const AsideEmpleado = ({ onMenuSelect, activeView }: AsideEmpleadoProps) 
   return (
     <>
       <button
-        className={`fixed top-22 mt-1 left-1 lg:mt-0 lg:top-6 xl:hidden text-negro text-2xl p-2 z-30 rounded shadow-lg lg:shadow-none focus:outline-none bg-primary ${isOpen ? 'bg-primarydark' : ''}`}
+        className={`fixed top-22 mt-1 left-1 lg:mt-0 lg:top-6 xl:hidden text-negro text-xl p-2 z-30 rounded shadow-lg lg:shadow-none focus:outline-none bg-primary ${isOpen ? 'bg-primarydark' : ''}`}
         onClick={toggleMenu}
         aria-label="Abrir menú"
         aria-expanded={isOpen}
@@ -86,7 +91,7 @@ export const AsideEmpleado = ({ onMenuSelect, activeView }: AsideEmpleadoProps) 
         className={`bg-primary text-negro transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} xl:translate-x-0 transition-transform duration-300 ease-in-out xl:flex flex-col shrink-0 w-72 h-full min-h-screen fixed xl:sticky top-0 shadow-xl xl:shadow-none z-50 p-4 pt-6 overflow-y-auto`}
       >
         {/* Perfil del empleado */}
-        <div className="flex flex-col gap-3 px-4 py-6 border-b border-white/20">
+        <div className="flex flex-col gap-3 px-4 py-6 border-b border-white/20 mt-12 xl:mt-0">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
               <IconoUsuario className="w-6 h-6 text-white" />
@@ -112,40 +117,77 @@ export const AsideEmpleado = ({ onMenuSelect, activeView }: AsideEmpleadoProps) 
           </div>
         </div>
 
-        {/* Menú de navegación */}
-        <nav className="mt-6">
-          <ul className="space-y-2">
-            {menuItems.map((item) => (
-              <li key={item.id}>
-                <button
-                  onClick={() => handleMenuClick(item.id)}
-                  className={`w-full text-left px-4 py-3 text-white hover:bg-primarydark rounded transition-colors duration-200 flex items-center gap-3 ${
-                    activeView === item.id ? 'bg-primarydark' : ''
-                  }`}
-                >
-                  {item.icon}
-                  {item.label}
-                </button>
-              </li>
-            ))}
-
-            {/* Separador */}
-            <li className="py-2">
-              <hr className="border-white/20" />
-            </li>
-
-            {/* Botón para ir al área de trabajo */}
-            <li>
-              <button
-                onClick={handleAreaTrabajo}
-                className="w-full text-left px-4 py-3 text-white hover:bg-primarydark rounded transition-colors duration-200 flex items-center gap-3"
+        {/* Menú de navegación con estilo de AsideAdmin */}
+        <ul className="mt-6">
+          <li className="mb-3 bg-blanco rounded-lg shadow-md overflow-hidden">
+            <button
+              type="button"
+              onClick={togglePerfil}
+              className={`w-full flex items-center justify-between p-3 text-left font-bold text-xl transition-colors duration-150 ease-in-out focus:outline-none ${isPerfilExpanded ? 'text-primary' : 'text-negro'}`}
+              aria-expanded={isPerfilExpanded}
+            >
+              <span>Mi Perfil</span>
+              <span
+                className={`transform transition-transform duration-200 ease-in-out ${isPerfilExpanded ? 'rotate-180 text-primary' : 'rotate-0 text-negro'}`}
               >
-                <IconoUbicacion />
-                <span>Mi Área de Trabajo</span>
-              </button>
-            </li>
-          </ul>
-        </nav>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </span>
+            </button>
+            {isPerfilExpanded && (
+              <ul className="pl-6 pr-2 px-1 border-t border-gray-200">
+                {menuItems.map((item) => (
+                  <li key={item.id} className="my-1.5">
+                    <div
+                      className={`flex items-center justify-between p-2.5 rounded-md transition-colors duration-150 ease-in-out ${
+                        activeView === item.id
+                          ? 'bg-primary text-blanco font-bold shadow'
+                          : 'hover:bg-gray-100 text-negro'
+                      }`}
+                    >
+                      <button
+                        onClick={() => handleMenuClick(item.id)}
+                        className="flex items-center gap-3 w-full text-md font-medium text-left"
+                      >
+                        {item.icon}
+                        {item.label}
+                      </button>
+                    </div>
+                  </li>
+                ))}
+
+                {/* Separador */}
+                <li className="py-2">
+                  <hr className="border-gray-200" />
+                </li>
+
+                {/* Botón para ir al área de trabajo */}
+                <li className="my-1.5">
+                  <div className="flex items-center justify-between p-2.5 rounded-md transition-colors duration-150 ease-in-out hover:bg-gray-100 text-negro">
+                    <button
+                      onClick={handleAreaTrabajo}
+                      className="flex items-center gap-3 w-full text-md font-medium text-left"
+                    >
+                      <IconoUbicacion />
+                      <span>Mi Área de Trabajo</span>
+                    </button>
+                  </div>
+                </li>
+              </ul>
+            )}
+          </li>
+        </ul>
 
         {/* Información adicional */}
         <div className="mt-auto pt-6 border-t border-white/20">

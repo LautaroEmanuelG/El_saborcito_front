@@ -1,16 +1,15 @@
 // src/shared/config/navigationConfig.ts
-import { Rol } from '../../types/Rol';
 import { NavItemStructure } from '../components/AsideAdmin/NavItemTypes';
 
-export const getNavigationByRole = (rol: Rol): NavItemStructure[] => {
+export const getNavigationByRole = (rol: string): NavItemStructure[] => {
   switch (rol) {
-    case Rol.ADMIN:
+    case 'ADMIN':
       return ADMIN_NAV;
-    case Rol.CAJERO:
+    case 'CAJERO':
       return CAJERO_NAV;
-    case Rol.DELIVERY:
+    case 'DELIVERY':
       return DELIVERY_NAV;
-    case Rol.COCINERO:
+    case 'COCINERO':
       return COCINERO_NAV;
     default:
       return [];

@@ -295,9 +295,9 @@ export const GestionEmpleados = () => {
   };
 
   return (
-    <div className="p-3 sm:p-6">
+    <div className="p-3 sm:p-6 w-full">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+      <div className="flex flex-col w-full sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
         <div className="flex-1">
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Gestión de Empleados</h1>
           <p className="text-gray-600 text-sm sm:text-base">Administra los empleados del sistema</p>
@@ -313,7 +313,7 @@ export const GestionEmpleados = () => {
       </div>
 
       {/* Estadísticas */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+      <div className="grid w-full grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
         <div className="bg-white p-3 sm:p-4 rounded-lg shadow border-l-4 border-blue-500">
           <div className="text-lg sm:text-2xl font-bold text-blue-600">{empleados.length}</div>
           <div className="text-xs sm:text-sm text-gray-600">Total Empleados</div>

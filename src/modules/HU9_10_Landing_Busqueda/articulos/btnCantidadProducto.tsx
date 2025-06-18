@@ -41,25 +41,16 @@ const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
     if (location.pathname === '/carrito') {
       // 🚀 **ESTRATEGIA PREDICTIVA: Validar antes de agregar**
       if (!articulo.id) {
-        console.log(`❌ Artículo sin ID válido`);
         return;
       }
 
       if (isAnalyzing) {
-        console.log('⏳ Análisis en curso, esperando...');
         return;
       }
 
-      console.log(`🔮 Analizando si se puede agregar ${articulo.denominacion}...`);
-
       try {
         // El addToCarrito ahora maneja internamente el análisis predictivo y auto-ajuste
-        const success = await addToCarrito(articulo, 1);
-        if (success) {
-          console.log(`✅ Producto agregado exitosamente`);
-        } else {
-          console.log(`⚠️ No se pudo agregar - cantidad ajustada automáticamente`);
-        }
+        await addToCarrito(articulo, 1);
       } catch (error) {
         console.error('Error al agregar al carrito:', error);
       }

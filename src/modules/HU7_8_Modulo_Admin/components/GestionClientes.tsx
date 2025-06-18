@@ -90,9 +90,9 @@ export const GestionClientes = () => {
   };
 
   return (
-    <div className="p-3 sm:p-6">
+    <div className="p-3 sm:p-6 w-full">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+      <div className="flex flex-col w-full sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
         <div className="flex-1">
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Gestión de Clientes</h1>
           <p className="text-gray-600 text-sm sm:text-base">Administra los clientes del sistema</p>

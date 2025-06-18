@@ -39,6 +39,6 @@ export default defineConfig({
     port: 4173,
     host: true,
   },
-  // Configuración específica para Vercel
-  base: './',
+  // 🚀 **CONFIGURACIÓN OPTIMIZADA PARA VERCEL**
+  base: '/',
 });

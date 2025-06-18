@@ -7,9 +7,7 @@ const API_BASE_URL = '/historial-pedidos';
 
 export const obtenerHistorialPorCliente = async (clienteId: number): Promise<HistorialPedido[]> => {
   try {
-    console.log(`🔗 Llamando a: ${API_BASE_URL}/cliente/${clienteId}`);
     const response = await axiosInstance.get(`${API_BASE_URL}/cliente/${clienteId}`);
-    console.log('✅ Respuesta del servidor:', response.data);
     return response.data;
   } catch (error) {
     console.error('❌ Error al obtener historial del cliente:', error);

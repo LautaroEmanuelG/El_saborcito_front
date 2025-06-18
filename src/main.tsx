@@ -8,6 +8,8 @@ import { CarritoProvider } from './shared/providers/CarritoProvider';
 import { LayoutAdmin } from './app/layout/LayoutAdmin';
 import ProtectedRoute from './app/routes/ProtectedRoute';
 import { AppProviders } from './shared/providers/AppProviders';
+import { VercelLoadingHandler } from './shared/components/VercelLoadingHandler';
+import { useAuth } from './shared/hooks/useAuth';
 import { RankingProductos } from './modules/HU26_28_informes/components/RankingProductos';
 import ScreenArticulosManufacturados from './modules/HU22_CRUDArticulos/components/ScreenArticulosManufacturados';
 import ScreenInsumos from './modules/HU23_CRUDInsumos/components/ScreenInsumos';
@@ -23,14 +25,15 @@ import ScreenPromociones from './modules/HU25_Promociones/components/ScreenPromo
 import { Recepcion } from './modules/HU14_Recepcion/components/Recepcion';
 import { Delivery } from './modules/HU16_Delivery/components/Delivery';
 import ScreenCompraIngredientes from './modules/HU24_CompraIngredientes/components/ScreenCompraIngredientes';
-import { CallbackPage } from './app/views/CallbackPage';
-import PedidoExitoso from './pages/PedidoExitoso';
-import { PerfilClienteDashboard } from './modules/HU3_Perfil_Cliente/components/PerfilClienteDashboard';
+import { CallbackPage } from './app/views/CallbackPage.tsx';
+import { PerfilClienteDashboard } from './modules/HU3_Perfil_Cliente/components/PerfilClienteDashboard.tsx';
 import ScreenStockInsumos from './modules/HU25_ControlStockInsumos/components/ScreenStockInsumos';
 import { GestionEmpleados } from './modules/HU4_Registro_Empleado';
 import { PerfilEmpleadoDashboard } from './modules/HU6_Perfil_Empleado/components/PerfilEmpleadoDashboard';
 import GestionClientes from './app/views/admin/GestionClientes';
+import { AdminRedirect } from './app/views/admin/AdminRedirect';
 import { Rol } from './types/Rol';
+import PedidoExitoso from './modules/HU11_12_Carrito_Confirmacion/components/PedidoExitoso.tsx';
 
 // Definición de roles permitidos para cada sección
 const ADMIN = [Rol.ADMIN];
@@ -39,9 +42,12 @@ const DELIVERY = [Rol.ADMIN, Rol.DELIVERY];
 const COCINERO = [Rol.ADMIN, Rol.COCINERO];
 const ALL_STAFF = [Rol.ADMIN, Rol.CAJERO, Rol.DELIVERY, Rol.COCINERO];
 
-createRoot(document.getElementById('root')!).render(
-  <BrowserRouter>
-    <AppProviders>
+// 🚀 **COMPONENTE PRINCIPAL CON MANEJO DE VERCEL**
+const AppRoutes = () => {
+  const { isLoading } = useAuth();
+
+  return (
+    <VercelLoadingHandler isAuthLoading={isLoading}>
       <Routes>
         {/* Rutas públicas */}
         <Route
@@ -60,7 +66,6 @@ createRoot(document.getElementById('root')!).render(
             </CarritoProvider>
           }
         />
-
         {/* Dashboard Admin (Layout) */}
         <Route
           path="/admin"
@@ -70,6 +75,15 @@ createRoot(document.getElementById('root')!).render(
             </ProtectedRoute>
           }
         >
+          {/* Ruta index que redirige según el rol */}
+          <Route
+            index
+            element={
+              <ProtectedRoute allowedRoles={ALL_STAFF}>
+                <AdminRedirect />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="recepcion"
             element={
@@ -228,17 +242,32 @@ createRoot(document.getElementById('root')!).render(
               </ProtectedRoute>
             }
           />
-        </Route>
 
+          {/* Ruta específica para historial del admin */}
+          <Route
+            path="historial"
+            element={
+              <ProtectedRoute allowedRoles={ADMIN}>
+                <HistorialCocina />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
         {/* OAuth callback & perfiles */}
         <Route path="/callback" element={<CallbackPage />} />
         <Route path="/pedido-exitoso" element={<PedidoExitoso />} />
         <Route path="/perfil" element={<PerfilClienteDashboard />} />
-        <Route path="/empleado/perfil" element={<PerfilEmpleadoDashboard />} />
-
-        {/* catch-all */}
+        <Route path="/empleado/perfil" element={<PerfilEmpleadoDashboard />} /> {/* catch-all */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+    </VercelLoadingHandler>
+  );
+};
+
+createRoot(document.getElementById('root')!).render(
+  <BrowserRouter>
+    <AppProviders>
+      <AppRoutes />
     </AppProviders>
   </BrowserRouter>
 );

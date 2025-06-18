@@ -3,7 +3,6 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { CarritoContext } from '../../../../shared/providers/CarritoProvider';
 import { useProductStore } from '../../../../shared/providers/ProductProvider';
 import { useUser } from '../../../../shared/providers/UserProvider';
-import { useEmpleado } from '../../../../shared/providers/EmpleadoProvider';
 import IconoLogoSaborcito from '../../../../assets/svgs/icons/IconoLogoSaborcito';
 import IconoLoggin from '../../../../assets/svgs/icons/IconoLoggin';
 import IconoCarrito from '../../../../assets/svgs/icons/IconoCarrito';
@@ -14,7 +13,6 @@ import { LoginEmpleadoModal } from '../../../../modules/HU5_Login_Empleado/compo
 import { Buscador } from '../../../../modules/HU9_10_Landing_Busqueda/Buscador';
 import { useAuth0 } from '@auth0/auth0-react';
 import { syncUserWithBackend, loginAfterSync } from '../../../../shared/services/authService';
-import { obtenerNombreRol } from '../../../../modules/HU6_Perfil_Empleado/logic';
 import BackButton from './BackButton';
 
 type Props = {
@@ -31,7 +29,6 @@ export const Header = ({ onSearch }: Props) => {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const { user, setUser, logout } = useUser();
-  const { empleadoAutenticado, logoutEmpleado } = useEmpleado();
   const navigate = useNavigate();
   const {
     user: auth0User,
@@ -142,85 +139,8 @@ export const Header = ({ onSearch }: Props) => {
 
           {/* Iconos de login y carrito siempre visibles en desktop */}
           <div className="hidden md:flex items-center gap-4">
-            {/* Verificar si hay empleado autenticado primero */}
-            {empleadoAutenticado ? (
-              <div className="relative">
-                <button
-                  className="flex items-center gap-2 text-white hover:text-blanco"
-                  onClick={toggleUserMenu}
-                >
-                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                    <span className="text-white font-bold">
-                      {empleadoAutenticado.nombre?.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                  <span>
-                    {empleadoAutenticado.nombre} ({obtenerNombreRol(empleadoAutenticado.rol)})
-                  </span>
-                  <svg
-                    className={`w-4 h-4 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </button>
-
-                {userMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
-                    <Link
-                      to="/empleado/perfil"
-                      className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
-                      onClick={() => setUserMenuOpen(false)}
-                    >
-                      Mi Perfil
-                    </Link>
-                    <button
-                      onClick={() => {
-                        setUserMenuOpen(false);
-                        // Redirigir según el rol del empleado
-                        switch (empleadoAutenticado.rol) {
-                          case 'ADMIN':
-                            navigate('/admin/historial');
-                            break;
-                          case 'CAJERO':
-                            navigate('/admin/recepcion');
-                            break;
-                          case 'COCINERO':
-                            navigate('/admin/cocina');
-                            break;
-                          case 'DELIVERY':
-                            navigate('/admin/delivery');
-                            break;
-                          default:
-                            navigate('/admin');
-                        }
-                      }}
-                      className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
-                    >
-                      Mi Área de Trabajo
-                    </button>
-                    <hr className="my-1 border-gray-200" />
-                    <button
-                      onClick={() => {
-                        logoutEmpleado();
-                        setUserMenuOpen(false);
-                        navigate('/');
-                      }}
-                      className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
-                    >
-                      Cerrar Sesión
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : user ? (
+            {/* Solo mostrar info de cliente, no de empleado */}
+            {user ? (
               <div className="relative">
                 <button
                   className="flex items-center gap-2 text-white hover:text-blanco"
@@ -268,6 +188,15 @@ export const Header = ({ onSearch }: Props) => {
                     >
                       Historial de Compras
                     </Link>
+                    {/* Mostrar solo si el usuario es ADMIN */}
+                    {user.rol === 'ADMIN' && (
+                      <Link
+                        to="/admin/empleados"
+                        className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+                      >
+                        Ir a Admin
+                      </Link>
+                    )}
                     <hr className="my-1 border-gray-200" />
                     <button
                       onClick={() => {

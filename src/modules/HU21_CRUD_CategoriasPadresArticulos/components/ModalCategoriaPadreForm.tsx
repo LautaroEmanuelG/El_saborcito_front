@@ -36,7 +36,6 @@ const ModalCategoriaPadreForm: React.FC<ModalCategoriaPadreFormProps> = ({
           tipoCategoria: null,
           sucursal: { id: 1 },
         }; // Asignar sucursal_id 1
-        console.log('Payload enviado:', payload); // Log para depuración
         await onSubmit(payload);
       } catch (error: any) {
         setErrorMsg(

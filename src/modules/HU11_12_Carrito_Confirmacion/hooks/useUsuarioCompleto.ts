@@ -27,9 +27,7 @@ export const useUsuarioCompleto = (): UseUsuarioCompletoResult => {
     setError(null);
 
     try {
-      console.log('🔍 Cargando usuario completo con ID:', user.id);
       const usuarioCompleto = await getClienteById(user.id);
-      console.log('✅ Usuario completo cargado:', usuarioCompleto);
       setUsuarioCompleto(usuarioCompleto);
     } catch (error) {
       console.error('❌ Error cargando usuario completo:', error);

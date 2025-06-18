@@ -83,14 +83,12 @@ export const AuthEmpleadoProvider: React.FC<AuthEmpleadoProviderProps> = ({ chil
 
       // Verificar inactividad (30 minutos)
       if (tiempoInactividad > 30) {
-        console.log('Sesión cerrada por inactividad');
         logout();
         return;
       }
 
       // Verificar horario de atención (ejemplo: 8:00 - 22:00)
       if (horaActual < 8 || horaActual > 22) {
-        console.log('Sesión cerrada por horario');
         logout();
         return;
       }

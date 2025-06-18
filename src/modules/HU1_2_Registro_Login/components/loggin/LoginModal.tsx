@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { loginManual } from '../../../../shared/services/authService';
 import { useUser } from '../../../../shared/providers/UserProvider';
+import { useEmpleadoLogin } from '../../../../shared/hooks/useEmpleadoLogin';
 import emailjs from 'emailjs-com';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useNotificacion } from '../../../../shared/hooks/useNotificacion';
@@ -24,6 +25,7 @@ export const LoginModal = ({ isOpen, onClose, onOpenRegistro }: LoginModalProps)
   const { setUser } = useUser();
   const { loginWithRedirect } = useAuth0();
   const { mostrarNotificacion } = useNotificacion();
+  const { loginEmpleadoWithSync } = useEmpleadoLogin();
 
   useEffect(() => {
     let timer: number;
@@ -75,18 +77,23 @@ export const LoginModal = ({ isOpen, onClose, onOpenRegistro }: LoginModalProps)
       );
       return;
     }
-
     try {
       const response = await loginManual({ email, password: contraseña });
       const { token, usuario } = response;
-      localStorage.setItem('token', token);
-      setUser(usuario);
-      mostrarNotificacion('¡Login exitoso!', 'success');
+
+      // 🚀 **MANEJO DIFERENCIADO SEGÚN EL ROL**
       if (usuario.rol === 'ADMIN') {
-        navigate('/admin');
+        // Si es admin, usar sistema sincronizado de empleados
+        await loginEmpleadoWithSync(usuario, token);
+        mostrarNotificacion('¡Login exitoso!', 'success');
       } else {
+        // Si es cliente regular, usar sistema tradicional
+        localStorage.setItem('token', token);
+        setUser(usuario);
+        mostrarNotificacion('¡Login exitoso!', 'success');
         navigate('/');
       }
+
       onClose();
     } catch (error: any) {
       setError(error.message ?? 'Error en el servidor. Intente nuevamente.');

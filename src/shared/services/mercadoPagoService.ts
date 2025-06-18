@@ -68,5 +68,5 @@ export const crearBotonPago = (preferenceId: string, containerId: string) => {
  * @param initPoint URL del checkout de Mercado Pago
  */
 export const abrirCheckoutMP = (initPoint: string): void => {
-  window.open(initPoint, '_blank');
+  window.location.href = initPoint;
 };

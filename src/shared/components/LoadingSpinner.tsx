@@ -17,8 +17,8 @@ export const LoadingSpinner = ({
   };
 
   const containerClasses = fullScreen
-    ? 'flex items-center justify-center min-h-screen bg-gray-50'
-    : 'flex items-center justify-center p-4';
+    ? 'flex items-center justify-center min-h-screen bg-gray-50 w-full'
+    : 'flex items-center justify-center p-4 w-full';
 
   return (
     <div className={containerClasses}>

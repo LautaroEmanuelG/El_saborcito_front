@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   cambiarContraseñaEmpleado,
   loginEmpleado,
@@ -8,6 +7,8 @@ import {
 } from '../logic';
 import { EstadoLoginEmpleado, type Empleado } from '../model';
 import { useEmpleado } from '../../../shared/providers/EmpleadoProvider';
+import { useRoleRedirection } from '../../../shared/hooks/useRoleRedirection';
+import { useEmpleadoLogin } from '../../../shared/hooks/useEmpleadoLogin';
 import emailjs from 'emailjs-com';
 import { loginAdmin } from '../../../shared/services/authService';
 
@@ -28,9 +29,9 @@ export const LoginEmpleadoModal = ({ isOpen, onClose }: LoginEmpleadoModalProps)
   const [blockTime, setBlockTime] = useState(0);
   const [empleadoTemp, setEmpleadoTemp] = useState<Empleado | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-
-  const navigate = useNavigate();
-  const { setEmpleado } = useEmpleado();
+  const { empleadoAutenticado } = useEmpleado();
+  const { redirectByRole } = useRoleRedirection();
+  const { loginEmpleadoWithSync } = useEmpleadoLogin();
 
   useEffect(() => {
     let timer: number;
@@ -51,6 +52,31 @@ export const LoginEmpleadoModal = ({ isOpen, onClose }: LoginEmpleadoModalProps)
     return () => clearInterval(timer);
   }, [isBlocked, blockTime]);
 
+  // Función personalizada para manejar el cierre del modal y redirección
+  const handleCloseModal = () => {
+    // Limpiar estados del modal
+    setEmail('');
+    setContraseña('');
+    setNuevaContraseña('');
+    setConfirmarContraseña('');
+    setError('');
+    setEstado(EstadoLoginEmpleado.INICIAL);
+    setEmpleadoTemp(null);
+    setIsAdmin(false);
+
+    // Cerrar el modal
+    onClose();
+
+    // Verificar si hay un empleado autenticado después de un breve delay
+    // para permitir que el estado se actualice
+    setTimeout(() => {
+      const empleadoData = localStorage.getItem('empleadoData');
+      if (empleadoAutenticado || empleadoData) {
+        redirectByRole();
+      }
+    }, 100);
+  };
+
   if (!isOpen) return null;
 
   const handleLogin = async () => {
@@ -65,16 +91,14 @@ export const LoginEmpleadoModal = ({ isOpen, onClose }: LoginEmpleadoModalProps)
         setEstado(EstadoLoginEmpleado.ERROR);
         return;
       }
-
       if (isAdmin) {
         // Login como admin - usar endpoint /admin/login
         try {
           const response = await loginAdmin({ email, password: contraseña });
           if (response.token && response.usuario) {
-            localStorage.setItem('empleadoToken', response.token);
-            setEmpleado(response.usuario);
-            navigate('/admin');
-            onClose();
+            // 🚀 **USAR NUEVO SISTEMA SINCRONIZADO PARA ADMIN**
+            await loginEmpleadoWithSync(response.usuario, response.token);
+            handleCloseModal();
             return;
           }
         } catch (adminError: any) {
@@ -92,25 +116,11 @@ export const LoginEmpleadoModal = ({ isOpen, onClose }: LoginEmpleadoModalProps)
             setEmpleadoTemp(response.empleado);
           } else {
             setEstado(EstadoLoginEmpleado.EXITOSO);
-            if (response.token) {
-              localStorage.setItem('empleadoToken', response.token);
-              setEmpleado(response.empleado);
-              // Redirigir según el rol de empleado
-              switch (response.empleado.rol) {
-                case 'CAJERO':
-                  navigate('/admin/recepcion');
-                  break;
-                case 'COCINERO':
-                  navigate('/admin/cocina');
-                  break;
-                case 'DELIVERY':
-                  navigate('/admin/delivery');
-                  break;
-                default:
-                  navigate('/admin');
-              }
+            if (response.token && response.empleado) {
+              // 🚀 **USAR NUEVO SISTEMA SINCRONIZADO PARA EMPLEADO**
+              await loginEmpleadoWithSync(response.empleado, response.token);
             }
-            onClose();
+            handleCloseModal();
           }
         } catch (empleadoError: any) {
           setError(
@@ -153,31 +163,14 @@ export const LoginEmpleadoModal = ({ isOpen, onClose }: LoginEmpleadoModalProps)
           currentPassword: contraseña,
           newPassword: nuevaContraseña,
           confirmPassword: confirmarContraseña,
-        });
-
-        // Contraseña cambiada exitosamente, hacer login automático
+        }); // Contraseña cambiada exitosamente, hacer login automático
         const loginResponse = await loginEmpleado({ email, password: nuevaContraseña });
-        if (loginResponse.token) {
-          localStorage.setItem('empleadoToken', loginResponse.token);
-          setEmpleado(loginResponse.empleado);
-
-          // Redirigir según el rol
-          switch (loginResponse.empleado.rol) {
-            case 'CAJERO':
-              navigate('/admin/recepcion');
-              break;
-            case 'COCINERO':
-              navigate('/admin/cocina');
-              break;
-            case 'DELIVERY':
-              navigate('/admin/delivery');
-              break;
-            default:
-              navigate('/admin');
-          }
+        if (loginResponse.token && loginResponse.empleado) {
+          // 🚀 **USAR NUEVO SISTEMA SINCRONIZADO DESPUÉS DE CAMBIO DE CONTRASEÑA**
+          await loginEmpleadoWithSync(loginResponse.empleado, loginResponse.token);
         }
       }
-      onClose();
+      handleCloseModal();
     } catch (error: any) {
       setError(error.message);
     }
@@ -310,7 +303,7 @@ export const LoginEmpleadoModal = ({ isOpen, onClose }: LoginEmpleadoModalProps)
       <div className="bg-white rounded-lg w-[500px] max-h-[90vh] overflow-y-auto shadow-lg relative p-8">
         <button
           className="absolute font-bold top-6 right-8 text-negro text-xl hover:text-blanco hover:bg-primary rounded-full w-10 h-10"
-          onClick={onClose}
+          onClick={handleCloseModal}
         >
           X
         </button>
