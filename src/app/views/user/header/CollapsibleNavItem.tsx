@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import type { NavItemStructure } from './AsideAdmin';
 import IconoVer from '../../../../assets/svgs/icons/IconoVer';
 import IconoEditar from '../../../../assets/svgs/icons/IconoEditar';
+import { NavItemStructure } from '../../../../shared/components/AsideAdmin/NavItemTypes';
 
 interface CollapsibleNavItemProps {
   itemData: NavItemStructure;

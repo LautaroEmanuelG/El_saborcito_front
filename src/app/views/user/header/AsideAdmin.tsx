@@ -1,25 +1,70 @@
-import { useState } from 'react';
+// /shared/components/AsideAdmin.tsx
+import { useState, useEffect } from 'react';
 import CollapsibleNavItem from './CollapsibleNavItem';
 import IconoMenuHamburguesa from '../../../../assets/svgs/icons/IconoMenuHamburguesa';
+import { fetchRol } from '../../../../shared/services/authService';
+import { NavItemStructure } from '../../../../shared/components/AsideAdmin/NavItemTypes';
 
-export interface SubItem {
-  to: string;
-  label: string;
-  hasActions?: boolean;
-}
+export const AsideAdmin = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [navItems, setNavItems] = useState<NavItemStructure[]>([]);
 
-export interface NavItemStructure {
-  title: string;
-  subItems?: SubItem[];
-  children?: NavItemStructure[]; // Nuevo: permite submenús anidados
-}
+  // 1️⃣ Al montar, pedimos el rol
+  useEffect(() => {
+    fetchRol().then((rol) => {
+      const upper = rol.toUpperCase();
+      switch (upper) {
+        case 'ADMIN':
+          setNavItems(ADMIN_NAV);
+          break;
+        case 'CAJERO':
+          setNavItems(CAJERO_NAV);
+          break;
+        case 'DELIVERY':
+          setNavItems(DELIVERY_NAV);
+          break;
+        case 'COCINERO':
+          setNavItems(COCINERO_NAV);
+          break;
+        default:
+          setNavItems([]); // ningún menú
+      }
+    });
+  }, []);
 
-// Datos para la navegación del aside
-const NAV_DATA: NavItemStructure[] = [
-  {
-    title: 'Usuario',
-    subItems: [{ to: '/admin/mis-pedidos', label: 'Mis Pedidos' }],
-  },
+  const toggleMenu = () => setIsOpen((o) => !o);
+  const closeMenu = () => setIsOpen(false);
+
+  return (
+    <>
+      <button
+        className={`fixed top-22 mt-1 left-1 lg:mt-0 lg:top-6 xl:hidden text-negro text-xl p-2 z-30 rounded shadow-lg lg:shadow-none focus:outline-none bg-primary ${isOpen ? 'bg-primarydark' : ''}`}
+        onClick={toggleMenu}
+        aria-label="Abrir menú"
+        aria-expanded={isOpen}
+      >
+        <IconoMenuHamburguesa />
+      </button>
+      <aside
+        className={`bg-primary text-negro transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} xl:translate-x-0 transition-transform duration-300 ease-in-out xl:flex flex-col shrink-0 w-72 h-full min-h-screen fixed xl:sticky top-0 shadow-xl xl:shadow-none z-50 p-4 pt-6 overflow-y-auto`}
+      >
+        <ul className="mt-12 xl:mt-0">
+          {navItems.map((navItem) => (
+            <CollapsibleNavItem key={navItem.title} itemData={navItem} onLinkClick={closeMenu} />
+          ))}
+        </ul>
+      </aside>
+      {isOpen && (
+        <div className="fixed inset-0 bg-black opacity-50 xl:hidden z-40" onClick={closeMenu}></div>
+      )}
+    </>
+  );
+};
+
+/** ——— Menús por rol ——— **/
+
+// Admin: todo
+const ADMIN_NAV: NavItemStructure[] = [
   {
     title: 'Recepción y Gestión',
     subItems: [
@@ -52,8 +97,8 @@ const NAV_DATA: NavItemStructure[] = [
           { to: '/admin/insumos', label: 'Insumos' },
           { to: '/admin/categorias-insumos', label: 'Categorías de Insumos' },
           { to: '/admin/subcategorias-insumos', label: 'Subcategorías de Insumos' },
-          { to: '/admin/compra-insumos', label: 'Compra de Insumos' }, // Nuevo menú
-          { to: '/admin/control-stock-insumos', label: 'Control Stock Insumos' }, // NUEVO
+          { to: '/admin/compra-insumos', label: 'Compra de Insumos' },
+          { to: '/admin/control-stock-insumos', label: 'Control Stock Insumos' },
         ],
       },
       {
@@ -78,40 +123,56 @@ const NAV_DATA: NavItemStructure[] = [
   },
 ];
 
-export const AsideAdmin = () => {
-  const [isOpen, setIsOpen] = useState(false);
+// Cajero: solo recepción
+const CAJERO_NAV: NavItemStructure[] = [
+  {
+    title: 'Recepción y Gestión',
+    subItems: [{ to: '/admin/recepcion', label: 'Recepción de Pedidos' }],
+  },
+];
 
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
-  };
+// Delivery: solo delivery
+const DELIVERY_NAV: NavItemStructure[] = [
+  {
+    title: 'Recepción y Gestión',
+    subItems: [{ to: '/admin/delivery', label: 'Delivery' }],
+  },
+];
 
-  const closeMenu = () => {
-    setIsOpen(false);
-  };
-
-  return (
-    <>
-      <button
-        className={`fixed top-22 mt-1 left-1 lg:mt-0 lg:top-6 xl:hidden text-negro text-xl p-2 z-30 rounded shadow-lg lg:shadow-none focus:outline-none bg-primary ${isOpen ? 'bg-primarydark' : ''}`}
-        onClick={toggleMenu}
-        aria-label="Abrir menú"
-        aria-expanded={isOpen}
-      >
-        <IconoMenuHamburguesa />
-      </button>
-      <aside
-        className={`bg-primary text-negro transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} xl:translate-x-0 transition-transform duration-300 ease-in-out xl:flex flex-col shrink-0 w-72 h-full min-h-screen fixed xl:sticky top-0 shadow-xl xl:shadow-none z-50 p-4 pt-6 overflow-y-auto`}
-      >
-        <ul className="mt-12 xl:mt-0">
-          {NAV_DATA.map((navItem) => (
-            <CollapsibleNavItem key={navItem.title} itemData={navItem} onLinkClick={closeMenu} />
-          ))}
-        </ul>
-      </aside>
-      {/* Overlay for mobile menu */}
-      {isOpen && (
-        <div className="fixed inset-0 bg-black opacity-50 xl:hidden z-40" onClick={closeMenu}></div>
-      )}
-    </>
-  );
-};
+// Cocinero: contenido e cocina
+const COCINERO_NAV: NavItemStructure[] = [
+  {
+    title: 'Gestión de Contenido',
+    children: [
+      {
+        title: 'Artículos',
+        subItems: [
+          { to: '/admin/articulos', label: 'Artículos Manufacturados' },
+          { to: '/admin/categorias-articulos', label: 'Categorías de Artículos' },
+          { to: '/admin/subcategorias-articulos', label: 'Subcategorías de Artículos' },
+        ],
+      },
+      {
+        title: 'Insumos',
+        subItems: [
+          { to: '/admin/insumos', label: 'Insumos' },
+          { to: '/admin/categorias-insumos', label: 'Categorías de Insumos' },
+          { to: '/admin/subcategorias-insumos', label: 'Subcategorías de Insumos' },
+          { to: '/admin/compra-insumos', label: 'Compra de Insumos' },
+          { to: '/admin/control-stock-insumos', label: 'Control Stock Insumos' },
+        ],
+      },
+      {
+        title: 'Promociones',
+        subItems: [{ to: '/admin/promociones', label: 'Promociones' }],
+      },
+    ],
+  },
+  {
+    title: 'Cocina',
+    subItems: [
+      { to: '/admin/cocina', label: 'Administrar Cocina' },
+      { to: '/admin/historial-cocina', label: 'Historial' },
+    ],
+  },
+];
