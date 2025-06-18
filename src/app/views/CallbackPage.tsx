@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useNavigate } from 'react-router-dom';
-import { syncUserWithBackend, loginAfterSync } from '../../shared/services/auth0SyncService';
+import { syncUserWithBackend, loginAfterSync } from '../../shared/services/authService';
 import { useUser } from '../../shared/providers/UserProvider';
 import axios from 'axios';
 

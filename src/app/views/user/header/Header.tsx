@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { CarritoContext } from '../../../../shared/providers/CarritoProvider';
 import { useProductStore } from '../../../../shared/providers/ProductProvider';
 import { useUser } from '../../../../shared/providers/UserProvider';
@@ -13,8 +13,9 @@ import { RegistroModal } from '../../../../modules/HU1_2_Registro_Login/componen
 import { LoginEmpleadoModal } from '../../../../modules/HU5_Login_Empleado/components/LoginEmpleadoModal';
 import { Buscador } from '../../../../modules/HU9_10_Landing_Busqueda/Buscador';
 import { useAuth0 } from '@auth0/auth0-react';
-import { syncUserWithBackend, loginAfterSync } from '../../../../shared/services/auth0SyncService';
+import { syncUserWithBackend, loginAfterSync } from '../../../../shared/services/authService';
 import { obtenerNombreRol } from '../../../../modules/HU6_Perfil_Empleado/logic';
+import BackButton from './BackButton';
 
 type Props = {
   onSearch?: (query: string | string[]) => void; // Modificado para aceptar string o string[]
@@ -47,6 +48,8 @@ export const Header = ({ onSearch }: Props) => {
   const totalItems =
     (carrito?.reduce?.((total, product) => total + (product?.cantidad ?? 0), 0) ?? 0) +
     (promocionesEnCarrito?.reduce?.((total, promo) => total + (promo?.cantidad ?? 0), 0) ?? 0);
+
+  const location = useLocation();
 
   const toggleLoginModal = () => {
     setIsLoginOpen(!isLoginOpen);
@@ -125,10 +128,13 @@ export const Header = ({ onSearch }: Props) => {
         className={`bg-primary sticky top-0 z-50 flex w-full text-primary-foreground py-4 shadow-md `}
       >
         <div className="container mx-auto flex items-center justify-between px-4 md:px-6 gap-12">
-          <Link to="/" className="flex items-center gap-4" onClick={handleLogoClick}>
-            <IconoLogoSaborcito />
-            <span className="text-2xl font-bold text-white">El Saborcito</span>
-          </Link>
+          <div className="flex items-center">
+            {location.pathname !== '/' && <BackButton />}
+            <Link to="/" className="flex items-center gap-4" onClick={handleLogoClick}>
+              <IconoLogoSaborcito />
+              <span className="text-2xl font-bold text-white">El Saborcito</span>
+            </Link>
+          </div>
 
           <div className="relative flex-1 max-w-md hidden md:block">
             {onSearch && <Buscador onSearch={onSearch} />}
@@ -262,6 +268,15 @@ export const Header = ({ onSearch }: Props) => {
                     >
                       Historial de Compras
                     </Link>
+                    {/* Mostrar solo si el usuario es ADMIN */}
+                    {user.rol === 'ADMIN' && (
+                      <Link
+                        to="/admin/empleados"
+                        className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+                      >
+                        Ir a Admin
+                      </Link>
+                    )}
                     <hr className="my-1 border-gray-200" />
                     <button
                       onClick={() => {

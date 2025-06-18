@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useCart } from '../../shared/hooks/useCart';
 import { CarritoContext } from '../../shared/providers/CarritoProvider';
 import { getAllFormaPagos, type FormaPago } from '../../shared/services/formaPagoService';
@@ -34,7 +34,8 @@ interface TipoEnvio {
   nombre: string;
 }
 
-const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, total }) => {
+const MetodoPagoModal: React.FC<MetodoPagoModalProps> = (props: MetodoPagoModalProps) => {
+  const { isOpen, onClose, total } = props;
   const { carrito, promocionesEnCarrito, clearCarrito } = useCart();
   const carritoContext = useContext(CarritoContext);
   const { user } = useUser();
@@ -376,7 +377,7 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = ({ isOpen, onClose, tota
   const irAlPerfil = () => {
     clearCarrito();
     cerrarModal();
-    window.location.href = '/cliente/mis-pedidos';
+    window.location.href = '/perfil';
   };
 
   if (!isOpen) return null;

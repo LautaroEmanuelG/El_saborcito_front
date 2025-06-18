@@ -1,40 +1,49 @@
+// src/index.tsx  (o donde tengas tu main)
 import { createRoot } from 'react-dom/client';
 import './app/styles/index.css';
-import { Web } from './app/views/user/Web.tsx';
+import { Web } from './app/views/user/Web';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { VistaCarrito } from './modules/HU11_12_Carrito_Confirmacion/VistaCarrito.tsx';
+import { VistaCarrito } from './modules/HU11_12_Carrito_Confirmacion/VistaCarrito';
 import { CarritoProvider } from './shared/providers/CarritoProvider';
-import { LayoutAdmin } from './app/layout/LayoutAdmin.tsx';
-import ProtectedRoute from './app/routes/ProtectedRoute.tsx';
-import { AppProviders } from './shared/providers/AppProviders.tsx';
-import { RankingProductos } from './modules/HU26_28_informes/components/RankingProductos.tsx';
-import ScreenArticulosManufacturados from './modules/HU22_CRUDArticulos/components/ScreenArticulosManufacturados.tsx';
+import { LayoutAdmin } from './app/layout/LayoutAdmin';
+import ProtectedRoute from './app/routes/ProtectedRoute';
+import { AppProviders } from './shared/providers/AppProviders';
+import { RankingProductos } from './modules/HU26_28_informes/components/RankingProductos';
+import ScreenArticulosManufacturados from './modules/HU22_CRUDArticulos/components/ScreenArticulosManufacturados';
 import ScreenInsumos from './modules/HU23_CRUDInsumos/components/ScreenInsumos';
-import { Cocina } from './app/views/admin/Cocina.tsx';
-import { HistorialCocina } from './app/views/admin/HistorialCocina.tsx';
-import MovimientosMonetarios from './modules/HU26_28_informes/components/MovimientosMonetarios.tsx';
-import { RankingCliente } from './modules/HU26_28_informes/components/RankingCliente.tsx';
+import { Cocina } from './app/views/admin/Cocina';
+import { HistorialCocina } from './app/views/admin/HistorialCocina';
+import MovimientosMonetarios from './modules/HU26_28_informes/components/MovimientosMonetarios';
+import { RankingCliente } from './modules/HU26_28_informes/components/RankingCliente';
 import ScreenCategoriasArticulos from './modules/HU21_CRUD_CategoriasArticulos/components/ScreenCategoriasArticulos';
 import ScreenCategoriaPadreArticulo from './modules/HU21_CRUD_CategoriasPadresArticulos/components/ScreenCategoriaPadreArticulo';
 import ScreenSubcategoriasInsumos from './modules/HU20_CRUD_SubcategoriasInsumos/components/ScreenSubcategoriasInsumos';
 import ScreenCategoriaPadreInsumo from './modules/HU20_CRUD_CategoriasPadresInsumos/components/ScreenCategoriaPadreInsumo';
 import ScreenPromociones from './modules/HU25_Promociones/components/ScreenPromociones';
-import { Recepcion } from './modules/HU14_Recepcion/components/Recepcion.tsx';
-import { Delivery } from './modules/HU16_Delivery/components/Delivery.tsx';
+import { Recepcion } from './modules/HU14_Recepcion/components/Recepcion';
+import { Delivery } from './modules/HU16_Delivery/components/Delivery';
 import ScreenCompraIngredientes from './modules/HU24_CompraIngredientes/components/ScreenCompraIngredientes';
 import { CallbackPage } from './app/views/CallbackPage.tsx';
 import { HistorialPedidosCliente } from './modules/HU13_MisPedidos/index.ts';
-import PedidoExitoso from './modules/HU11_12_Carrito_Confirmacion/components/PedidoExitoso';
 import { PerfilClienteDashboard } from './modules/HU3_Perfil_Cliente/components/PerfilClienteDashboard.tsx';
 import ScreenStockInsumos from './modules/HU25_ControlStockInsumos/components/ScreenStockInsumos';
 import { GestionEmpleados } from './modules/HU4_Registro_Empleado';
-import { PerfilEmpleadoDashboard } from './modules/HU6_Perfil_Empleado/components/PerfilEmpleadoDashboard.tsx';
-import GestionClientes from './app/views/admin/GestionClientes.tsx';
+import { PerfilEmpleadoDashboard } from './modules/HU6_Perfil_Empleado/components/PerfilEmpleadoDashboard';
+import GestionClientes from './app/views/admin/GestionClientes';
+import { Rol } from './types/Rol';
+
+// Definición de roles permitidos para cada sección
+const ADMIN = [Rol.ADMIN];
+const CAJERO = [Rol.ADMIN, Rol.CAJERO];
+const DELIVERY = [Rol.ADMIN, Rol.DELIVERY];
+const COCINERO = [Rol.ADMIN, Rol.COCINERO];
+const ALL_STAFF = [Rol.ADMIN, Rol.CAJERO, Rol.DELIVERY, Rol.COCINERO];
 
 createRoot(document.getElementById('root')!).render(
   <BrowserRouter>
     <AppProviders>
       <Routes>
+        {/* Rutas públicas */}
         <Route
           path="/"
           element={
@@ -51,106 +60,40 @@ createRoot(document.getElementById('root')!).render(
             </CarritoProvider>
           }
         />
+
+        {/* Dashboard Admin (Layout) */}
         <Route
           path="/admin"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={ALL_STAFF}>
               <LayoutAdmin />
             </ProtectedRoute>
           }
         >
           <Route
-            path="mis-pedidos"
-            element={
-              <CarritoProvider>
-                <HistorialPedidosCliente />
-              </CarritoProvider>
-            }
-          />
-          <Route
             path="recepcion"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={CAJERO}>
                 <Recepcion />
               </ProtectedRoute>
             }
           />
+
+          {/* Delivery: delivery, admin */}
           <Route
-            path="articulos"
+            path="delivery"
             element={
-              <ProtectedRoute>
-                <ScreenArticulosManufacturados />
+              <ProtectedRoute allowedRoles={DELIVERY}>
+                <Delivery />
               </ProtectedRoute>
             }
           />
-          <Route
-            path="subcategorias-articulos"
-            element={
-              <ProtectedRoute>
-                <ScreenCategoriasArticulos />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="reportes"
-            element={
-              <ProtectedRoute>
-                <RankingProductos />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="movimientos"
-            element={
-              <ProtectedRoute>
-                <MovimientosMonetarios />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="ranking-clientes"
-            element={
-              <ProtectedRoute>
-                <RankingCliente />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="informes/ranking-productos"
-            element={
-              <ProtectedRoute>
-                <RankingProductos />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="informes/ranking-clientes"
-            element={
-              <ProtectedRoute>
-                <RankingCliente />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="informes/movimientos-monetarios"
-            element={
-              <ProtectedRoute>
-                <MovimientosMonetarios />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="insumos"
-            element={
-              <ProtectedRoute>
-                <ScreenInsumos />
-              </ProtectedRoute>
-            }
-          />
+
+          {/* Cocina & Historial: cocinero, admin */}
           <Route
             path="cocina"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={COCINERO}>
                 <Cocina />
               </ProtectedRoute>
             }
@@ -158,55 +101,51 @@ createRoot(document.getElementById('root')!).render(
           <Route
             path="historial-cocina"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={COCINERO}>
                 <HistorialCocina />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Artículos / Categorías: cocinero, admin */}
+          <Route
+            path="articulos"
+            element={
+              <ProtectedRoute allowedRoles={COCINERO}>
+                <ScreenArticulosManufacturados />
               </ProtectedRoute>
             }
           />
           <Route
             path="categorias-articulos"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={COCINERO}>
                 <ScreenCategoriaPadreArticulo />
               </ProtectedRoute>
             }
           />
           <Route
-            path="subcategorias-insumos"
+            path="subcategorias-articulos"
             element={
-              <ProtectedRoute>
-                <ScreenSubcategoriasInsumos />
+              <ProtectedRoute allowedRoles={COCINERO}>
+                <ScreenCategoriasArticulos />
               </ProtectedRoute>
             }
           />
+
+          {/* Insumos / Compra / Control Stock: cocinero, admin */}
           <Route
-            path="categorias-insumos"
+            path="insumos"
             element={
-              <ProtectedRoute>
-                <ScreenCategoriaPadreInsumo />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="promociones"
-            element={
-              <ProtectedRoute>
-                <ScreenPromociones />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="delivery"
-            element={
-              <ProtectedRoute>
-                <Delivery />
+              <ProtectedRoute allowedRoles={COCINERO}>
+                <ScreenInsumos />
               </ProtectedRoute>
             }
           />
           <Route
             path="compra-insumos"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={COCINERO}>
                 <ScreenCompraIngredientes />
               </ProtectedRoute>
             }
@@ -214,15 +153,69 @@ createRoot(document.getElementById('root')!).render(
           <Route
             path="control-stock-insumos"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={COCINERO}>
                 <ScreenStockInsumos />
               </ProtectedRoute>
             }
           />
           <Route
+            path="categorias-insumos"
+            element={
+              <ProtectedRoute allowedRoles={COCINERO}>
+                <ScreenCategoriaPadreInsumo />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="subcategorias-insumos"
+            element={
+              <ProtectedRoute allowedRoles={COCINERO}>
+                <ScreenSubcategoriasInsumos />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Promociones: cocinero, admin */}
+          <Route
+            path="promociones"
+            element={
+              <ProtectedRoute allowedRoles={COCINERO}>
+                <ScreenPromociones />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Informes: sólo admin */}
+          <Route
+            path="informes/ranking-productos"
+            element={
+              <ProtectedRoute allowedRoles={ADMIN}>
+                <RankingProductos />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="informes/ranking-clientes"
+            element={
+              <ProtectedRoute allowedRoles={ADMIN}>
+                <RankingCliente />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="informes/movimientos-monetarios"
+            element={
+              <ProtectedRoute allowedRoles={ADMIN}>
+                <MovimientosMonetarios />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Gestión de personal: admin */}
+          <Route
             path="empleados"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={ADMIN}>
                 <GestionEmpleados />
               </ProtectedRoute>
             }
@@ -230,17 +223,21 @@ createRoot(document.getElementById('root')!).render(
           <Route
             path="clientes"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={ADMIN}>
                 <GestionClientes />
               </ProtectedRoute>
             }
           />
         </Route>
+
+        {/* OAuth callback & perfiles */}
         <Route path="/callback" element={<CallbackPage />} />
         <Route path="/pedido-exitoso" element={<PedidoExitoso />} />
         <Route path="/perfil" element={<PerfilClienteDashboard />} />
         <Route path="/empleado/perfil" element={<PerfilEmpleadoDashboard />} />
-        <Route path="*" element={<Navigate replace to="/" />} />
+
+        {/* catch-all */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AppProviders>
   </BrowserRouter>

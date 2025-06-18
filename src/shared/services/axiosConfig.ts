@@ -16,10 +16,10 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   (config) => {
     // Modificar la configuración de la solicitud antes de enviarla (por ejemplo, agregar token de autenticación)
-    // const token = localStorage.getItem('authToken');
-    // if (token) {
-    //   config.headers['Authorization'] = `Bearer ${token}`;
-    // }
+    const token = localStorage.getItem('token'); // Cambió de 'authToken' a 'token'
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => {
