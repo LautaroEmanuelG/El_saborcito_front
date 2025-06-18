@@ -4,6 +4,7 @@ import IconoLogoSaborcito from '../../../../assets/svgs/icons/IconoLogoSaborcito
 import { IconoCerrar } from '../../../../assets/svgs/icons/IconoCerrar';
 import { ModalConfirm } from '../../../../shared/components/utils/ModalConfirm';
 import { useEmpleado } from '../../../../shared/providers/EmpleadoProvider';
+import BackButton from './BackButton';
 
 export const HeaderAdmin = () => {
   const [hoverLogin, setHoverLogin] = useState(false);
@@ -24,10 +25,13 @@ export const HeaderAdmin = () => {
     <>
       <header className="bg-primary flex w-full h-22 text-primary-foreground py-4 shadow-md">
         <div className="container mx-auto flex items-center justify-between px-4 md:px-6">
-          <Link to="/admin/articulos" className="flex items-center gap-4">
-            <IconoLogoSaborcito />
-            <span className="text-2xl font-bold text-white">El Saborcito</span>
-          </Link>
+          <div className="flex items-center">
+            <BackButton />
+            <Link to="/admin/articulos" className="flex items-center gap-4">
+              <IconoLogoSaborcito />
+              <span className="text-2xl font-bold text-white">El Saborcito</span>
+            </Link>
+          </div>
 
           <div className="absolute top-4 right-14 md:right-4 md:flex items-center gap-4">
             <button
