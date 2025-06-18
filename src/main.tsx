@@ -70,7 +70,6 @@ createRoot(document.getElementById('root')!).render(
             </ProtectedRoute>
           }
         >
-          {/* Recepción: cajero, admin */}
           <Route
             path="recepcion"
             element={
