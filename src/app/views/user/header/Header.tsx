@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from 'react';
+import { useState, useContext, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { CarritoContext } from '../../../../shared/providers/CarritoProvider';
 import { useProductStore } from '../../../../shared/providers/ProductProvider';
@@ -36,6 +36,10 @@ export const Header = ({ onSearch }: Props) => {
     getAccessTokenSilently,
     logout: auth0Logout,
   } = useAuth0();
+
+  // Ref para evitar múltiples sincronizaciones
+  const syncingRef = useRef(false);
+  const logoutInProgressRef = useRef(false);
 
   const carritoContext = useContext(CarritoContext);
   if (!carritoContext) {
@@ -85,9 +89,49 @@ export const Header = ({ onSearch }: Props) => {
     toggleMenu(); // Cerrar menú
   };
 
+  // Función mejorada de logout que maneja Auth0 correctamente
+  const handleLogout = async () => {
+    logoutInProgressRef.current = true;
+
+    try {
+      // 1. Primero limpiar el estado local
+      logout();
+
+      // 2. Si el usuario estaba autenticado con Auth0, hacer logout de Auth0
+      if (isAuthenticated) {
+        await auth0Logout({
+          logoutParams: {
+            returnTo: window.location.origin,
+          },
+        });
+      }
+    } catch (error) {
+      console.error('Error durante logout:', error);
+    } finally {
+      logoutInProgressRef.current = false;
+    }
+  };
+
   useEffect(() => {
     const syncUser = async () => {
+      // No sincronizar si estamos en proceso de logout
+      if (logoutInProgressRef.current) {
+        return;
+      }
+
+      // No sincronizar si ya hay una sincronización en curso
+      if (syncingRef.current) {
+        return;
+      }
+
+      // No sincronizar si ya tenemos un usuario logueado y es el mismo
+      if (user && auth0User && user.email === auth0User.email) {
+        return;
+      }
+
       if (isAuthenticated && auth0User) {
+        syncingRef.current = true;
+
         try {
           const token = await getAccessTokenSilently();
 
@@ -103,20 +147,25 @@ export const Header = ({ onSearch }: Props) => {
         } catch (error: any) {
           console.error('Error sincronizando usuario con backend:', error);
           // Si hay un error, cerramos sesión
+          logoutInProgressRef.current = true;
           auth0Logout({ logoutParams: { returnTo: window.location.origin } });
+        } finally {
+          syncingRef.current = false;
         }
       }
     };
+
     syncUser();
-  }, [isAuthenticated, auth0User, getAccessTokenSilently, setUser, auth0Logout]);
+  }, [isAuthenticated, auth0User, getAccessTokenSilently, setUser, auth0Logout, user]);
 
   // Cerrar menú y redirigir al inicio si el usuario se desloguea
   useEffect(() => {
-    if (!user) {
+    if (!user && !logoutInProgressRef.current) {
       if (userMenuOpen) setUserMenuOpen(false);
+      if (menuOpen) setMenuOpen(false);
       navigate('/');
     }
-  }, [user, userMenuOpen, navigate]);
+  }, [user, userMenuOpen, menuOpen, navigate]);
 
   return (
     <>
@@ -200,7 +249,7 @@ export const Header = ({ onSearch }: Props) => {
                     <hr className="my-1 border-gray-200" />
                     <button
                       onClick={() => {
-                        logout();
+                        handleLogout();
                         setUserMenuOpen(false);
                       }}
                       className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
@@ -309,7 +358,7 @@ export const Header = ({ onSearch }: Props) => {
             </Link>
             <button
               onClick={() => {
-                logout();
+                handleLogout();
                 toggleMenu();
               }}
               className="block w-full text-left py-2 hover:bg-gray-700"

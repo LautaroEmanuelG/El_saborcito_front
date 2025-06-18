@@ -81,24 +81,20 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     localStorage.removeItem(USER_STORAGE_KEY);
     localStorage.removeItem(ULTIMA_ACTIVIDAD_KEY);
     localStorage.removeItem('userType');
+    localStorage.removeItem('user'); // También limpiar 'user' que se guarda en loginAfterSync
 
-    // 🔧 **LIMPIAR DATOS DE AUTENTICACIÓN DE EMPLEADOS**
-    // Solo limpiamos si es un empleado para no afectar usuarios normales
-    const isEmployee = localStorage.getItem('userType') === 'employee';
-    if (isEmployee) {
-      localStorage.removeItem('email');
-      localStorage.removeItem('token');
-      localStorage.removeItem('empleadoToken');
-      localStorage.removeItem('empleadoData');
-    }
+    // 🔧 **LIMPIAR DATOS DE AUTENTICACIÓN INDEPENDIENTEMENTE DEL TIPO**
+    // Limpiar tokens y datos de autenticación para todos los usuarios
+    localStorage.removeItem('email');
+    localStorage.removeItem('token');
+    localStorage.removeItem('empleadoToken');
+    localStorage.removeItem('empleadoData');
 
     setUserState(null);
     setIsEmployeeUser(false);
 
     // Usar la función de logout centralizada que maneja token y rol
-    authLogout();
-
-    // Auth0 logout se hace en authLogout, no aquí para evitar conflictos
+    authLogout(true); // skipRedirect = true para que Auth0 maneje la redirección
   }, []);
 
   const setUser = useCallback((usuario: Usuario | null) => {
@@ -159,7 +155,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
   // Sincronizar con el sistema de autenticación - solo observar, no limpiar
   useEffect(() => {
     const token = localStorage.getItem('token');
-    const storedEmail = localStorage.getItem('email'); // Corregido: usar 'email' en lugar de 'userEmail'
+    const storedEmail = localStorage.getItem('email');
 
     // Solo informar si hay inconsistencias, pero NO hacer logout automático
     if (user && (!token || !storedEmail)) {
@@ -167,6 +163,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
         hasUser: !!user,
         hasToken: !!token,
         hasEmail: !!storedEmail,
+        userEmail: user.email,
       });
       // NO hacer logout automático - dejar que el usuario o el sistema lo maneje
     }
