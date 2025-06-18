@@ -160,12 +160,10 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = (props: MetodoPagoModalP
       ];
 
       if (isOpen) {
-        console.log('🔄 Iniciando carga de tipos de envío...');
         setLoadingTiposEnvio(true);
 
         try {
           const data = await getAllTipoEnvios();
-          console.log('✅ Tipos de envío cargados desde API:', data);
 
           // Verificar que los datos sean válidos
           if (data && Array.isArray(data) && data.length > 0) {
@@ -176,7 +174,6 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = (props: MetodoPagoModalP
           }
         } catch (error) {
           console.error('❌ Error cargando tipos de envío:', error);
-          console.log('🔄 Usando tipos de envío de fallback:', tiposFallback);
           setTiposEnvio(tiposFallback);
         } finally {
           setLoadingTiposEnvio(false);
@@ -200,7 +197,6 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = (props: MetodoPagoModalP
         try {
           const data = await getAllFormaPagos();
           setFormasPago(data);
-          console.log('✅ Formas de pago cargadas:', data);
         } catch (error) {
           console.error('❌ Error cargando formas de pago:', error);
         } finally {
@@ -238,13 +234,6 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = (props: MetodoPagoModalP
     const tieneItems = tieneItemsEnCarrito(carrito, promocionesEnCarrito);
 
     if (!camposCompletos() || !puedeComprar || !tieneItems) {
-      console.log('❌ No se puede confirmar compra:', {
-        camposCompletos: camposCompletos(),
-        puedeComprar,
-        tieneItems,
-        carrito: carrito.length,
-        promociones: promocionesEnCarrito.length,
-      });
       return;
     }
 
@@ -294,14 +283,8 @@ const MetodoPagoModal: React.FC<MetodoPagoModalProps> = (props: MetodoPagoModalP
         ...domicilioData,
       };
 
-      // 🚀 LOG para debugging
-      console.log('=== DATOS DE PEDIDO PARA BACKEND ===');
-      console.log(JSON.stringify(pedidoData, null, 2));
-      console.log('=======================================');
-
       // Enviar pedido al backend
       const response = await createPedido(pedidoData);
-      console.log('✅ Pedido creado exitosamente:', response);
 
       // Procesar tiempo estimado del backend usando las utilidades de tiempo
       if (response?.pedido?.horasEstimadaFinalizacion) {

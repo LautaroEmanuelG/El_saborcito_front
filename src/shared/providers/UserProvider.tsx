@@ -71,7 +71,6 @@ export const UserProvider = ({ children }: UserProviderProps) => {
 
       // Verificar inactividad (45 minutos para clientes)
       if (tiempoInactividad > 45) {
-        console.log('Sesión de cliente cerrada por inactividad (45 minutos)');
         logout();
         return;
       }
