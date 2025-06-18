@@ -30,14 +30,18 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
     navigate(-1); // Navegar hacia atrás en el historial
   };
 
-  // Mostrar loading mientras se verifica la autenticación
+  // ⏳ **MOSTRAR LOADING - YA MANEJADO POR VercelLoadingHandler**
   if (isLoading) {
     return (
-      <LoadingSpinner message="Verificando permisos de acceso..." size="large" fullScreen={true} />
+      <LoadingSpinner
+        message="🔐 Verificando permisos de acceso..."
+        size="large"
+        fullScreen={true}
+      />
     );
   }
 
-  // Si no está autenticado, redirigir al home
+  // 🚫 **REDIRIGIR SI NO ESTÁ AUTENTICADO**
   if (!isAuthenticated) {
     return <Navigate to="/" state={{ from: location }} replace />;
   }

@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   cambiarContraseñaEmpleado,
   loginEmpleado,
@@ -9,6 +8,7 @@ import {
 import { EstadoLoginEmpleado, type Empleado } from '../model';
 import { useEmpleado } from '../../../shared/providers/EmpleadoProvider';
 import { useRoleRedirection } from '../../../shared/hooks/useRoleRedirection';
+import { useEmpleadoLogin } from '../../../shared/hooks/useEmpleadoLogin';
 import emailjs from 'emailjs-com';
 import { loginAdmin } from '../../../shared/services/authService';
 
@@ -29,10 +29,9 @@ export const LoginEmpleadoModal = ({ isOpen, onClose }: LoginEmpleadoModalProps)
   const [blockTime, setBlockTime] = useState(0);
   const [empleadoTemp, setEmpleadoTemp] = useState<Empleado | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-
-  const navigate = useNavigate();
-  const { setEmpleado, empleadoAutenticado } = useEmpleado();
-  const { redirectEmployeeByRole, redirectByRole } = useRoleRedirection();
+  const { empleadoAutenticado } = useEmpleado();
+  const { redirectByRole } = useRoleRedirection();
+  const { loginEmpleadoWithSync } = useEmpleadoLogin();
 
   useEffect(() => {
     let timer: number;
@@ -92,15 +91,13 @@ export const LoginEmpleadoModal = ({ isOpen, onClose }: LoginEmpleadoModalProps)
         setEstado(EstadoLoginEmpleado.ERROR);
         return;
       }
-
       if (isAdmin) {
         // Login como admin - usar endpoint /admin/login
         try {
           const response = await loginAdmin({ email, password: contraseña });
           if (response.token && response.usuario) {
-            localStorage.setItem('empleadoToken', response.token);
-            setEmpleado(response.usuario);
-            navigate('/admin');
+            // 🚀 **USAR NUEVO SISTEMA SINCRONIZADO PARA ADMIN**
+            await loginEmpleadoWithSync(response.usuario, response.token);
             handleCloseModal();
             return;
           }
@@ -120,10 +117,8 @@ export const LoginEmpleadoModal = ({ isOpen, onClose }: LoginEmpleadoModalProps)
           } else {
             setEstado(EstadoLoginEmpleado.EXITOSO);
             if (response.token && response.empleado) {
-              localStorage.setItem('empleadoToken', response.token);
-              setEmpleado(response.empleado);
-              // Usar la función centralizada de redirección
-              redirectEmployeeByRole(response.empleado);
+              // 🚀 **USAR NUEVO SISTEMA SINCRONIZADO PARA EMPLEADO**
+              await loginEmpleadoWithSync(response.empleado, response.token);
             }
             handleCloseModal();
           }
@@ -168,15 +163,11 @@ export const LoginEmpleadoModal = ({ isOpen, onClose }: LoginEmpleadoModalProps)
           currentPassword: contraseña,
           newPassword: nuevaContraseña,
           confirmPassword: confirmarContraseña,
-        });
-
-        // Contraseña cambiada exitosamente, hacer login automático
+        }); // Contraseña cambiada exitosamente, hacer login automático
         const loginResponse = await loginEmpleado({ email, password: nuevaContraseña });
         if (loginResponse.token && loginResponse.empleado) {
-          localStorage.setItem('empleadoToken', loginResponse.token);
-          setEmpleado(loginResponse.empleado);
-          // Usar la función centralizada de redirección
-          redirectEmployeeByRole(loginResponse.empleado);
+          // 🚀 **USAR NUEVO SISTEMA SINCRONIZADO DESPUÉS DE CAMBIO DE CONTRASEÑA**
+          await loginEmpleadoWithSync(loginResponse.empleado, loginResponse.token);
         }
       }
       handleCloseModal();

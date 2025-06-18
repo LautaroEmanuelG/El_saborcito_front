@@ -8,6 +8,8 @@ import { CarritoProvider } from './shared/providers/CarritoProvider';
 import { LayoutAdmin } from './app/layout/LayoutAdmin';
 import ProtectedRoute from './app/routes/ProtectedRoute';
 import { AppProviders } from './shared/providers/AppProviders';
+import { VercelLoadingHandler } from './shared/components/VercelLoadingHandler';
+import { useAuth } from './shared/hooks/useAuth';
 import { RankingProductos } from './modules/HU26_28_informes/components/RankingProductos';
 import ScreenArticulosManufacturados from './modules/HU22_CRUDArticulos/components/ScreenArticulosManufacturados';
 import ScreenInsumos from './modules/HU23_CRUDInsumos/components/ScreenInsumos';
@@ -40,9 +42,12 @@ const DELIVERY = [Rol.ADMIN, Rol.DELIVERY];
 const COCINERO = [Rol.ADMIN, Rol.COCINERO];
 const ALL_STAFF = [Rol.ADMIN, Rol.CAJERO, Rol.DELIVERY, Rol.COCINERO];
 
-createRoot(document.getElementById('root')!).render(
-  <BrowserRouter>
-    <AppProviders>
+// 🚀 **COMPONENTE PRINCIPAL CON MANEJO DE VERCEL**
+const AppRoutes = () => {
+  const { isLoading } = useAuth();
+
+  return (
+    <VercelLoadingHandler isAuthLoading={isLoading}>
       <Routes>
         {/* Rutas públicas */}
         <Route
@@ -61,7 +66,6 @@ createRoot(document.getElementById('root')!).render(
             </CarritoProvider>
           }
         />
-
         {/* Dashboard Admin (Layout) */}
         <Route
           path="/admin"
@@ -249,16 +253,21 @@ createRoot(document.getElementById('root')!).render(
             }
           />
         </Route>
-
         {/* OAuth callback & perfiles */}
         <Route path="/callback" element={<CallbackPage />} />
         <Route path="/pedido-exitoso" element={<PedidoExitoso />} />
         <Route path="/perfil" element={<PerfilClienteDashboard />} />
-        <Route path="/empleado/perfil" element={<PerfilEmpleadoDashboard />} />
-
-        {/* catch-all */}
+        <Route path="/empleado/perfil" element={<PerfilEmpleadoDashboard />} /> {/* catch-all */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+    </VercelLoadingHandler>
+  );
+};
+
+createRoot(document.getElementById('root')!).render(
+  <BrowserRouter>
+    <AppProviders>
+      <AppRoutes />
     </AppProviders>
   </BrowserRouter>
 );

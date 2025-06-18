@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
 import { Usuario } from '../../types/Usuario';
 import { logout as authLogout } from '../services/authService';
-import { useAuth0 } from '@auth0/auth0-react';
 
 interface UserContextType {
   user: Usuario | null;
@@ -9,6 +8,9 @@ interface UserContextType {
   logout: () => void;
   actualizarUltimaActividad: () => void;
   ultimaActividad: Date;
+  // 🚀 **NUEVAS FUNCIONES PARA SINCRONIZACIÓN DE EMPLEADOS**
+  syncFromEmpleado: (empleado: any) => void;
+  isEmployeeUser: boolean;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -21,7 +23,6 @@ const USER_STORAGE_KEY = 'user';
 const ULTIMA_ACTIVIDAD_KEY = 'ultimaActividad';
 
 export const UserProvider = ({ children }: UserProviderProps) => {
-  const { logout: auth0Logout, isAuthenticated: isAuth0Authenticated } = useAuth0();
   const [user, setUserState] = useState<Usuario | null>(() => {
     const storedUser = localStorage.getItem(USER_STORAGE_KEY);
     return storedUser ? JSON.parse(storedUser) : null;
@@ -30,27 +31,75 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     const stored = localStorage.getItem(ULTIMA_ACTIVIDAD_KEY);
     return stored ? new Date(stored) : new Date();
   });
+  const [isEmployeeUser, setIsEmployeeUser] = useState<boolean>(false);
+
+  // 🚀 **FUNCIÓN PARA SINCRONIZAR DESDE EMPLEADO**
+  const syncFromEmpleado = useCallback((empleado: any) => {
+    if (!empleado) {
+      setIsEmployeeUser(false);
+      return;
+    }
+
+    // Convertir datos de empleado a formato Usuario
+    const usuarioFromEmpleado: Usuario = {
+      id: empleado.id,
+      nombre: empleado.nombre,
+      apellido: empleado.apellido,
+      telefono: empleado.telefono || '',
+      email: empleado.email,
+      rol: empleado.rol, // ADMIN, CAJERO, COCINERO, DELIVERY
+      estado: empleado.activo ?? true,
+      fechaRegistro: empleado.fechaRegistro || new Date().toISOString(),
+    };
+
+    setUserState(usuarioFromEmpleado);
+    setIsEmployeeUser(true);
+
+    const ahora = new Date();
+    setUltimaActividad(ahora);
+
+    // Guardar en localStorage con prefix especial para empleados
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(usuarioFromEmpleado));
+    localStorage.setItem(ULTIMA_ACTIVIDAD_KEY, ahora.toISOString());
+    localStorage.setItem('userType', 'employee');
+
+    // 🔧 **SINCRONIZAR DATOS DE AUTENTICACIÓN PARA EMPLEADOS**
+    // Guardar email y token para evitar inconsistencias en la validación
+    const empleadoToken = localStorage.getItem('empleadoToken');
+    if (empleado.email) {
+      localStorage.setItem('email', empleado.email);
+    }
+    if (empleadoToken) {
+      localStorage.setItem('token', empleadoToken);
+    }
+
+    console.log('✅ Usuario sincronizado desde empleado:', usuarioFromEmpleado);
+  }, []);
 
   const logout = useCallback(() => {
-    // Limpiar datos del usuario local
+    // Limpiar todos los datos del usuario
     localStorage.removeItem(USER_STORAGE_KEY);
     localStorage.removeItem(ULTIMA_ACTIVIDAD_KEY);
-    setUserState(null);
+    localStorage.removeItem('userType');
 
-    // Si el usuario está autenticado con Auth0, hacer logout de Auth0
-    if (isAuth0Authenticated) {
-      // No hacer redirección manual, Auth0 se encarga
-      authLogout(true); // skipRedirect = true
-      auth0Logout({
-        logoutParams: {
-          returnTo: window.location.origin,
-        },
-      });
-    } else {
-      // Para usuarios no-Auth0, usar logout normal con redirección
-      authLogout(false);
+    // 🔧 **LIMPIAR DATOS DE AUTENTICACIÓN DE EMPLEADOS**
+    // Solo limpiamos si es un empleado para no afectar usuarios normales
+    const isEmployee = localStorage.getItem('userType') === 'employee';
+    if (isEmployee) {
+      localStorage.removeItem('email');
+      localStorage.removeItem('token');
+      localStorage.removeItem('empleadoToken');
+      localStorage.removeItem('empleadoData');
     }
-  }, [auth0Logout, isAuth0Authenticated]);
+
+    setUserState(null);
+    setIsEmployeeUser(false);
+
+    // Usar la función de logout centralizada que maneja token y rol
+    authLogout();
+
+    // Auth0 logout se hace en authLogout, no aquí para evitar conflictos
+  }, []);
 
   const setUser = useCallback((usuario: Usuario | null) => {
     setUserState(usuario);
@@ -88,7 +137,26 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     }, 60000); // Verificar cada minuto
 
     return () => clearInterval(interval);
-  }, [user, ultimaActividad, logout]); // Sincronizar con el sistema de autenticación - solo observar, no limpiar
+  }, [user, ultimaActividad, logout]);
+
+  // 🔄 **EFECTO PARA SINCRONIZAR CON EMPLEADO AL INICIAR**
+  useEffect(() => {
+    const userType = localStorage.getItem('userType');
+    const empleadoData = localStorage.getItem('empleadoData');
+
+    if (userType === 'employee' && empleadoData) {
+      try {
+        const empleado = JSON.parse(empleadoData);
+        syncFromEmpleado(empleado);
+        console.log('🔄 Sincronización inicial desde empleadoData');
+      } catch (error) {
+        console.error('Error al sincronizar empleado inicial:', error);
+        localStorage.removeItem('userType');
+      }
+    }
+  }, [syncFromEmpleado]);
+
+  // Sincronizar con el sistema de autenticación - solo observar, no limpiar
   useEffect(() => {
     const token = localStorage.getItem('token');
     const storedEmail = localStorage.getItem('email'); // Corregido: usar 'email' en lugar de 'userEmail'
@@ -110,6 +178,8 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     logout,
     actualizarUltimaActividad,
     ultimaActividad,
+    syncFromEmpleado,
+    isEmployeeUser,
   };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
