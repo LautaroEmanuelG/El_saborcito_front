@@ -7,7 +7,6 @@ import { VistaCarrito } from './modules/HU11_12_Carrito_Confirmacion/VistaCarrit
 import { CarritoProvider } from './shared/providers/CarritoProvider';
 import { LayoutAdmin } from './app/layout/LayoutAdmin';
 import ProtectedRoute from './app/routes/ProtectedRoute';
-import ProtectedCarrito from './app/routes/ProtectCarrito';
 import { AppProviders } from './shared/providers/AppProviders';
 import { RankingProductos } from './modules/HU26_28_informes/components/RankingProductos';
 import ScreenArticulosManufacturados from './modules/HU22_CRUDArticulos/components/ScreenArticulosManufacturados';
@@ -25,18 +24,20 @@ import { Recepcion } from './modules/HU14_Recepcion/components/Recepcion';
 import { Delivery } from './modules/HU16_Delivery/components/Delivery';
 import ScreenCompraIngredientes from './modules/HU24_CompraIngredientes/components/ScreenCompraIngredientes';
 import { CallbackPage } from './app/views/CallbackPage';
-import { HistorialPedidosCliente } from './modules/HU13_MisPedidos';
 import PedidoExitoso from './pages/PedidoExitoso';
 import { PerfilClienteDashboard } from './modules/HU3_Perfil_Cliente/components/PerfilClienteDashboard';
 import ScreenStockInsumos from './modules/HU25_ControlStockInsumos/components/ScreenStockInsumos';
 import { GestionEmpleados } from './modules/HU4_Registro_Empleado';
 import { PerfilEmpleadoDashboard } from './modules/HU6_Perfil_Empleado/components/PerfilEmpleadoDashboard';
 import GestionClientes from './app/views/admin/GestionClientes';
+import { Rol } from './types/Rol';
 
-const ADMIN = ['ADMIN'];
-const CAJERO = ['ADMIN', 'CAJERO'];
-const DELIVERY = ['ADMIN', 'DELIVERY'];
-const COCINERO = ['ADMIN', 'COCINERO'];
+// Definición de roles permitidos para cada sección
+const ADMIN = [Rol.ADMIN];
+const CAJERO = [Rol.ADMIN, Rol.CAJERO];
+const DELIVERY = [Rol.ADMIN, Rol.DELIVERY];
+const COCINERO = [Rol.ADMIN, Rol.COCINERO];
+const ALL_STAFF = [Rol.ADMIN, Rol.CAJERO, Rol.DELIVERY, Rol.COCINERO];
 
 createRoot(document.getElementById('root')!).render(
   <BrowserRouter>
@@ -64,7 +65,7 @@ createRoot(document.getElementById('root')!).render(
         <Route
           path="/admin"
           element={
-            <ProtectedRoute allowedRoles={[...ADMIN, ...CAJERO, ...DELIVERY, ...COCINERO]}>
+            <ProtectedRoute allowedRoles={ALL_STAFF}>
               <LayoutAdmin />
             </ProtectedRoute>
           }

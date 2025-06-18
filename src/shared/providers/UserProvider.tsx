@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
 import { Usuario } from '../../types/Usuario';
-import { useAuth0 } from '@auth0/auth0-react';
+import { logout as authLogout } from '../services/authService';
 
 interface UserContextType {
   user: Usuario | null;
@@ -16,33 +16,49 @@ interface UserProviderProps {
   children: ReactNode;
 }
 
+const USER_STORAGE_KEY = 'user';
+const ULTIMA_ACTIVIDAD_KEY = 'ultimaActividad';
+
 export const UserProvider = ({ children }: UserProviderProps) => {
   const [user, setUserState] = useState<Usuario | null>(() => {
-    const storedUser = localStorage.getItem('user');
+    const storedUser = localStorage.getItem(USER_STORAGE_KEY);
     return storedUser ? JSON.parse(storedUser) : null;
   });
-  const [ultimaActividad, setUltimaActividad] = useState<Date>(new Date());
+  const [ultimaActividad, setUltimaActividad] = useState<Date>(() => {
+    const stored = localStorage.getItem(ULTIMA_ACTIVIDAD_KEY);
+    return stored ? new Date(stored) : new Date();
+  });
 
-  const { logout: auth0Logout } = useAuth0();
   const logout = useCallback(() => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    // Limpiar datos del usuario (pero NO el token - eso lo hace authLogout)
+    localStorage.removeItem(USER_STORAGE_KEY);
+    localStorage.removeItem(ULTIMA_ACTIVIDAD_KEY);
     setUserState(null);
-    auth0Logout();
-  }, [auth0Logout]);
+
+    // Usar la función de logout centralizada que maneja token y rol
+    authLogout();
+
+    // Auth0 logout se hace en authLogout, no aquí para evitar conflictos
+  }, []);
 
   const setUser = useCallback((usuario: Usuario | null) => {
     setUserState(usuario);
+    const ahora = new Date();
+    setUltimaActividad(ahora);
+
     if (usuario) {
-      setUltimaActividad(new Date());
-      localStorage.setItem('user', JSON.stringify(usuario));
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(usuario));
+      localStorage.setItem(ULTIMA_ACTIVIDAD_KEY, ahora.toISOString());
     } else {
-      localStorage.removeItem('user');
+      localStorage.removeItem(USER_STORAGE_KEY);
+      localStorage.removeItem(ULTIMA_ACTIVIDAD_KEY);
     }
   }, []);
 
   const actualizarUltimaActividad = useCallback(() => {
-    setUltimaActividad(new Date());
+    const ahora = new Date();
+    setUltimaActividad(ahora);
+    localStorage.setItem(ULTIMA_ACTIVIDAD_KEY, ahora.toISOString());
   }, []);
 
   // Auto logout por inactividad de 45 minutos
@@ -62,7 +78,21 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     }, 60000); // Verificar cada minuto
 
     return () => clearInterval(interval);
-  }, [user, ultimaActividad, logout]);
+  }, [user, ultimaActividad, logout]); // Sincronizar con el sistema de autenticación - solo observar, no limpiar
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const storedEmail = localStorage.getItem('email'); // Corregido: usar 'email' en lugar de 'userEmail'
+
+    // Solo informar si hay inconsistencias, pero NO hacer logout automático
+    if (user && (!token || !storedEmail)) {
+      console.warn('⚠️ Inconsistencia detectada en autenticación:', {
+        hasUser: !!user,
+        hasToken: !!token,
+        hasEmail: !!storedEmail,
+      });
+      // NO hacer logout automático - dejar que el usuario o el sistema lo maneje
+    }
+  }, [user]);
 
   const value: UserContextType = {
     user,

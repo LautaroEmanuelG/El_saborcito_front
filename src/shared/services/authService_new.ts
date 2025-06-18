@@ -40,27 +40,16 @@ export const fetchRol = async (): Promise<AuthInfo> => {
   }
 };
 
-export const getRolFromStorage = (): Rol | null => {
-  const rol = localStorage.getItem(ROL_STORAGE_KEY);
-  return rol ? (rol as Rol) : null;
-};
-
-export const getEmailFromStorage = (): string | null => {
-  return localStorage.getItem(EMAIL_STORAGE_KEY);
-};
-
 export const getAuthInfoFromStorage = (): AuthInfo | null => {
-  const rol = getRolFromStorage();
-  const email = getEmailFromStorage();
+  const rol = localStorage.getItem(ROL_STORAGE_KEY) as Rol;
+  const email = localStorage.getItem(EMAIL_STORAGE_KEY);
   const token = localStorage.getItem(TOKEN_STORAGE_KEY);
 
-  if (!token || !rol || !email) {
-    return null;
-  }
+  if (!token) return null;
 
   return {
-    rol,
-    email,
+    rol: rol || Rol.CLIENTE, // Default fallback
+    email: email || '',
     isValidToken: true,
   };
 };
@@ -75,12 +64,9 @@ export const isAuthenticated = (): boolean => {
   return !!localStorage.getItem(TOKEN_STORAGE_KEY);
 };
 
-export const isFullyAuthenticated = (): boolean => {
-  const token = localStorage.getItem(TOKEN_STORAGE_KEY);
-  const rol = localStorage.getItem(ROL_STORAGE_KEY);
-  const email = localStorage.getItem(EMAIL_STORAGE_KEY);
-
-  return !!(token && rol && email);
+export const logout = (): void => {
+  clearAuthData();
+  window.location.href = '/';
 };
 
 // Interceptor para manejar tokens expirados
@@ -88,7 +74,6 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Token expirado o inválido
       clearAuthData();
       window.location.href = '/';
     }
@@ -96,18 +81,9 @@ axiosInstance.interceptors.response.use(
   }
 );
 
-// Logout completo del sistema
-export const logout = (): void => {
-  clearAuthData();
-  // Opcional: notificar al backend del logout
-  // axiosInstance.post('/auth/logout').catch(() => {});
-  window.location.href = '/';
-};
-
-// Registrar cliente usando el backend
+// Funciones de login y registro (mantener existentes)
 export const registrarCliente = async (dto: RegistroCliente): Promise<any> => {
   try {
-    // Validaciones previas
     if (!isValidEmail(dto.email)) {
       throw new Error('Formato de email inválido');
     }
@@ -128,7 +104,6 @@ export const registrarCliente = async (dto: RegistroCliente): Promise<any> => {
       }
     }
 
-    // Llamar al backend
     const response = await axiosInstance.post('/clientes/registro', dto);
     return response.data;
   } catch (error: any) {
@@ -143,11 +118,10 @@ export const registrarCliente = async (dto: RegistroCliente): Promise<any> => {
   }
 };
 
-// 🔐 Login manual
 export const loginManual = async (credentials: Login) => {
   try {
     const response = await axiosInstance.post('/clientes/login/manual', credentials);
-    return response.data; // Debería devolver token + datos del usuario
+    return response.data;
   } catch (error: any) {
     if (error.response?.status === 403) {
       const mensaje = error.response?.data?.message || error.response?.data?.error || '';
@@ -169,14 +143,12 @@ export const loginManual = async (credentials: Login) => {
   }
 };
 
-// 🌐 Login con Auth0
 export const loginConAuth0 = async (token: string, auth0User: any) => {
   try {
-    // Obtener el token de Auth0
     const response = await axiosInstance.post('/clientes/login/auth0', {
       token,
       email: auth0User.email,
-      sub: auth0User.sub, // ID único de Auth0
+      sub: auth0User.sub,
     });
     return response.data;
   } catch (error: any) {
@@ -193,7 +165,6 @@ export const loginConAuth0 = async (token: string, auth0User: any) => {
   }
 };
 
-// Sincronizar usuario con Auth0
 export const sincronizarUsuarioAuth0 = async (auth0User: any) => {
   try {
     const response = await axiosInstance.post('/clientes/auth0', {
@@ -212,39 +183,10 @@ export const sincronizarUsuarioAuth0 = async (auth0User: any) => {
   }
 };
 
-// Alias para mantener compatibilidad
-export const syncUserWithBackend = sincronizarUsuarioAuth0;
-
-// Login después de sincronización con Auth0
-export const loginAfterSync = async (token: string, user: any) => {
-  try {
-    const response = await axiosInstance.post('/clientes/login/auth0', {
-      token,
-      email: user.email,
-      auth0Id: user.sub,
-    });
-
-    // Guardar datos del usuario y token
-    localStorage.setItem('user', JSON.stringify(response.data.usuario));
-    localStorage.setItem(TOKEN_STORAGE_KEY, response.data.token);
-
-    return response.data;
-  } catch (error: any) {
-    if (error.response?.status === 400) {
-      throw new Error('Este usuario no se autentica con Auth0');
-    }
-    if (error.response?.status === 403) {
-      throw new Error('Usuario dado de baja');
-    }
-    throw error;
-  }
-};
-
-// 🔐 Login manual de admin
 export const loginAdmin = async (credentials: Login) => {
   try {
     const response = await axiosInstance.post('/admin/login', credentials);
-    return response.data; // Debería devolver token + datos del usuario
+    return response.data;
   } catch (error: any) {
     if (error.response?.status === 403) {
       throw new Error('Acceso denegado');
@@ -254,24 +196,4 @@ export const loginAdmin = async (credentials: Login) => {
     }
     throw new Error('Error en el servidor. Intente nuevamente');
   }
-};
-
-// Utilidades para autenticación
-
-export const shouldClearAuth = (error: any): boolean => {
-  if (!error) return false;
-
-  const errorMessage = error instanceof Error ? error.message : String(error);
-  const errorResponse = error?.response;
-
-  // Limpiar solo en casos específicos de autenticación fallida
-  return (
-    errorResponse?.status === 401 ||
-    errorResponse?.status === 403 ||
-    errorMessage.includes('token') ||
-    errorMessage.includes('unauthorized') ||
-    errorMessage.includes('forbidden') ||
-    errorMessage.includes('invalid token') ||
-    errorMessage.includes('expired')
-  );
 };

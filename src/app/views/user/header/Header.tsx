@@ -13,7 +13,7 @@ import { RegistroModal } from '../../../../modules/HU1_2_Registro_Login/componen
 import { LoginEmpleadoModal } from '../../../../modules/HU5_Login_Empleado/components/LoginEmpleadoModal';
 import { Buscador } from '../../../../modules/HU9_10_Landing_Busqueda/Buscador';
 import { useAuth0 } from '@auth0/auth0-react';
-import { syncUserWithBackend, loginAfterSync } from '../../../../shared/services/auth0SyncService';
+import { syncUserWithBackend, loginAfterSync } from '../../../../shared/services/authService';
 import { obtenerNombreRol } from '../../../../modules/HU6_Perfil_Empleado/logic';
 
 type Props = {
