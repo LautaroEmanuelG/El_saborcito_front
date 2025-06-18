@@ -105,11 +105,15 @@ axiosInstance.interceptors.response.use(
 );
 
 // Logout completo del sistema
-export const logout = (): void => {
+export const logout = (skipRedirect: boolean = false): void => {
   clearAuthData();
   // Opcional: notificar al backend del logout
   // axiosInstance.post('/auth/logout').catch(() => {});
-  window.location.href = '/';
+
+  // Solo redirigir si no estamos usando Auth0 (Auth0 maneja su propia redirección)
+  if (!skipRedirect) {
+    window.location.href = '/';
+  }
 };
 
 // Registrar cliente usando el backend
