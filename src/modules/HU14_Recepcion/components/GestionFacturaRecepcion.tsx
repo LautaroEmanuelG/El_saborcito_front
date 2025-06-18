@@ -31,7 +31,7 @@ export const GestionFacturaRecepcion: React.FC<GestionFacturaRecepcionProps> = (
         setFacturaInfo(factura);
       } catch (err) {
         // No mostrar error si no hay factura, es normal
-        console.log('No se encontró factura para este pedido');
+        console.error('No se encontró factura para este pedido:', err);
       } finally {
         setCargandoFactura(false);
       }

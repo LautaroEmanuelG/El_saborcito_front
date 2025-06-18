@@ -33,7 +33,6 @@ export const GestionFacturaCliente: React.FC<GestionFacturaClienteProps> = ({
         const factura = await consultarFactura(pedidoId);
         setFacturaInfo(factura);
       } catch (err) {
-        console.log('No se encontró factura para este pedido:', err);
       } finally {
         setCargandoFactura(false);
       }

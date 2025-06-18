@@ -48,22 +48,15 @@ const BtnCantidadPromocion: React.FC<BtnCantidadPromocionProps> = ({
     if (location.pathname === '/carrito') {
       // � **USAR VALIDACIÓN CENTRALIZADA**
       if (!canIncreasePromocion(promocion.id)) {
-        console.log(
-          `❌ No se puede agregar más de la promoción ${promocion.denominacion} - tiene productos problemáticos`
-        );
         return;
       }
 
       if (isAnalyzing) {
-        console.log('⏳ Análisis de promoción en curso, esperando...');
         return;
       }
 
-      console.log(`🎁 Agregando promoción ${promocion.denominacion} al carrito`);
-
       try {
         await addPromocionToCarrito(promocion, 1);
-        console.log(`✅ Promoción agregada exitosamente`);
       } catch (error) {
         console.error('Error al agregar promoción:', error);
       }

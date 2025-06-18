@@ -265,8 +265,6 @@ export const CarritoProvider: React.FC<{ children: ReactNode }> = ({ children })
       promocionId?: number;
       cantidad?: number;
     }) => {
-      console.log('🔄 Revirtiendo acción:', action);
-
       if (!action.type) return;
 
       switch (action.type) {
@@ -407,12 +405,10 @@ export const CarritoProvider: React.FC<{ children: ReactNode }> = ({ children })
     async (articuloId: number): Promise<boolean> => {
       try {
         setIsAnalyzing(true);
-        console.log(`🔮 Analizando si se puede agregar uno más del producto ID: ${articuloId}`);
 
         // Encontrar el producto en el carrito
         const productoEnCarrito = state.carrito.find((item) => item.id === articuloId);
         if (!productoEnCarrito) {
-          console.log('✅ Producto no está en carrito, se puede agregar');
           return true;
         }
 
@@ -446,15 +442,10 @@ export const CarritoProvider: React.FC<{ children: ReactNode }> = ({ children })
           return true;
         }
 
-        console.log(
-          `🔍 Analizando producción con ${todosLosArticulosParaAnalizar.length} productos...`
-        );
         const resultado = await analizarProduccion(todosLosArticulosParaAnalizar);
 
         // Si el análisis falla con cantidad+1, ajustar automáticamente
         if (!resultado.sePuedeProducirCompleto) {
-          console.log(`❌ No se puede producir con cantidad+1, ajustando automáticamente...`);
-
           if (resultado.productosConProblemas?.length > 0) {
             const problemaDelProducto = resultado.productosConProblemas.find(
               (problema: any) => problema.articuloId === articuloId
@@ -462,7 +453,6 @@ export const CarritoProvider: React.FC<{ children: ReactNode }> = ({ children })
 
             if (problemaDelProducto?.cantidadMaximaPosible !== undefined) {
               const cantidadMaxima = problemaDelProducto.cantidadMaximaPosible;
-              console.log(`🔧 Cantidad máxima posible: ${cantidadMaxima}`);
 
               // 🚀 **AUTO-AJUSTE AUTOMÁTICO: Colocar el máximo inmediatamente**
               setLimitacionesProduccion((prev) => ({
@@ -484,10 +474,6 @@ export const CarritoProvider: React.FC<{ children: ReactNode }> = ({ children })
                   'warning',
                   4000
                 );
-
-                console.log(
-                  `🔧 Cantidad ajustada automáticamente de ${productoEnCarrito.cantidad} a ${cantidadMaxima}`
-                );
               } else {
                 // Solo establecer la limitación para deshabilitar el botón "+"
                 mostrarNotificacion(
@@ -500,8 +486,6 @@ export const CarritoProvider: React.FC<{ children: ReactNode }> = ({ children })
           }
           return false;
         }
-
-        console.log('✅ Se puede agregar uno más');
         return true;
       } catch (error) {
         console.error('❌ Error en análisis predictivo:', error);

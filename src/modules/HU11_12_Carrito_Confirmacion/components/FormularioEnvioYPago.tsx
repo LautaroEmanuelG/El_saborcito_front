@@ -32,16 +32,6 @@ export const FormularioEnvioYPago: React.FC<FormularioEnvioYPagoProps> = ({
   loadingTiposEnvio,
   loadingFormasPago,
 }) => {
-  // Debug logging para verificar qué está pasando
-  console.log('🔍 FormularioEnvioYPago - Debug:', {
-    tiposEnvio,
-    tiposEnvioLength: tiposEnvio?.length,
-    loadingTiposEnvio,
-    formasPago,
-    formasPagoLength: formasPago?.length,
-    loadingFormasPago,
-  });
-
   const getNombreTipoEnvio = (nombre: string): string => {
     switch (nombre) {
       case 'DELIVERY':
