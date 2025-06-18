@@ -24,7 +24,7 @@ import { Delivery } from './modules/HU16_Delivery/components/Delivery.tsx';
 import ScreenCompraIngredientes from './modules/HU24_CompraIngredientes/components/ScreenCompraIngredientes';
 import { CallbackPage } from './app/views/CallbackPage.tsx';
 import { HistorialPedidosCliente } from './modules/HU13_MisPedidos/index.ts';
-import PedidoExitoso from './pages/PedidoExitoso.tsx';
+import PedidoExitoso from './modules/HU11_12_Carrito_Confirmacion/components/PedidoExitoso';
 import { PerfilClienteDashboard } from './modules/HU3_Perfil_Cliente/components/PerfilClienteDashboard.tsx';
 import ScreenStockInsumos from './modules/HU25_ControlStockInsumos/components/ScreenStockInsumos';
 import { GestionEmpleados } from './modules/HU4_Registro_Empleado';
