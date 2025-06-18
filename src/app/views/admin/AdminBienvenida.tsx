@@ -1,4 +1,3 @@
-import IconoUsuarioAdmin from '../../../assets/svgs/icons/IconoUsuarioAdmin';
 import IconoRecepcionGestion from '../../../assets/svgs/icons/IconoRecepcionGestion';
 import IconoInformesEstadisticos from '../../../assets/svgs/icons/IconoInformesEstadisticos';
 import IconoGestionContenido from '../../../assets/svgs/icons/IconoGestionContenido';

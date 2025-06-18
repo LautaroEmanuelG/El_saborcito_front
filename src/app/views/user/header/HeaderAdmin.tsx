@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import IconoLogoSaborcito from '../../../../assets/svgs/icons/IconoLogoSaborcito';
 import { IconoCerrar } from '../../../../assets/svgs/icons/IconoCerrar';
 import { ModalConfirm } from '../../../../shared/components/utils/ModalConfirm';
@@ -10,7 +10,6 @@ export const HeaderAdmin = () => {
   const [hoverLogin, setHoverLogin] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
   const { logoutEmpleado } = useEmpleado();
 
   const toggleLoginModal = () => {

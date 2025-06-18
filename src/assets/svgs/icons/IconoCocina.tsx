@@ -1,5 +1,3 @@
-import React from 'react';
-
 const IconoCocina = ({ className = '' }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"

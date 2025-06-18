@@ -6,7 +6,6 @@ export const Web = () => {
   // Usamos el hook personalizado para la funcionalidad de búsqueda
   // El ProductProvider ya se encarga de cargar los datos en el montaje
   const { searchTerm, handleSearch, handleCategoryFilter, filteredProducts } = useProductSearch('');
-
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 max-w-full">
       <Header onSearch={handleSearch} />

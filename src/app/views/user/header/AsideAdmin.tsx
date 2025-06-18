@@ -1,93 +1,48 @@
-import { useState } from 'react';
+// /shared/components/AsideAdmin.tsx
+import { useState, useEffect } from 'react';
 import CollapsibleNavItem from './CollapsibleNavItem';
 import IconoMenuHamburguesa from '../../../../assets/svgs/icons/IconoMenuHamburguesa';
-
-export interface SubItem {
-  to: string;
-  label: string;
-  hasActions?: boolean;
-}
-
-export interface NavItemStructure {
-  title: string;
-  subItems?: SubItem[];
-  children?: NavItemStructure[]; // Nuevo: permite submenús anidados
-}
-
-// Datos para la navegación del aside
-const NAV_DATA: NavItemStructure[] = [
-  {
-    title: 'Usuario',
-    subItems: [{ to: '/admin/mis-pedidos', label: 'Mis Pedidos' }],
-  },
-  {
-    title: 'Recepción y Gestión',
-    subItems: [
-      { to: '/admin/recepcion', label: 'Recepción de Pedidos' },
-      { to: '/admin/delivery', label: 'Delivery' },
-    ],
-  },
-  {
-    title: 'Informes estadísticos',
-    subItems: [
-      { to: '/admin/informes/ranking-productos', label: 'Ranking Producto' },
-      { to: '/admin/informes/ranking-clientes', label: 'Ranking Cliente' },
-      { to: '/admin/informes/movimientos-monetarios', label: 'Movimiento Monetario' },
-    ],
-  },
-  {
-    title: 'Gestión de Contenido',
-    children: [
-      {
-        title: 'Artículos',
-        subItems: [
-          { to: '/admin/articulos', label: 'Artículos Manufacturados' },
-          { to: '/admin/categorias-articulos', label: 'Categorías de Artículos' },
-          { to: '/admin/subcategorias-articulos', label: 'Subcategorías de Artículos' },
-        ],
-      },
-      {
-        title: 'Insumos',
-        subItems: [
-          { to: '/admin/insumos', label: 'Insumos' },
-          { to: '/admin/categorias-insumos', label: 'Categorías de Insumos' },
-          { to: '/admin/subcategorias-insumos', label: 'Subcategorías de Insumos' },
-          { to: '/admin/compra-insumos', label: 'Compra de Insumos' }, // Nuevo menú
-          { to: '/admin/control-stock-insumos', label: 'Control Stock Insumos' }, // NUEVO
-        ],
-      },
-      {
-        title: 'Promociones',
-        subItems: [{ to: '/admin/promociones', label: 'Promociones' }],
-      },
-    ],
-  },
-  {
-    title: 'Cocina',
-    subItems: [
-      { to: '/admin/cocina', label: 'Administrar Cocina' },
-      { to: '/admin/historial-cocina', label: 'Historial' },
-    ],
-  },
-  {
-    title: 'Gestión de Personal',
-    subItems: [
-      { to: '/admin/empleados', label: 'Empleados' },
-      { to: '/admin/clientes', label: 'Clientes' },
-    ],
-  },
-];
+import { NavItemStructure } from '../../../../shared/components/AsideAdmin/NavItemTypes';
+import { useAuth } from '../../../../shared/hooks/useAuth';
+import { getNavigationByRole } from '../../../../shared/config/navigationConfig';
+import { LoadingSpinner } from '../../../../shared/components/LoadingSpinner';
 
 export const AsideAdmin = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [navItems, setNavItems] = useState<NavItemStructure[]>([]);
+  const { rol, email, isLoading } = useAuth();
 
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
-  };
+  useEffect(() => {
+    if (rol && !isLoading) {
+      const navigation = getNavigationByRole(rol);
+      setNavItems(navigation);
+    } else {
+      setNavItems([]);
+    }
+  }, [rol, isLoading]);
 
-  const closeMenu = () => {
-    setIsOpen(false);
-  };
+  const toggleMenu = () => setIsOpen((o) => !o);
+  const closeMenu = () => setIsOpen(false);
+
+  // Mostrar loading si aún se está obteniendo el rol
+  if (isLoading) {
+    return (
+      <aside className="bg-primary text-negro xl:flex flex-col shrink-0 w-72 h-full min-h-screen fixed xl:sticky top-0 shadow-xl xl:shadow-none z-50 p-4 pt-6">
+        <LoadingSpinner message="Cargando menú..." size="medium" />
+      </aside>
+    );
+  }
+
+  // Si no hay rol o no hay navegación disponible
+  if (!rol || navItems.length === 0) {
+    return (
+      <aside className="bg-primary text-negro xl:flex flex-col shrink-0 w-72 h-full min-h-screen fixed xl:sticky top-0 shadow-xl xl:shadow-none z-50 p-4 pt-6">
+        <div className="flex items-center justify-center mt-12">
+          <p className="text-negro text-center">No hay opciones disponibles para tu perfil</p>
+        </div>
+      </aside>
+    );
+  }
 
   return (
     <>
@@ -102,13 +57,27 @@ export const AsideAdmin = () => {
       <aside
         className={`bg-primary text-negro transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} xl:translate-x-0 transition-transform duration-300 ease-in-out xl:flex flex-col shrink-0 w-72 h-full min-h-screen fixed xl:sticky top-0 shadow-xl xl:shadow-none z-50 p-4 pt-6 overflow-y-auto`}
       >
-        <ul className="mt-12 xl:mt-0">
-          {NAV_DATA.map((navItem) => (
+        {/* Mostrar información del usuario actual */}
+        <div className="mb-4 p-4 bg-primarydark rounded-lg">
+          <div className="text-sm font-medium text-negro mb-2">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs opacity-75">Perfil:</span>
+              <span className="px-2 py-1 bg-primary rounded-full text-xs font-bold">{rol}</span>
+            </div>
+            {email && (
+              <div className="text-xs opacity-75 truncate" title={email}>
+                👤 {email}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <ul className="mt-8 xl:mt-0">
+          {navItems.map((navItem) => (
             <CollapsibleNavItem key={navItem.title} itemData={navItem} onLinkClick={closeMenu} />
           ))}
         </ul>
       </aside>
-      {/* Overlay for mobile menu */}
       {isOpen && (
         <div className="fixed inset-0 bg-black opacity-50 xl:hidden z-40" onClick={closeMenu}></div>
       )}
