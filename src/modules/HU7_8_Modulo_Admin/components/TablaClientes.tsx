@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { ClienteDTO } from '../model';
 import IconoEditar from '../../../assets/svgs/icons/IconoEditar';
 import IconoEliminar from '../../../assets/svgs/icons/IconoEliminar';
