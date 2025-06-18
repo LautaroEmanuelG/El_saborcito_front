@@ -62,15 +62,23 @@ export const useAuth = (): UseAuthReturn => {
   };
 
   useEffect(() => {
-    // Solo ejecutar refreshAuth si estamos en una ruta protegida o si ya tenemos un token
+    // 🚀 **LÓGICA OPTIMIZADA PARA VERCEL**
     const currentPath = window.location.pathname;
 
-    if (!isPublicRoute(currentPath) || isAuthenticated()) {
-      refreshAuth();
-    } else {
-      // En rutas públicas sin token, solo marcar como no cargando
-      setIsLoading(false);
-    }
+    // Agregar delay adicional en rutas admin para Vercel
+    const isAdminRoute = currentPath.startsWith('/admin');
+    const delay = isAdminRoute ? 1500 : 500; // Más tiempo para rutas admin
+
+    const timer = setTimeout(() => {
+      if (!isPublicRoute(currentPath) || isAuthenticated()) {
+        refreshAuth();
+      } else {
+        // En rutas públicas sin token, solo marcar como no cargando
+        setIsLoading(false);
+      }
+    }, delay);
+
+    return () => clearTimeout(timer);
   }, []);
 
   return {
