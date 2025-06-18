@@ -63,14 +63,35 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     localStorage.setItem(ULTIMA_ACTIVIDAD_KEY, ahora.toISOString());
     localStorage.setItem('userType', 'employee');
 
+    // 🔧 **SINCRONIZAR DATOS DE AUTENTICACIÓN PARA EMPLEADOS**
+    // Guardar email y token para evitar inconsistencias en la validación
+    const empleadoToken = localStorage.getItem('empleadoToken');
+    if (empleado.email) {
+      localStorage.setItem('email', empleado.email);
+    }
+    if (empleadoToken) {
+      localStorage.setItem('token', empleadoToken);
+    }
+
     console.log('✅ Usuario sincronizado desde empleado:', usuarioFromEmpleado);
   }, []);
 
   const logout = useCallback(() => {
-    // Limpiar datos del usuario (pero NO el token - eso lo hace authLogout)
+    // Limpiar todos los datos del usuario
     localStorage.removeItem(USER_STORAGE_KEY);
     localStorage.removeItem(ULTIMA_ACTIVIDAD_KEY);
     localStorage.removeItem('userType');
+
+    // 🔧 **LIMPIAR DATOS DE AUTENTICACIÓN DE EMPLEADOS**
+    // Solo limpiamos si es un empleado para no afectar usuarios normales
+    const isEmployee = localStorage.getItem('userType') === 'employee';
+    if (isEmployee) {
+      localStorage.removeItem('email');
+      localStorage.removeItem('token');
+      localStorage.removeItem('empleadoToken');
+      localStorage.removeItem('empleadoData');
+    }
+
     setUserState(null);
     setIsEmployeeUser(false);
 
