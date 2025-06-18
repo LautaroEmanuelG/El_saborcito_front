@@ -33,6 +33,7 @@ import { PerfilEmpleadoDashboard } from './modules/HU6_Perfil_Empleado/component
 import GestionClientes from './app/views/admin/GestionClientes';
 import { AdminRedirect } from './app/views/admin/AdminRedirect';
 import { Rol } from './types/Rol';
+import { VercelAdminGuard } from './shared/components/VercelAdminGuard';
 import PedidoExitoso from './modules/HU11_12_Carrito_Confirmacion/components/PedidoExitoso.tsx';
 
 // Definición de roles permitidos para cada sección
@@ -92,7 +93,6 @@ const AppRoutes = () => {
               </ProtectedRoute>
             }
           />
-
           {/* Delivery: delivery, admin */}
           <Route
             path="delivery"
@@ -102,7 +102,6 @@ const AppRoutes = () => {
               </ProtectedRoute>
             }
           />
-
           {/* Cocina & Historial: cocinero, admin */}
           <Route
             path="cocina"
@@ -120,7 +119,6 @@ const AppRoutes = () => {
               </ProtectedRoute>
             }
           />
-
           {/* Artículos / Categorías: cocinero, admin */}
           <Route
             path="articulos"
@@ -146,7 +144,6 @@ const AppRoutes = () => {
               </ProtectedRoute>
             }
           />
-
           {/* Insumos / Compra / Control Stock: cocinero, admin */}
           <Route
             path="insumos"
@@ -188,7 +185,6 @@ const AppRoutes = () => {
               </ProtectedRoute>
             }
           />
-
           {/* Promociones: cocinero, admin */}
           <Route
             path="promociones"
@@ -197,59 +193,56 @@ const AppRoutes = () => {
                 <ScreenPromociones />
               </ProtectedRoute>
             }
-          />
-
+          />{' '}
           {/* Informes: sólo admin */}
           <Route
             path="informes/ranking-productos"
             element={
-              <ProtectedRoute allowedRoles={ADMIN}>
+              <VercelAdminGuard requiredRoles={ADMIN}>
                 <RankingProductos />
-              </ProtectedRoute>
+              </VercelAdminGuard>
             }
           />
           <Route
             path="informes/ranking-clientes"
             element={
-              <ProtectedRoute allowedRoles={ADMIN}>
+              <VercelAdminGuard requiredRoles={ADMIN}>
                 <RankingCliente />
-              </ProtectedRoute>
+              </VercelAdminGuard>
             }
           />
           <Route
             path="informes/movimientos-monetarios"
             element={
-              <ProtectedRoute allowedRoles={ADMIN}>
+              <VercelAdminGuard requiredRoles={ADMIN}>
                 <MovimientosMonetarios />
-              </ProtectedRoute>
+              </VercelAdminGuard>
             }
-          />
-
+          />{' '}
           {/* Gestión de personal: admin */}
           <Route
             path="empleados"
             element={
-              <ProtectedRoute allowedRoles={ADMIN}>
+              <VercelAdminGuard requiredRoles={ADMIN}>
                 <GestionEmpleados />
-              </ProtectedRoute>
+              </VercelAdminGuard>
             }
           />
           <Route
             path="clientes"
             element={
-              <ProtectedRoute allowedRoles={ADMIN}>
+              <VercelAdminGuard requiredRoles={ADMIN}>
                 <GestionClientes />
-              </ProtectedRoute>
+              </VercelAdminGuard>
             }
-          />
-
+          />{' '}
           {/* Ruta específica para historial del admin */}
           <Route
             path="historial"
             element={
-              <ProtectedRoute allowedRoles={ADMIN}>
+              <VercelAdminGuard requiredRoles={ADMIN}>
                 <HistorialCocina />
-              </ProtectedRoute>
+              </VercelAdminGuard>
             }
           />
         </Route>

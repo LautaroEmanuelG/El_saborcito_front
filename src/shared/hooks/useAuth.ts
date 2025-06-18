@@ -60,14 +60,20 @@ export const useAuth = (): UseAuthReturn => {
   const hasRole = (allowedRoles: Rol[]): boolean => {
     return authInfo !== null && allowedRoles.includes(authInfo.rol);
   };
-
   useEffect(() => {
     // 🚀 **LÓGICA OPTIMIZADA PARA VERCEL**
     const currentPath = window.location.pathname;
 
-    // Agregar delay adicional en rutas admin para Vercel
-    const isAdminRoute = currentPath.startsWith('/admin');
-    const delay = isAdminRoute ? 1500 : 500; // Más tiempo para rutas admin
+    // Agregar delay adicional basado en el tipo de ruta para Vercel
+    let delay = 500; // Default
+
+    if (currentPath.startsWith('/admin/empleados') || currentPath.startsWith('/admin/')) {
+      delay = 2500; // Mucho más tiempo para rutas admin complejas en Vercel
+    } else if (currentPath.startsWith('/empleado')) {
+      delay = 1500; // Tiempo moderado para rutas de empleado
+    } else if (currentPath === '/perfil') {
+      delay = 800; // Menos tiempo para perfil cliente
+    }
 
     const timer = setTimeout(() => {
       if (!isPublicRoute(currentPath) || isAuthenticated()) {
