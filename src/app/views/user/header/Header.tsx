@@ -191,6 +191,15 @@ export const Header = ({ onSearch }: Props) => {
                     >
                       Historial de Compras
                     </Link>
+                    {/* Mostrar solo si el usuario es ADMIN */}
+                    {user.rol === 'ADMIN' && (
+                      <Link
+                        to="/admin/empleados"
+                        className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+                      >
+                        Ir a Admin
+                      </Link>
+                    )}
                     <hr className="my-1 border-gray-200" />
                     <button
                       onClick={() => {
