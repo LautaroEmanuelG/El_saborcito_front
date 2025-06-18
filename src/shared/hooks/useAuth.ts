@@ -40,14 +40,12 @@ export const useAuth = (): UseAuthReturn => {
       setIsLoading(true);
       const newAuthInfo = await fetchRol();
       setAuthInfo(newAuthInfo);
-      console.log(`🔐 Usuario autenticado: ${newAuthInfo.email} con rol ${newAuthInfo.rol}`);
     } catch (error) {
       console.error('❌ Error al obtener información de autenticación:', error);
       // Solo limpiar si es un error real de autenticación Y estamos en una ruta protegida
       const currentPath = window.location.pathname;
 
       if (shouldClearAuth(error) && !isPublicRoute(currentPath)) {
-        console.log('🧹 Limpiando autenticación por error crítico');
         setAuthInfo(null);
         clearAuthData();
       } else {

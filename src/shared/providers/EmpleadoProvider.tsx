@@ -121,14 +121,12 @@ export const EmpleadoProvider = ({ children }: EmpleadoProviderProps) => {
 
       // Verificar inactividad (30 minutos)
       if (tiempoInactividad > 30) {
-        console.log('Sesión de empleado cerrada por inactividad');
         logoutEmpleado();
         return;
       }
 
       // Verificar horario de atención (ejemplo: 8:00 - 22:00)
       if (horaActual < 8 || horaActual > 22) {
-        console.log('Sesión de empleado cerrada por horario');
         logoutEmpleado();
         return;
       }

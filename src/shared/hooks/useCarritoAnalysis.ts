@@ -29,7 +29,6 @@ export const useCarritoAnalysis = (
 
       // Si ya se está analizando, no hacer nada
       if (isAnalyzingRef.current) {
-        console.log('⏳ Análisis ya en curso, saltando...');
         return null;
       }
 
@@ -42,7 +41,6 @@ export const useCarritoAnalysis = (
         timeoutRef.current = window.setTimeout(async () => {
           try {
             isAnalyzingRef.current = true;
-            console.log('🔍 Iniciando análisis de carrito con debounce');
             const resultado = await analizarCarrito();
 
             // Si el análisis falla y hay una acción para revertir
@@ -52,7 +50,6 @@ export const useCarritoAnalysis = (
               onRevertAction &&
               lastActionRef.current.type
             ) {
-              console.log('🔄 Revirtiendo última acción debido a problemas de stock');
               onRevertAction(lastActionRef.current);
             }
 
@@ -73,7 +70,6 @@ export const useCarritoAnalysis = (
   const analyzeNow = useCallback(
     async (action?: LastActionRef) => {
       if (isAnalyzingRef.current) {
-        console.log('⏳ Análisis ya en curso, esperando...');
         return null;
       }
 
@@ -84,7 +80,6 @@ export const useCarritoAnalysis = (
 
       try {
         isAnalyzingRef.current = true;
-        console.log('🔍 Análisis inmediato de carrito');
         const resultado = await analizarCarrito();
 
         // Si el análisis falla y hay una acción para revertir
@@ -94,7 +89,6 @@ export const useCarritoAnalysis = (
           onRevertAction &&
           lastActionRef.current.type
         ) {
-          console.log('🔄 Revirtiendo última acción debido a problemas de stock');
           onRevertAction(lastActionRef.current);
         }
 

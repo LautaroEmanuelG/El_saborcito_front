@@ -71,7 +71,6 @@ const PedidoExitoso: React.FC = () => {
   const info = status && mensajes[status] ? mensajes[status] : mensajes['approved'];
 
   useEffect(() => {
-    console.log('PedidoExitoso montado, status:', status);
     // Mostrar notificación según el estado
     mostrarNotificacion(
       info.notificacion,
@@ -84,7 +83,6 @@ const PedidoExitoso: React.FC = () => {
     }
     // Redirigir automáticamente después de 10 segundos
     const timer = setTimeout(() => {
-      console.log('Redirigiendo a la home...');
       navigate('/');
     }, 10000);
     return () => clearTimeout(timer);

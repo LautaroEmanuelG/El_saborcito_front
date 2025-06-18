@@ -300,7 +300,6 @@ export const RankingCliente = () => {
                         </thead>
                         <tbody>
                           {pedido.detalles.map((det) => {
-                            console.log('det :>> ', det);
                             return (
                               <tr
                                 key={det.id ?? `promo-${det.promocionOrigenId}`}

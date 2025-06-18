@@ -43,7 +43,6 @@ export const VistaCarrito = () => {
   useEffect(() => {
     // Solo analizar si hay items en el carrito y no se está analizando ya
     if (todosLosItems.length > 0 && !isAnalyzing) {
-      console.log('🔍 Analizando carrito inicial desde VistaCarrito');
       analizarCarrito();
     }
   }, []); // Solo ejecutar al montar el componente
@@ -87,25 +86,13 @@ export const VistaCarrito = () => {
   const handleComprarClick = async () => {
     // No permitir compra si se está analizando
     if (isAnalyzing) {
-      console.log('⏳ Análisis en curso, esperando...');
       return;
     }
 
     // 🔐 **VALIDAR AUTENTICACIÓN DEL USUARIO**
     if (!user) {
-      console.log('❌ Usuario no autenticado, abriendo modal de login');
       mostrarNotificacion('Debes iniciar sesión para realizar una compra', 'warning', 4000);
       setLoginModalOpen(true);
-      return;
-    }
-
-    // 🚫 Validar baja lógica del cliente
-    if (user.estado === false) {
-      mostrarNotificacion(
-        'No puedes realizar pedidos porque estás dado de baja. Contacta al administrador.',
-        'error',
-        6000
-      );
       return;
     }
 
