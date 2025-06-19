@@ -3,6 +3,7 @@ import { ReactNode, useEffect, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Rol } from '../../types/Rol';
 import { useAuth } from '../../shared/hooks/useAuth';
+import { useEmpleado } from '../../shared/providers/EmpleadoProvider';
 import { UnauthorizedAccess } from '../../shared/components/UnauthorizedAccess';
 import { LoadingSpinner } from '../../shared/components/LoadingSpinner';
 
@@ -15,15 +16,25 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { rol, isLoading, isAuthenticated, hasRole } = useAuth();
+  const { empleadoAutenticado } = useEmpleado();
   const [showUnauthorized, setShowUnauthorized] = useState(false);
 
+  // 🚀 **LÓGICA HÍBRIDA: DETECTAR EMPLEADOS Y CLIENTES**
+  const isEmployeeAuthenticated = !!empleadoAutenticado;
+  const empleadoRol = empleadoAutenticado?.rol;
+
+  // Determinar autenticación y rol final
+  const finalIsAuthenticated = isAuthenticated || isEmployeeAuthenticated;
+  const finalRol = empleadoRol || rol;
+  const finalHasRole = finalRol ? allowedRoles.includes(finalRol as Rol) : false;
+
   useEffect(() => {
-    if (!isLoading && isAuthenticated && rol && !hasRole(allowedRoles)) {
+    if (!isLoading && finalIsAuthenticated && finalRol && !finalHasRole) {
       setShowUnauthorized(true);
     } else {
       setShowUnauthorized(false);
     }
-  }, [isLoading, isAuthenticated, rol, allowedRoles, hasRole]);
+  }, [isLoading, finalIsAuthenticated, finalRol, allowedRoles, finalHasRole]);
 
   // Función para volver a la ruta anterior
   const handleGoBack = () => {
@@ -41,8 +52,8 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
     );
   }
 
-  // 🚫 **REDIRIGIR SI NO ESTÁ AUTENTICADO**
-  if (!isAuthenticated) {
+  // 🚫 **REDIRIGIR SI NO ESTÁ AUTENTICADO (EMPLEADO O CLIENTE)**
+  if (!finalIsAuthenticated) {
     return <Navigate to="/" state={{ from: location }} replace />;
   }
 
@@ -50,7 +61,7 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   if (showUnauthorized) {
     return (
       <UnauthorizedAccess
-        message={`Tu perfil actual (${rol}) no tiene permisos para acceder a esta sección.`}
+        message={`Tu perfil actual (${finalRol}) no tiene permisos para acceder a esta sección.`}
         requiredRoles={allowedRoles}
         onGoBack={handleGoBack}
       />

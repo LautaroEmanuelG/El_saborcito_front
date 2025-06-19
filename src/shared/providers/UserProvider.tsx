@@ -73,15 +73,12 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     localStorage.setItem(ULTIMA_ACTIVIDAD_KEY, ahora.toISOString());
     localStorage.setItem('userType', 'employee');
 
-    // 🔧 **SINCRONIZAR DATOS DE AUTENTICACIÓN PARA EMPLEADOS**
-    // Guardar email y token para evitar inconsistencias en la validación
-    const empleadoToken = localStorage.getItem('empleadoToken');
+    // 🔧 **SINCRONIZAR DATOS DE EMPLEADOS - SIN DUPLICAR TOKENS**
+    // Solo guardar email, NO duplicar el token (empleados usan empleadoToken)
     if (empleado.email) {
       localStorage.setItem('email', empleado.email);
     }
-    if (empleadoToken) {
-      localStorage.setItem('token', empleadoToken);
-    }
+    // ⚠️ NO copiar empleadoToken como token - son sistemas diferentes
 
     console.log('✅ Usuario sincronizado desde empleado:', usuarioFromEmpleado);
   }, []);
