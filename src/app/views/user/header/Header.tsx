@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from 'react';
+import { useState, useContext, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { CarritoContext } from '../../../../shared/providers/CarritoProvider';
 import { useProductStore } from '../../../../shared/providers/ProductProvider';
@@ -14,6 +14,7 @@ import { Buscador } from '../../../../modules/HU9_10_Landing_Busqueda/Buscador';
 import { useAuth0 } from '@auth0/auth0-react';
 import { syncUserWithBackend, loginAfterSync } from '../../../../shared/services/authService';
 import BackButton from './BackButton';
+import { useNotificacion } from '../../../../shared/hooks/useNotificacion';
 
 type Props = {
   onSearch?: (query: string | string[]) => void; // Modificado para aceptar string o string[]
@@ -30,12 +31,17 @@ export const Header = ({ onSearch }: Props) => {
 
   const { user, setUser, logout } = useUser();
   const navigate = useNavigate();
+  const { mostrarNotificacion } = useNotificacion();
   const {
     user: auth0User,
     isAuthenticated,
     getAccessTokenSilently,
     logout: auth0Logout,
   } = useAuth0();
+
+  // Ref para evitar múltiples sincronizaciones
+  const syncingRef = useRef(false);
+  const logoutInProgressRef = useRef(false);
 
   const carritoContext = useContext(CarritoContext);
   if (!carritoContext) {
@@ -85,9 +91,49 @@ export const Header = ({ onSearch }: Props) => {
     toggleMenu(); // Cerrar menú
   };
 
+  // Función mejorada de logout que maneja Auth0 correctamente
+  const handleLogout = async () => {
+    logoutInProgressRef.current = true;
+
+    try {
+      // 1. Primero limpiar el estado local
+      logout();
+
+      // 2. Si el usuario estaba autenticado con Auth0, hacer logout de Auth0
+      if (isAuthenticated) {
+        await auth0Logout({
+          logoutParams: {
+            returnTo: window.location.origin,
+          },
+        });
+      }
+    } catch (error) {
+      console.error('Error durante logout:', error);
+    } finally {
+      logoutInProgressRef.current = false;
+    }
+  };
+
   useEffect(() => {
     const syncUser = async () => {
+      // No sincronizar si estamos en proceso de logout
+      if (logoutInProgressRef.current) {
+        return;
+      }
+
+      // No sincronizar si ya hay una sincronización en curso
+      if (syncingRef.current) {
+        return;
+      }
+
+      // No sincronizar si ya tenemos un usuario logueado y es el mismo
+      if (user && auth0User && user.email === auth0User.email) {
+        return;
+      }
+
       if (isAuthenticated && auth0User) {
+        syncingRef.current = true;
+
         try {
           const token = await getAccessTokenSilently();
 
@@ -103,20 +149,25 @@ export const Header = ({ onSearch }: Props) => {
         } catch (error: any) {
           console.error('Error sincronizando usuario con backend:', error);
           // Si hay un error, cerramos sesión
+          logoutInProgressRef.current = true;
           auth0Logout({ logoutParams: { returnTo: window.location.origin } });
+        } finally {
+          syncingRef.current = false;
         }
       }
     };
+
     syncUser();
-  }, [isAuthenticated, auth0User, getAccessTokenSilently, setUser, auth0Logout]);
+  }, [isAuthenticated, auth0User, getAccessTokenSilently, setUser, auth0Logout, user]);
 
   // Cerrar menú y redirigir al inicio si el usuario se desloguea
   useEffect(() => {
-    if (!user) {
+    if (!user && !logoutInProgressRef.current) {
       if (userMenuOpen) setUserMenuOpen(false);
+      if (menuOpen) setMenuOpen(false);
       navigate('/');
     }
-  }, [user, userMenuOpen, navigate]);
+  }, [user, userMenuOpen, menuOpen, navigate]);
 
   return (
     <>
@@ -173,34 +224,77 @@ export const Header = ({ onSearch }: Props) => {
 
                 {userMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
-                    <Link
-                      to="/perfil"
-                      className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
-                      onClick={() => setUserMenuOpen(false)}
-                    >
-                      Mi Perfil
-                    </Link>
-                    <Link
-                      to="/perfil"
-                      state={{ activeView: 'pedidos' }}
-                      className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
-                      onClick={() => setUserMenuOpen(false)}
-                    >
-                      Historial de Compras
-                    </Link>
-                    {/* Mostrar solo si el usuario es ADMIN */}
-                    {user.rol === 'ADMIN' && (
-                      <Link
-                        to="/admin/empleados"
-                        className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
-                      >
-                        Ir a Admin
-                      </Link>
+                    {/* 🔐 **MENÚ CONDICIONAL SEGÚN TIPO DE USUARIO** */}
+                    {user.rol === 'CLIENTE' ? (
+                      <>
+                        {/* Opciones para CLIENTES */}
+                        <Link
+                          to="/perfil"
+                          className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+                          onClick={() => setUserMenuOpen(false)}
+                        >
+                          Mi Perfil
+                        </Link>
+                        <Link
+                          to="/perfil"
+                          state={{ activeView: 'pedidos' }}
+                          className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+                          onClick={() => setUserMenuOpen(false)}
+                        >
+                          Historial de Compras
+                        </Link>
+                      </>
+                    ) : (
+                      <>
+                        {/* Opciones para EMPLEADOS */}
+                        <Link
+                          to="/empleado/perfil"
+                          className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+                          onClick={() => setUserMenuOpen(false)}
+                        >
+                          Mi Perfil
+                        </Link>
+                        {/* Mostrar área de trabajo solo para roles específicos */}
+                        {user.rol && !['ADMIN', 'CLIENTE'].includes(user.rol) && (
+                          <button
+                            onClick={() => {
+                              setUserMenuOpen(false);
+                              // Navegar según el rol
+                              switch (user.rol) {
+                                case 'CAJERO':
+                                  navigate('/admin/recepcion');
+                                  break;
+                                case 'COCINERO':
+                                  navigate('/admin/cocina');
+                                  break;
+                                case 'DELIVERY':
+                                  navigate('/admin/delivery');
+                                  break;
+                                default:
+                                  navigate('/admin');
+                              }
+                            }}
+                            className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+                          >
+                            Mi Área de Trabajo
+                          </button>
+                        )}
+                        {/* Mostrar panel admin solo para ADMIN */}
+                        {user.rol === 'ADMIN' && (
+                          <Link
+                            to="/admin/empleados"
+                            className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+                            onClick={() => setUserMenuOpen(false)}
+                          >
+                            Panel de Admin
+                          </Link>
+                        )}
+                      </>
                     )}
                     <hr className="my-1 border-gray-200" />
                     <button
                       onClick={() => {
-                        logout();
+                        handleLogout();
                         setUserMenuOpen(false);
                       }}
                       className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
@@ -232,8 +326,20 @@ export const Header = ({ onSearch }: Props) => {
             )}
 
             {window.location.pathname !== '/carrito' && totalItems > 0 ? (
-              <Link
-                to="/carrito"
+              <button
+                onClick={() => {
+                  // 🔐 **VALIDAR AUTENTICACIÓN DEL USUARIO**
+                  if (!user) {
+                    mostrarNotificacion(
+                      'Debes iniciar sesión para acceder al carrito',
+                      'warning',
+                      4000
+                    );
+                    setIsLoginOpen(true);
+                    return;
+                  }
+                  navigate('/carrito');
+                }}
                 className="relative flex items-center justify-center gap-4 w-10 h-10 rounded-full hover:bg-blanco"
                 onMouseEnter={() => setHoverCarrito(true)}
                 onMouseLeave={() => setHoverCarrito(false)}
@@ -242,7 +348,7 @@ export const Header = ({ onSearch }: Props) => {
                 <div className="absolute text-blanco -top-3 -right-3 bg-primary text-primary-foreground rounded-full px-2 py-1 text-xs font-bold hover:bg-blanco hover:text-primary ">
                   {totalItems}
                 </div>
-              </Link>
+              </button>
             ) : null}
           </div>
 
@@ -296,20 +402,72 @@ export const Header = ({ onSearch }: Props) => {
               )}
               <span className="text-lg font-semibold">{user.nombre}</span>
             </div>
-            <Link to="/perfil" className="block py-2 hover:bg-gray-700" onClick={toggleMenu}>
-              Mi Perfil
-            </Link>
-            <Link
-              to="/perfil"
-              state={{ activeView: 'pedidos' }}
-              className="block py-2 hover:bg-gray-700"
-              onClick={toggleMenu}
-            >
-              Historial de Compras
-            </Link>
+            {/* 🔐 **MENÚ MÓVIL CONDICIONAL SEGÚN TIPO DE USUARIO** */}
+            {user.rol === 'CLIENTE' ? (
+              <>
+                {/* Opciones para CLIENTES */}
+                <Link to="/perfil" className="block py-2 hover:bg-gray-700" onClick={toggleMenu}>
+                  Mi Perfil
+                </Link>
+                <Link
+                  to="/perfil"
+                  state={{ activeView: 'pedidos' }}
+                  className="block py-2 hover:bg-gray-700"
+                  onClick={toggleMenu}
+                >
+                  Historial de Compras
+                </Link>
+              </>
+            ) : (
+              <>
+                {/* Opciones para EMPLEADOS */}
+                <Link
+                  to="/empleado/perfil"
+                  className="block py-2 hover:bg-gray-700"
+                  onClick={toggleMenu}
+                >
+                  Mi Perfil
+                </Link>
+                {/* Mostrar área de trabajo solo para roles específicos */}
+                {user.rol && !['ADMIN', 'CLIENTE'].includes(user.rol) && (
+                  <button
+                    onClick={() => {
+                      toggleMenu();
+                      // Navegar según el rol
+                      switch (user.rol) {
+                        case 'CAJERO':
+                          navigate('/admin/recepcion');
+                          break;
+                        case 'COCINERO':
+                          navigate('/admin/cocina');
+                          break;
+                        case 'DELIVERY':
+                          navigate('/admin/delivery');
+                          break;
+                        default:
+                          navigate('/admin');
+                      }
+                    }}
+                    className="block w-full text-left py-2 hover:bg-gray-700"
+                  >
+                    Mi Área de Trabajo
+                  </button>
+                )}
+                {/* Mostrar panel admin solo para ADMIN */}
+                {user.rol === 'ADMIN' && (
+                  <Link
+                    to="/admin/empleados"
+                    className="block py-2 hover:bg-gray-700"
+                    onClick={toggleMenu}
+                  >
+                    Panel de Admin
+                  </Link>
+                )}
+              </>
+            )}
             <button
               onClick={() => {
-                logout();
+                handleLogout();
                 toggleMenu();
               }}
               className="block w-full text-left py-2 hover:bg-gray-700"

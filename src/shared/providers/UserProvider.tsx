@@ -24,14 +24,24 @@ const ULTIMA_ACTIVIDAD_KEY = 'ultimaActividad';
 
 export const UserProvider = ({ children }: UserProviderProps) => {
   const [user, setUserState] = useState<Usuario | null>(() => {
+    // 🔄 **INICIALIZACIÓN MEJORADA DESDE LOCALSTORAGE**
     const storedUser = localStorage.getItem(USER_STORAGE_KEY);
-    return storedUser ? JSON.parse(storedUser) : null;
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      console.log('🔄 Usuario recuperado desde localStorage:', parsedUser);
+      return parsedUser;
+    }
+    return null;
   });
   const [ultimaActividad, setUltimaActividad] = useState<Date>(() => {
     const stored = localStorage.getItem(ULTIMA_ACTIVIDAD_KEY);
     return stored ? new Date(stored) : new Date();
   });
-  const [isEmployeeUser, setIsEmployeeUser] = useState<boolean>(false);
+  const [isEmployeeUser, setIsEmployeeUser] = useState<boolean>(() => {
+    // 🔄 **DETECTAR SI ES EMPLEADO DESDE LOCALSTORAGE**
+    const userType = localStorage.getItem('userType');
+    return userType === 'employee';
+  });
 
   // 🚀 **FUNCIÓN PARA SINCRONIZAR DESDE EMPLEADO**
   const syncFromEmpleado = useCallback((empleado: any) => {
@@ -81,24 +91,20 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     localStorage.removeItem(USER_STORAGE_KEY);
     localStorage.removeItem(ULTIMA_ACTIVIDAD_KEY);
     localStorage.removeItem('userType');
+    localStorage.removeItem('user'); // También limpiar 'user' que se guarda en loginAfterSync
 
-    // 🔧 **LIMPIAR DATOS DE AUTENTICACIÓN DE EMPLEADOS**
-    // Solo limpiamos si es un empleado para no afectar usuarios normales
-    const isEmployee = localStorage.getItem('userType') === 'employee';
-    if (isEmployee) {
-      localStorage.removeItem('email');
-      localStorage.removeItem('token');
-      localStorage.removeItem('empleadoToken');
-      localStorage.removeItem('empleadoData');
-    }
+    // 🔧 **LIMPIAR DATOS DE AUTENTICACIÓN INDEPENDIENTEMENTE DEL TIPO**
+    // Limpiar tokens y datos de autenticación para todos los usuarios
+    localStorage.removeItem('email');
+    localStorage.removeItem('token');
+    localStorage.removeItem('empleadoToken');
+    localStorage.removeItem('empleadoData');
 
     setUserState(null);
     setIsEmployeeUser(false);
 
     // Usar la función de logout centralizada que maneja token y rol
-    authLogout();
-
-    // Auth0 logout se hace en authLogout, no aquí para evitar conflictos
+    authLogout(true); // skipRedirect = true para que Auth0 maneje la redirección
   }, []);
 
   const setUser = useCallback((usuario: Usuario | null) => {
@@ -144,22 +150,31 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     const userType = localStorage.getItem('userType');
     const empleadoData = localStorage.getItem('empleadoData');
 
-    if (userType === 'employee' && empleadoData) {
+    console.log('🔍 Verificando sincronización inicial:', {
+      userType,
+      hasEmpleadoData: !!empleadoData,
+      currentUser: user,
+      isEmployeeUser,
+    });
+
+    // Solo sincronizar si es empleado Y no tenemos usuario actual O el usuario actual no tiene rol
+    if (userType === 'employee' && empleadoData && (!user || !user.rol)) {
       try {
         const empleado = JSON.parse(empleadoData);
+        console.log('🔄 Sincronizando desde empleadoData:', empleado);
         syncFromEmpleado(empleado);
-        console.log('🔄 Sincronización inicial desde empleadoData');
       } catch (error) {
-        console.error('Error al sincronizar empleado inicial:', error);
+        console.error('❌ Error al sincronizar empleado inicial:', error);
         localStorage.removeItem('userType');
+        localStorage.removeItem('empleadoData');
       }
     }
-  }, [syncFromEmpleado]);
+  }, [syncFromEmpleado, user, isEmployeeUser]);
 
   // Sincronizar con el sistema de autenticación - solo observar, no limpiar
   useEffect(() => {
     const token = localStorage.getItem('token');
-    const storedEmail = localStorage.getItem('email'); // Corregido: usar 'email' en lugar de 'userEmail'
+    const storedEmail = localStorage.getItem('email');
 
     // Solo informar si hay inconsistencias, pero NO hacer logout automático
     if (user && (!token || !storedEmail)) {
@@ -167,6 +182,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
         hasUser: !!user,
         hasToken: !!token,
         hasEmail: !!storedEmail,
+        userEmail: user.email,
       });
       // NO hacer logout automático - dejar que el usuario o el sistema lo maneje
     }
