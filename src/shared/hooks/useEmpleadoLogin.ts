@@ -33,8 +33,10 @@ export const useEmpleadoLogin = () => {
         // 4. Esperar un frame para asegurar que los providers se actualicen
         await new Promise((resolve) => requestAnimationFrame(resolve));
 
-        // 5. Redireccionar según el rol
-        redirectEmpleadoByRole(empleadoData);
+        // 5. Redireccionar según el rol con un pequeño delay adicional
+        setTimeout(() => {
+          redirectEmpleadoByRole(empleadoData);
+        }, 100);
 
         console.log('✅ Login de empleado completado exitosamente');
       } catch (error) {
@@ -58,23 +60,28 @@ export const useEmpleadoLogin = () => {
 
       console.log('🎯 Redirigiendo empleado según rol:', empleado.rol);
 
+      let targetRoute = '';
       switch (empleado.rol) {
         case 'ADMIN':
-          navigate('/admin/historial');
+          targetRoute = '/admin/historial';
           break;
         case 'CAJERO':
-          navigate('/admin/recepcion');
+          targetRoute = '/admin/recepcion';
           break;
         case 'COCINERO':
-          navigate('/admin/cocina');
+          targetRoute = '/admin/cocina';
           break;
         case 'DELIVERY':
-          navigate('/admin/delivery');
+          targetRoute = '/admin/delivery';
           break;
         default:
           console.warn('⚠️ Rol no reconocido:', empleado.rol);
-          navigate('/admin');
+          targetRoute = '/admin';
       }
+
+      console.log('🚀 Navegando a:', targetRoute);
+      navigate(targetRoute, { replace: true });
+      console.log('✅ Navegación ejecutada a:', targetRoute);
     },
     [navigate]
   );

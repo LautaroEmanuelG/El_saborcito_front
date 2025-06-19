@@ -52,7 +52,7 @@ export const LoginEmpleadoModal = ({ isOpen, onClose }: LoginEmpleadoModalProps)
     return () => clearInterval(timer);
   }, [isBlocked, blockTime]);
 
-  // Función personalizada para manejar el cierre del modal y redirección
+  // Función personalizada para manejar el cierre del modal
   const handleCloseModal = () => {
     // Limpiar estados del modal
     setEmail('');
@@ -67,14 +67,8 @@ export const LoginEmpleadoModal = ({ isOpen, onClose }: LoginEmpleadoModalProps)
     // Cerrar el modal
     onClose();
 
-    // Verificar si hay un empleado autenticado después de un breve delay
-    // para permitir que el estado se actualice
-    setTimeout(() => {
-      const empleadoData = localStorage.getItem('empleadoData');
-      if (empleadoAutenticado || empleadoData) {
-        redirectByRole();
-      }
-    }, 100);
+    // 🚀 La redirección ya la maneja loginEmpleadoWithSync() correctamente
+    // No es necesario hacer redirección adicional aquí
   };
 
   if (!isOpen) return null;
