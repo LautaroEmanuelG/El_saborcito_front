@@ -13,6 +13,7 @@ import { useAuth } from './shared/hooks/useAuth';
 import { RankingProductos } from './modules/HU26_28_informes/components/RankingProductos';
 import ScreenArticulosManufacturados from './modules/HU22_CRUDArticulos/components/ScreenArticulosManufacturados';
 import ScreenInsumos from './modules/HU23_CRUDInsumos/components/ScreenInsumos';
+import { ScreenUnidadesMedida } from './modules/HU_CRUD_UnidadesMedida';
 import { Cocina } from './app/views/admin/Cocina';
 import { HistorialCocina } from './app/views/admin/HistorialCocina';
 import MovimientosMonetarios from './modules/HU26_28_informes/components/MovimientosMonetarios';
@@ -92,7 +93,6 @@ const AppRoutes = () => {
               </ProtectedRoute>
             }
           />
-
           {/* Delivery: delivery, admin */}
           <Route
             path="delivery"
@@ -102,7 +102,6 @@ const AppRoutes = () => {
               </ProtectedRoute>
             }
           />
-
           {/* Cocina & Historial: cocinero, admin */}
           <Route
             path="cocina"
@@ -120,7 +119,6 @@ const AppRoutes = () => {
               </ProtectedRoute>
             }
           />
-
           {/* Artículos / Categorías: cocinero, admin */}
           <Route
             path="articulos"
@@ -146,7 +144,6 @@ const AppRoutes = () => {
               </ProtectedRoute>
             }
           />
-
           {/* Insumos / Compra / Control Stock: cocinero, admin */}
           <Route
             path="insumos"
@@ -179,7 +176,7 @@ const AppRoutes = () => {
                 <ScreenCategoriaPadreInsumo />
               </ProtectedRoute>
             }
-          />
+          />{' '}
           <Route
             path="subcategorias-insumos"
             element={
@@ -188,7 +185,14 @@ const AppRoutes = () => {
               </ProtectedRoute>
             }
           />
-
+          <Route
+            path="unidades-medida"
+            element={
+              <ProtectedRoute allowedRoles={COCINERO}>
+                <ScreenUnidadesMedida />
+              </ProtectedRoute>
+            }
+          />
           {/* Promociones: cocinero, admin */}
           <Route
             path="promociones"
@@ -198,7 +202,6 @@ const AppRoutes = () => {
               </ProtectedRoute>
             }
           />
-
           {/* Informes: sólo admin */}
           <Route
             path="informes/ranking-productos"
@@ -224,7 +227,6 @@ const AppRoutes = () => {
               </ProtectedRoute>
             }
           />
-
           {/* Gestión de personal: admin */}
           <Route
             path="empleados"
@@ -242,7 +244,6 @@ const AppRoutes = () => {
               </ProtectedRoute>
             }
           />
-
           {/* Ruta específica para historial del admin */}
           <Route
             path="historial"
