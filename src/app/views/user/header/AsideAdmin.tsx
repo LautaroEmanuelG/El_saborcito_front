@@ -4,6 +4,7 @@ import CollapsibleNavItem from './CollapsibleNavItem';
 import IconoMenuHamburguesa from '../../../../assets/svgs/icons/IconoMenuHamburguesa';
 import { NavItemStructure } from '../../../../shared/components/AsideAdmin/NavItemTypes';
 import { useAuth } from '../../../../shared/hooks/useAuth';
+import { useEmpleado } from '../../../../shared/providers/EmpleadoProvider';
 import { getNavigationByRole } from '../../../../shared/config/navigationConfig';
 import { LoadingSpinner } from '../../../../shared/components/LoadingSpinner';
 
@@ -11,15 +12,20 @@ export const AsideAdmin = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [navItems, setNavItems] = useState<NavItemStructure[]>([]);
   const { rol, email, isLoading } = useAuth();
+  const { empleadoAutenticado } = useEmpleado();
+
+  // 🚀 **LÓGICA HÍBRIDA: DETECTAR EMPLEADOS Y CLIENTES**
+  const finalRol = empleadoAutenticado?.rol || rol;
+  const finalEmail = empleadoAutenticado?.email || email;
 
   useEffect(() => {
-    if (rol && !isLoading) {
-      const navigation = getNavigationByRole(rol);
+    if (finalRol && !isLoading) {
+      const navigation = getNavigationByRole(finalRol);
       setNavItems(navigation);
     } else {
       setNavItems([]);
     }
-  }, [rol, isLoading]);
+  }, [finalRol, isLoading]);
 
   const toggleMenu = () => setIsOpen((o) => !o);
   const closeMenu = () => setIsOpen(false);
@@ -34,7 +40,7 @@ export const AsideAdmin = () => {
   }
 
   // Si no hay rol o no hay navegación disponible
-  if (!rol || navItems.length === 0) {
+  if (!finalRol || navItems.length === 0) {
     return (
       <aside className="bg-primary text-negro xl:flex flex-col shrink-0 w-72 h-full min-h-screen fixed xl:sticky top-0 shadow-xl xl:shadow-none z-50 p-4 pt-6">
         <div className="flex items-center justify-center mt-12">
@@ -63,12 +69,12 @@ export const AsideAdmin = () => {
             <div className="flex items-center gap-2 mb-1">
               <span className="text-sm opacity-75">Perfil:</span>
               <span className="px-2 py-1 bg-primary rounded-full text-blanco text-xs font-bold">
-                {rol}
+                {finalRol}
               </span>
             </div>
-            {email && (
-              <div className="text-sm opacity-75 truncate" title={email}>
-                👤 {email}
+            {finalEmail && (
+              <div className="text-sm opacity-75 truncate" title={finalEmail}>
+                👤 {finalEmail}
               </div>
             )}
           </div>
