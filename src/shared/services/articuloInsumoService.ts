@@ -83,6 +83,12 @@ export const deleteArticuloInsumo = async (id: number) => {
   return response.data;
 };
 
+// Verificar si un artículo insumo puede ser restaurado (validar que su categoría no esté eliminada)
+export const canRestoreArticuloInsumo = async (id: number) => {
+  const response = await axiosInstance.get(`${API_BASE_URL}/${id}/can-restore`);
+  return response.data;
+};
+
 // Restaurar artículo eliminado lógicamente
 export const restoreArticuloInsumo = async (id: number) => {
   const response = await axiosInstance.post(`${API_BASE_URL}/deleted/${id}/restore`);
