@@ -166,3 +166,77 @@ export const canBeSold = async (id: number): Promise<boolean> => {
     return false; // Si hay error, considerar que no se puede vender
   }
 };
+
+// 🔍 **VALIDACIÓN DE DUPLICADOS - DENOMINACIÓN**
+
+// Verificar si existe una denominación entre los insumos activos
+export const existsByDenominacion = async (denominacion: string): Promise<boolean> => {
+  try {
+    const response = await axiosInstance.get(`${API_BASE_URL}/validate-denominacion`, {
+      params: { denominacion },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error al validar denominación de insumo (activos):', error);
+    return false;
+  }
+};
+
+// Verificar si existe una denominación entre todos los insumos (incluyendo eliminados)
+export const existsByDenominacionIncludingDeleted = async (
+  denominacion: string
+): Promise<boolean> => {
+  try {
+    const response = await axiosInstance.get(`${API_BASE_URL}/validate-denominacion-all`, {
+      params: { denominacion },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error al validar denominación de insumo (incluyendo eliminados):', error);
+    return false;
+  }
+};
+
+// Función combinada para obtener detalles sobre el estado del duplicado
+export const checkDenominacionStatus = async (
+  denominacion: string
+): Promise<{
+  isActive: boolean;
+  isDeleted: boolean;
+  message: string;
+}> => {
+  try {
+    const [existsActive, existsAll] = await Promise.all([
+      existsByDenominacion(denominacion),
+      existsByDenominacionIncludingDeleted(denominacion),
+    ]);
+
+    if (existsActive) {
+      return {
+        isActive: true,
+        isDeleted: false,
+        message: 'Ya existe un insumo activo con esta denominación',
+      };
+    } else if (existsAll) {
+      return {
+        isActive: false,
+        isDeleted: true,
+        message:
+          'Ya existe un insumo eliminado con esta denominación. Puede restaurarlo si lo necesita',
+      };
+    } else {
+      return {
+        isActive: false,
+        isDeleted: false,
+        message: 'Denominación disponible',
+      };
+    }
+  } catch (error) {
+    console.error('Error al verificar estado de denominación:', error);
+    return {
+      isActive: false,
+      isDeleted: false,
+      message: 'Error al verificar denominación',
+    };
+  }
+};

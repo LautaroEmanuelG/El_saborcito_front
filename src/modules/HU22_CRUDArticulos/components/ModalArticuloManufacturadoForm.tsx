@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import type {
   ArticuloManufacturado,
   ArticuloInsumo,
@@ -6,6 +6,7 @@ import type {
 } from '../../../types/Articulo';
 import type { Categoria } from '../../../types/Categoria';
 import * as categoriaService from '../../../shared/services/categoriaService';
+import * as articuloManufacturadoService from '../../../shared/services/articuloManufacturadoService';
 import Modal from '../../../shared/components/abmGenerica/components/modals/Modal';
 import ModalSeleccionInsumos from './ModalSeleccionInsumos';
 import ModalEditarCantidadInsumo from './ModalEditarCantidadInsumo';
@@ -40,17 +41,78 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
     index: null,
   });
   const [isDisponible, setIsDisponible] = useState<boolean>(true);
-
+  const [denominacionError, setDenominacionError] = useState<string | null>(null);
+  const [isValidatingDenominacion, setIsValidatingDenominacion] = useState<boolean>(false);
   // Cargar categorías al montar
   useEffect(() => {
     categoriaService.getAllCategorias().then(setCategorias);
-  }, []);
-  // Cuando abro el modal o cambian los datos iniciales, setear valores y subcategorías
+  }, []); // Función para validar denominación con debounce
+  const validateDenominacion = useCallback(
+    async (denominacion: string) => {
+      if (!denominacion || denominacion.trim().length === 0) {
+        setDenominacionError(null);
+        return;
+      }
+
+      const cleanDenominacion = denominacion.trim();
+      if (cleanDenominacion.length < 2) {
+        setDenominacionError(null);
+        return;
+      }
+
+      setIsValidatingDenominacion(true);
+      try {
+        const excludeId = mode === 'edit' ? initialValues.id : undefined;
+        // Usar la validación con detalles para mostrar mensajes específicos
+        const validationResult = await articuloManufacturadoService.validateDenominacionWithDetails(
+          cleanDenominacion,
+          excludeId
+        );
+
+        if (validationResult.exists) {
+          if (validationResult.isActive) {
+            // Existe y está activo
+            setDenominacionError(
+              `Ya existe un artículo manufacturado con la denominación "${cleanDenominacion}"`
+            );
+          } else if (validationResult.isDeleted) {
+            // Existe pero está eliminado
+            setDenominacionError(
+              `Ya existe un artículo manufacturado con la denominación "${cleanDenominacion}" (puede estar eliminado)`
+            );
+          }
+        } else {
+          setDenominacionError(null);
+        }
+      } catch (error) {
+        console.error('Error validando denominación:', error);
+        setDenominacionError(null);
+      } finally {
+        setIsValidatingDenominacion(false);
+      }
+    },
+    [mode, initialValues.id]
+  );
+
+  // Debounce para la validación de denominación
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      const denominacion = formValues.denominacion?.toString() ?? '';
+      if (denominacion && denominacion.trim().length > 1) {
+        validateDenominacion(denominacion);
+      }
+    }, 500); // 500ms de delay
+
+    return () => clearTimeout(timeoutId);
+  }, [formValues.denominacion, validateDenominacion]); // Cuando abro el modal o cambian los datos iniciales, setear valores y subcategorías
   useEffect(() => {
     setForm(initialValues);
     setImagenPreview(initialValues.imagen?.url ?? null);
     setSelectedImageFile(null); // Limpiar archivo seleccionado al abrir
     setDetalles(initialValues.articuloManufacturadoDetalles ?? []);
+    // Resetear errores de validación
+    setDenominacionError(null);
+    setIsValidatingDenominacion(false);
     // Determinar categoría y subcategoría seleccionadas
     const categoriaActual = categorias.find((cat) => cat.id === initialValues.categoriaId);
     if (categoriaActual) {
@@ -138,7 +200,6 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
   const handleRemoveInsumo = (index: number) => {
     setDetalles((prev) => prev.filter((_, i) => i !== index));
   };
-
   // Función para editar la cantidad de un insumo
   const handleEditCantidad = (index: number, nuevaCantidad: number) => {
     if (nuevaCantidad <= 0) return;
@@ -146,13 +207,21 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
       prev.map((detalle, i) => (i === index ? { ...detalle, cantidad: nuevaCantidad } : detalle))
     );
   };
-  // Calcular el costo estimado total de los insumos
-  // const calcularCostoEstimado = (): number => {
-  //   return detalles.reduce((total, detalle) => {
-  //     const precioUnitario = detalle.articuloInsumo?.precioCompra ?? 0;
-  //     return total + precioUnitario * detalle.cantidad;
-  //   }, 0);
-  // };
+
+  // Calcular el costo de producción total de los ingredientes
+  const calcularCostoProduccion = (): number => {
+    return detalles.reduce((total, detalle) => {
+      const precioUnitario = detalle.articuloInsumo?.precioCompra ?? 0;
+      return total + precioUnitario * detalle.cantidad;
+    }, 0);
+  };
+
+  // Calcular la ganancia (precio venta - costo producción)
+  const calcularGanancia = (): number => {
+    const precioVenta = Number(formValues.precioVenta ?? 0);
+    const costoProduccion = calcularCostoProduccion();
+    return precioVenta - costoProduccion;
+  };
 
   // Obtener el título del modal según el modo
   const getModalTitle = () => {
@@ -166,11 +235,16 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
       default:
         return 'Artículo Manufacturado';
     }
-  };
-  // Submit: llama a onSubmit solo en modo add/edit
+  }; // Submit: llama a onSubmit solo en modo add/edit
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (mode === 'view') return;
+
+    // Validar que no haya errores de denominación antes de enviar
+    if (denominacionError) {
+      return;
+    }
+
     let finalCategoriaId: number | null = null;
     if (selectedSubcategoriaId && selectedSubcategoriaId > 0) {
       finalCategoriaId = selectedSubcategoriaId;
@@ -207,7 +281,7 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
                 <div className="w-full border rounded px-3 py-2 bg-gray-100">
                   {formValues.denominacion}
                 </div>
-              </div>
+              </div>{' '}
               <div>
                 <label className="block text-sm font-medium mb-1">Precio Venta</label>
                 <div className="w-full border rounded px-3 py-2 bg-gray-100">
@@ -239,6 +313,18 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
                 <label className="block text-sm font-medium mb-1">Tiempo Estimado (minutos)</label>
                 <div className="w-full border rounded px-3 py-2 bg-gray-100">
                   {formValues.tiempoEstimadoMinutos}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Costo Producción</label>
+                <div className="w-full border rounded px-3 py-2 bg-gray-100">
+                  ${calcularCostoProduccion().toFixed(2)}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Ganancia</label>
+                <div className="w-full border rounded px-3 py-2 bg-gray-100">
+                  ${calcularGanancia().toFixed(2)}
                 </div>
               </div>
               <div className="flex items-center justify-center mt-2">
@@ -305,19 +391,43 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
           <div className="flex flex-row flex-grow">
             {/* Columna izquierda: Formulario */}
             <div className="flex-1 p-4 space-y-4">
+              {' '}
               <div>
                 <label className="block text-sm font-medium mb-1" htmlFor="denominacion">
                   Denominación<span className="text-red-500">*</span>
                 </label>
-                <input
-                  id="denominacion"
-                  name="denominacion"
-                  type="text"
-                  required
-                  className="w-full border rounded px-3 py-2 bg-gray-100"
-                  value={formValues.denominacion?.toString() ?? ''}
-                  onChange={(e) => handleInputChange('denominacion', e.target.value)}
-                />
+                <div className="relative">
+                  <input
+                    id="denominacion"
+                    name="denominacion"
+                    type="text"
+                    required
+                    className={`w-full border rounded px-3 py-2 bg-gray-100 ${
+                      denominacionError
+                        ? 'border-red-500 focus:border-red-500'
+                        : 'border-gray-300 focus:border-blue-500'
+                    }`}
+                    value={formValues.denominacion?.toString() ?? ''}
+                    onChange={(e) => handleInputChange('denominacion', e.target.value)}
+                  />
+                  {isValidatingDenominacion && (
+                    <div className="absolute right-2 top-2">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
+                    </div>
+                  )}
+                </div>
+                {denominacionError && (
+                  <p className="text-red-500 text-sm mt-1 flex items-center">
+                    <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path
+                        fillRule="evenodd"
+                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    {denominacionError}
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1" htmlFor="precioVenta">
@@ -403,6 +513,18 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
                   value={formValues.tiempoEstimadoMinutos?.toString() ?? ''}
                   onChange={(e) => handleInputChange('tiempoEstimadoMinutos', e.target.value)}
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Costo Producción</label>
+                <div className="w-full border rounded px-3 py-2 bg-gray-100">
+                  ${calcularCostoProduccion().toFixed(2)}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Ganancia</label>
+                <div className="w-full border rounded px-3 py-2 bg-gray-100">
+                  ${calcularGanancia().toFixed(2)}
+                </div>
               </div>
               {/* El botón solo se muestra en modo add/edit, nunca en view */}
               {(mode === 'add' || mode === 'edit') && (
@@ -568,7 +690,7 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
                 }}
               />
             </div>
-          )}
+          )}{' '}
           {/* Botones */}
           <div className="flex justify-center gap-2 p-4 border-t">
             <button
@@ -577,10 +699,26 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
               onClick={onClose}
             >
               Cancelar
-            </button>
+            </button>{' '}
             <button
               type="submit"
-              className="bg-primary hover:bg-primarydark text-white font-bold py-2 px-4 rounded"
+              disabled={
+                detalles.length === 0 || denominacionError !== null || isValidatingDenominacion
+              }
+              className={`font-bold py-2 px-4 rounded ${
+                detalles.length === 0 || denominacionError !== null || isValidatingDenominacion
+                  ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                  : 'bg-primary hover:bg-primarydark text-white'
+              }`}
+              title={
+                detalles.length === 0
+                  ? 'Debe agregar al menos un ingrediente'
+                  : denominacionError
+                    ? denominacionError
+                    : isValidatingDenominacion
+                      ? 'Validando denominación...'
+                      : ''
+              }
             >
               {mode === 'add' ? 'Crear' : 'Guardar'}
             </button>

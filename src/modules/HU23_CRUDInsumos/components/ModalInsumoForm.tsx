@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { ArticuloInsumo } from '../../../types/Articulo';
 import type { Categoria } from '../../../types/Categoria';
 import type { UnidadMedida } from '../../../types/UnidadMedida';
 import { ModalUnidadMedidaForm } from '../../HU_CRUD_UnidadesMedida';
 import { useUnidadMedidaStore } from '../../HU_CRUD_UnidadesMedida/services/unidadMedidaStore';
 import * as unidadMedidaService from '../../../shared/services/unidadMedidaService';
+import { checkDenominacionStatus } from '../../../shared/services/articuloInsumoService';
 
 interface Props {
   open: boolean;
@@ -54,6 +55,15 @@ export const ModalInsumoForm = ({
   const [unidadesLocal, setUnidadesLocal] = useState<UnidadMedida[]>(unidades);
   // Usar el store de unidades de medida para validaciones
   const { addUnidad, clearError } = useUnidadMedidaStore();
+
+  // Estados para validación de duplicados
+  const [denominacionError, setDenominacionError] = useState<string>('');
+  const [isValidatingDenominacion, setIsValidatingDenominacion] = useState(false);
+  const [denominacionStatus, setDenominacionStatus] = useState<{
+    isActive: boolean;
+    isDeleted: boolean;
+    message: string;
+  } | null>(null);
 
   // Filtrar solo las categorías padre de tipo INSUMOS para el select del modal
   const categoriasPadre = categorias.filter((cat) => !cat.tipoCategoria && cat.tipo === 'INSUMOS');
@@ -131,6 +141,52 @@ export const ModalInsumoForm = ({
     }
   }, [form.categoria, categorias]);
 
+  // Función de validación con debounce
+  const validateDenominacion = useCallback(async (denominacion: string, currentId?: number) => {
+    if (!denominacion.trim()) {
+      setDenominacionError('');
+      setDenominacionStatus(null);
+      return;
+    }
+
+    setIsValidatingDenominacion(true);
+    setDenominacionError('');
+
+    try {
+      const status = await checkDenominacionStatus(denominacion);
+
+      // Si hay duplicado y no es el mismo insumo que estamos editando
+      if ((status.isActive || status.isDeleted) && (!currentId || currentId === 0)) {
+        setDenominacionError(status.message);
+        setDenominacionStatus(status);
+      } else {
+        setDenominacionError('');
+        setDenominacionStatus(null);
+      }
+    } catch (error) {
+      console.error('Error validando denominación:', error);
+      setDenominacionError('Error al validar denominación');
+      setDenominacionStatus(null);
+    } finally {
+      setIsValidatingDenominacion(false);
+    }
+  }, []);
+
+  // Debounce para validación de denominación
+  useEffect(() => {
+    if (!form.denominacion?.trim()) {
+      setDenominacionError('');
+      setDenominacionStatus(null);
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      validateDenominacion(form.denominacion!, form.id);
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [form.denominacion, form.id, validateDenominacion]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     if (type === 'checkbox') return; // El checkbox se maneja aparte
@@ -187,6 +243,13 @@ export const ModalInsumoForm = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validación de duplicados antes de enviar
+    if (denominacionError || denominacionStatus?.isActive || denominacionStatus?.isDeleted) {
+      alert('Por favor, corrige los errores antes de continuar.');
+      return;
+    }
+
     if (!form.unidadMedida || !form.unidadMedida.id) {
       alert('Debes seleccionar una unidad de medida válida.');
       return;
@@ -220,6 +283,15 @@ export const ModalInsumoForm = ({
       form.stockActual > initialValues.stockActual
   );
 
+  // Verificar si el formulario tiene errores
+  const tieneErrores = Boolean(
+    denominacionError ||
+      denominacionStatus?.isActive ||
+      denominacionStatus?.isDeleted ||
+      stockMayorAlOriginal ||
+      isValidatingDenominacion
+  );
+
   return (
     <div className="fixed inset-0 bg-negro bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-blanco p-6 rounded-lg shadow-lg w-full max-w-md">
@@ -231,16 +303,34 @@ export const ModalInsumoForm = ({
             <label className="block text-sm font-medium mb-1" htmlFor="denominacion">
               Denominación<span className="text-red-500">*</span>
             </label>
-            <input
-              id="denominacion"
-              name="denominacion"
-              value={form.denominacion ?? ''}
-              onChange={handleChange}
-              disabled={mode === 'view'}
-              className="w-full border rounded px-3 py-2"
-              required
-              autoFocus
-            />{' '}
+            <div className="relative">
+              <input
+                id="denominacion"
+                name="denominacion"
+                value={form.denominacion ?? ''}
+                onChange={handleChange}
+                disabled={mode === 'view'}
+                className={`w-full border rounded px-3 py-2 pr-8 ${
+                  denominacionError ? 'border-red-500' : 'border-gray-300'
+                }`}
+                required
+                autoFocus
+              />
+              {isValidatingDenominacion && (
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                </div>
+              )}
+            </div>
+            {denominacionError && (
+              <p
+                className={`text-xs mt-1 ${
+                  denominacionStatus?.isDeleted ? 'text-orange-600' : 'text-red-600'
+                }`}
+              >
+                {denominacionError}
+              </p>
+            )}
           </div>{' '}
           {/* Eliminado campo Precio Compra */}
           {/* Campo Stock Actual - Solo en modo edición */}
@@ -528,15 +618,19 @@ export const ModalInsumoForm = ({
               <button
                 type="submit"
                 className={`px-4 py-2 rounded ${
-                  stockMayorAlOriginal
+                  tieneErrores
                     ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
                     : 'bg-primary text-blanco hover:bg-primarydark'
                 }`}
-                disabled={stockMayorAlOriginal}
+                disabled={tieneErrores}
                 title={
                   stockMayorAlOriginal
                     ? 'No se puede aumentar el stock. Use el módulo de compras.'
-                    : undefined
+                    : denominacionError
+                      ? denominacionError
+                      : isValidatingDenominacion
+                        ? 'Validando denominación...'
+                        : undefined
                 }
               >
                 {mode === 'add' ? 'Crear' : 'Guardar'}

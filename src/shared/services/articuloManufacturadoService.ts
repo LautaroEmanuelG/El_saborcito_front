@@ -143,3 +143,79 @@ export const canBeManufactured = async (id: number): Promise<boolean> => {
   const response = await axiosInstance.get<boolean>(`${API_BASE_URL}/${id}/can-be-manufactured`);
   return response.data ?? false;
 };
+
+// 🔍 **VALIDACIÓN DE DUPLICADOS**
+
+// Validar si existe un artículo manufacturado con la denominación dada (solo activos)
+export const validateDenominacion = async (
+  denominacion: string,
+  excludeId?: number
+): Promise<boolean> => {
+  try {
+    const params = new URLSearchParams();
+    params.append('denominacion', denominacion.trim());
+    if (excludeId) {
+      params.append('excludeId', excludeId.toString());
+    }
+
+    const response = await axiosInstance.get<boolean>(
+      `${API_BASE_URL}/validate-denominacion?${params}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error validando denominación:', error);
+    return false;
+  }
+};
+
+// Validar si existe un artículo manufacturado con la denominación dada (incluyendo eliminados)
+export const validateDenominacionIncludingDeleted = async (
+  denominacion: string,
+  excludeId?: number
+): Promise<boolean> => {
+  try {
+    const params = new URLSearchParams();
+    params.append('denominacion', denominacion.trim());
+    if (excludeId) {
+      params.append('excludeId', excludeId.toString());
+    }
+
+    const response = await axiosInstance.get<boolean>(
+      `${API_BASE_URL}/validate-denominacion-all?${params}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error validando denominación incluyendo eliminados:', error);
+    return false;
+  }
+};
+
+// Validar denominación con información detallada sobre el estado
+export const validateDenominacionWithDetails = async (
+  denominacion: string,
+  excludeId?: number
+): Promise<{
+  exists: boolean;
+  isActive: boolean;
+  isDeleted: boolean;
+}> => {
+  try {
+    const [activeExists, allExists] = await Promise.all([
+      validateDenominacion(denominacion, excludeId),
+      validateDenominacionIncludingDeleted(denominacion, excludeId),
+    ]);
+
+    return {
+      exists: allExists,
+      isActive: activeExists,
+      isDeleted: allExists && !activeExists,
+    };
+  } catch (error) {
+    console.error('Error validando denominación con detalles:', error);
+    return {
+      exists: false,
+      isActive: false,
+      isDeleted: false,
+    };
+  }
+};
