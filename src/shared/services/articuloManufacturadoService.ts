@@ -81,7 +81,7 @@ export const updateArticuloManufacturado = async (
   return updatedArticulo;
 };
 
-// Función genérica que decide entre create o update con imagen opcional
+// Función genérica que decide entre create o update with imagen opcional
 export const saveArticuloManufacturado = async (
   data: Partial<ArticuloManufacturado>,
   imageFile?: File
@@ -98,6 +98,12 @@ export const saveArticuloManufacturado = async (
 // Eliminación lógica (soft delete) - RECOMENDADO
 export const deleteArticuloManufacturado = async (id: number) => {
   const response = await axiosInstance.delete(`${API_BASE_URL}/${id}`);
+  return response.data;
+};
+
+// Verificar si un artículo puede ser restaurado (su categoría no debe estar eliminada)
+export const canRestoreArticuloManufacturado = async (id: number) => {
+  const response = await axiosInstance.get(`${API_BASE_URL}/${id}/can-restore`);
   return response.data;
 };
 
