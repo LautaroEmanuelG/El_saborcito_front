@@ -7,6 +7,9 @@ interface ModalCompraSeleccionInsumoProps {
   open: boolean;
   onClose: () => void;
   onAddInsumo: (insumo: ArticuloInsumo, precioCosto: number, cantidad: number) => void;
+  onAddMultipleInsumos?: (
+    insumos: { insumo: ArticuloInsumo; precioCosto: number; cantidad: number }[]
+  ) => void;
   insumosExistentes?: ArticuloInsumo[];
 }
 
@@ -14,23 +17,21 @@ const ModalCompraSeleccionInsumo: React.FC<ModalCompraSeleccionInsumoProps> = ({
   open,
   onClose,
   onAddInsumo,
+  onAddMultipleInsumos,
   insumosExistentes = [],
 }) => {
   const [insumos, setInsumos] = useState<ArticuloInsumo[]>([]);
   const [filteredInsumos, setFilteredInsumos] = useState<ArticuloInsumo[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedInsumo, setSelectedInsumo] = useState<ArticuloInsumo | null>(null);
-  const [precioCosto, setPrecioCosto] = useState<number>(0);
-  const [cantidad, setCantidad] = useState<number>(1);
+  const [selectedInsumos, setSelectedInsumos] = useState<
+    Map<number, { precioCosto: number; cantidad: number }>
+  >(new Map());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   useEffect(() => {
     if (open) {
       loadInsumos();
-      setSelectedInsumo(null);
-      setPrecioCosto(0);
-      setCantidad(1);
+      setSelectedInsumos(new Map());
       setSearchTerm('');
     }
   }, [open]);
@@ -60,33 +61,113 @@ const ModalCompraSeleccionInsumo: React.FC<ModalCompraSeleccionInsumoProps> = ({
       setLoading(false);
     }
   };
+  const handleAddInsumos = () => {
+    if (selectedInsumos.size === 0) return;
 
-  const handleAddInsumo = () => {
-    if (!selectedInsumo || cantidad <= 0 || precioCosto <= 0) return;
-    onAddInsumo(selectedInsumo, precioCosto, cantidad);
+    const insumosToAdd = Array.from(selectedInsumos.entries()).map(([insumoId, data]) => {
+      const insumo = insumos.find((i) => i.id === insumoId)!;
+      return { insumo, precioCosto: data.precioCosto, cantidad: data.cantidad };
+    });
+
+    if (onAddMultipleInsumos) {
+      onAddMultipleInsumos(insumosToAdd);
+    } else {
+      // Fallback: agregar uno por uno si no se proporciona la función múltiple
+      insumosToAdd.forEach(({ insumo, precioCosto, cantidad }) => {
+        onAddInsumo(insumo, precioCosto, cantidad);
+      });
+    }
     onClose();
   };
 
-  const handleInsumoSelect = (insumo: ArticuloInsumo) => {
-    setSelectedInsumo(insumo);
-    setPrecioCosto(insumo.precioCompra ?? 0);
+  const handleInsumoToggle = (insumo: ArticuloInsumo) => {
+    setSelectedInsumos((prev) => {
+      const newMap = new Map(prev);
+      if (newMap.has(insumo.id!)) {
+        newMap.delete(insumo.id!);
+      } else {
+        newMap.set(insumo.id!, {
+          precioCosto: insumo.precioCompra ?? 0,
+          cantidad: 1,
+        });
+      }
+      return newMap;
+    });
   };
 
+  const handlePrecioCostoChange = (insumoId: number, precioCosto: number) => {
+    setSelectedInsumos((prev) => {
+      const newMap = new Map(prev);
+      const current = newMap.get(insumoId);
+      if (current) {
+        newMap.set(insumoId, { ...current, precioCosto });
+      }
+      return newMap;
+    });
+  };
+
+  const handleCantidadChange = (insumoId: number, cantidad: number) => {
+    if (cantidad <= 0) {
+      setSelectedInsumos((prev) => {
+        const newMap = new Map(prev);
+        newMap.delete(insumoId);
+        return newMap;
+      });
+    } else {
+      setSelectedInsumos((prev) => {
+        const newMap = new Map(prev);
+        const current = newMap.get(insumoId);
+        if (current) {
+          newMap.set(insumoId, { ...current, cantidad });
+        }
+        return newMap;
+      });
+    }
+  };
   return (
-    <Modal open={open} onClose={onClose} title="Seleccionar Insumo" maxWidth="max-w-md">
-      <div className="space-y-4 max-h-[600px] overflow-y-auto">
-        {selectedInsumo && (
-          <div className="bg-blue-50 p-3 rounded border">
-            <h4 className="font-medium text-blue-800 mb-1">Insumo seleccionado:</h4>
-            <div className="text-sm">
-              <div>
-                <strong>{selectedInsumo.denominacion}</strong>
+    <Modal
+      open={open}
+      onClose={onClose}
+      title="🍲 Seleccionar Insumos para Compra"
+      maxWidth="max-w-4xl"
+    >
+      <div className="space-y-4 max-h-[80vh] overflow-y-auto">
+        {/* Vista previa de insumos seleccionados */}
+        {selectedInsumos.size > 0 && (
+          <div className="bg-blue-50 p-4 rounded border">
+            <h4 className="font-medium text-blue-800 mb-2">
+              Insumos seleccionados para compra ({selectedInsumos.size}):
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-32 overflow-y-auto">
+              {Array.from(selectedInsumos.entries()).map(([insumoId, data]) => {
+                const insumo = insumos.find((i) => i.id === insumoId);
+                if (!insumo) return null;
+                return (
+                  <div key={insumoId} className="text-sm bg-white p-2 rounded border">
+                    <div className="font-medium">{insumo.denominacion}</div>
+                    <div className="text-gray-600">
+                      Cantidad: {data.cantidad} {insumo.unidadMedida?.denominacion ?? ''}
+                    </div>
+                    <div className="text-green-600 font-semibold">Precio: ${data.precioCosto}</div>
+                    <div className="text-blue-600 font-semibold">
+                      Total: ${(data.cantidad * data.precioCosto).toFixed(2)}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-2 pt-2 border-t border-blue-200">
+              <div className="font-semibold text-blue-800">
+                Total compra: $
+                {Array.from(selectedInsumos.entries())
+                  .reduce((total, [, data]) => total + data.cantidad * data.precioCosto, 0)
+                  .toFixed(2)}
               </div>
-              <div>Stock disponible: {selectedInsumo.stockActual}</div>
-              <div>Unidad: {selectedInsumo.unidadMedida?.denominacion ?? ''}</div>
             </div>
           </div>
         )}
+
+        {/* Búsqueda */}
         <div>
           <label className="block text-sm font-medium mb-1">Buscar insumo</label>
           <input
@@ -97,8 +178,12 @@ const ModalCompraSeleccionInsumo: React.FC<ModalCompraSeleccionInsumoProps> = ({
             className="w-full border rounded px-3 py-2"
           />
         </div>
+
+        {/* Lista de insumos */}
         <div>
-          <label className="block text-sm font-medium mb-2">Seleccionar insumo</label>
+          <label className="block text-sm font-medium mb-2">
+            Seleccionar insumos para compra (haz clic para agregar/quitar)
+          </label>
           {loading ? (
             <div className="text-center py-4">Cargando insumos...</div>
           ) : error ? (
@@ -108,104 +193,136 @@ const ModalCompraSeleccionInsumo: React.FC<ModalCompraSeleccionInsumoProps> = ({
               {searchTerm ? 'No se encontraron insumos' : 'No hay insumos disponibles'}
             </div>
           ) : (
-            <div className="max-h-96 overflow-y-auto border rounded p-2 space-y-1">
-              {filteredInsumos.map((insumo) => {
-                const yaSeleccionado = insumosExistentes.some(
-                  (existing) => existing.id === insumo.id
-                );
-                return (
-                  <div
-                    key={insumo.id}
-                    className={`p-2 rounded cursor-pointer border transition-colors ${
-                      selectedInsumo?.id === insumo.id
-                        ? 'bg-blue-100 border-blue-300'
-                        : yaSeleccionado
-                          ? 'bg-yellow-50 border-yellow-300'
-                          : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
-                    }`}
-                    onClick={() => handleInsumoSelect(insumo)}
-                  >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <div className="font-medium flex items-center gap-2">
-                          {insumo.denominacion}
-                          {yaSeleccionado && (
-                            <span className="text-xs bg-yellow-200 text-yellow-800 px-2 py-1 rounded">
-                              Ya agregado
-                            </span>
+            <div className="max-h-96 overflow-y-auto border rounded p-2">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                {filteredInsumos.map((insumo) => {
+                  const yaSeleccionado = insumosExistentes.some(
+                    (existing) => existing.id === insumo.id
+                  );
+                  const isSelected = selectedInsumos.has(insumo.id!);
+                  const data = selectedInsumos.get(insumo.id!) || {
+                    precioCosto: insumo.precioCompra ?? 0,
+                    cantidad: 1,
+                  };
+
+                  return (
+                    <div
+                      key={insumo.id}
+                      className={`p-3 rounded border transition-colors ${
+                        isSelected
+                          ? 'bg-blue-100 border-blue-300'
+                          : yaSeleccionado
+                            ? 'bg-yellow-50 border-yellow-300'
+                            : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                      }`}
+                    >
+                      <div
+                        className="cursor-pointer"
+                        onClick={() => !yaSeleccionado && handleInsumoToggle(insumo)}
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex-1">
+                            <div className="font-medium flex items-center gap-2">
+                              {isSelected && <span className="text-blue-600">✓</span>}
+                              {insumo.denominacion}
+                              {yaSeleccionado && (
+                                <span className="text-xs bg-yellow-200 text-yellow-800 px-2 py-1 rounded">
+                                  Ya agregado
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              Stock: {insumo.stockActual} {insumo.unidadMedida?.denominacion ?? ''}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              Categoría: {insumo.categoria?.denominacion ?? 'Sin categoría'}
+                            </div>
+                          </div>
+                          <div className="text-sm font-semibold text-green-600">
+                            ${insumo.precioCompra}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Campos de precio y cantidad para insumos seleccionados */}
+                      {isSelected && (
+                        <div className="mt-2 pt-2 border-t border-blue-200 space-y-2">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <div>
+                              <label className="block text-xs font-medium mb-1">
+                                Precio de costo<span className="text-red-500">*</span>
+                              </label>
+                              <input
+                                type="number"
+                                value={data.precioCosto}
+                                onChange={(e) =>
+                                  handlePrecioCostoChange(insumo.id!, Number(e.target.value))
+                                }
+                                min="0.01"
+                                step="0.01"
+                                className="w-full border rounded px-2 py-1 text-sm"
+                                placeholder="Precio"
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium mb-1">
+                                Cantidad ({insumo.unidadMedida?.denominacion ?? 'unidad'})
+                                <span className="text-red-500">*</span>
+                              </label>
+                              <input
+                                type="number"
+                                value={data.cantidad}
+                                onChange={(e) =>
+                                  handleCantidadChange(insumo.id!, Number(e.target.value))
+                                }
+                                min="0.01"
+                                step="0.01"
+                                className="w-full border rounded px-2 py-1 text-sm"
+                                placeholder="Cantidad"
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </div>
+                          </div>
+                          {data.precioCosto > 0 && data.cantidad > 0 && (
+                            <div className="text-xs text-blue-600 font-semibold">
+                              Subtotal: ${(data.precioCosto * data.cantidad).toFixed(2)}
+                            </div>
                           )}
                         </div>
-                        <div className="text-sm text-gray-600">
-                          Stock: {insumo.stockActual} {insumo.unidadMedida?.denominacion ?? ''}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          Categoría: {insumo.categoria?.denominacion ?? 'Sin categoría'}
-                        </div>
-                      </div>
-                      <div className="text-sm font-semibold text-green-600">
-                        ${insumo.precioCompra}
-                      </div>
+                      )}
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
-        {/* Precio de costo */}
-        {selectedInsumo && (
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Precio de costo<span className="text-red-500">*</span>
-            </label>
-            <input
-              type="number"
-              value={precioCosto}
-              onChange={(e) => setPrecioCosto(Number(e.target.value))}
-              min="0.01"
-              step="0.01"
-              className="w-full border rounded px-3 py-2"
-              required
-            />
+
+        {/* Botones */}
+        <div className="flex justify-between items-center pt-4 border-t">
+          <div className="text-sm text-gray-600">
+            {selectedInsumos.size > 0 && `${selectedInsumos.size} insumo(s) seleccionado(s)`}
           </div>
-        )}
-        {/* Cantidad comprada */}
-        {selectedInsumo && (
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Cantidad comprada<span className="text-red-500">*</span>
-            </label>
-            <input
-              type="number"
-              value={cantidad}
-              onChange={(e) => setCantidad(Number(e.target.value))}
-              min="0.01"
-              step="0.01"
-              className="w-full border rounded px-3 py-2"
-              required
-            />
+          <div className="flex gap-2">
+            <button
+              type="button"
+              className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+              onClick={onClose}
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              className={`font-bold py-2 px-4 rounded bg-primary hover:bg-primarydark text-white ${
+                selectedInsumos.size === 0 ? 'opacity-60 cursor-not-allowed' : ''
+              }`}
+              onClick={handleAddInsumos}
+              disabled={selectedInsumos.size === 0}
+            >
+              Agregar {selectedInsumos.size} Insumo(s)
+            </button>
           </div>
-        )}
-        <div className="flex justify-center gap-2 pt-2 border-t">
-          <button
-            type="button"
-            className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
-            onClick={onClose}
-          >
-            Cancelar
-          </button>
-          <button
-            type="button"
-            className={`font-bold py-2 px-4 rounded bg-primary hover:bg-primarydark text-white ${
-              !(selectedInsumo && cantidad > 0 && precioCosto > 0)
-                ? 'opacity-60 cursor-not-allowed'
-                : ''
-            }`}
-            onClick={handleAddInsumo}
-            disabled={!selectedInsumo || cantidad <= 0 || precioCosto <= 0}
-          >
-            Agregar Insumo
-          </button>
         </div>
       </div>
     </Modal>

@@ -42,6 +42,15 @@ export const CompraIngredientesModal = ({ open, onClose, onCompraRegistrada }: P
     }
   };
 
+  const handleAddMultipleInsumos = (
+    insumosConPrecioYCantidad: { insumo: ArticuloInsumo; precioCosto: number; cantidad: number }[]
+  ) => {
+    setErrorRegistro(null);
+    insumosConPrecioYCantidad.forEach(({ insumo, precioCosto, cantidad }) => {
+      handleAddInsumo(insumo, precioCosto, cantidad);
+    });
+  };
+
   const handleRemoveInsumo = (index: number) => {
     setDetalles((prev) => prev.filter((_, i) => i !== index));
   };
@@ -171,12 +180,12 @@ export const CompraIngredientesModal = ({ open, onClose, onCompraRegistrada }: P
             {loadingRegistro ? 'Registrando...' : 'Registrar compra'}
           </button>
         </div>
-      </div>
-
+      </div>{' '}
       <ModalCompraSeleccionInsumo
         open={openModalInsumo}
         onClose={() => setOpenModalInsumo(false)}
         onAddInsumo={handleAddInsumo}
+        onAddMultipleInsumos={handleAddMultipleInsumos}
         insumosExistentes={detalles.map((d) => d.insumo)}
       />
       <ModalRestaurarInsumo

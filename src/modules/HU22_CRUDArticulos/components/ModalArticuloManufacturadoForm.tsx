@@ -196,6 +196,15 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
     }
   };
 
+  // Función para agregar múltiples insumos a la vez
+  const handleAddMultipleInsumos = (
+    insumosConCantidad: { insumo: ArticuloInsumo; cantidad: number }[]
+  ) => {
+    insumosConCantidad.forEach(({ insumo, cantidad }) => {
+      handleAddInsumo(insumo, cantidad);
+    });
+  };
+
   // Función para eliminar un insumo de la lista
   const handleRemoveInsumo = (index: number) => {
     setDetalles((prev) => prev.filter((_, i) => i !== index));
@@ -730,6 +739,7 @@ const ModalArticuloManufacturadoForm: React.FC<ModalArticuloManufacturadoFormPro
         open={openModalInsumos}
         onClose={() => setOpenModalInsumos(false)}
         onAddInsumo={handleAddInsumo}
+        onAddMultipleInsumos={handleAddMultipleInsumos}
         insumosExistentes={
           detalles.map((d) => d.articuloInsumo).filter(Boolean) as ArticuloInsumo[]
         }

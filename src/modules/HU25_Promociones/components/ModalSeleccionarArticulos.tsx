@@ -10,6 +10,9 @@ interface ModalSeleccionarArticulosProps {
   open: boolean;
   onClose: () => void;
   onAddArticulo: (articulo: ArticuloManufacturado, cantidad: number) => void;
+  onAddMultipleArticulos?: (
+    articulos: { articulo: ArticuloManufacturado; cantidad: number }[]
+  ) => void;
   articulosExistentes?: ArticuloManufacturado[];
 }
 
@@ -17,23 +20,21 @@ const ModalSeleccionarArticulos: React.FC<ModalSeleccionarArticulosProps> = ({
   open,
   onClose,
   onAddArticulo,
+  onAddMultipleArticulos,
   articulosExistentes = [],
 }) => {
   const [articulos, setArticulos] = useState<ArticuloManufacturado[]>([]);
   const [filteredArticulos, setFilteredArticulos] = useState<ArticuloManufacturado[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedArticulo, setSelectedArticulo] = useState<ArticuloManufacturado | null>(null);
-  const [cantidad, setCantidad] = useState<number>(1);
+  const [selectedArticulos, setSelectedArticulos] = useState<Map<number, number>>(new Map()); // Map de id del artículo -> cantidad
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
-
   useEffect(() => {
     if (open) {
       loadArticulos();
       loadCategorias();
-      setSelectedArticulo(null);
-      setCantidad(1);
+      setSelectedArticulos(new Map());
       setSearchTerm('');
     }
   }, [open]);
@@ -95,31 +96,73 @@ const ModalSeleccionarArticulos: React.FC<ModalSeleccionarArticulosProps> = ({
     }
     return categoria?.denominacion ?? '-';
   };
+  const handleAddArticulos = () => {
+    if (selectedArticulos.size === 0) return;
 
-  const handleAddArticulo = () => {
-    if (!selectedArticulo || cantidad <= 0) return;
-    onAddArticulo(selectedArticulo, cantidad);
+    const articulosToAdd = Array.from(selectedArticulos.entries()).map(([articuloId, cantidad]) => {
+      const articulo = articulos.find((a) => a.id === articuloId)!;
+      return { articulo, cantidad };
+    });
+
+    if (onAddMultipleArticulos) {
+      onAddMultipleArticulos(articulosToAdd);
+    } else {
+      // Fallback: agregar uno por uno si no se proporciona la función múltiple
+      articulosToAdd.forEach(({ articulo, cantidad }) => {
+        onAddArticulo(articulo, cantidad);
+      });
+    }
     onClose();
   };
 
-  const handleArticuloSelect = (articulo: ArticuloManufacturado) => {
-    setSelectedArticulo(articulo);
+  const handleArticuloToggle = (articulo: ArticuloManufacturado) => {
+    setSelectedArticulos((prev) => {
+      const newMap = new Map(prev);
+      if (newMap.has(articulo.id!)) {
+        newMap.delete(articulo.id!);
+      } else {
+        newMap.set(articulo.id!, 1); // Cantidad por defecto
+      }
+      return newMap;
+    });
   };
 
+  const handleCantidadChange = (articuloId: number, cantidad: number) => {
+    if (cantidad <= 0) {
+      setSelectedArticulos((prev) => {
+        const newMap = new Map(prev);
+        newMap.delete(articuloId);
+        return newMap;
+      });
+    } else {
+      setSelectedArticulos((prev) => {
+        const newMap = new Map(prev);
+        newMap.set(articuloId, cantidad);
+        return newMap;
+      });
+    }
+  };
   return (
-    <Modal open={open} onClose={onClose} title="🍔 Seleccionar Artículos" maxWidth="max-w-md">
-      <div className="space-y-4 max-h-[600px] overflow-y-auto">
-        {/* Vista previa de artículo seleccionado */}
-        {selectedArticulo && (
-          <div className="bg-blue-50 p-3 rounded border">
-            <h4 className="font-medium text-blue-800 mb-1">Artículo seleccionado:</h4>
-            <div className="text-sm">
-              <div>
-                <strong>{selectedArticulo.denominacion}</strong>
-              </div>
-              <div>Precio: ${selectedArticulo.precioVenta}</div>
-              <div>Categoría: {getCategoriaPadreDenominacion(selectedArticulo.categoriaId)}</div>
-              <div>Cantidad: {cantidad}</div>
+    <Modal open={open} onClose={onClose} title="🍔 Seleccionar Artículos" maxWidth="max-w-4xl">
+      <div className="space-y-4 max-h-[80vh] overflow-y-auto">
+        {/* Vista previa de artículos seleccionados */}
+        {selectedArticulos.size > 0 && (
+          <div className="bg-blue-50 p-4 rounded border">
+            <h4 className="font-medium text-blue-800 mb-2">
+              Artículos seleccionados ({selectedArticulos.size}):
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-32 overflow-y-auto">
+              {Array.from(selectedArticulos.entries()).map(([articuloId, cantidad]) => {
+                const articulo = articulos.find((a) => a.id === articuloId);
+                if (!articulo) return null;
+                return (
+                  <div key={articuloId} className="text-sm bg-white p-2 rounded border">
+                    <div className="font-medium">{articulo.denominacion}</div>
+                    <div className="text-gray-600">Cantidad: {cantidad}</div>
+                    <div className="text-green-600">Precio: ${articulo.precioVenta}</div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -138,7 +181,9 @@ const ModalSeleccionarArticulos: React.FC<ModalSeleccionarArticulosProps> = ({
 
         {/* Lista de artículos */}
         <div>
-          <label className="block text-sm font-medium mb-2">Seleccionar artículo</label>
+          <label className="block text-sm font-medium mb-2">
+            Seleccionar artículos (haz clic para agregar/quitar)
+          </label>
           {loading ? (
             <div className="text-center py-4">Cargando artículos...</div>
           ) : error ? (
@@ -148,83 +193,101 @@ const ModalSeleccionarArticulos: React.FC<ModalSeleccionarArticulosProps> = ({
               {searchTerm ? 'No se encontraron artículos' : 'No hay artículos disponibles'}
             </div>
           ) : (
-            <div className="max-h-96 overflow-y-auto border rounded p-2 space-y-1">
-              {filteredArticulos.map((articulo) => {
-                const yaSeleccionado = articulosExistentes.some(
-                  (existing) => existing.id === articulo.id
-                );
-                return (
-                  <div
-                    key={articulo.id}
-                    className={`p-2 rounded cursor-pointer border transition-colors ${
-                      selectedArticulo?.id === articulo.id
-                        ? 'bg-blue-100 border-blue-300'
-                        : yaSeleccionado
-                          ? 'bg-yellow-50 border-yellow-300'
-                          : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
-                    }`}
-                    onClick={() => handleArticuloSelect(articulo)}
-                  >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <div className="font-medium flex items-center gap-2">
-                          {articulo.denominacion}
-                          {yaSeleccionado && (
-                            <span className="text-xs bg-yellow-200 text-yellow-800 px-2 py-1 rounded">
-                              Ya agregado
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          Categoría: {getCategoriaPadreDenominacion(articulo.categoriaId)}
+            <div className="max-h-96 overflow-y-auto border rounded p-2">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                {filteredArticulos.map((articulo) => {
+                  const yaSeleccionado = articulosExistentes.some(
+                    (existing) => existing.id === articulo.id
+                  );
+                  const isSelected = selectedArticulos.has(articulo.id!);
+                  const cantidad = selectedArticulos.get(articulo.id!) || 1;
+
+                  return (
+                    <div
+                      key={articulo.id}
+                      className={`p-3 rounded border transition-colors ${
+                        isSelected
+                          ? 'bg-blue-100 border-blue-300'
+                          : yaSeleccionado
+                            ? 'bg-yellow-50 border-yellow-300'
+                            : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                      }`}
+                    >
+                      <div
+                        className="cursor-pointer"
+                        onClick={() => !yaSeleccionado && handleArticuloToggle(articulo)}
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex-1">
+                            <div className="font-medium flex items-center gap-2">
+                              {isSelected && <span className="text-blue-600">✓</span>}
+                              {articulo.denominacion}
+                              {yaSeleccionado && (
+                                <span className="text-xs bg-yellow-200 text-yellow-800 px-2 py-1 rounded">
+                                  Ya agregado
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              Categoría: {getCategoriaPadreDenominacion(articulo.categoriaId)}
+                            </div>
+                          </div>
+                          <div className="text-sm font-semibold text-green-600">
+                            ${articulo.precioVenta}
+                          </div>
                         </div>
                       </div>
-                      <div className="text-sm font-semibold text-green-600">
-                        ${articulo.precioVenta}
-                      </div>
+
+                      {/* Campo de cantidad para artículos seleccionados */}
+                      {isSelected && (
+                        <div className="mt-2 pt-2 border-t border-blue-200">
+                          <label className="block text-xs font-medium mb-1">Cantidad</label>
+                          <input
+                            type="number"
+                            value={cantidad}
+                            onChange={(e) =>
+                              handleCantidadChange(articulo.id!, Number(e.target.value))
+                            }
+                            min="1"
+                            step="1"
+                            className="w-full border rounded px-2 py-1 text-sm"
+                            placeholder="Cantidad"
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </div>
+                      )}
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
 
-        {/* Cantidad */}
-        {selectedArticulo && (
-          <div>
-            <label className="block text-sm font-medium mb-1">Cantidad</label>
-            <input
-              type="number"
-              value={cantidad}
-              onChange={(e) => setCantidad(Number(e.target.value))}
-              min="1"
-              step="1"
-              className="w-full border rounded px-3 py-2"
-              placeholder="Ingrese la cantidad"
-            />
-          </div>
-        )}
-
         {/* Botones */}
-        <div className="flex justify-center gap-2 pt-2 border-t">
-          <button
-            type="button"
-            className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
-            onClick={onClose}
-          >
-            Cancelar
-          </button>
-          <button
-            type="button"
-            className={`font-bold py-2 px-4 rounded bg-primary hover:bg-primarydark text-white ${
-              !(selectedArticulo && cantidad > 0) ? 'opacity-60 cursor-not-allowed' : ''
-            }`}
-            onClick={handleAddArticulo}
-            disabled={!selectedArticulo || cantidad <= 0}
-          >
-            Agregar Artículo
-          </button>
+        <div className="flex justify-between items-center pt-4 border-t">
+          <div className="text-sm text-gray-600">
+            {selectedArticulos.size > 0 && `${selectedArticulos.size} artículo(s) seleccionado(s)`}
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+              onClick={onClose}
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              className={`font-bold py-2 px-4 rounded bg-primary hover:bg-primarydark text-white ${
+                selectedArticulos.size === 0 ? 'opacity-60 cursor-not-allowed' : ''
+              }`}
+              onClick={handleAddArticulos}
+              disabled={selectedArticulos.size === 0}
+            >
+              Agregar {selectedArticulos.size} Artículo(s)
+            </button>
+          </div>
         </div>
       </div>
     </Modal>

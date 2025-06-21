@@ -79,6 +79,15 @@ const ModalPromocionesForm: React.FC<ModalPromocionesFormProps> = ({
     ]);
   };
 
+  // Agregar múltiples artículos al combo
+  const handleAddMultipleArticulos = (
+    articulosConCantidad: { articulo: ArticuloManufacturado; cantidad: number }[]
+  ) => {
+    articulosConCantidad.forEach(({ articulo, cantidad }) => {
+      handleAddArticulo(articulo, cantidad);
+    });
+  };
+
   // Eliminar artículo del combo
   const handleRemoveArticulo = (index: number) => {
     setDetalles((prev) => prev.filter((_, i) => i !== index));
@@ -538,12 +547,13 @@ const ModalPromocionesForm: React.FC<ModalPromocionesFormProps> = ({
             >
               {mode === 'add' ? 'Crear' : 'Guardar'}
             </button>
-          </div>
+          </div>{' '}
           {/* Modal para selección de artículos */}
           <ModalSeleccionarArticulos
             open={showModalArticulos}
             onClose={() => setShowModalArticulos(false)}
             onAddArticulo={handleAddArticulo}
+            onAddMultipleArticulos={handleAddMultipleArticulos}
             articulosExistentes={detalles.map((d) => ({
               ...d.articulo,
               descripcion: (d.articulo as any).descripcion ?? '',
