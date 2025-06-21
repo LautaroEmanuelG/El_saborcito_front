@@ -124,8 +124,8 @@ export const ScreenInsumos = () => {
       key: 'precioVenta',
       render: (i: ArticuloInsumo) => (i.esParaElaborar ? '-' : i.precioVenta),
     },
-    { label: 'Stock Actual', key: 'stockActual' },
     { label: 'Stock Mínimo', key: 'stockMinimo' },
+    { label: 'Stock Actual', key: 'stockActual' },
     {
       label: 'Unidad de Medida',
       key: 'unidadMedida',

@@ -197,7 +197,7 @@ export const ModalInsumoForm = ({
   };
 
   const handleUnidadChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const unidad = unidades.find((u) => u.id === Number(e.target.value));
+    const unidad = unidadesLocal.find((u) => u.id === Number(e.target.value));
     setForm((prev) => ({ ...prev, unidadMedida: unidad }));
   };
 

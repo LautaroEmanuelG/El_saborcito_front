@@ -97,12 +97,14 @@ const ModalSeleccionarArticulos: React.FC<ModalSeleccionarArticulosProps> = ({
     return categoria?.denominacion ?? '-';
   };
   const handleAddArticulos = () => {
-    if (selectedArticulos.size === 0) return;
+    if (selectedArticulos.size === 0 || !hasValidQuantities()) return;
 
-    const articulosToAdd = Array.from(selectedArticulos.entries()).map(([articuloId, cantidad]) => {
-      const articulo = articulos.find((a) => a.id === articuloId)!;
-      return { articulo, cantidad };
-    });
+    const articulosToAdd = Array.from(selectedArticulos.entries())
+      .filter(([, cantidad]) => cantidad > 0) // Solo incluir artículos con cantidad > 0
+      .map(([articuloId, cantidad]) => {
+        const articulo = articulos.find((a) => a.id === articuloId)!;
+        return { articulo, cantidad };
+      });
 
     if (onAddMultipleArticulos) {
       onAddMultipleArticulos(articulosToAdd);
@@ -121,7 +123,7 @@ const ModalSeleccionarArticulos: React.FC<ModalSeleccionarArticulosProps> = ({
       if (newMap.has(articulo.id!)) {
         newMap.delete(articulo.id!);
       } else {
-        newMap.set(articulo.id!, 1); // Cantidad por defecto
+        newMap.set(articulo.id!, 0); // Cantidad por defecto
       }
       return newMap;
     });
@@ -142,27 +144,36 @@ const ModalSeleccionarArticulos: React.FC<ModalSeleccionarArticulosProps> = ({
       });
     }
   };
+
+  // Verificar si todos los artículos seleccionados tienen cantidad > 0
+  const hasValidQuantities = () => {
+    if (selectedArticulos.size === 0) return false;
+    return Array.from(selectedArticulos.values()).every((cantidad) => cantidad > 0);
+  };
   return (
     <Modal open={open} onClose={onClose} title="🍔 Seleccionar Artículos" maxWidth="max-w-4xl">
       <div className="space-y-4 max-h-[80vh] overflow-y-auto">
         {/* Vista previa de artículos seleccionados */}
-        {selectedArticulos.size > 0 && (
+        {selectedArticulos.size > 0 && hasValidQuantities() && (
           <div className="bg-blue-50 p-4 rounded border">
             <h4 className="font-medium text-blue-800 mb-2">
-              Artículos seleccionados ({selectedArticulos.size}):
+              Artículos seleccionados (
+              {Array.from(selectedArticulos.values()).filter((cantidad) => cantidad > 0).length}):
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-32 overflow-y-auto">
-              {Array.from(selectedArticulos.entries()).map(([articuloId, cantidad]) => {
-                const articulo = articulos.find((a) => a.id === articuloId);
-                if (!articulo) return null;
-                return (
-                  <div key={articuloId} className="text-sm bg-white p-2 rounded border">
-                    <div className="font-medium">{articulo.denominacion}</div>
-                    <div className="text-gray-600">Cantidad: {cantidad}</div>
-                    <div className="text-green-600">Precio: ${articulo.precioVenta}</div>
-                  </div>
-                );
-              })}
+              {Array.from(selectedArticulos.entries())
+                .filter(([, cantidad]) => cantidad > 0) // Solo mostrar artículos con cantidad > 0
+                .map(([articuloId, cantidad]) => {
+                  const articulo = articulos.find((a) => a.id === articuloId);
+                  if (!articulo) return null;
+                  return (
+                    <div key={articuloId} className="text-sm bg-white p-2 rounded border">
+                      <div className="font-medium">{articulo.denominacion}</div>
+                      <div className="text-gray-600">Cantidad: {cantidad}</div>
+                      <div className="text-green-600">Precio: ${articulo.precioVenta}</div>
+                    </div>
+                  );
+                })}
             </div>
           </div>
         )}
@@ -200,7 +211,7 @@ const ModalSeleccionarArticulos: React.FC<ModalSeleccionarArticulosProps> = ({
                     (existing) => existing.id === articulo.id
                   );
                   const isSelected = selectedArticulos.has(articulo.id!);
-                  const cantidad = selectedArticulos.get(articulo.id!) || 1;
+                  const cantidad = selectedArticulos.get(articulo.id!) || 0;
 
                   return (
                     <div
@@ -248,8 +259,8 @@ const ModalSeleccionarArticulos: React.FC<ModalSeleccionarArticulosProps> = ({
                             onChange={(e) =>
                               handleCantidadChange(articulo.id!, Number(e.target.value))
                             }
-                            min="1"
-                            step="1"
+                            min="0.01"
+                            step="0.01"
                             className="w-full border rounded px-2 py-1 text-sm"
                             placeholder="Cantidad"
                             onClick={(e) => e.stopPropagation()}
@@ -267,7 +278,8 @@ const ModalSeleccionarArticulos: React.FC<ModalSeleccionarArticulosProps> = ({
         {/* Botones */}
         <div className="flex justify-between items-center pt-4 border-t">
           <div className="text-sm text-gray-600">
-            {selectedArticulos.size > 0 && `${selectedArticulos.size} artículo(s) seleccionado(s)`}
+            {selectedArticulos.size > 0 &&
+              `${Array.from(selectedArticulos.values()).filter((cantidad) => cantidad > 0).length} artículo(s) con cantidad válida`}
           </div>
           <div className="flex gap-2">
             <button
@@ -280,12 +292,16 @@ const ModalSeleccionarArticulos: React.FC<ModalSeleccionarArticulosProps> = ({
             <button
               type="button"
               className={`font-bold py-2 px-4 rounded bg-primary hover:bg-primarydark text-white ${
-                selectedArticulos.size === 0 ? 'opacity-60 cursor-not-allowed' : ''
+                selectedArticulos.size === 0 || !hasValidQuantities()
+                  ? 'opacity-60 cursor-not-allowed'
+                  : ''
               }`}
               onClick={handleAddArticulos}
-              disabled={selectedArticulos.size === 0}
+              disabled={selectedArticulos.size === 0 || !hasValidQuantities()}
             >
-              Agregar {selectedArticulos.size} Artículo(s)
+              Agregar{' '}
+              {Array.from(selectedArticulos.values()).filter((cantidad) => cantidad > 0).length}{' '}
+              Artículo(s)
             </button>
           </div>
         </div>

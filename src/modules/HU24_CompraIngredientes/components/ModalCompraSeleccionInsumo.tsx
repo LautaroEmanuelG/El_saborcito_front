@@ -62,12 +62,14 @@ const ModalCompraSeleccionInsumo: React.FC<ModalCompraSeleccionInsumoProps> = ({
     }
   };
   const handleAddInsumos = () => {
-    if (selectedInsumos.size === 0) return;
+    if (selectedInsumos.size === 0 || !hasValidQuantities()) return;
 
-    const insumosToAdd = Array.from(selectedInsumos.entries()).map(([insumoId, data]) => {
-      const insumo = insumos.find((i) => i.id === insumoId)!;
-      return { insumo, precioCosto: data.precioCosto, cantidad: data.cantidad };
-    });
+    const insumosToAdd = Array.from(selectedInsumos.entries())
+      .filter(([, data]) => data.cantidad > 0) // Solo incluir insumos con cantidad > 0
+      .map(([insumoId, data]) => {
+        const insumo = insumos.find((i) => i.id === insumoId)!;
+        return { insumo, precioCosto: data.precioCosto, cantidad: data.cantidad };
+      });
 
     if (onAddMultipleInsumos) {
       onAddMultipleInsumos(insumosToAdd);
@@ -88,7 +90,7 @@ const ModalCompraSeleccionInsumo: React.FC<ModalCompraSeleccionInsumoProps> = ({
       } else {
         newMap.set(insumo.id!, {
           precioCosto: insumo.precioCompra ?? 0,
-          cantidad: 1,
+          cantidad: 0,
         });
       }
       return newMap;
@@ -124,6 +126,12 @@ const ModalCompraSeleccionInsumo: React.FC<ModalCompraSeleccionInsumoProps> = ({
       });
     }
   };
+
+  // Verificar si todos los insumos seleccionados tienen cantidad > 0
+  const hasValidQuantities = () => {
+    if (selectedInsumos.size === 0) return false;
+    return Array.from(selectedInsumos.values()).every((data) => data.cantidad > 0);
+  };
   return (
     <Modal
       open={open}
@@ -133,33 +141,39 @@ const ModalCompraSeleccionInsumo: React.FC<ModalCompraSeleccionInsumoProps> = ({
     >
       <div className="space-y-4 max-h-[80vh] overflow-y-auto">
         {/* Vista previa de insumos seleccionados */}
-        {selectedInsumos.size > 0 && (
+        {selectedInsumos.size > 0 && hasValidQuantities() && (
           <div className="bg-blue-50 p-4 rounded border">
             <h4 className="font-medium text-blue-800 mb-2">
-              Insumos seleccionados para compra ({selectedInsumos.size}):
+              Insumos seleccionados para compra (
+              {Array.from(selectedInsumos.values()).filter((data) => data.cantidad > 0).length}):
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-32 overflow-y-auto">
-              {Array.from(selectedInsumos.entries()).map(([insumoId, data]) => {
-                const insumo = insumos.find((i) => i.id === insumoId);
-                if (!insumo) return null;
-                return (
-                  <div key={insumoId} className="text-sm bg-white p-2 rounded border">
-                    <div className="font-medium">{insumo.denominacion}</div>
-                    <div className="text-gray-600">
-                      Cantidad: {data.cantidad} {insumo.unidadMedida?.denominacion ?? ''}
+              {Array.from(selectedInsumos.entries())
+                .filter(([, data]) => data.cantidad > 0) // Solo mostrar insumos con cantidad > 0
+                .map(([insumoId, data]) => {
+                  const insumo = insumos.find((i) => i.id === insumoId);
+                  if (!insumo) return null;
+                  return (
+                    <div key={insumoId} className="text-sm bg-white p-2 rounded border">
+                      <div className="font-medium">{insumo.denominacion}</div>
+                      <div className="text-gray-600">
+                        Cantidad: {data.cantidad} {insumo.unidadMedida?.denominacion ?? ''}
+                      </div>
+                      <div className="text-green-600 font-semibold">
+                        Precio: ${data.precioCosto}
+                      </div>
+                      <div className="text-blue-600 font-semibold">
+                        Total: ${(data.cantidad * data.precioCosto).toFixed(2)}
+                      </div>
                     </div>
-                    <div className="text-green-600 font-semibold">Precio: ${data.precioCosto}</div>
-                    <div className="text-blue-600 font-semibold">
-                      Total: ${(data.cantidad * data.precioCosto).toFixed(2)}
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
             </div>
             <div className="mt-2 pt-2 border-t border-blue-200">
               <div className="font-semibold text-blue-800">
                 Total compra: $
                 {Array.from(selectedInsumos.entries())
+                  .filter(([, data]) => data.cantidad > 0)
                   .reduce((total, [, data]) => total + data.cantidad * data.precioCosto, 0)
                   .toFixed(2)}
               </div>
@@ -202,7 +216,7 @@ const ModalCompraSeleccionInsumo: React.FC<ModalCompraSeleccionInsumoProps> = ({
                   const isSelected = selectedInsumos.has(insumo.id!);
                   const data = selectedInsumos.get(insumo.id!) || {
                     precioCosto: insumo.precioCompra ?? 0,
-                    cantidad: 1,
+                    cantidad: 0,
                   };
 
                   return (
@@ -302,7 +316,8 @@ const ModalCompraSeleccionInsumo: React.FC<ModalCompraSeleccionInsumoProps> = ({
         {/* Botones */}
         <div className="flex justify-between items-center pt-4 border-t">
           <div className="text-sm text-gray-600">
-            {selectedInsumos.size > 0 && `${selectedInsumos.size} insumo(s) seleccionado(s)`}
+            {selectedInsumos.size > 0 &&
+              `${Array.from(selectedInsumos.values()).filter((data) => data.cantidad > 0).length} insumo(s) con cantidad válida`}
           </div>
           <div className="flex gap-2">
             <button
@@ -315,12 +330,16 @@ const ModalCompraSeleccionInsumo: React.FC<ModalCompraSeleccionInsumoProps> = ({
             <button
               type="button"
               className={`font-bold py-2 px-4 rounded bg-primary hover:bg-primarydark text-white ${
-                selectedInsumos.size === 0 ? 'opacity-60 cursor-not-allowed' : ''
+                selectedInsumos.size === 0 || !hasValidQuantities()
+                  ? 'opacity-60 cursor-not-allowed'
+                  : ''
               }`}
               onClick={handleAddInsumos}
-              disabled={selectedInsumos.size === 0}
+              disabled={selectedInsumos.size === 0 || !hasValidQuantities()}
             >
-              Agregar {selectedInsumos.size} Insumo(s)
+              Agregar{' '}
+              {Array.from(selectedInsumos.values()).filter((data) => data.cantidad > 0).length}{' '}
+              Insumo(s)
             </button>
           </div>
         </div>

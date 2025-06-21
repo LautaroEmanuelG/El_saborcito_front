@@ -60,12 +60,14 @@ const ModalSeleccionInsumos: React.FC<ModalSeleccionInsumosProps> = ({
     }
   };
   const handleAddInsumos = () => {
-    if (selectedInsumos.size === 0) return;
+    if (selectedInsumos.size === 0 || !hasValidQuantities()) return;
 
-    const insumosToAdd = Array.from(selectedInsumos.entries()).map(([insumoId, cantidad]) => {
-      const insumo = insumos.find((i) => i.id === insumoId)!;
-      return { insumo, cantidad };
-    });
+    const insumosToAdd = Array.from(selectedInsumos.entries())
+      .filter(([, cantidad]) => cantidad > 0) // Solo incluir insumos con cantidad > 0
+      .map(([insumoId, cantidad]) => {
+        const insumo = insumos.find((i) => i.id === insumoId)!;
+        return { insumo, cantidad };
+      });
 
     if (onAddMultipleInsumos) {
       onAddMultipleInsumos(insumosToAdd);
@@ -84,7 +86,7 @@ const ModalSeleccionInsumos: React.FC<ModalSeleccionInsumosProps> = ({
       if (newMap.has(insumo.id!)) {
         newMap.delete(insumo.id!);
       } else {
-        newMap.set(insumo.id!, 1); // Cantidad por defecto
+        newMap.set(insumo.id!, 0); // Cantidad por defecto
       }
       return newMap;
     });
@@ -105,28 +107,37 @@ const ModalSeleccionInsumos: React.FC<ModalSeleccionInsumosProps> = ({
       });
     }
   };
+
+  // Verificar si todos los insumos seleccionados tienen cantidad > 0
+  const hasValidQuantities = () => {
+    if (selectedInsumos.size === 0) return false;
+    return Array.from(selectedInsumos.values()).every((cantidad) => cantidad > 0);
+  };
   return (
     <Modal open={open} onClose={onClose} title="🍲 Seleccionar Insumos" maxWidth="max-w-4xl">
       <div className="space-y-4 max-h-[80vh] overflow-y-auto">
         {/* Vista previa de insumos seleccionados */}
-        {selectedInsumos.size > 0 && (
+        {selectedInsumos.size > 0 && hasValidQuantities() && (
           <div className="bg-blue-50 p-4 rounded border">
             <h4 className="font-medium text-blue-800 mb-2">
-              Insumos seleccionados ({selectedInsumos.size}):
+              Insumos seleccionados (
+              {Array.from(selectedInsumos.values()).filter((cantidad) => cantidad > 0).length}):
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-32 overflow-y-auto">
-              {Array.from(selectedInsumos.entries()).map(([insumoId, cantidad]) => {
-                const insumo = insumos.find((i) => i.id === insumoId);
-                if (!insumo) return null;
-                return (
-                  <div key={insumoId} className="text-sm bg-white p-2 rounded border">
-                    <div className="font-medium">{insumo.denominacion}</div>
-                    <div className="text-gray-600">
-                      {cantidad} {insumo.unidadMedida?.denominacion ?? ''}
+              {Array.from(selectedInsumos.entries())
+                .filter(([, cantidad]) => cantidad > 0) // Solo mostrar insumos con cantidad > 0
+                .map(([insumoId, cantidad]) => {
+                  const insumo = insumos.find((i) => i.id === insumoId);
+                  if (!insumo) return null;
+                  return (
+                    <div key={insumoId} className="text-sm bg-white p-2 rounded border">
+                      <div className="font-medium">{insumo.denominacion}</div>
+                      <div className="text-gray-600">
+                        {cantidad} {insumo.unidadMedida?.denominacion ?? ''}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
             </div>
           </div>
         )}
@@ -164,7 +175,7 @@ const ModalSeleccionInsumos: React.FC<ModalSeleccionInsumosProps> = ({
                     (existing) => existing.id === insumo.id
                   );
                   const isSelected = selectedInsumos.has(insumo.id!);
-                  const cantidad = selectedInsumos.get(insumo.id!) || 1;
+                  const cantidad = selectedInsumos.get(insumo.id!) || 0;
 
                   return (
                     <div
@@ -236,7 +247,8 @@ const ModalSeleccionInsumos: React.FC<ModalSeleccionInsumosProps> = ({
         {/* Botones */}
         <div className="flex justify-between items-center pt-4 border-t">
           <div className="text-sm text-gray-600">
-            {selectedInsumos.size > 0 && `${selectedInsumos.size} insumo(s) seleccionado(s)`}
+            {selectedInsumos.size > 0 &&
+              `${Array.from(selectedInsumos.values()).filter((cantidad) => cantidad > 0).length} insumo(s) con cantidad válida`}
           </div>
           <div className="flex gap-2">
             <button
@@ -249,12 +261,16 @@ const ModalSeleccionInsumos: React.FC<ModalSeleccionInsumosProps> = ({
             <button
               type="button"
               className={`font-bold py-2 px-4 rounded bg-primary hover:bg-primarydark text-white ${
-                selectedInsumos.size === 0 ? 'opacity-60 cursor-not-allowed' : ''
+                selectedInsumos.size === 0 || !hasValidQuantities()
+                  ? 'opacity-60 cursor-not-allowed'
+                  : ''
               }`}
               onClick={handleAddInsumos}
-              disabled={selectedInsumos.size === 0}
+              disabled={selectedInsumos.size === 0 || !hasValidQuantities()}
             >
-              Agregar {selectedInsumos.size} Insumo(s)
+              Agregar{' '}
+              {Array.from(selectedInsumos.values()).filter((cantidad) => cantidad > 0).length}{' '}
+              Insumo(s)
             </button>
           </div>
         </div>
