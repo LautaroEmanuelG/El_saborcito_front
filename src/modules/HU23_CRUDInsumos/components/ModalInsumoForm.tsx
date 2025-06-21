@@ -250,6 +250,19 @@ export const ModalInsumoForm = ({
       return;
     }
 
+    // Validación de stock: no permitir aumentar stock en modo edición
+    if (
+      mode === 'edit' &&
+      form.stockActual !== undefined &&
+      initialValues.stockActual !== undefined &&
+      form.stockActual > initialValues.stockActual
+    ) {
+      alert(
+        'No se puede aumentar el stock desde el formulario de edición. Para aumentar el stock, debe realizar una compra en "Compra Insumos".'
+      );
+      return;
+    }
+
     if (!form.unidadMedida || !form.unidadMedida.id) {
       alert('Debes seleccionar una unidad de medida válida.');
       return;
@@ -275,11 +288,11 @@ export const ModalInsumoForm = ({
     onSubmit(payload, selectedImageFile ?? undefined);
   };
   if (!open) return null;
-  // Verificar si el stock actual es mayor al original (para deshabilitar el botón)
+  // Verificar si se está intentando aumentar el stock actual (incluyendo desde 0)
   const stockMayorAlOriginal = Boolean(
     mode === 'edit' &&
-      form.stockActual &&
-      initialValues.stockActual &&
+      form.stockActual !== undefined &&
+      initialValues.stockActual !== undefined &&
       form.stockActual > initialValues.stockActual
   );
 
@@ -294,350 +307,428 @@ export const ModalInsumoForm = ({
 
   return (
     <div className="fixed inset-0 bg-negro bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-blanco p-6 rounded-lg shadow-lg w-full max-w-md">
+      <div className="bg-blanco p-6 rounded-lg shadow-lg w-full max-w-4xl">
         <h2 className="text-xl font-bold mb-4 text-center">
           {mode === 'add' ? 'Agregar Insumo' : mode === 'edit' ? 'Editar Insumo' : 'Ver Insumo'}
         </h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1" htmlFor="denominacion">
-              Denominación<span className="text-red-500">*</span>
-            </label>
-            <div className="relative">
-              <input
-                id="denominacion"
-                name="denominacion"
-                value={form.denominacion ?? ''}
-                onChange={handleChange}
-                disabled={mode === 'view'}
-                className={`w-full border rounded px-3 py-2 pr-8 ${
-                  denominacionError ? 'border-red-500' : 'border-gray-300'
-                }`}
-                required
-                autoFocus
-              />
-              {isValidatingDenominacion && (
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                </div>
-              )}
-            </div>
-            {denominacionError && (
-              <p
-                className={`text-xs mt-1 ${
-                  denominacionStatus?.isDeleted ? 'text-orange-600' : 'text-red-600'
-                }`}
-              >
-                {denominacionError}
-              </p>
-            )}
-          </div>{' '}
-          {/* Eliminado campo Precio Compra */}
-          {/* Campo Stock Actual - Solo en modo edición */}
-          {mode === 'edit' && (
-            <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="stockActual">
-                Stock Actual<span className="text-red-500">*</span>
-              </label>
-              <input
-                id="stockActual"
-                name="stockActual"
-                type="number"
-                value={form.stockActual ?? 0}
-                onChange={(e) => {
-                  const nuevoStock = Number(e.target.value);
-                  setForm((prev) => ({
-                    ...prev,
-                    stockActual: nuevoStock,
-                  }));
-                }}
-                className="w-full border rounded px-3 py-2"
-                required
-                min={0}
-              />{' '}
-              {form.stockActual &&
-                initialValues.stockActual &&
-                form.stockActual > initialValues.stockActual && (
-                  <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                    <p className="text-sm text-blue-700 font-medium flex items-center">
-                      <span className="mr-2">💡</span>
-                      Para aumentar el stock actual (+{form.stockActual -
-                        initialValues.stockActual}{' '}
-                      {form.unidadMedida?.denominacion || 'unidades'}), debe realizar una compra en
-                      "Compra Insumos".
+        <div className="h-[70vh] overflow-hidden">
+          <form onSubmit={handleSubmit} className="h-full flex flex-col">
+            <div className="flex flex-row flex-grow overflow-hidden">
+              {/* Columna izquierda: Formulario */}
+              <div className="flex-1 pr-4 space-y-4 overflow-y-auto">
+                <div>
+                  <label className="block text-sm font-medium mb-1" htmlFor="denominacion">
+                    Denominación<span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="denominacion"
+                      name="denominacion"
+                      value={form.denominacion ?? ''}
+                      onChange={handleChange}
+                      disabled={mode === 'view'}
+                      className={`w-full border rounded px-3 py-2 pr-8 ${
+                        denominacionError ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      required
+                      autoFocus
+                    />
+                    {isValidatingDenominacion && (
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                      </div>
+                    )}
+                  </div>
+                  {denominacionError && (
+                    <p
+                      className={`text-xs mt-1 ${
+                        denominacionStatus?.isDeleted ? 'text-orange-600' : 'text-red-600'
+                      }`}
+                    >
+                      {denominacionError}
+                    </p>
+                  )}
+                </div>{' '}
+                {/* Eliminado campo Precio Compra */}
+                {/* Campo Stock Actual - Solo en modo edición */}
+                {mode === 'edit' && (
+                  <div>
+                    <label className="block text-sm font-medium mb-1" htmlFor="stockActual">
+                      Stock Actual<span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="stockActual"
+                      name="stockActual"
+                      type="number"
+                      value={form.stockActual ?? 0}
+                      onChange={(e) => {
+                        const nuevoStock = Number(e.target.value);
+                        setForm((prev) => ({
+                          ...prev,
+                          stockActual: nuevoStock,
+                        }));
+                      }}
+                      className="w-full border rounded px-3 py-2"
+                      required
+                      min={0}
+                    />{' '}
+                    {form.stockActual !== undefined &&
+                      initialValues.stockActual !== undefined &&
+                      form.stockActual > initialValues.stockActual && (
+                        <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                          <p className="text-sm text-blue-700 font-medium flex items-center">
+                            <span className="mr-2">💡</span>
+                            Para aumentar el stock actual
+                            {initialValues.stockActual === 0
+                              ? ` (desde 0 a ${form.stockActual})`
+                              : ` (+${form.stockActual - initialValues.stockActual})`}{' '}
+                            {form.unidadMedida?.denominacion || 'unidades'}, debe realizar una
+                            compra en "Compra Insumos".
+                          </p>
+                        </div>
+                      )}
+                  </div>
+                )}
+                {/* Eliminado campo Stock Actual para otros modos */}
+                {!form.esParaElaborar && (
+                  <div>
+                    <label className="block text-sm font-medium mb-1" htmlFor="precioVenta">
+                      Precio Venta<span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="precioVenta"
+                      name="precioVenta"
+                      type="number"
+                      value={form.precioVenta ?? 0}
+                      onChange={handleChange}
+                      disabled={mode === 'view'}
+                      className="w-full border rounded px-3 py-2"
+                      required
+                      min={0}
+                    />
+                  </div>
+                )}{' '}
+                {form.esParaElaborar && precioOriginal && precioOriginal > 0 && (
+                  <div className="mt-2 p-3 bg-orange-50 border border-orange-200 rounded-md">
+                    <p className="text-sm text-orange-700 font-medium flex items-center">
+                      <span className="mr-2">⚠️</span>
+                      Precio de venta anulado: ${precioOriginal} (Insumo para elaboración)
                     </p>
                   </div>
                 )}
+                <div>
+                  <label className="block text-sm font-medium mb-1" htmlFor="stockMinimo">
+                    Stock Mínimo<span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    id="stockMinimo"
+                    name="stockMinimo"
+                    type="number"
+                    value={form.stockMinimo ?? 0}
+                    onChange={handleChange}
+                    disabled={mode === 'view'}
+                    className="w-full border rounded px-3 py-2"
+                    required
+                    min={0}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1" htmlFor="categoriaPadre">
+                    Categoría<span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    id="categoriaPadre"
+                    name="categoriaPadre"
+                    value={selectedCategoriaPadreId ?? ''}
+                    onChange={handleCategoriaPadreChange}
+                    disabled={mode === 'view'}
+                    className="w-full border rounded px-3 py-2"
+                    required
+                  >
+                    <option value="">Seleccionar Categoría</option>
+                    {categoriasPadre.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.denominacion}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {subcategorias.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium mb-1" htmlFor="subcategoria">
+                      Subcategoría
+                    </label>
+                    <select
+                      id="subcategoria"
+                      name="subcategoria"
+                      value={selectedSubcategoriaId ?? ''}
+                      onChange={handleSubcategoriaChange}
+                      disabled={mode === 'view'}
+                      className="w-full border rounded px-3 py-2"
+                      required
+                    >
+                      <option value="">Seleccionar Subcategoría</option>
+                      {subcategorias.map((cat) => (
+                        <option key={cat.id} value={cat.id}>
+                          {cat.denominacion}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}{' '}
+                <div>
+                  <label className="block text-sm font-medium mb-1" htmlFor="unidadMedida">
+                    Unidad de Medida<span className="text-red-500">*</span>
+                  </label>{' '}
+                  <div className="flex gap-2">
+                    <select
+                      id="unidadMedida"
+                      name="unidadMedida"
+                      value={form.unidadMedida?.id ?? ''}
+                      onChange={handleUnidadChange}
+                      disabled={mode === 'view'}
+                      className="flex-1 border rounded px-3 py-2"
+                      required
+                    >
+                      <option value="">Seleccionar Unidad de Medida</option>
+                      {unidadesLocal.map((uni) => (
+                        <option key={uni.id} value={uni.id}>
+                          {uni.denominacion}
+                        </option>
+                      ))}
+                    </select>{' '}
+                    {mode !== 'view' && (
+                      <button
+                        type="button"
+                        onClick={handleAgregarUnidad}
+                        className="bg-primary hover:bg-primarydark text-blanco px-3 py-2 rounded font-bold text-lg leading-none"
+                        title="Agregar nueva unidad de medida"
+                      >
+                        +
+                      </button>
+                    )}
+                  </div>
+                  {/* Mostrar advertencia si la unidad original del insumo ya no está disponible */}
+                  {initialValues.unidadMedida &&
+                    mode === 'edit' &&
+                    !unidadesLocal.find((u) => u.id === initialValues.unidadMedida?.id) && (
+                      <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-3 py-2 rounded text-sm mt-1">
+                        ⚠️ La unidad de medida original "{initialValues.unidadMedida.denominacion}"
+                        ya no está disponible.
+                      </div>
+                    )}
+                </div>
+                <div className="flex justify-center items-center gap-2 mt-2">
+                  <input
+                    id="habilitado"
+                    type="checkbox"
+                    checked={isHabilitado}
+                    onChange={() => setIsHabilitado((prev) => !prev)}
+                    disabled={mode === 'view'}
+                  />
+                  <label htmlFor="habilitado" className="text-base select-none cursor-pointer">
+                    Habilitado
+                  </label>
+                </div>{' '}
+                <div className="flex justify-center items-center gap-2 mt-2">
+                  <input
+                    id="esParaElaborar"
+                    type="checkbox"
+                    checked={!!form.esParaElaborar}
+                    onChange={() =>
+                      setForm((prev) => {
+                        const nuevoEsParaElaborar = !prev.esParaElaborar;
+                        if (nuevoEsParaElaborar && prev.precioVenta && prev.precioVenta > 0) {
+                          // Guardar el precio original antes de anularlo
+                          setPrecioOriginal(prev.precioVenta);
+                        } else if (!nuevoEsParaElaborar) {
+                          // Si se desmarca, limpiar el precio original
+                          setPrecioOriginal(null);
+                        }
+
+                        return {
+                          ...prev,
+                          esParaElaborar: nuevoEsParaElaborar,
+                          precioVenta: nuevoEsParaElaborar ? 0 : prev.precioVenta,
+                        };
+                      })
+                    }
+                    disabled={mode === 'view'}
+                  />
+                  <label htmlFor="esParaElaborar" className="text-base select-none cursor-pointer">
+                    Es para elaborar
+                  </label>
+                </div>{' '}
+              </div>
+
+              {/* Columna derecha: Imagen */}
+              <div className="flex-1 border-l pl-4 flex flex-col justify-center">
+                <h4 className="text-lg font-medium mb-4 text-center">Imagen</h4>
+                <div className="flex-1 flex items-center justify-center">
+                  {mode === 'add' || mode === 'edit' ? (
+                    <div className="w-full flex flex-col items-center">
+                      {imagenPreview && (
+                        <img
+                          src={imagenPreview}
+                          alt="Preview"
+                          className="mb-4 rounded max-h-40 object-contain border"
+                        />
+                      )}
+
+                      {/* Input file oculto */}
+                      <input
+                        id="imagen-upload-insumo"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+
+                          // Validar archivo
+                          try {
+                            // Validar tipo de archivo
+                            if (!file.type.startsWith('image/')) {
+                              alert('El archivo debe ser una imagen');
+                              e.target.value = '';
+                              return;
+                            }
+
+                            // Validar tamaño (10MB máximo)
+                            const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+                            if (file.size > MAX_SIZE) {
+                              alert('La imagen es demasiado grande (máximo 10MB)');
+                              e.target.value = '';
+                              return;
+                            }
+
+                            // Validar formatos específicos
+                            const ALLOWED_TYPES = [
+                              'image/jpeg',
+                              'image/png',
+                              'image/gif',
+                              'image/webp',
+                            ];
+                            if (!ALLOWED_TYPES.includes(file.type)) {
+                              alert('Formato no soportado. Use JPEG, PNG, GIF o WebP');
+                              e.target.value = '';
+                              return;
+                            }
+
+                            // Si pasa todas las validaciones, procesar la imagen
+                            setSelectedImageFile(file);
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              setImagenPreview(reader.result as string);
+                            };
+                            reader.readAsDataURL(file);
+                          } catch (error) {
+                            alert('Error al procesar la imagen');
+                            e.target.value = '';
+                          }
+                        }}
+                      />
+
+                      {/* Botón customizado dinámico */}
+                      {selectedImageFile ? (
+                        // Botón compacto cuando hay imagen seleccionada
+                        <label
+                          htmlFor="imagen-upload-insumo"
+                          className="cursor-pointer bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded px-3 py-2 text-center transition-colors duration-200"
+                        >
+                          <div className="flex items-center gap-2">
+                            <svg
+                              className="w-4 h-4 text-gray-500"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                              />
+                            </svg>
+                            <span className="text-xs text-gray-600 max-w-[120px] truncate">
+                              {selectedImageFile.name}
+                            </span>
+                          </div>
+                        </label>
+                      ) : (
+                        // Botón grande cuando no hay imagen seleccionada
+                        <label
+                          htmlFor="imagen-upload-insumo"
+                          className="cursor-pointer bg-gray-100 hover:bg-gray-200 border-2 border-dashed border-gray-300 rounded-lg px-6 py-4 text-center transition-colors duration-200"
+                        >
+                          <div className="flex flex-col items-center">
+                            <svg
+                              className="w-8 h-8 text-gray-400 mb-2"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                              />
+                            </svg>
+                            <span className="text-sm text-gray-600">Seleccionar archivo</span>
+                            <span className="text-xs text-gray-400 mt-1">
+                              Sin archivos seleccionados
+                            </span>
+                          </div>
+                        </label>
+                      )}
+                    </div>
+                  ) : // Modo view
+                  imagenPreview ? (
+                    <img
+                      src={imagenPreview}
+                      alt="Imagen del insumo"
+                      className="rounded max-h-40 object-contain border"
+                    />
+                  ) : (
+                    <div className="text-gray-500 text-center">
+                      <p>Sin imagen</p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
-          )}
-          {/* Eliminado campo Stock Actual para otros modos */}
-          {!form.esParaElaborar && (
-            <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="precioVenta">
-                Precio Venta<span className="text-red-500">*</span>
-              </label>
-              <input
-                id="precioVenta"
-                name="precioVenta"
-                type="number"
-                value={form.precioVenta ?? 0}
-                onChange={handleChange}
-                disabled={mode === 'view'}
-                className="w-full border rounded px-3 py-2"
-                required
-                min={0}
-              />
-            </div>
-          )}{' '}
-          {form.esParaElaborar && precioOriginal && precioOriginal > 0 && (
-            <div className="mt-2 p-3 bg-orange-50 border border-orange-200 rounded-md">
-              <p className="text-sm text-orange-700 font-medium flex items-center">
-                <span className="mr-2">⚠️</span>
-                Precio de venta anulado: ${precioOriginal} (Insumo para elaboración)
-              </p>
-            </div>
-          )}
-          <div>
-            <label className="block text-sm font-medium mb-1" htmlFor="stockMinimo">
-              Stock Mínimo<span className="text-red-500">*</span>
-            </label>
-            <input
-              id="stockMinimo"
-              name="stockMinimo"
-              type="number"
-              value={form.stockMinimo ?? 0}
-              onChange={handleChange}
-              disabled={mode === 'view'}
-              className="w-full border rounded px-3 py-2"
-              required
-              min={0}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1" htmlFor="categoriaPadre">
-              Categoría<span className="text-red-500">*</span>
-            </label>
-            <select
-              id="categoriaPadre"
-              name="categoriaPadre"
-              value={selectedCategoriaPadreId ?? ''}
-              onChange={handleCategoriaPadreChange}
-              disabled={mode === 'view'}
-              className="w-full border rounded px-3 py-2"
-              required
-            >
-              <option value="">Seleccionar Categoría</option>
-              {categoriasPadre.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.denominacion}
-                </option>
-              ))}
-            </select>
-          </div>
-          {subcategorias.length > 0 && (
-            <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="subcategoria">
-                Subcategoría
-              </label>
-              <select
-                id="subcategoria"
-                name="subcategoria"
-                value={selectedSubcategoriaId ?? ''}
-                onChange={handleSubcategoriaChange}
-                disabled={mode === 'view'}
-                className="w-full border rounded px-3 py-2"
-                required
-              >
-                <option value="">Seleccionar Subcategoría</option>
-                {subcategorias.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.denominacion}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}{' '}
-          <div>
-            <label className="block text-sm font-medium mb-1" htmlFor="unidadMedida">
-              Unidad de Medida<span className="text-red-500">*</span>
-            </label>{' '}
-            <div className="flex gap-2">
-              <select
-                id="unidadMedida"
-                name="unidadMedida"
-                value={form.unidadMedida?.id ?? ''}
-                onChange={handleUnidadChange}
-                disabled={mode === 'view'}
-                className="flex-1 border rounded px-3 py-2"
-                required
-              >
-                <option value="">Seleccionar Unidad de Medida</option>
-                {unidadesLocal.map((uni) => (
-                  <option key={uni.id} value={uni.id}>
-                    {uni.denominacion}
-                  </option>
-                ))}
-              </select>{' '}
+
+            {/* Botones */}
+            <div className="flex justify-center gap-2 pt-4 border-t mt-4">
+              <button type="button" className="bg-gray-300 px-4 py-2 rounded" onClick={onClose}>
+                Cancelar
+              </button>
               {mode !== 'view' && (
                 <button
-                  type="button"
-                  onClick={handleAgregarUnidad}
-                  className="bg-primary hover:bg-primarydark text-blanco px-3 py-2 rounded font-bold text-lg leading-none"
-                  title="Agregar nueva unidad de medida"
+                  type="submit"
+                  className={`px-4 py-2 rounded ${
+                    tieneErrores
+                      ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                      : 'bg-primary text-blanco hover:bg-primarydark'
+                  }`}
+                  disabled={tieneErrores}
+                  title={
+                    stockMayorAlOriginal
+                      ? 'No se puede aumentar el stock. Use el módulo de compras.'
+                      : denominacionError
+                        ? denominacionError
+                        : isValidatingDenominacion
+                          ? 'Validando denominación...'
+                          : undefined
+                  }
                 >
-                  +
+                  {mode === 'add' ? 'Crear' : 'Guardar'}
                 </button>
-              )}
+              )}{' '}
             </div>
-            {/* Mostrar advertencia si la unidad original del insumo ya no está disponible */}
-            {initialValues.unidadMedida &&
-              mode === 'edit' &&
-              !unidadesLocal.find((u) => u.id === initialValues.unidadMedida?.id) && (
-                <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-3 py-2 rounded text-sm mt-1">
-                  ⚠️ La unidad de medida original "{initialValues.unidadMedida.denominacion}" ya no
-                  está disponible.
-                </div>
-              )}
-          </div>
-          {/* Imagen: carga y preview */}
-          {(mode === 'add' || mode === 'edit') && (
-            <div className="flex flex-col items-center mt-4">
-              <label className="block text-sm font-medium mb-1">Imagen</label>
-              {imagenPreview && (
-                <img
-                  src={imagenPreview}
-                  alt="Preview"
-                  className="mb-2 rounded max-h-32 object-contain border"
-                />
-              )}
-              <input
-                type="file"
-                accept="image/*"
-                className="mb-2 w-full"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-
-                  // Validar archivo
-                  try {
-                    // Validar tipo de archivo
-                    if (!file.type.startsWith('image/')) {
-                      alert('El archivo debe ser una imagen');
-                      e.target.value = '';
-                      return;
-                    }
-
-                    // Validar tamaño (10MB máximo)
-                    const MAX_SIZE = 10 * 1024 * 1024; // 10MB
-                    if (file.size > MAX_SIZE) {
-                      alert('La imagen es demasiado grande (máximo 10MB)');
-                      e.target.value = '';
-                      return;
-                    }
-
-                    // Validar formatos específicos
-                    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-                    if (!ALLOWED_TYPES.includes(file.type)) {
-                      alert('Formato no soportado. Use JPEG, PNG, GIF o WebP');
-                      e.target.value = '';
-                      return;
-                    }
-
-                    // Si pasa todas las validaciones, procesar la imagen
-                    setSelectedImageFile(file);
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                      setImagenPreview(reader.result as string);
-                    };
-                    reader.readAsDataURL(file);
-                  } catch (error) {
-                    alert('Error al procesar la imagen');
-                    e.target.value = '';
-                  }
-                }}
-              />
-            </div>
-          )}
-          {/* Imagen en modo view */}
-          {mode === 'view' && imagenPreview && (
-            <div className="flex flex-col items-center mt-4">
-              <label className="block text-sm font-medium mb-1">Imagen</label>
-              <img
-                src={imagenPreview}
-                alt="Imagen del insumo"
-                className="mb-2 rounded max-h-32 object-contain border"
-              />
-            </div>
-          )}
-          <div className="flex justify-center items-center gap-2 mt-2">
-            <input
-              id="habilitado"
-              type="checkbox"
-              checked={isHabilitado}
-              onChange={() => setIsHabilitado((prev) => !prev)}
-              disabled={mode === 'view'}
-            />
-            <label htmlFor="habilitado" className="text-base select-none cursor-pointer">
-              Habilitado
-            </label>
-          </div>{' '}
-          <div className="flex justify-center items-center gap-2 mt-2">
-            <input
-              id="esParaElaborar"
-              type="checkbox"
-              checked={!!form.esParaElaborar}
-              onChange={() =>
-                setForm((prev) => {
-                  const nuevoEsParaElaborar = !prev.esParaElaborar;
-                  if (nuevoEsParaElaborar && prev.precioVenta && prev.precioVenta > 0) {
-                    // Guardar el precio original antes de anularlo
-                    setPrecioOriginal(prev.precioVenta);
-                  } else if (!nuevoEsParaElaborar) {
-                    // Si se desmarca, limpiar el precio original
-                    setPrecioOriginal(null);
-                  }
-
-                  return {
-                    ...prev,
-                    esParaElaborar: nuevoEsParaElaborar,
-                    precioVenta: nuevoEsParaElaborar ? 0 : prev.precioVenta,
-                  };
-                })
-              }
-              disabled={mode === 'view'}
-            />
-            <label htmlFor="esParaElaborar" className="text-base select-none cursor-pointer">
-              Es para elaborar
-            </label>
-          </div>{' '}
-          <div className="flex justify-center gap-2 mt-4">
-            <button type="button" className="bg-gray-300 px-4 py-2 rounded" onClick={onClose}>
-              Cancelar
-            </button>
-            {mode !== 'view' && (
-              <button
-                type="submit"
-                className={`px-4 py-2 rounded ${
-                  tieneErrores
-                    ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
-                    : 'bg-primary text-blanco hover:bg-primarydark'
-                }`}
-                disabled={tieneErrores}
-                title={
-                  stockMayorAlOriginal
-                    ? 'No se puede aumentar el stock. Use el módulo de compras.'
-                    : denominacionError
-                      ? denominacionError
-                      : isValidatingDenominacion
-                        ? 'Validando denominación...'
-                        : undefined
-                }
-              >
-                {mode === 'add' ? 'Crear' : 'Guardar'}
-              </button>
-            )}{' '}
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
 
       {/* Modal para agregar unidad de medida */}

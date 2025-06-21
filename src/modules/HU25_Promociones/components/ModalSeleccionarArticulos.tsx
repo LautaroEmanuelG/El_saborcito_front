@@ -152,135 +152,138 @@ const ModalSeleccionarArticulos: React.FC<ModalSeleccionarArticulosProps> = ({
   };
   return (
     <Modal open={open} onClose={onClose} title="🍔 Seleccionar Artículos" maxWidth="max-w-4xl">
-      <div className="space-y-4 max-h-[80vh] overflow-y-auto">
-        {/* Vista previa de artículos seleccionados */}
-        {selectedArticulos.size > 0 && hasValidQuantities() && (
-          <div className="bg-blue-50 p-4 rounded border">
-            <h4 className="font-medium text-blue-800 mb-2">
-              Artículos seleccionados (
-              {Array.from(selectedArticulos.values()).filter((cantidad) => cantidad > 0).length}):
-            </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-32 overflow-y-auto">
-              {Array.from(selectedArticulos.entries())
-                .filter(([, cantidad]) => cantidad > 0) // Solo mostrar artículos con cantidad > 0
-                .map(([articuloId, cantidad]) => {
-                  const articulo = articulos.find((a) => a.id === articuloId);
-                  if (!articulo) return null;
-                  return (
-                    <div key={articuloId} className="text-sm bg-white p-2 rounded border">
-                      <div className="font-medium">{articulo.denominacion}</div>
-                      <div className="text-gray-600">Cantidad: {cantidad}</div>
-                      <div className="text-green-600">Precio: ${articulo.precioVenta}</div>
-                    </div>
-                  );
-                })}
-            </div>
-          </div>
-        )}
-
-        {/* Búsqueda */}
-        <div>
-          <label className="block text-sm font-medium mb-1">Buscar artículo</label>
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Escribe para buscar..."
-            className="w-full border rounded px-3 py-2"
-          />
-        </div>
-
-        {/* Lista de artículos */}
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Seleccionar artículos (haz clic para agregar/quitar)
-          </label>
-          {loading ? (
-            <div className="text-center py-4">Cargando artículos...</div>
-          ) : error ? (
-            <div className="text-red-500 text-center py-4">{error}</div>
-          ) : filteredArticulos.length === 0 ? (
-            <div className="text-gray-500 text-center py-4">
-              {searchTerm ? 'No se encontraron artículos' : 'No hay artículos disponibles'}
-            </div>
-          ) : (
-            <div className="max-h-96 overflow-y-auto border rounded p-2">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
-                {filteredArticulos.map((articulo) => {
-                  const yaSeleccionado = articulosExistentes.some(
-                    (existing) => existing.id === articulo.id
-                  );
-                  const isSelected = selectedArticulos.has(articulo.id!);
-                  const cantidad = selectedArticulos.get(articulo.id!) || 0;
-
-                  return (
-                    <div
-                      key={articulo.id}
-                      className={`p-3 rounded border transition-colors ${
-                        isSelected
-                          ? 'bg-blue-100 border-blue-300'
-                          : yaSeleccionado
-                            ? 'bg-yellow-50 border-yellow-300'
-                            : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
-                      }`}
-                    >
+      <div className="h-[65vh] flex flex-col">
+        {/* Contenido scrolleable */}
+        <div className="flex-1 overflow-y-auto space-y-4 p-4">
+          {/* Vista previa de artículos seleccionados */}
+          {selectedArticulos.size > 0 && (
+            <div className="bg-blue-50 p-4 rounded border">
+              <h4 className="font-medium text-blue-800 mb-2">
+                Artículos seleccionados ({selectedArticulos.size}):
+              </h4>
+              <div className="max-h-32 overflow-y-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {Array.from(selectedArticulos.entries()).map(([articuloId, cantidad]) => {
+                    const articulo = articulos.find((a) => a.id === articuloId);
+                    if (!articulo) return null;
+                    return (
                       <div
-                        className="cursor-pointer"
-                        onClick={() => !yaSeleccionado && handleArticuloToggle(articulo)}
+                        key={articuloId}
+                        className={`text-sm p-2 rounded border ${cantidad > 0 ? 'bg-white' : 'bg-gray-100'}`}
                       >
-                        <div className="flex justify-between items-start mb-2">
-                          <div className="flex-1">
-                            <div className="font-medium flex items-center gap-2">
-                              {isSelected && <span className="text-blue-600">✓</span>}
-                              {articulo.denominacion}
-                              {yaSeleccionado && (
-                                <span className="text-xs bg-yellow-200 text-yellow-800 px-2 py-1 rounded">
-                                  Ya agregado
-                                </span>
-                              )}
-                            </div>
-                            <div className="text-sm text-gray-600">
-                              Categoría: {getCategoriaPadreDenominacion(articulo.categoriaId)}
-                            </div>
-                          </div>
-                          <div className="text-sm font-semibold text-green-600">
-                            ${articulo.precioVenta}
-                          </div>
+                        <div className="font-medium">{articulo.denominacion}</div>
+                        <div className={`text-gray-600 ${cantidad === 0 ? 'text-red-500' : ''}`}>
+                          {cantidad > 0 ? `Cantidad: ${cantidad}` : 'Sin cantidad'}
                         </div>
+                        <div className="text-green-600">Precio: ${articulo.precioVenta}</div>
                       </div>
-
-                      {/* Campo de cantidad para artículos seleccionados */}
-                      {isSelected && (
-                        <div className="mt-2 pt-2 border-t border-blue-200">
-                          <label className="block text-xs font-medium mb-1">Cantidad</label>
-                          <input
-                            type="number"
-                            value={cantidad}
-                            onChange={(e) =>
-                              handleCantidadChange(articulo.id!, Number(e.target.value))
-                            }
-                            min="0.01"
-                            step="0.01"
-                            className="w-full border rounded px-2 py-1 text-sm"
-                            placeholder="Cantidad"
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             </div>
           )}
+
+          {/* Búsqueda */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Buscar artículo</label>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Escribe para buscar..."
+              className="w-full border rounded px-3 py-2"
+            />
+          </div>
+
+          {/* Lista de artículos */}
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Seleccionar artículos (haz clic para agregar/quitar)
+            </label>
+            {loading ? (
+              <div className="text-center py-4">Cargando artículos...</div>
+            ) : error ? (
+              <div className="text-red-500 text-center py-4">{error}</div>
+            ) : filteredArticulos.length === 0 ? (
+              <div className="text-gray-500 text-center py-4">
+                {searchTerm ? 'No se encontraron artículos' : 'No hay artículos disponibles'}
+              </div>
+            ) : (
+              <div className="max-h-64 overflow-y-auto border rounded p-2">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                  {filteredArticulos.map((articulo) => {
+                    const yaSeleccionado = articulosExistentes.some(
+                      (existing) => existing.id === articulo.id
+                    );
+                    const isSelected = selectedArticulos.has(articulo.id!);
+                    const cantidad = selectedArticulos.get(articulo.id!) || 0;
+
+                    return (
+                      <div
+                        key={articulo.id}
+                        className={`p-3 rounded border transition-colors ${
+                          isSelected
+                            ? 'bg-blue-100 border-blue-300'
+                            : yaSeleccionado
+                              ? 'bg-yellow-50 border-yellow-300'
+                              : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                        }`}
+                      >
+                        <div
+                          className="cursor-pointer"
+                          onClick={() => !yaSeleccionado && handleArticuloToggle(articulo)}
+                        >
+                          <div className="flex justify-between items-start mb-2">
+                            <div className="flex-1">
+                              <div className="font-medium flex items-center gap-2">
+                                {isSelected && <span className="text-blue-600">✓</span>}
+                                {articulo.denominacion}
+                                {yaSeleccionado && (
+                                  <span className="text-xs bg-yellow-200 text-yellow-800 px-2 py-1 rounded">
+                                    Ya agregado
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-sm text-gray-600">
+                                Categoría: {getCategoriaPadreDenominacion(articulo.categoriaId)}
+                              </div>
+                            </div>
+                            <div className="text-sm font-semibold text-green-600">
+                              ${articulo.precioVenta}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Campo de cantidad para artículos seleccionados */}
+                        {isSelected && (
+                          <div className="mt-2 pt-2 border-t border-blue-200">
+                            <label className="block text-xs font-medium mb-1">Cantidad</label>
+                            <input
+                              type="number"
+                              value={cantidad}
+                              onChange={(e) =>
+                                handleCantidadChange(articulo.id!, Number(e.target.value))
+                              }
+                              min="0.01"
+                              step="0.01"
+                              className="w-full border rounded px-2 py-1 text-sm"
+                              placeholder="Cantidad"
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Botones */}
-        <div className="flex justify-between items-center pt-4 border-t">
-          <div className="text-sm text-gray-600">
-            {selectedArticulos.size > 0 &&
-              `${Array.from(selectedArticulos.values()).filter((cantidad) => cantidad > 0).length} artículo(s) con cantidad válida`}
-          </div>
+        <div className="flex justify-center items-center pt-4 border-t">
           <div className="flex gap-2">
             <button
               type="button"
