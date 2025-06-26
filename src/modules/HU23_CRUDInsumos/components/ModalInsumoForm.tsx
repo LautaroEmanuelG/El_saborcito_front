@@ -342,14 +342,20 @@ export const ModalInsumoForm = ({
                   <div>
                     <label className="block text-sm font-medium mb-1">Stock Actual</label>
                     <div className="w-full border rounded px-3 py-2 bg-gray-100">
-                      {form.stockActual ?? 0} {form.unidadMedida?.denominacion ?? ''}
+                      {form.esParaElaborar
+                        ? (form.stockActual ?? 0).toFixed(2)
+                        : Math.floor(form.stockActual ?? 0).toString()}{' '}
+                      {form.unidadMedida?.denominacion ?? ''}
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium mb-1">Stock Mínimo</label>
                     <div className="w-full border rounded px-3 py-2 bg-gray-100">
-                      {form.stockMinimo ?? 0} {form.unidadMedida?.denominacion ?? ''}
+                      {form.esParaElaborar
+                        ? (form.stockMinimo ?? 0).toFixed(2)
+                        : Math.floor(form.stockMinimo ?? 0).toString()}{' '}
+                      {form.unidadMedida?.denominacion ?? ''}
                     </div>
                   </div>
 
@@ -509,7 +515,11 @@ export const ModalInsumoForm = ({
                         type="number"
                         value={form.stockActual ?? 0}
                         onChange={(e) => {
-                          const nuevoStock = Number(e.target.value);
+                          let nuevoStock = Number(e.target.value);
+                          // Si no es para elaborar, redondear a entero
+                          if (!form.esParaElaborar) {
+                            nuevoStock = Math.round(nuevoStock);
+                          }
                           setForm((prev) => ({
                             ...prev,
                             stockActual: nuevoStock,
@@ -518,6 +528,7 @@ export const ModalInsumoForm = ({
                         className="w-full border rounded px-3 py-2"
                         required
                         min={0}
+                        step={form.esParaElaborar ? '0.01' : '1'}
                       />{' '}
                       {form.stockActual !== undefined &&
                         initialValues.stockActual !== undefined &&
@@ -553,10 +564,21 @@ export const ModalInsumoForm = ({
                       name="stockMinimo"
                       type="number"
                       value={form.stockMinimo ?? 0}
-                      onChange={handleChange}
+                      onChange={(e) => {
+                        let nuevoStock = Number(e.target.value);
+                        // Si no es para elaborar, redondear a entero
+                        if (!form.esParaElaborar) {
+                          nuevoStock = Math.round(nuevoStock);
+                        }
+                        setForm((prev) => ({
+                          ...prev,
+                          stockMinimo: nuevoStock,
+                        }));
+                      }}
                       className="w-full border rounded px-3 py-2"
                       required
                       min={0}
+                      step={form.esParaElaborar ? '0.01' : '1'}
                     />
                   </div>
                   <div>

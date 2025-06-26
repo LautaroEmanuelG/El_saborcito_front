@@ -292,6 +292,7 @@ export const CompraIngredientesModal = ({ open, onClose, onCompraRegistrada }: P
         cantidad={insumoEditando?.cantidad || 0}
         precioCosto={insumoEditando?.precioCosto || 0}
         unidadMedida={insumoEditando?.insumo.unidadMedida?.denominacion}
+        esParaElaborar={insumoEditando?.insumo.esParaElaborar || false}
         onSave={handleSaveEditInsumo}
       />
     </div>

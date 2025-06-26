@@ -8,6 +8,7 @@ interface ModalEditarInsumoCompraProps {
   cantidad: number;
   precioCosto: number;
   unidadMedida?: string;
+  esParaElaborar: boolean;
   onSave: (nuevaCantidad: number, nuevoPrecioCosto: number) => void;
 }
 
@@ -18,10 +19,17 @@ const ModalEditarInsumoCompra: React.FC<ModalEditarInsumoCompraProps> = ({
   cantidad,
   precioCosto,
   unidadMedida,
+  esParaElaborar,
   onSave,
 }) => {
   const [nuevaCantidad, setNuevaCantidad] = useState(cantidad);
   const [nuevoPrecioCosto, setNuevoPrecioCosto] = useState(precioCosto);
+
+  const handleCantidadChange = (valor: number) => {
+    // Si no es para elaborar, redondear a entero; si es para elaborar, mantener decimales
+    const cantidadFinal = !esParaElaborar ? Math.round(valor) : valor;
+    setNuevaCantidad(cantidadFinal);
+  };
 
   useEffect(() => {
     setNuevaCantidad(cantidad);
@@ -56,11 +64,11 @@ const ModalEditarInsumoCompra: React.FC<ModalEditarInsumoCompraProps> = ({
           <input
             id="cantidadInput"
             type="number"
-            min={0.01}
-            step={0.01}
+            min={esParaElaborar ? '0.01' : '1'}
+            step={esParaElaborar ? '0.01' : '1'}
             className="w-full border rounded px-3 py-2 bg-gray-100 text-base text-negro"
-            value={nuevaCantidad}
-            onChange={(e) => setNuevaCantidad(Number(e.target.value))}
+            value={esParaElaborar ? nuevaCantidad.toFixed(2) : nuevaCantidad.toString()}
+            onChange={(e) => handleCantidadChange(Number(e.target.value))}
           />
         </div>
 

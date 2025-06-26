@@ -109,7 +109,13 @@ const ModalCompraSeleccionInsumo: React.FC<ModalCompraSeleccionInsumoProps> = ({
   };
 
   const handleCantidadChange = (insumoId: number, cantidad: number) => {
-    if (cantidad <= 0) {
+    // Obtener el insumo para verificar si es para elaborar
+    const insumo = insumos.find((i) => i.id === insumoId);
+
+    // Si no es para elaborar, redondear a entero
+    const cantidadFinal = insumo && !insumo.esParaElaborar ? Math.round(cantidad) : cantidad;
+
+    if (cantidadFinal <= 0) {
       setSelectedInsumos((prev) => {
         const newMap = new Map(prev);
         newMap.delete(insumoId);
@@ -120,7 +126,7 @@ const ModalCompraSeleccionInsumo: React.FC<ModalCompraSeleccionInsumoProps> = ({
         const newMap = new Map(prev);
         const current = newMap.get(insumoId);
         if (current) {
-          newMap.set(insumoId, { ...current, cantidad });
+          newMap.set(insumoId, { ...current, cantidad: cantidadFinal });
         }
         return newMap;
       });
@@ -301,8 +307,8 @@ const ModalCompraSeleccionInsumo: React.FC<ModalCompraSeleccionInsumoProps> = ({
                                   onChange={(e) =>
                                     handleCantidadChange(insumo.id!, Number(e.target.value))
                                   }
-                                  min="0.01"
-                                  step="0.01"
+                                  min={insumo.esParaElaborar ? '0.01' : '1'}
+                                  step={insumo.esParaElaborar ? '0.01' : '1'}
                                   className="w-full border rounded px-2 py-1 text-sm"
                                   placeholder="Cantidad"
                                   onClick={(e) => e.stopPropagation()}

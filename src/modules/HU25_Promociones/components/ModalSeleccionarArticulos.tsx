@@ -130,7 +130,10 @@ const ModalSeleccionarArticulos: React.FC<ModalSeleccionarArticulosProps> = ({
   };
 
   const handleCantidadChange = (articuloId: number, cantidad: number) => {
-    if (cantidad <= 0) {
+    // Redondear a entero ya que solo hay manufacturados e insumos no para elaborar
+    const cantidadFinal = Math.floor(cantidad);
+
+    if (cantidadFinal <= 0) {
       setSelectedArticulos((prev) => {
         const newMap = new Map(prev);
         newMap.delete(articuloId);
@@ -139,7 +142,7 @@ const ModalSeleccionarArticulos: React.FC<ModalSeleccionarArticulosProps> = ({
     } else {
       setSelectedArticulos((prev) => {
         const newMap = new Map(prev);
-        newMap.set(articuloId, cantidad);
+        newMap.set(articuloId, cantidadFinal);
         return newMap;
       });
     }
@@ -265,8 +268,8 @@ const ModalSeleccionarArticulos: React.FC<ModalSeleccionarArticulosProps> = ({
                               onChange={(e) =>
                                 handleCantidadChange(articulo.id!, Number(e.target.value))
                               }
-                              min="0.01"
-                              step="0.01"
+                              min="1"
+                              step="1"
                               className="w-full border rounded px-2 py-1 text-sm"
                               placeholder="Cantidad"
                               onClick={(e) => e.stopPropagation()}

@@ -124,8 +124,24 @@ export const ScreenInsumos = () => {
       key: 'precioVenta',
       render: (i: ArticuloInsumo) => (i.esParaElaborar ? '-' : i.precioVenta),
     },
-    { label: 'Stock Mínimo', key: 'stockMinimo' },
-    { label: 'Stock Actual', key: 'stockActual' },
+    {
+      label: 'Stock Mínimo',
+      key: 'stockMinimo',
+      render: (i: ArticuloInsumo) => {
+        const stock = i.stockMinimo || 0;
+        // Si es para elaborar, mostrar decimales; si no, mostrar como entero
+        return i.esParaElaborar ? stock.toFixed(2) : Math.floor(stock).toString();
+      },
+    },
+    {
+      label: 'Stock Actual',
+      key: 'stockActual',
+      render: (i: ArticuloInsumo) => {
+        const stock = i.stockActual || 0;
+        // Si es para elaborar, mostrar decimales; si no, mostrar como entero
+        return i.esParaElaborar ? stock.toFixed(2) : Math.floor(stock).toString();
+      },
+    },
     {
       label: 'Unidad de Medida',
       key: 'unidadMedida',
