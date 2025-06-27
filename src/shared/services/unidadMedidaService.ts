@@ -4,6 +4,7 @@ import axiosInstance from './axiosConfig'; // Importar la instancia preconfigura
 const API_BASE_URL = '/unidades';
 
 export const saveUnidadMedida = async (data: any) => {
+  console.log('data :>> ', data);
   if (data.id) {
     // Actualizar
     const response = await axiosInstance.put(`${API_BASE_URL}/${data.id}`, data);
