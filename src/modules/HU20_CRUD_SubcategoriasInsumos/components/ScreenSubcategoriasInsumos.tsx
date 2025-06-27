@@ -157,8 +157,12 @@ const ScreenSubcategoriasInsumos = () => {
       setModalMode('add');
       setOpenModal(true);
     } else {
-      // Buscar la subcategoría real
-      const subcategoriaReal = categorias.find((c) => c.id === row.id);
+      // Buscar la subcategoría real primero en activas, luego en eliminadas
+      let subcategoriaReal = categorias.find((c) => c.id === row.id);
+      if (!subcategoriaReal) {
+        subcategoriaReal = deletedCategorias.find((c) => c.id === row.id);
+      }
+
       if (subcategoriaReal) {
         if (action === 'view') {
           handleView(subcategoriaReal);
@@ -194,21 +198,26 @@ const ScreenSubcategoriasInsumos = () => {
             render: (row: CategoriaTable) => {
               // Buscar la subcategoría real (hija) por id
               const subcategoriaReal = categoriasFiltradas.find((c) => c.id === row.id);
-              // Adaptar el objeto para que siempre tenga id: number y denominacion: string
+              // Buscar también en las eliminadas para verificar el estado correcto
+              const subcategoriaEliminada = deletedCategoriasFiltradas.find((c) => c.id === row.id);
+              const isEliminada = Boolean(subcategoriaEliminada || row.eliminado);
+
+              // Adaptar el objeto para que siempre tenga id: number, denominacion: string y eliminado: boolean
               const el =
                 subcategoriaReal && typeof subcategoriaReal.id === 'number'
                   ? {
                       ...subcategoriaReal,
                       id: subcategoriaReal.id!,
                       denominacion: subcategoriaReal.denominacion || '',
+                      eliminado: isEliminada,
                     }
                   : {
                       id: row.id,
                       denominacion:
                         row.subcategoria !== '-' ? row.subcategoria || '' : row.denominacion || '',
-                      eliminado: row.eliminado,
+                      eliminado: isEliminada,
                     };
-              const soloVer = showDeleted || row.eliminado;
+              const soloVer = showDeleted && !isEliminada;
               return (
                 <ButtonsTable
                   el={el}

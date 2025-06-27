@@ -97,10 +97,21 @@ export const useArticuloManufacturadoStore = create<ArticuloManufacturadoState>(
       set({ error: (error as Error)?.message ?? 'Error al eliminar artículo', loading: false });
     }
   },
-
   restoreArticulo: async (id) => {
     set({ loading: true, error: null });
     try {
+      // Verificar si se puede restaurar el artículo
+      const canRestore = await service.canRestoreArticuloManufacturado(id);
+      if (!canRestore.canRestore) {
+        set({
+          error:
+            canRestore.message ||
+            'No se puede restaurar este artículo porque su categoría está eliminada',
+          loading: false,
+        });
+        return;
+      }
+
       await service.restoreArticuloManufacturado(id);
       const { fetchDeletedArticulos, fetchArticulos } = useArticuloManufacturadoStore.getState();
       await fetchDeletedArticulos();

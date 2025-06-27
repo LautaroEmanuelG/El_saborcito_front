@@ -79,6 +79,15 @@ const ModalPromocionesForm: React.FC<ModalPromocionesFormProps> = ({
     ]);
   };
 
+  // Agregar múltiples artículos al combo
+  const handleAddMultipleArticulos = (
+    articulosConCantidad: { articulo: ArticuloManufacturado; cantidad: number }[]
+  ) => {
+    articulosConCantidad.forEach(({ articulo, cantidad }) => {
+      handleAddArticulo(articulo, cantidad);
+    });
+  };
+
   // Eliminar artículo del combo
   const handleRemoveArticulo = (index: number) => {
     setDetalles((prev) => prev.filter((_, i) => i !== index));
@@ -153,408 +162,498 @@ const ModalPromocionesForm: React.FC<ModalPromocionesFormProps> = ({
             ? 'Editar Promoción'
             : 'Ver Promoción'
       }
+      maxWidth="max-w-6xl"
     >
-      {mode === 'view' ? (
-        <div className="flex flex-col h-full">
-          <div className="flex flex-row flex-grow">
-            <div className="flex-1 p-4 space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Denominación</label>
-                <div className="w-full border rounded px-3 py-2 bg-gray-100">
-                  {form.denominacion}
+      <div className="h-[80vh] overflow-hidden">
+        {mode === 'view' ? (
+          <div className="flex flex-col h-full">
+            <div className="flex flex-row flex-grow">
+              <div className="flex-1 p-4 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Denominación</label>
+                  <div className="w-full border rounded px-3 py-2 bg-gray-100">
+                    {form.denominacion}
+                  </div>
                 </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Precio Promocional</label>
-                <input
-                  id="precioPromocional"
-                  name="precioPromocional"
-                  type="number"
-                  className="w-full border rounded px-3 py-2 bg-gray-100"
-                  value={form.precioPromocional?.toString() ?? ''}
-                  onChange={(e) => handleInputChange('precioPromocional', e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Descuento (%)</label>
-                <div className="w-full border rounded px-3 py-2 bg-gray-100">
-                  {calcularDescuento()}
+                <div>
+                  <label className="block text-sm font-medium mb-1">Precio Promocional</label>
+                  <input
+                    id="precioPromocional"
+                    name="precioPromocional"
+                    type="number"
+                    className="w-full border rounded px-3 py-2 bg-gray-100"
+                    value={form.precioPromocional?.toString() ?? ''}
+                    onChange={(e) => handleInputChange('precioPromocional', e.target.value)}
+                  />
                 </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Fecha Desde</label>
-                <div className="w-full border rounded px-3 py-2 bg-gray-100">{form.fechaDesde}</div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Fecha Hasta</label>
-                <div className="w-full border rounded px-3 py-2 bg-gray-100">{form.fechaHasta}</div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Hora Desde</label>
-                <div className="w-full border rounded px-3 py-2 bg-gray-100">{form.horaDesde}</div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Hora Hasta</label>
-                <div className="w-full border rounded px-3 py-2 bg-gray-100">{form.horaHasta}</div>
-              </div>
-              {/* Checkbox de habilitado en modo view (centrado) */}
-              <div className="flex items-center justify-center mt-2">
-                <input
-                  id="disponibleCheckPromoView"
-                  type="checkbox"
-                  className="mr-2"
-                  checked={isDisponible}
-                  disabled
-                />
-                <label
-                  htmlFor="disponibleCheckPromoView"
-                  className="text-base select-none cursor-default"
-                >
-                  Habilitado
-                </label>
-              </div>
-            </div>
-            <div className="flex-1 p-4 max-h-96 overflow-y-auto border-l">
-              <h3 className="text-lg font-medium mb-2">Combo Promoción</h3>
-              {detalles.length > 0 ? (
-                detalles.map((detalle, index) => (
-                  <div
-                    key={index}
-                    className="flex justify-between items-center p-2 border rounded mb-2"
+                <div>
+                  <label className="block text-sm font-medium mb-1">Descuento (%)</label>
+                  <div className="w-full border rounded px-3 py-2 bg-gray-100">
+                    {calcularDescuento()}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Fecha Desde</label>
+                  <div className="w-full border rounded px-3 py-2 bg-gray-100">
+                    {form.fechaDesde}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Fecha Hasta</label>
+                  <div className="w-full border rounded px-3 py-2 bg-gray-100">
+                    {form.fechaHasta}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Hora Desde</label>
+                  <div className="w-full border rounded px-3 py-2 bg-gray-100">
+                    {form.horaDesde}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Hora Hasta</label>
+                  <div className="w-full border rounded px-3 py-2 bg-gray-100">
+                    {form.horaHasta}
+                  </div>
+                </div>
+                {/* Checkbox de habilitado en modo view (centrado) */}
+                <div className="flex items-center justify-center mt-2">
+                  <input
+                    id="disponibleCheckPromoView"
+                    type="checkbox"
+                    className="mr-2"
+                    checked={isDisponible}
+                    disabled
+                  />
+                  <label
+                    htmlFor="disponibleCheckPromoView"
+                    className="text-base select-none cursor-default"
                   >
-                    <div>
-                      <div className="font-medium">{detalle.articulo?.denominacion}</div>
-                      <div className="text-sm text-gray-600">
-                        Cantidad: {detalle.cantidadRequerida}
+                    Habilitado
+                  </label>
+                </div>
+              </div>
+              <div className="flex-1 border-l flex flex-col">
+                {/* Sección de combo promoción - 50% de altura */}
+                <div className="flex-1 p-4 overflow-y-auto">
+                  <h3 className="text-lg font-medium mb-2">Combo Promoción</h3>
+                  {detalles.length > 0 ? (
+                    detalles.map((detalle, index) => (
+                      <div
+                        key={index}
+                        className="flex justify-between items-center p-2 border rounded mb-2"
+                      >
+                        <div>
+                          <div className="font-medium">{detalle.articulo?.denominacion}</div>
+                          <div className="text-sm text-gray-600">
+                            Cantidad: {detalle.cantidadRequerida}
+                          </div>
+                        </div>
                       </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-500 italic text-center py-4">
+                      No hay artículos en el combo
+                    </p>
+                  )}
+                </div>
+
+                {/* Sección de imagen - 50% de altura */}
+                {imagenPreview && (
+                  <div className="flex-1 p-4 border-t flex flex-col justify-center">
+                    <h4 className="text-lg font-medium mb-2">Imagen</h4>
+                    <div className="flex-1 flex items-center justify-center">
+                      <img
+                        src={imagenPreview}
+                        alt="Imagen de la promoción"
+                        className="rounded max-h-40 max-w-full object-contain border"
+                      />
                     </div>
                   </div>
-                ))
-              ) : (
-                <p className="text-gray-500 italic text-center py-4">
-                  No hay artículos en el combo
-                </p>
-              )}
+                )}
+              </div>
+            </div>
+            <div className="flex justify-center gap-2 p-4 border-t">
+              <button
+                type="button"
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+                onClick={onClose}
+              >
+                Cerrar
+              </button>
             </div>
           </div>
-          {/* Imagen solo en modo view, centrada debajo de las columnas */}
-          {imagenPreview && (
-            <div className="flex flex-col items-center mt-4">
-              <label className="block text-sm font-medium mb-1">Imagen</label>
-              <img
-                src={imagenPreview}
-                alt="Imagen de la promoción"
-                className="mb-2 rounded max-h-32 object-contain border"
-              />
-            </div>
-          )}
-          <div className="flex justify-center gap-2 p-4 border-t">
-            <button
-              type="button"
-              className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
-              onClick={onClose}
-            >
-              Cerrar
-            </button>
-          </div>
-        </div>
-      ) : (
-        <form onSubmit={handleSubmit} className="flex flex-col h-full">
-          <div className="flex flex-row flex-grow">
-            {/* Columna izquierda: Formulario */}
-            <div className="flex-1 p-4 space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1" htmlFor="denominacion">
-                  Denominación<span className="text-red-500">*</span>
-                </label>
-                <input
-                  id="denominacion"
-                  name="denominacion"
-                  type="text"
-                  required
-                  className="w-full border rounded px-3 py-2 bg-gray-100"
-                  value={form.denominacion?.toString() ?? ''}
-                  onChange={(e) => handleInputChange('denominacion', e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1" htmlFor="precioPromocional">
-                  Precio Promocional
-                </label>
-                <input
-                  id="precioPromocional"
-                  name="precioPromocional"
-                  type="number"
-                  className="w-full border rounded px-3 py-2 bg-gray-100"
-                  value={form.precioPromocional?.toString() ?? ''}
-                  onChange={(e) => handleInputChange('precioPromocional', e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Descuento (%)</label>
-                <div className="w-full border rounded px-3 py-2 bg-gray-100">
-                  {calcularDescuento()}
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <div className="flex-1">
-                  <label className="block text-sm font-medium mb-1" htmlFor="fechaDesde">
-                    Fecha Desde<span className="text-red-500">*</span>
+        ) : (
+          <form onSubmit={handleSubmit} className="flex flex-col h-full">
+            <div className="flex flex-row flex-grow">
+              {/* Columna izquierda: Formulario */}
+              <div className="flex-1 p-4 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1" htmlFor="denominacion">
+                    Denominación<span className="text-red-500">*</span>
                   </label>
                   <input
-                    id="fechaDesde"
-                    name="fechaDesde"
-                    type="date"
+                    id="denominacion"
+                    name="denominacion"
+                    type="text"
                     required
                     className="w-full border rounded px-3 py-2 bg-gray-100"
-                    value={form.fechaDesde?.toString() ?? ''}
-                    onChange={(e) => handleInputChange('fechaDesde', e.target.value)}
+                    value={form.denominacion?.toString() ?? ''}
+                    onChange={(e) => handleInputChange('denominacion', e.target.value)}
                   />
                 </div>
-                <div className="flex-1">
-                  <label className="block text-sm font-medium mb-1" htmlFor="fechaHasta">
-                    Fecha Hasta<span className="text-red-500">*</span>
+                <div>
+                  <label className="block text-sm font-medium mb-1" htmlFor="precioPromocional">
+                    Precio Promocional
                   </label>
                   <input
-                    id="fechaHasta"
-                    name="fechaHasta"
-                    type="date"
-                    required
+                    id="precioPromocional"
+                    name="precioPromocional"
+                    type="number"
                     className="w-full border rounded px-3 py-2 bg-gray-100"
-                    value={form.fechaHasta?.toString() ?? ''}
-                    onChange={(e) => handleInputChange('fechaHasta', e.target.value)}
+                    value={form.precioPromocional?.toString() ?? ''}
+                    onChange={(e) => handleInputChange('precioPromocional', e.target.value)}
                   />
                 </div>
-              </div>
-              <div className="flex gap-2">
-                <div className="flex-1">
-                  <label className="block text-sm font-medium mb-1" htmlFor="horaDesde">
-                    Hora Desde
-                  </label>
-                  <input
-                    id="horaDesde"
-                    name="horaDesde"
-                    type="time"
-                    className="w-full border rounded px-3 py-2 bg-gray-100"
-                    value={form.horaDesde?.toString() ?? ''}
-                    onChange={(e) => handleInputChange('horaDesde', e.target.value)}
-                  />
-                </div>
-                <div className="flex-1">
-                  <label className="block text-sm font-medium mb-1" htmlFor="horaHasta">
-                    Hora Hasta
-                  </label>
-                  <input
-                    id="horaHasta"
-                    name="horaHasta"
-                    type="time"
-                    className="w-full border rounded px-3 py-2 bg-gray-100"
-                    value={form.horaHasta?.toString() ?? ''}
-                    onChange={(e) => handleInputChange('horaHasta', e.target.value)}
-                  />
-                </div>
-              </div>
-              {/* El botón solo se muestra en modo add/edit, nunca en view */}
-              {(mode === 'add' || mode === 'edit') && (
-                <>
-                  <div className="flex justify-center mt-4">
-                    <button
-                      type="button"
-                      className="bg-primary hover:bg-primarydark text-white text-sm px-3 py-1 rounded"
-                      onClick={() => setShowModalArticulos(true)}
-                    >
-                      + Agregar Artículo
-                    </button>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Descuento (%)</label>
+                  <div className="w-full border rounded px-3 py-2 bg-gray-100">
+                    {calcularDescuento()}
                   </div>
-                  <div className="flex items-center justify-center mt-2">
-                    <input
-                      id="disponibleCheckPromo"
-                      type="checkbox"
-                      className="mr-2"
-                      checked={isDisponible}
-                      onChange={() => setIsDisponible((prev) => !prev)}
-                    />
-                    <label
-                      htmlFor="disponibleCheckPromo"
-                      className="text-base select-none cursor-pointer"
-                    >
-                      Habilitado
+                </div>
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium mb-1" htmlFor="fechaDesde">
+                      Fecha Desde<span className="text-red-500">*</span>
                     </label>
+                    <input
+                      id="fechaDesde"
+                      name="fechaDesde"
+                      type="date"
+                      required
+                      className="w-full border rounded px-3 py-2 bg-gray-100"
+                      value={form.fechaDesde?.toString() ?? ''}
+                      onChange={(e) => handleInputChange('fechaDesde', e.target.value)}
+                    />
                   </div>
-                </>
-              )}
-            </div>
-            {/* Columna derecha: Lista de artículos del combo */}
-            <div className="flex-1 p-4 max-h-96 overflow-y-auto border-l">
-              <h3 className="text-lg font-medium mb-2">Combo Promoción</h3>
-              {detalles.length > 0 ? (
-                detalles.map((detalle, index) => (
-                  <div
-                    key={index}
-                    className="flex justify-between items-center p-2 border rounded mb-2"
-                  >
-                    <div>
-                      <div className="font-medium">{detalle.articulo?.denominacion}</div>
-                      <div className="text-sm text-gray-600">
-                        Cantidad: {detalle.cantidadRequerida}
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium mb-1" htmlFor="fechaHasta">
+                      Fecha Hasta<span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="fechaHasta"
+                      name="fechaHasta"
+                      type="date"
+                      required
+                      className="w-full border rounded px-3 py-2 bg-gray-100"
+                      value={form.fechaHasta?.toString() ?? ''}
+                      onChange={(e) => handleInputChange('fechaHasta', e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium mb-1" htmlFor="horaDesde">
+                      Hora Desde
+                    </label>
+                    <input
+                      id="horaDesde"
+                      name="horaDesde"
+                      type="time"
+                      className="w-full border rounded px-3 py-2 bg-gray-100"
+                      value={form.horaDesde?.toString() ?? ''}
+                      onChange={(e) => handleInputChange('horaDesde', e.target.value)}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium mb-1" htmlFor="horaHasta">
+                      Hora Hasta
+                    </label>
+                    <input
+                      id="horaHasta"
+                      name="horaHasta"
+                      type="time"
+                      className="w-full border rounded px-3 py-2 bg-gray-100"
+                      value={form.horaHasta?.toString() ?? ''}
+                      onChange={(e) => handleInputChange('horaHasta', e.target.value)}
+                    />
+                  </div>
+                </div>
+                {/* El botón solo se muestra en modo add/edit, nunca en view */}
+                {(mode === 'add' || mode === 'edit') && (
+                  <>
+                    <div className="flex justify-center mt-4">
+                      <button
+                        type="button"
+                        className="bg-primary hover:bg-primarydark text-white text-sm px-3 py-1 rounded"
+                        onClick={() => setShowModalArticulos(true)}
+                      >
+                        + Agregar Artículo
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-center mt-2">
+                      <input
+                        id="disponibleCheckPromo"
+                        type="checkbox"
+                        className="mr-2"
+                        checked={isDisponible}
+                        onChange={() => setIsDisponible((prev) => !prev)}
+                      />
+                      <label
+                        htmlFor="disponibleCheckPromo"
+                        className="text-base select-none cursor-pointer"
+                      >
+                        Habilitado
+                      </label>
+                    </div>
+                  </>
+                )}
+              </div>
+              {/* Columna derecha: Lista de artículos del combo e imagen */}
+              <div className="flex-1 border-l flex flex-col">
+                {/* Sección de combo promoción - 50% de altura */}
+                <div className="flex-1 p-4 overflow-y-auto">
+                  <h3 className="text-lg font-medium mb-2">Combo Promoción</h3>
+                  {detalles.length > 0 ? (
+                    detalles.map((detalle, index) => (
+                      <div
+                        key={index}
+                        className="flex justify-between items-center p-2 border rounded mb-2"
+                      >
+                        <div>
+                          <div className="font-medium">{detalle.articulo?.denominacion}</div>
+                          <div className="text-sm text-gray-600">
+                            Cantidad: {detalle.cantidadRequerida}
+                          </div>
+                        </div>
+                        {(mode === 'edit' || mode === 'add') && (
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded"
+                              onClick={() =>
+                                handleEditCantidad(index, (detalle.cantidadRequerida || 1) + 1)
+                              }
+                              title="Sumar cantidad"
+                            >
+                              +
+                            </button>
+                            <button
+                              type="button"
+                              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded"
+                              onClick={() =>
+                                handleEditCantidad(
+                                  index,
+                                  Math.max(1, (detalle.cantidadRequerida || 1) - 1)
+                                )
+                              }
+                              title="Restar cantidad"
+                            >
+                              -
+                            </button>
+                            <button
+                              type="button"
+                              className="bg-primary hover:bg-primarydark text-white font-bold py-1 px-2 rounded"
+                              onClick={() => handleRemoveArticulo(index)}
+                              title="Eliminar artículo"
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <path d="M3 6h18" />
+                                <path d="M8 6v-2a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+                                <path d="M10 11v6" />
+                                <path d="M14 11v6" />
+                              </svg>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-500 italic text-center py-4">
+                      No hay artículos en el combo
+                    </p>
+                  )}
+                </div>
+
+                {/* Sección de imagen - 50% de altura */}
+                {(mode === 'add' || mode === 'edit') && (
+                  <div className="flex-1 p-4 border-t flex flex-col">
+                    <h4 className="text-lg font-medium mb-2">Imagen</h4>
+                    <div className="flex-1 flex flex-col justify-center">
+                      {imagenPreview && (
+                        <div className="flex items-center justify-center mb-2">
+                          <img
+                            src={imagenPreview}
+                            alt="Preview"
+                            className="rounded max-h-40 max-w-full object-contain border"
+                          />
+                        </div>
+                      )}
+
+                      {/* Input file oculto */}
+                      <input
+                        id="imagen-upload-promocion"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+
+                          // Validar archivo
+                          try {
+                            // Validar tipo de archivo
+                            if (!file.type.startsWith('image/')) {
+                              alert('El archivo debe ser una imagen');
+                              e.target.value = '';
+                              return;
+                            }
+
+                            // Validar tamaño (10MB máximo)
+                            const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+                            if (file.size > MAX_SIZE) {
+                              alert('La imagen es demasiado grande (máximo 10MB)');
+                              e.target.value = '';
+                              return;
+                            }
+
+                            // Validar formatos específicos
+                            const ALLOWED_TYPES = [
+                              'image/jpeg',
+                              'image/png',
+                              'image/gif',
+                              'image/webp',
+                            ];
+                            if (!ALLOWED_TYPES.includes(file.type)) {
+                              alert('Formato no soportado. Use JPEG, PNG, GIF o WebP');
+                              e.target.value = '';
+                              return;
+                            }
+
+                            // Si pasa todas las validaciones, procesar la imagen
+                            setSelectedImageFile(file);
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              setImagenPreview(reader.result as string);
+                            };
+                            reader.readAsDataURL(file);
+                          } catch (error) {
+                            alert('Error al procesar la imagen');
+                            e.target.value = '';
+                          }
+                        }}
+                      />
+
+                      {/* Botón customizado dinámico */}
+                      <div className="flex flex-col items-center">
+                        {selectedImageFile ? (
+                          // Botón compacto cuando hay imagen seleccionada
+                          <label
+                            htmlFor="imagen-upload-promocion"
+                            className="cursor-pointer bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded px-3 py-2 text-center transition-colors duration-200"
+                          >
+                            <div className="flex items-center gap-2">
+                              <svg
+                                className="w-4 h-4 text-gray-500"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                                />
+                              </svg>
+                              <span className="text-xs text-gray-600 max-w-[120px] truncate">
+                                {selectedImageFile.name}
+                              </span>
+                            </div>
+                          </label>
+                        ) : (
+                          // Botón grande cuando no hay imagen seleccionada
+                          <label
+                            htmlFor="imagen-upload-promocion"
+                            className="cursor-pointer bg-gray-100 hover:bg-gray-200 border-2 border-dashed border-gray-300 rounded-lg px-6 py-4 text-center transition-colors duration-200"
+                          >
+                            <div className="flex flex-col items-center">
+                              <svg
+                                className="w-8 h-8 text-gray-400 mb-2"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                                />
+                              </svg>
+                              <span className="text-sm text-gray-600">Seleccionar archivo</span>
+                              <span className="text-xs text-gray-400 mt-1">
+                                Sin archivos seleccionados
+                              </span>
+                            </div>
+                          </label>
+                        )}
                       </div>
                     </div>
-                    {(mode === 'edit' || mode === 'add') && (
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded"
-                          onClick={() =>
-                            handleEditCantidad(index, (detalle.cantidadRequerida || 1) + 1)
-                          }
-                          title="Sumar cantidad"
-                        >
-                          +
-                        </button>
-                        <button
-                          type="button"
-                          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded"
-                          onClick={() =>
-                            handleEditCantidad(
-                              index,
-                              Math.max(1, (detalle.cantidadRequerida || 1) - 1)
-                            )
-                          }
-                          title="Restar cantidad"
-                        >
-                          -
-                        </button>
-                        <button
-                          type="button"
-                          className="bg-primary hover:bg-primarydark text-white font-bold py-1 px-2 rounded"
-                          onClick={() => handleRemoveArticulo(index)}
-                          title="Eliminar artículo"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M3 6h18" />
-                            <path d="M8 6v-2a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
-                            <path d="M10 11v6" />
-                            <path d="M14 11v6" />
-                          </svg>
-                        </button>
-                      </div>
-                    )}
                   </div>
-                ))
-              ) : (
-                <p className="text-gray-500 italic text-center py-4">
-                  No hay artículos en el combo
-                </p>
-              )}
+                )}
+              </div>
             </div>
-          </div>
-          {/* Mensaje de error por fechas */}
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-2 text-center">
-              {error}
-            </div>
-          )}
-          {/* Imagen: carga y preview (debajo de las columnas, centrado) */}
-          {(mode === 'add' || mode === 'edit') && (
-            <div className="flex flex-col items-center mt-4">
-              <label className="block text-sm font-medium mb-1">Imagen</label>
-              {imagenPreview && (
-                <img
-                  src={imagenPreview}
-                  alt="Preview"
-                  className="mb-2 rounded max-h-32 object-contain border"
-                />
-              )}{' '}
-              <input
-                type="file"
-                accept="image/*"
-                className="mb-2"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-
-                  // Validar archivo
-                  try {
-                    // Validar tipo de archivo
-                    if (!file.type.startsWith('image/')) {
-                      alert('El archivo debe ser una imagen');
-                      e.target.value = '';
-                      return;
-                    }
-
-                    // Validar tamaño (10MB máximo)
-                    const MAX_SIZE = 10 * 1024 * 1024; // 10MB
-                    if (file.size > MAX_SIZE) {
-                      alert('La imagen es demasiado grande (máximo 10MB)');
-                      e.target.value = '';
-                      return;
-                    }
-
-                    // Validar formatos específicos
-                    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-                    if (!ALLOWED_TYPES.includes(file.type)) {
-                      alert('Formato no soportado. Use JPEG, PNG, GIF o WebP');
-                      e.target.value = '';
-                      return;
-                    }
-
-                    // Si pasa todas las validaciones, procesar la imagen
-                    setSelectedImageFile(file);
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                      setImagenPreview(reader.result as string);
-                    };
-                    reader.readAsDataURL(file);
-                  } catch (error) {
-                    alert('Error al procesar la imagen');
-                    e.target.value = '';
-                  }
-                }}
-              />
-            </div>
-          )}
-          <div className="flex justify-center gap-2 p-4 border-t mt-4">
-            <button
-              type="button"
-              className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
-              onClick={onClose}
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="bg-primary hover:bg-primarydark text-white font-bold py-2 px-4 rounded"
-            >
-              {mode === 'add' ? 'Crear' : 'Guardar'}
-            </button>
-          </div>
-          {/* Modal para selección de artículos */}
-          <ModalSeleccionarArticulos
-            open={showModalArticulos}
-            onClose={() => setShowModalArticulos(false)}
-            onAddArticulo={handleAddArticulo}
-            articulosExistentes={detalles.map((d) => ({
-              ...d.articulo,
-              descripcion: (d.articulo as any).descripcion ?? '',
-              tiempoEstimadoMinutos: (d.articulo as any).tiempoEstimadoMinutos ?? 0,
-              articuloManufacturadoDetalles:
-                (d.articulo as any).articuloManufacturadoDetalles ?? [],
-              categoriaId: (d.articulo as any).categoriaId ?? 0,
-            }))}
-          />
-        </form>
-      )}
+            {/* Mensaje de error por fechas */}
+            {error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-2 text-center">
+                {error}
+              </div>
+            )}
+            <div className="flex justify-center gap-2 p-4 border-t mt-4">
+              <button
+                type="button"
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+                onClick={onClose}
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                className="bg-primary hover:bg-primarydark text-white font-bold py-2 px-4 rounded"
+              >
+                {mode === 'add' ? 'Crear' : 'Guardar'}
+              </button>
+            </div>{' '}
+            {/* Modal para selección de artículos */}
+            <ModalSeleccionarArticulos
+              open={showModalArticulos}
+              onClose={() => setShowModalArticulos(false)}
+              onAddArticulo={handleAddArticulo}
+              onAddMultipleArticulos={handleAddMultipleArticulos}
+              articulosExistentes={detalles.map((d) => ({
+                ...d.articulo,
+                descripcion: (d.articulo as any).descripcion ?? '',
+                tiempoEstimadoMinutos: (d.articulo as any).tiempoEstimadoMinutos ?? 0,
+                articuloManufacturadoDetalles:
+                  (d.articulo as any).articuloManufacturadoDetalles ?? [],
+                categoriaId: (d.articulo as any).categoriaId ?? 0,
+              }))}
+            />
+          </form>
+        )}
+      </div>
     </Modal>
   );
 };

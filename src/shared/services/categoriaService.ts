@@ -29,6 +29,12 @@ export const getAllCategorias = async () => {
   return response.data;
 };
 
+// Verificar si una categoría puede ser restaurada (su padre no debe estar eliminado)
+export const canRestoreCategoria = async (id: number) => {
+  const response = await axiosInstance.get(`${API_BASE_URL}/${id}/can-restore`);
+  return response.data;
+};
+
 // Restaurar categoría eliminada lógicamente
 export const restoreCategoria = async (id: number) => {
   const response = await axiosInstance.post(`${API_BASE_URL}/deleted/${id}/restore`);

@@ -38,7 +38,7 @@ const ModalEditarCantidadInsumo: React.FC<ModalEditarCantidadInsumoProps> = ({
         </div>
         <div>
           <label className="block text-base font-medium mb-1" htmlFor="cantidadInput">
-            Cantidad en gramos
+            Cantidad
           </label>
           <input
             id="cantidadInput"

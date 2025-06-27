@@ -7,6 +7,7 @@ interface ModalSeleccionInsumosProps {
   open: boolean;
   onClose: () => void;
   onAddInsumo: (insumo: ArticuloInsumo, cantidad: number) => void;
+  onAddMultipleInsumos?: (insumos: { insumo: ArticuloInsumo; cantidad: number }[]) => void;
   insumosExistentes?: ArticuloInsumo[]; // Insumos que ya están en la lista
 }
 
@@ -14,22 +15,20 @@ const ModalSeleccionInsumos: React.FC<ModalSeleccionInsumosProps> = ({
   open,
   onClose,
   onAddInsumo,
+  onAddMultipleInsumos,
   insumosExistentes = [],
 }) => {
   const [insumos, setInsumos] = useState<ArticuloInsumo[]>([]);
   const [filteredInsumos, setFilteredInsumos] = useState<ArticuloInsumo[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedInsumo, setSelectedInsumo] = useState<ArticuloInsumo | null>(null);
-  const [cantidad, setCantidad] = useState<number>(1);
+  const [selectedInsumos, setSelectedInsumos] = useState<Map<number, number>>(new Map()); // Map de id del insumo -> cantidad
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   useEffect(() => {
     if (open) {
       loadInsumos();
       // Resetear formulario al abrir
-      setSelectedInsumo(null);
-      setCantidad(1);
+      setSelectedInsumos(new Map());
       setSearchTerm('');
     }
   }, [open]);
@@ -60,143 +59,224 @@ const ModalSeleccionInsumos: React.FC<ModalSeleccionInsumosProps> = ({
       setLoading(false);
     }
   };
+  const handleAddInsumos = () => {
+    if (selectedInsumos.size === 0 || !hasValidQuantities()) return;
 
-  const handleAddInsumo = () => {
-    if (!selectedInsumo || cantidad <= 0) return;
+    const insumosToAdd = Array.from(selectedInsumos.entries())
+      .filter(([, cantidad]) => cantidad > 0) // Solo incluir insumos con cantidad > 0
+      .map(([insumoId, cantidad]) => {
+        const insumo = insumos.find((i) => i.id === insumoId)!;
+        return { insumo, cantidad };
+      });
 
-    onAddInsumo(selectedInsumo, cantidad);
+    if (onAddMultipleInsumos) {
+      onAddMultipleInsumos(insumosToAdd);
+    } else {
+      // Fallback: agregar uno por uno si no se proporciona la función múltiple
+      insumosToAdd.forEach(({ insumo, cantidad }) => {
+        onAddInsumo(insumo, cantidad);
+      });
+    }
     onClose();
   };
 
-  const handleInsumoSelect = (insumo: ArticuloInsumo) => {
-    setSelectedInsumo(insumo);
+  const handleInsumoToggle = (insumo: ArticuloInsumo) => {
+    setSelectedInsumos((prev) => {
+      const newMap = new Map(prev);
+      if (newMap.has(insumo.id!)) {
+        newMap.delete(insumo.id!);
+      } else {
+        newMap.set(insumo.id!, 0); // Cantidad por defecto
+      }
+      return newMap;
+    });
   };
 
+  const handleCantidadChange = (insumoId: number, cantidad: number) => {
+    if (cantidad <= 0) {
+      setSelectedInsumos((prev) => {
+        const newMap = new Map(prev);
+        newMap.delete(insumoId);
+        return newMap;
+      });
+    } else {
+      setSelectedInsumos((prev) => {
+        const newMap = new Map(prev);
+        newMap.set(insumoId, cantidad);
+        return newMap;
+      });
+    }
+  };
+
+  // Verificar si todos los insumos seleccionados tienen cantidad > 0
+  const hasValidQuantities = () => {
+    if (selectedInsumos.size === 0) return false;
+    return Array.from(selectedInsumos.values()).every((cantidad) => cantidad > 0);
+  };
   return (
-    <Modal open={open} onClose={onClose} title="🍲 Seleccionar Insumos" maxWidth="max-w-md">
-      <div className="space-y-4 max-h-[600px] overflow-y-auto">
-        {/* Vista previa de insumos seleccionados */}
-        {selectedInsumo && (
-          <div className="bg-blue-50 p-3 rounded border">
-            <h4 className="font-medium text-blue-800 mb-1">Insumo seleccionado:</h4>
-            <div className="text-sm">
-              <div>
-                <strong>{selectedInsumo.denominacion}</strong>
-              </div>
-              <div>
-                Cantidad: {cantidad} {selectedInsumo.unidadMedida?.denominacion ?? ''}
-              </div>
-              <div>Stock disponible: {selectedInsumo.stockActual}</div>
-            </div>
-          </div>
-        )}
-
-        {/* Búsqueda */}
-        <div>
-          <label className="block text-sm font-medium mb-1">Buscar insumo</label>
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Escribe para buscar..."
-            className="w-full border rounded px-3 py-2"
-          />
-        </div>
-
-        {/* Lista de insumos */}
-        <div>
-          <label className="block text-sm font-medium mb-2">Seleccionar insumo</label>
-          {loading ? (
-            <div className="text-center py-4">Cargando insumos...</div>
-          ) : error ? (
-            <div className="text-red-500 text-center py-4">{error}</div>
-          ) : filteredInsumos.length === 0 ? (
-            <div className="text-gray-500 text-center py-4">
-              {searchTerm ? 'No se encontraron insumos' : 'No hay insumos disponibles'}
-            </div>
-          ) : (
-            <div className="max-h-96 overflow-y-auto border rounded p-2 space-y-1">
-              {filteredInsumos.map((insumo) => {
-                const yaSeleccionado = insumosExistentes.some(
-                  (existing) => existing.id === insumo.id
-                );
-                return (
-                  <div
-                    key={insumo.id}
-                    className={`p-2 rounded cursor-pointer border transition-colors ${
-                      selectedInsumo?.id === insumo.id
-                        ? 'bg-blue-100 border-blue-300'
-                        : yaSeleccionado
-                          ? 'bg-yellow-50 border-yellow-300'
-                          : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
-                    }`}
-                    onClick={() => handleInsumoSelect(insumo)}
-                  >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <div className="font-medium flex items-center gap-2">
-                          {insumo.denominacion}
-                          {yaSeleccionado && (
-                            <span className="text-xs bg-yellow-200 text-yellow-800 px-2 py-1 rounded">
-                              Ya agregado
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          Stock: {insumo.stockActual} {insumo.unidadMedida?.denominacion ?? ''}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          Categoría: {insumo.categoria?.denominacion ?? 'Sin categoría'}
+    <Modal open={open} onClose={onClose} title="🍲 Seleccionar Insumos" maxWidth="max-w-4xl">
+      <div className="h-[65vh] flex flex-col">
+        {/* Contenido scrolleable */}
+        <div className="flex-1 overflow-y-auto space-y-4 p-4">
+          {/* Vista previa de insumos seleccionados */}
+          {selectedInsumos.size > 0 && (
+            <div className="bg-blue-50 p-4 rounded border">
+              <h4 className="font-medium text-blue-800 mb-2">
+                Insumos seleccionados ({selectedInsumos.size}):
+              </h4>
+              <div className="max-h-32 overflow-y-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {Array.from(selectedInsumos.entries()).map(([insumoId, cantidad]) => {
+                    const insumo = insumos.find((i) => i.id === insumoId);
+                    if (!insumo) return null;
+                    return (
+                      <div
+                        key={insumoId}
+                        className={`text-sm p-2 rounded border ${cantidad > 0 ? 'bg-white' : 'bg-gray-100'}`}
+                      >
+                        <div className="font-medium">{insumo.denominacion}</div>
+                        <div className={`text-gray-600 ${cantidad === 0 ? 'text-red-500' : ''}`}>
+                          {cantidad > 0
+                            ? `${cantidad} ${insumo.unidadMedida?.denominacion ?? ''}`
+                            : 'Sin cantidad'}
                         </div>
                       </div>
-                      <div className="text-sm font-semibold text-green-600">
-                        ${insumo.precioCompra}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           )}
-        </div>
 
-        {/* Cantidad */}
-        {selectedInsumo && (
+          {/* Búsqueda */}
           <div>
-            <label className="block text-sm font-medium mb-1">
-              Cantidad ({selectedInsumo.unidadMedida?.denominacion ?? 'unidad'})
-            </label>
+            <label className="block text-sm font-medium mb-1">Buscar insumo</label>
             <input
-              type="number"
-              value={cantidad}
-              onChange={(e) => setCantidad(Number(e.target.value))}
-              min="0.01"
-              step="0.01"
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Escribe para buscar..."
               className="w-full border rounded px-3 py-2"
-              placeholder="Ingrese la cantidad"
             />
           </div>
-        )}
+
+          {/* Lista de insumos */}
+          <div className="flex-1">
+            <label className="block text-sm font-medium mb-2">
+              Seleccionar insumos (haz clic para agregar/quitar)
+            </label>
+            {loading ? (
+              <div className="text-center py-4">Cargando insumos...</div>
+            ) : error ? (
+              <div className="text-red-500 text-center py-4">{error}</div>
+            ) : filteredInsumos.length === 0 ? (
+              <div className="text-gray-500 text-center py-4">
+                {searchTerm ? 'No se encontraron insumos' : 'No hay insumos disponibles'}
+              </div>
+            ) : (
+              <div className="max-h-64 overflow-y-auto border rounded p-2">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                  {filteredInsumos.map((insumo) => {
+                    const yaSeleccionado = insumosExistentes.some(
+                      (existing) => existing.id === insumo.id
+                    );
+                    const isSelected = selectedInsumos.has(insumo.id!);
+                    const cantidad = selectedInsumos.get(insumo.id!) || 0;
+
+                    return (
+                      <div
+                        key={insumo.id}
+                        className={`p-3 rounded border transition-colors ${
+                          isSelected
+                            ? 'bg-blue-100 border-blue-300'
+                            : yaSeleccionado
+                              ? 'bg-yellow-50 border-yellow-300'
+                              : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                        }`}
+                      >
+                        <div
+                          className="cursor-pointer"
+                          onClick={() => !yaSeleccionado && handleInsumoToggle(insumo)}
+                        >
+                          <div className="flex justify-between items-start mb-2">
+                            <div className="flex-1">
+                              <div className="font-medium flex items-center gap-2">
+                                {isSelected && <span className="text-blue-600">✓</span>}
+                                {insumo.denominacion}
+                                {yaSeleccionado && (
+                                  <span className="text-xs bg-yellow-200 text-yellow-800 px-2 py-1 rounded">
+                                    Ya agregado
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-sm text-gray-600">
+                                Stock: {insumo.stockActual}{' '}
+                                {insumo.unidadMedida?.denominacion ?? ''}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                Categoría: {insumo.categoria?.denominacion ?? 'Sin categoría'}
+                              </div>
+                            </div>
+                            <div className="text-sm font-semibold text-green-600">
+                              ${insumo.precioCompra}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Campo de cantidad para insumos seleccionados */}
+                        {isSelected && (
+                          <div className="mt-2 pt-2 border-t border-blue-200">
+                            <label className="block text-xs font-medium mb-1">
+                              Cantidad ({insumo.unidadMedida?.denominacion ?? 'unidad'})
+                            </label>
+                            <input
+                              type="number"
+                              value={cantidad}
+                              onChange={(e) =>
+                                handleCantidadChange(insumo.id!, Number(e.target.value))
+                              }
+                              min="0.01"
+                              step="0.01"
+                              className="w-full border rounded px-2 py-1 text-sm"
+                              placeholder="Cantidad"
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Botones */}
-        <div className="flex justify-center gap-2 pt-2 border-t">
-          <button
-            type="button"
-            className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
-            onClick={onClose}
-          >
-            Cancelar
-          </button>
-          <button
-            type="button"
-            className={`font-bold py-2 px-4 rounded bg-primary hover:bg-primarydark text-white ${
-              !(selectedInsumo && cantidad > 0) ? 'opacity-60 cursor-not-allowed' : ''
-            }`}
-            onClick={handleAddInsumo}
-            disabled={!selectedInsumo || cantidad <= 0}
-          >
-            Agregar Insumo
-          </button>
+        <div className="flex justify-center items-center pt-4 border-t">
+          <div className="flex gap-2">
+            <button
+              type="button"
+              className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+              onClick={onClose}
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              className={`font-bold py-2 px-4 rounded bg-primary hover:bg-primarydark text-white ${
+                selectedInsumos.size === 0 || !hasValidQuantities()
+                  ? 'opacity-60 cursor-not-allowed'
+                  : ''
+              }`}
+              onClick={handleAddInsumos}
+              disabled={selectedInsumos.size === 0 || !hasValidQuantities()}
+            >
+              Agregar{' '}
+              {Array.from(selectedInsumos.values()).filter((cantidad) => cantidad > 0).length}{' '}
+              Insumo(s)
+            </button>
+          </div>
         </div>
       </div>
     </Modal>

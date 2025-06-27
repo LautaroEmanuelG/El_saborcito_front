@@ -39,12 +39,21 @@ export const ScreenInsumos = () => {
   const [modalMode, setModalMode] = useState<'add' | 'edit' | 'view'>('add');
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [unidades, setUnidades] = useState<UnidadMedida[]>([]);
-
   useEffect(() => {
     fetchInsumos();
     categoriaService.getAllCategorias().then(setCategorias);
     unidadMedidaService.getAllUnidadMedidas().then(setUnidades);
   }, [fetchInsumos]);
+
+  // Recargar unidades cuando la ventana recupera el foco (para reflejar cambios desde otros módulos)
+  useEffect(() => {
+    const handleFocus = () => {
+      unidadMedidaService.getAllUnidadMedidas().then(setUnidades);
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
 
   let currentInsumos: ArticuloInsumo[] = [];
   if (showDeleted) {
@@ -82,13 +91,19 @@ export const ScreenInsumos = () => {
 
   // Filtrar solo las categorías padre de tipo INSUMOS
   const categoriasPadre = categorias.filter((cat) => !cat.tipoCategoria && cat.tipo === 'INSUMOS');
-
   // Para el filtro de la tabla y el modal, solo usar categoriasPadre
 
   // En la tabla, mostrar solo la categoría padre
   const getCategoriaPadre = (cat?: Categoria): Categoria | undefined => {
     if (!cat) return undefined;
     return cat.tipoCategoria ? getCategoriaPadre(cat.tipoCategoria) : cat;
+  };
+  // Función para verificar si una unidad de medida está activa
+  const getUnidadMedidaActiva = (unidadMedida?: UnidadMedida): string => {
+    if (!unidadMedida) return '-';
+    // Verificar si la unidad existe en la lista de unidades activas
+    const unidadActiva = unidades.find((u) => u.id === unidadMedida.id);
+    return unidadActiva ? unidadMedida.denominacion : '-';
   };
 
   // --- Filtro personalizado para incluir subcategorías al filtrar por categoría padre ---
@@ -101,17 +116,36 @@ export const ScreenInsumos = () => {
     }
     return false;
   };
-
   const INSUMO_COLUMNS = [
     { label: 'Denominación', key: 'denominacion' },
     { label: 'Precio Compra', key: 'precioCompra' },
-    { label: 'Precio Venta', key: 'precioVenta' },
-    { label: 'Stock Actual', key: 'stockActual' },
-    { label: 'Stock Mínimo', key: 'stockMinimo' },
+    {
+      label: 'Precio Venta',
+      key: 'precioVenta',
+      render: (i: ArticuloInsumo) => (i.esParaElaborar ? '-' : i.precioVenta),
+    },
+    {
+      label: 'Stock Mínimo',
+      key: 'stockMinimo',
+      render: (i: ArticuloInsumo) => {
+        const stock = i.stockMinimo || 0;
+        // Si es para elaborar, mostrar decimales; si no, mostrar como entero
+        return i.esParaElaborar ? stock.toFixed(2) : Math.floor(stock).toString();
+      },
+    },
+    {
+      label: 'Stock Actual',
+      key: 'stockActual',
+      render: (i: ArticuloInsumo) => {
+        const stock = i.stockActual || 0;
+        // Si es para elaborar, mostrar decimales; si no, mostrar como entero
+        return i.esParaElaborar ? stock.toFixed(2) : Math.floor(stock).toString();
+      },
+    },
     {
       label: 'Unidad de Medida',
       key: 'unidadMedida',
-      render: (i: ArticuloInsumo) => i.unidadMedida?.denominacion,
+      render: (i: ArticuloInsumo) => getUnidadMedidaActiva(i.unidadMedida),
     },
     {
       label: 'Categoría',

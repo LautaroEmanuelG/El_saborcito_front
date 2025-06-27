@@ -88,10 +88,21 @@ export const useInsumoStore = create<InsumoState>((set) => ({
       set({ error: (error as Error)?.message ?? 'Error al eliminar insumo', loading: false });
     }
   },
-
   restoreInsumo: async (id) => {
     set({ loading: true, error: null });
     try {
+      // Verificar si se puede restaurar el insumo
+      const canRestore = await service.canRestoreArticuloInsumo(id);
+      if (!canRestore.canRestore) {
+        set({
+          error:
+            canRestore.message ||
+            'No se puede restaurar este insumo porque su categoría está eliminada',
+          loading: false,
+        });
+        return;
+      }
+
       await service.restoreArticuloInsumo(id);
       await useInsumoStore.getState().fetchDeletedInsumos();
     } catch (error) {

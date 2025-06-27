@@ -123,10 +123,21 @@ export const useSubcategoriaInsumosStore = create<SubcategoriaInsumosState>((set
       set({ error: (error as Error)?.message ?? 'Error al eliminar categoría', loading: false });
     }
   },
-
   restoreCategoria: async (id) => {
     set({ loading: true, error: null });
     try {
+      // Verificar si se puede restaurar la categoría
+      const canRestore = await service.canRestoreCategoria(id);
+      if (!canRestore.canRestore) {
+        set({
+          error:
+            canRestore.message ||
+            'No se puede restaurar esta subcategoría porque su categoría padre está eliminada',
+          loading: false,
+        });
+        return;
+      }
+
       await service.restoreCategoria(id);
       const { showDeleted, fetchCategorias, fetchDeletedCategorias } =
         useSubcategoriaInsumosStore.getState();
