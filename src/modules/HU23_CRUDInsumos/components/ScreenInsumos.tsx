@@ -118,7 +118,8 @@ export const ScreenInsumos = () => {
   };
   const INSUMO_COLUMNS = [
     { label: 'Denominación', key: 'denominacion' },
-    { label: 'Precio Compra', key: 'precioCompra' },
+    // Descomentar en caso que querramos mostrar precio costo
+    // { label: 'Precio Compra', key: 'precioCompra' },
     {
       label: 'Precio Venta',
       key: 'precioVenta',

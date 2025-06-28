@@ -6,6 +6,8 @@ import { ModalUnidadMedidaForm } from '../../HU_CRUD_UnidadesMedida';
 import { useUnidadMedidaStore } from '../../HU_CRUD_UnidadesMedida/services/unidadMedidaStore';
 import * as unidadMedidaService from '../../../shared/services/unidadMedidaService';
 import { checkDenominacionStatus } from '../../../shared/services/articuloInsumoService';
+import { registrarCompra } from '../../HU24_CompraIngredientes/services/compraInsumoService';
+import type { NuevaCompraDTO } from '../../HU24_CompraIngredientes/model';
 
 interface Props {
   open: boolean;
@@ -64,6 +66,10 @@ export const ModalInsumoForm = ({
     isDeleted: boolean;
     message: string;
   } | null>(null);
+
+  // Estado para controlar ajuste de stock
+  const [requiereAjusteStock, setRequiereAjusteStock] = useState(false);
+  const [cantidadAjuste, setCantidadAjuste] = useState(0);
 
   // Filtrar solo las categorías padre de tipo INSUMOS para el select del modal
   const categoriasPadre = categorias.filter((cat) => !cat.tipoCategoria && cat.tipo === 'INSUMOS');
@@ -241,7 +247,37 @@ export const ModalInsumoForm = ({
     // Si hay error, el modal no se cierra y el error se muestra en el ModalUnidadMedidaForm
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Función para generar ajuste de stock automático
+  const generarAjusteStock = async (insumo: ArticuloInsumo, cantidadAjuste: number) => {
+    try {
+      const denominacionAjuste = `Ajuste de Stock [${insumo.denominacion}]`;
+
+      // Calcular el subtotal usando precio de compra * cantidad ajustada
+      const subtotal = Math.abs(cantidadAjuste) * (insumo.precioCompra ?? 0);
+
+      const ajusteDTO: NuevaCompraDTO = {
+        denominacion: denominacionAjuste,
+        detalles: [
+          {
+            insumoId: insumo.id,
+            cantidad: cantidadAjuste, // Puede ser negativo para reducir stock
+            precioUnitario: insumo.precioCompra ?? 0,
+            subtotal: subtotal,
+          },
+        ],
+      };
+
+      await registrarCompra(ajusteDTO);
+      console.log(
+        `✅ Ajuste de stock generado: ${denominacionAjuste} (${cantidadAjuste > 0 ? '+' : ''}${cantidadAjuste})`
+      );
+    } catch (error) {
+      console.error('❌ Error al generar ajuste de stock:', error);
+      throw new Error('No se pudo generar el ajuste de stock automático');
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Validación de duplicados antes de enviar
@@ -261,18 +297,8 @@ export const ModalInsumoForm = ({
       return;
     }
 
-    // Validación de stock: no permitir aumentar stock en modo edición
-    if (
-      mode === 'edit' &&
-      form.stockActual !== undefined &&
-      initialValues.stockActual !== undefined &&
-      form.stockActual > initialValues.stockActual
-    ) {
-      alert(
-        'No se puede aumentar el stock desde el formulario de edición. Para aumentar el stock, debe realizar una compra en "Compra Insumos".'
-      );
-      return;
-    }
+    // La validación de stock ahora se maneja con ajustes automáticos
+    // Ya no impedimos el aumento de stock, se genera una transacción automática
 
     if (!form.unidadMedida || !form.unidadMedida.id) {
       alert('Debes seleccionar una unidad de medida válida.');
@@ -281,6 +307,43 @@ export const ModalInsumoForm = ({
     if (!form.categoria || !form.categoria.id) {
       alert('Debes seleccionar una categoría válida.');
       return;
+    }
+
+    // Detectar si hay cambios en el stock y generar ajuste automático
+    if (
+      mode === 'edit' &&
+      form.stockActual !== undefined &&
+      initialValues.stockActual !== undefined &&
+      form.stockActual !== initialValues.stockActual
+    ) {
+      const cantidadAjuste = form.stockActual - initialValues.stockActual;
+
+      if (cantidadAjuste !== 0) {
+        try {
+          // Crear objeto insumo completo para el ajuste
+          const insumoCompleto: ArticuloInsumo = {
+            ...(form as ArticuloInsumo),
+            id: form.id!,
+          };
+
+          await generarAjusteStock(insumoCompleto, cantidadAjuste);
+
+          // Mostrar mensaje de confirmación
+          const tipoAjuste = cantidadAjuste > 0 ? 'incremento' : 'reducción';
+          const mensaje =
+            `✅ Se generó automáticamente una transacción de ajuste de stock:\n\n` +
+            `• Insumo: ${form.denominacion}\n` +
+            `• ${tipoAjuste === 'incremento' ? 'Incremento' : 'Reducción'}: ${Math.abs(cantidadAjuste)} ${form.unidadMedida?.denominacion || 'unidades'}\n` +
+            `• Valor: $${(Math.abs(cantidadAjuste) * (form.precioCompra ?? 0)).toFixed(2)}`;
+
+          alert(mensaje);
+        } catch (error) {
+          alert(
+            '❌ Error al generar el ajuste de stock automático. Por favor, inténtelo nuevamente.'
+          );
+          return;
+        }
+      }
     }
 
     const { eliminado, categoria, ...rest } = form;
@@ -300,20 +363,11 @@ export const ModalInsumoForm = ({
     onSubmit(payload, selectedImageFile ?? undefined);
   };
   if (!open) return null;
-  // Verificar si se está intentando aumentar el stock actual (incluyendo desde 0)
-  const stockMayorAlOriginal = Boolean(
-    mode === 'edit' &&
-      form.stockActual !== undefined &&
-      initialValues.stockActual !== undefined &&
-      form.stockActual > initialValues.stockActual
-  );
-
   // Verificar si el formulario tiene errores
   const tieneErrores = Boolean(
     denominacionError ||
       denominacionStatus?.isActive ||
       denominacionStatus?.isDeleted ||
-      stockMayorAlOriginal ||
       isValidatingDenominacion ||
       form.stockMinimo === undefined ||
       form.stockMinimo < 0 ||
@@ -337,13 +391,13 @@ export const ModalInsumoForm = ({
                       {form.denominacion}
                     </div>
                   </div>
-
-                  <div>
+                  {/* Descomentar en caso que querramos mostrar precio costo */}
+                  {/* <div>
                     <label className="block text-sm font-medium mb-1">Precio Compra</label>
                     <div className="w-full border rounded px-3 py-2 bg-gray-100">
                       ${form.precioCompra ?? 0}
                     </div>
-                  </div>
+                  </div> */}
 
                   {!form.esParaElaborar && (
                     <div>
@@ -483,8 +537,8 @@ export const ModalInsumoForm = ({
                       </p>
                     )}
                   </div>{' '}
-                  {/* Campo Precio Compra */}
-                  <div>
+                  {/* Campo Precio Compra Descomentar en caso que querramos mostrar precio costo */}
+                  {/* <div>
                     <label className="block text-sm font-medium mb-1" htmlFor="precioCompra">
                       Precio Compra<span className="text-red-500">*</span>
                     </label>
@@ -499,7 +553,7 @@ export const ModalInsumoForm = ({
                       min={0}
                       step="0.01"
                     />
-                  </div>
+                  </div> */}
                   {/* Campo Precio Venta - Debajo del Precio Compra */}
                   {!form.esParaElaborar && (
                     <div>
@@ -545,21 +599,39 @@ export const ModalInsumoForm = ({
                         min={0}
                         step={form.esParaElaborar ? '0.01' : '1'}
                       />{' '}
-                      {form.stockActual !== undefined &&
-                        initialValues.stockActual !== undefined &&
-                        form.stockActual > initialValues.stockActual && (
-                          <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                            <p className="text-sm text-blue-700 font-medium flex items-center">
-                              <span className="mr-2">💡</span>
-                              Para aumentar el stock actual
-                              {initialValues.stockActual === 0
-                                ? ` (desde 0 a ${form.stockActual})`
-                                : ` (+${form.stockActual - initialValues.stockActual})`}{' '}
-                              {form.unidadMedida?.denominacion || 'unidades'}, debe realizar una
-                              compra en "Compra Insumos".
-                            </p>
+                      {/* Aviso para ajuste de stock automático */}
+                      {requiereAjusteStock && (
+                        <div
+                          className={`mt-2 p-3 border rounded-md ${
+                            cantidadAjuste > 0
+                              ? 'bg-orange-50 border-orange-200'
+                              : 'bg-green-50 border-green-200'
+                          }`}
+                        >
+                          <p
+                            className={`text-sm font-medium flex items-center ${
+                              cantidadAjuste > 0 ? 'text-orange-700' : 'text-green-700'
+                            }`}
+                          >
+                            <span className="mr-2">🔄</span>
+                            Se generará automáticamente una transacción "Ajuste de Stock [
+                            {form.denominacion}]"
+                          </p>
+                          <div
+                            className={`mt-1 text-xs ${
+                              cantidadAjuste > 0 ? 'text-orange-600' : 'text-green-600'
+                            }`}
+                          >
+                            • {cantidadAjuste > 0 ? 'Incremento' : 'Reducción'}:{' '}
+                            {Math.abs(cantidadAjuste)}{' '}
+                            {form.unidadMedida?.denominacion || 'unidades'}
+                            <br />• Valor de la transacción: $
+                            {(Math.abs(cantidadAjuste) * (form.precioCompra ?? 0)).toFixed(2)}
+                            <br />• Stock original: {initialValues.stockActual ?? 0} → Nuevo stock:{' '}
+                            {form.stockActual ?? 0}
                           </div>
-                        )}
+                        </div>
+                      )}
                     </div>
                   )}{' '}
                   {form.esParaElaborar && precioOriginal && precioOriginal > 0 && (
@@ -882,13 +954,11 @@ export const ModalInsumoForm = ({
                   }`}
                   disabled={tieneErrores}
                   title={
-                    stockMayorAlOriginal
-                      ? 'No se puede aumentar el stock. Use el módulo de compras.'
-                      : denominacionError
-                        ? denominacionError
-                        : isValidatingDenominacion
-                          ? 'Validando denominación...'
-                          : undefined
+                    denominacionError
+                      ? denominacionError
+                      : isValidatingDenominacion
+                        ? 'Validando denominación...'
+                        : undefined
                   }
                 >
                   {mode === 'add' ? 'Crear' : 'Guardar'}
