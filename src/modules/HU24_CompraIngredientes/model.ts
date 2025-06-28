@@ -39,5 +39,6 @@ export interface NuevaCompraDTO {
     insumoId: number;
     cantidad: number;
     precioUnitario: number;
+    subtotal: number;
   }[];
 }

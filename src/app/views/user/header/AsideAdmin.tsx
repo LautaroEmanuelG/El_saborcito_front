@@ -61,7 +61,7 @@ export const AsideAdmin = () => {
         <IconoMenuHamburguesa />
       </button>
       <aside
-        className={`bg-primary text-negro transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} xl:translate-x-0 transition-transform duration-300 ease-in-out xl:flex flex-col shrink-0 w-72 h-full min-h-screen fixed xl:sticky top-0 shadow-xl xl:shadow-none z-10 p-4 pt-6 overflow-y-auto`}
+        className={`bg-primary text-negro transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} xl:translate-x-0 transition-transform duration-300 ease-in-out xl:flex flex-col shrink-0 w-72 h-full min-h-screen fixed xl:sticky top-0 shadow-xl xl:shadow-none z-[41] p-4 pt-6 overflow-y-auto`}
       >
         {/* Mostrar información del usuario actual */}
         <div className="mb-4 p-4 bg-blanco rounded-lg">

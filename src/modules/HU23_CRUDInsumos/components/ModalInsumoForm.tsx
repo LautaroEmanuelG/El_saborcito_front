@@ -291,10 +291,11 @@ export const ModalInsumoForm = ({
       categoriaId: form.categoria.id,
       unidadMedida: form.unidadMedida,
     };
-    // Si es modo 'add', asegurar que precioCompra y stockActual estén presentes (pueden ser 0)
+    // Si es modo 'add', asegurar que precioCompra y stockActual estén presentes
     if (mode === 'add') {
-      payload.precioCompra = Number(form.precioCompra) || 0;
-      payload.stockActual = Number(form.stockActual) || 0;
+      // Permitir precio de compra $0 (para productos gratuitos o muestras)
+      payload.precioCompra = form.precioCompra !== undefined ? Number(form.precioCompra) : 0;
+      payload.stockActual = form.stockActual !== undefined ? Number(form.stockActual) : 0;
     }
     onSubmit(payload, selectedImageFile ?? undefined);
   };

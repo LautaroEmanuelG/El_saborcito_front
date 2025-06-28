@@ -19,7 +19,7 @@ interface Props {
 
 interface InsumoCompraDetalle {
   insumo: ArticuloInsumo;
-  precioCosto: number;
+  subtotal: number; // El usuario ingresa el subtotal directamente
   cantidad: number;
 }
 
@@ -35,27 +35,30 @@ export const CompraIngredientesModal = ({ open, onClose, onCompraRegistrada }: P
     index: number;
     insumo: ArticuloInsumo;
     cantidad: number;
-    precioCosto: number;
+    subtotal: number;
   } | null>(null);
 
-  const handleAddInsumo = (insumo: ArticuloInsumo, precioCosto: number, cantidad: number) => {
+  const handleAddInsumo = (insumo: ArticuloInsumo, subtotal: number, cantidad: number) => {
     setErrorRegistro(null);
     const idx = detalles.findIndex((d) => d.insumo.id === insumo.id);
     if (idx !== -1) {
+      // Si ya existe, sumamos el subtotal y la cantidad
       setDetalles((prev) =>
-        prev.map((d, i) => (i === idx ? { ...d, precioCosto, cantidad: d.cantidad + cantidad } : d))
+        prev.map((d, i) =>
+          i === idx ? { ...d, subtotal: d.subtotal + subtotal, cantidad: d.cantidad + cantidad } : d
+        )
       );
     } else {
-      setDetalles((prev) => [...prev, { insumo, precioCosto, cantidad }]);
+      setDetalles((prev) => [...prev, { insumo, subtotal, cantidad }]);
     }
   };
 
   const handleAddMultipleInsumos = (
-    insumosConPrecioYCantidad: { insumo: ArticuloInsumo; precioCosto: number; cantidad: number }[]
+    insumosConSubtotalYCantidad: { insumo: ArticuloInsumo; subtotal: number; cantidad: number }[]
   ) => {
     setErrorRegistro(null);
-    insumosConPrecioYCantidad.forEach(({ insumo, precioCosto, cantidad }) => {
-      handleAddInsumo(insumo, precioCosto, cantidad);
+    insumosConSubtotalYCantidad.forEach(({ insumo, subtotal, cantidad }) => {
+      handleAddInsumo(insumo, subtotal, cantidad);
     });
   };
 
@@ -69,17 +72,17 @@ export const CompraIngredientesModal = ({ open, onClose, onCompraRegistrada }: P
       index,
       insumo: detalle.insumo,
       cantidad: detalle.cantidad,
-      precioCosto: detalle.precioCosto,
+      subtotal: detalle.subtotal,
     });
     setOpenModalEditar(true);
   };
 
-  const handleSaveEditInsumo = (nuevaCantidad: number, nuevoPrecioCosto: number) => {
+  const handleSaveEditInsumo = (nuevaCantidad: number, nuevoSubtotal: number) => {
     if (insumoEditando) {
       setDetalles((prev) =>
         prev.map((detalle, i) =>
           i === insumoEditando.index
-            ? { ...detalle, cantidad: nuevaCantidad, precioCosto: nuevoPrecioCosto }
+            ? { ...detalle, cantidad: nuevaCantidad, subtotal: nuevoSubtotal }
             : detalle
         )
       );
@@ -102,7 +105,8 @@ export const CompraIngredientesModal = ({ open, onClose, onCompraRegistrada }: P
       detalles: detalles.map((d) => ({
         insumoId: d.insumo.id,
         cantidad: d.cantidad,
-        precioUnitario: d.precioCosto,
+        precioUnitario: d.cantidad !== 0 ? d.subtotal / d.cantidad : 0, // Calcular precio unitario
+        subtotal: d.subtotal,
       })),
     };
 
@@ -182,11 +186,13 @@ export const CompraIngredientesModal = ({ open, onClose, onCompraRegistrada }: P
                         Cantidad: {d.cantidad} {d.insumo.unidadMedida?.denominacion}
                         {d.cantidad < 0 && <span className="ml-1 text-xs">(Ajuste negativo)</span>}
                       </div>
-                      <div className="text-sm text-gray-600">Costo unitario: ${d.precioCosto}</div>
-                      <div
-                        className={`text-sm font-medium ${d.cantidad < 0 ? 'text-red-600' : 'text-blue-600'}`}
-                      >
-                        Subtotal: ${(d.cantidad * d.precioCosto).toFixed(2)}
+                      <div className="text-sm text-gray-600">
+                        Subtotal: ${d.subtotal}
+                        {d.subtotal === 0 && <span className="ml-1 text-xs">(Gratuito)</span>}
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        Precio unitario: $
+                        {d.cantidad !== 0 ? (d.subtotal / d.cantidad).toFixed(2) : '0.00'}
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -246,8 +252,7 @@ export const CompraIngredientesModal = ({ open, onClose, onCompraRegistrada }: P
             {detalles.length > 0 && (
               <div className="mt-4 pt-3 border-t bg-blue-50 p-3 rounded">
                 <div className="text-lg font-bold text-blue-800">
-                  Total: $
-                  {detalles.reduce((total, d) => total + d.cantidad * d.precioCosto, 0).toFixed(2)}
+                  Total: ${detalles.reduce((total, d) => total + d.subtotal, 0).toFixed(2)}
                 </div>
               </div>
             )}
@@ -297,7 +302,7 @@ export const CompraIngredientesModal = ({ open, onClose, onCompraRegistrada }: P
         }}
         nombre={insumoEditando?.insumo.denominacion || ''}
         cantidad={insumoEditando?.cantidad || 0}
-        precioCosto={insumoEditando?.precioCosto || 0}
+        subtotal={insumoEditando?.subtotal || 0}
         unidadMedida={insumoEditando?.insumo.unidadMedida?.denominacion}
         esParaElaborar={insumoEditando?.insumo.esParaElaborar || false}
         onSave={handleSaveEditInsumo}

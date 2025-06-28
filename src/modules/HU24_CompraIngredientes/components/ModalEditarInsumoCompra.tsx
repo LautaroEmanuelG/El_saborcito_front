@@ -6,10 +6,10 @@ interface ModalEditarInsumoCompraProps {
   onClose: () => void;
   nombre: string;
   cantidad: number;
-  precioCosto: number;
+  subtotal: number;
   unidadMedida?: string;
   esParaElaborar: boolean;
-  onSave: (nuevaCantidad: number, nuevoPrecioCosto: number) => void;
+  onSave: (nuevaCantidad: number, nuevoSubtotal: number) => void;
 }
 
 const ModalEditarInsumoCompra: React.FC<ModalEditarInsumoCompraProps> = ({
@@ -17,14 +17,14 @@ const ModalEditarInsumoCompra: React.FC<ModalEditarInsumoCompraProps> = ({
   onClose,
   nombre,
   cantidad,
-  precioCosto,
+  subtotal,
   unidadMedida,
   esParaElaborar,
   onSave,
 }) => {
   const [nuevaCantidad, setNuevaCantidad] = useState<string>(cantidad.toString());
-  const [nuevoPrecioCosto, setNuevoPrecioCosto] = useState<string>(precioCosto.toString());
-  const [errores, setErrores] = useState<{ cantidad?: string; precio?: string }>({});
+  const [nuevoSubtotal, setNuevoSubtotal] = useState<string>(subtotal.toString());
+  const [errores, setErrores] = useState<{ cantidad?: string; subtotal?: string }>({});
 
   const handleCantidadChange = (value: string) => {
     setNuevaCantidad(value);
@@ -34,33 +34,34 @@ const ModalEditarInsumoCompra: React.FC<ModalEditarInsumoCompraProps> = ({
     }
   };
 
-  const handlePrecioChange = (value: string) => {
-    setNuevoPrecioCosto(value);
+  const handleSubtotalChange = (value: string) => {
+    setNuevoSubtotal(value);
     // Limpiar error cuando el usuario empiece a escribir
-    if (errores.precio) {
-      setErrores((prev) => ({ ...prev, precio: undefined }));
+    if (errores.subtotal) {
+      setErrores((prev) => ({ ...prev, subtotal: undefined }));
     }
   };
 
   useEffect(() => {
     setNuevaCantidad(cantidad.toString());
-    setNuevoPrecioCosto(precioCosto.toString());
+    setNuevoSubtotal(subtotal.toString());
     setErrores({});
-  }, [cantidad, precioCosto, open]);
+  }, [cantidad, subtotal, open]);
 
   const validarFormulario = () => {
-    const nuevosErrores: { cantidad?: string; precio?: string } = {};
+    const nuevosErrores: { cantidad?: string; subtotal?: string } = {};
 
     const cantidadNum = Number(nuevaCantidad);
-    const precioNum = Number(nuevoPrecioCosto);
+    const subtotalNum = Number(nuevoSubtotal);
 
     if (isNaN(cantidadNum) || cantidadNum === 0) {
       nuevosErrores.cantidad =
         'La cantidad debe ser diferente de cero (puede ser negativa para ajustes)';
     }
 
-    if (isNaN(precioNum) || precioNum <= 0) {
-      nuevosErrores.precio = 'El precio debe ser mayor a 0';
+    // Permitir subtotal $0 para productos gratuitos o muestras
+    if (isNaN(subtotalNum) || subtotalNum < 0) {
+      nuevosErrores.subtotal = 'El subtotal no puede ser negativo';
     }
 
     setErrores(nuevosErrores);
@@ -70,20 +71,20 @@ const ModalEditarInsumoCompra: React.FC<ModalEditarInsumoCompraProps> = ({
   const handleGuardar = () => {
     if (validarFormulario()) {
       const cantidadNum = Number(nuevaCantidad);
-      const precioNum = Number(nuevoPrecioCosto);
+      const subtotalNum = Number(nuevoSubtotal);
 
       // Si no es para elaborar, redondear a entero; si es para elaborar, mantener decimales
       const cantidadFinal = !esParaElaborar ? Math.round(cantidadNum) : cantidadNum;
 
-      onSave(cantidadFinal, precioNum);
+      onSave(cantidadFinal, subtotalNum);
       onClose();
     }
   };
 
-  const calcularSubtotal = () => {
+  const calcularPrecioUnitario = () => {
     const cantidadNum = Number(nuevaCantidad) || 0;
-    const precioNum = Number(nuevoPrecioCosto) || 0;
-    return (cantidadNum * precioNum).toFixed(2);
+    const subtotalNum = Number(nuevoSubtotal) || 0;
+    return cantidadNum !== 0 ? (subtotalNum / cantidadNum).toFixed(2) : '0.00';
   };
 
   return (
@@ -115,26 +116,28 @@ const ModalEditarInsumoCompra: React.FC<ModalEditarInsumoCompraProps> = ({
         </div>
 
         <div>
-          <label className="block text-base font-medium mb-2" htmlFor="precioCostoInput">
-            Precio de costo (por unidad)
+          <label className="block text-base font-medium mb-2" htmlFor="subtotalInput">
+            Subtotal
           </label>
           <input
-            id="precioCostoInput"
+            id="subtotalInput"
             type="number"
-            min="0.01"
+            min="0"
             step="0.01"
             className={`w-full border rounded px-3 py-2 bg-gray-100 text-base text-negro ${
-              errores.precio ? 'border-red-500' : ''
+              errores.subtotal ? 'border-red-500' : ''
             }`}
-            value={nuevoPrecioCosto}
-            onChange={(e) => handlePrecioChange(e.target.value)}
-            placeholder="Precio unitario"
+            value={nuevoSubtotal}
+            onChange={(e) => handleSubtotalChange(e.target.value)}
+            placeholder="Subtotal ($0 para gratuitos)"
           />
-          {errores.precio && <div className="text-red-500 text-sm mt-1">{errores.precio}</div>}
+          {errores.subtotal && <div className="text-red-500 text-sm mt-1">{errores.subtotal}</div>}
         </div>
 
         <div className="bg-blue-50 p-3 rounded">
-          <div className="text-sm font-medium text-blue-800">Subtotal: ${calcularSubtotal()}</div>
+          <div className="text-sm font-medium text-blue-800">
+            Precio unitario: ${calcularPrecioUnitario()}
+          </div>
         </div>
 
         <div className="flex justify-center gap-3 mt-4">
