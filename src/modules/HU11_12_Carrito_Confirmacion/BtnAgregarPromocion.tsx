@@ -27,7 +27,14 @@ export const BtnAgregarPromocion: React.FC<BtnAgregarPromocionProps> = ({
     throw new Error('BtnAgregarPromocion must be used within a CarritoProvider');
   }
 
-  const { addPromocionToCarrito } = carritoContext;
+  const {
+    addPromocionToCarrito,
+    canIncreasePromocion,
+    isAnalyzing,
+    promocionesProblematicas,
+    carrito,
+    promocionesEnCarrito,
+  } = carritoContext;
 
   // Obtener disponibilidad del estado centralizado
   const isAvailable = promocionAvailability[promocion.id] ?? true;
@@ -36,8 +43,23 @@ export const BtnAgregarPromocion: React.FC<BtnAgregarPromocionProps> = ({
     event.preventDefault();
     event.stopPropagation();
 
-    // BtnAgregarPromocion siempre agrega solo 1 unidad
-    // Si el usuario quiere más cantidad, debe usar los controles en VistaCarrito
+    // 🎯 **USAR SOLO VALIDACIÓN CENTRALIZADA DEL CONTEXTO**
+    const yaExisteEnCarrito = promocionesEnCarrito.some(
+      (item) => item.promocion.id === promocion.id
+    );
+    const carritoVacio = carrito.length === 0 && promocionesEnCarrito.length === 0;
+
+    // Si el carrito está vacío o la promoción no existe, permitir agregar
+    if (!carritoVacio && yaExisteEnCarrito && !canIncreasePromocion(promocion.id)) {
+      mostrarNotificacion(
+        `❌ No se puede agregar más de la promoción ${promocion.denominacion} - limitaciones de stock`,
+        'warning',
+        3000
+      );
+      return;
+    }
+
+    console.log(`🎁 Agregando promoción: ${promocion.denominacion}`);
     const success = await addPromocionToCarrito(promocion, 1);
 
     if (success) {
@@ -49,8 +71,28 @@ export const BtnAgregarPromocion: React.FC<BtnAgregarPromocionProps> = ({
     }
   };
 
-  // Determinar si el botón debe estar deshabilitado
-  const isDisabled = disabledOverride || !isAvailable;
+  // 🎯 **DETERMINAR ESTADO DEL BOTÓN (SIMPLIFICADO)**
+  const yaExisteEnCarrito = promocionesEnCarrito.some((item) => item.promocion.id === promocion.id);
+  const carritoVacio = carrito.length === 0 && promocionesEnCarrito.length === 0;
+  const esProblematica = promocionesProblematicas.has(promocion.id);
+
+  const isDisabled =
+    disabledOverride ||
+    !isAvailable ||
+    isAnalyzing ||
+    (!carritoVacio && yaExisteEnCarrito && (esProblematica || !canIncreasePromocion(promocion.id)));
+
+  // 📝 **TEXTO DEL TOOLTIP SIMPLIFICADO**
+  const getTooltipText = (): string => {
+    if (disabledOverride) return 'Promoción deshabilitada';
+    if (!isAvailable) return 'No hay suficientes insumos para esta promoción';
+    if (isAnalyzing) return 'Verificando disponibilidad...';
+    if (esProblematica) return 'Esta promoción tiene limitaciones de stock';
+    if (!carritoVacio && yaExisteEnCarrito && !canIncreasePromocion(promocion.id)) {
+      return 'Se alcanzó el límite de stock para esta promoción';
+    }
+    return 'Agregar al carrito';
+  };
 
   return (
     <button
@@ -69,9 +111,9 @@ export const BtnAgregarPromocion: React.FC<BtnAgregarPromocionProps> = ({
       }}
       onClick={handleAddToCarrito}
       disabled={isDisabled}
-      title={isDisabled ? 'No hay suficientes insumos para esta promoción' : 'Agregar al carrito'}
+      title={getTooltipText()}
     >
-      🎁 Agregar promoción
+      {isAnalyzing ? <>⏳ Verificando...</> : <>🎁 Agregar promoción</>}
     </button>
   );
 };

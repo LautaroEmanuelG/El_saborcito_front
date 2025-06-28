@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useContext } from 'react';
 import { Header } from '../../app/views/user/header/Header';
 import { IconoLocation } from '../../assets/svgs/icons/IconoLocation';
 import { useCart } from '../../shared/hooks/useCart';
@@ -23,8 +23,12 @@ export const VistaCarrito = () => {
     throw new Error('VistaCarrito must be used within a CarritoProvider');
   }
 
-  const { analizarCarrito, limitacionesProduccion, promocionesProblematicas, isAnalyzing } =
-    carritoContext;
+  const {
+    analizarCarritoParaCompra,
+    limitacionesProduccion,
+    promocionesProblematicas,
+    isAnalyzing,
+  } = carritoContext;
 
   const { user } = useUser();
   const { mostrarNotificacion } = useNotificacion();
@@ -39,13 +43,8 @@ export const VistaCarrito = () => {
     })),
   ];
 
-  // 🚀 **ANÁLISIS AUTOMATIZADO AL MONTAR EL COMPONENTE**
-  useEffect(() => {
-    // Solo analizar si hay items en el carrito y no se está analizando ya
-    if (todosLosItems.length > 0 && !isAnalyzing) {
-      analizarCarrito();
-    }
-  }, []); // Solo ejecutar al montar el componente
+  // � **NOTA: El análisis automático del carrito se maneja en CarritoProvider**
+  // No necesitamos hacer análisis adicional aquí para evitar bucles infinitos
 
   // Función para determinar si un artículo es manufacturado
   const isArticuloManufacturado = (articulo: any): articulo is ArticuloManufacturado => {
@@ -57,31 +56,6 @@ export const VistaCarrito = () => {
     return 'stockActual' in articulo && 'esParaElaborar' in articulo;
   };
 
-  // 🚀 **FUNCIÓN OPTIMIZADA PARA VERIFICAR LIMITACIONES**
-  const hayLimitacionesExcedidas = (): boolean => {
-    return todosLosItems.some((item) => {
-      if (item.tipo === 'producto') {
-        const articuloIdStr = (item.id ?? 0).toString();
-        const limitacionMaxima = limitacionesProduccion[articuloIdStr];
-        return limitacionMaxima && item.cantidad > limitacionMaxima;
-      } else if (item.tipo === 'promocion') {
-        return promocionesProblematicas.has(item.id);
-      }
-      return false;
-    });
-  };
-
-  // 🚀 **FUNCIÓN PARA VERIFICAR LIMITACIONES ALCANZADAS**
-  const hayLimitacionesAlcanzadas = (): boolean => {
-    return todosLosItems.some((item) => {
-      if (item.tipo === 'producto') {
-        const articuloIdStr = (item.id ?? 0).toString();
-        const limitacionMaxima = limitacionesProduccion[articuloIdStr];
-        return limitacionMaxima && item.cantidad === limitacionMaxima;
-      }
-      return false;
-    });
-  };
   // 🚀 **FUNCIÓN OPTIMIZADA PARA MANEJAR COMPRA**
   const handleComprarClick = async () => {
     // No permitir compra si se está analizando
@@ -96,43 +70,70 @@ export const VistaCarrito = () => {
       return;
     }
 
-    // Realizar análisis final antes de abrir el modal
-    const analisisFinal = await analizarCarrito();
+    // Realizar análisis final antes de abrir el modal (SIN SIMULACIÓN +1)
+    const analisisFinal = await analizarCarritoParaCompra();
 
     if (!analisisFinal?.sePuedeProducirCompleto) {
-      alert(
-        '❌ No se puede completar la compra debido a limitaciones de stock. Por favor, ajuste las cantidades.'
-      );
+      // Crear mensaje detallado basado en los problemas encontrados
+      let mensajeDetallado =
+        '❌ No se puede completar la compra debido a las siguientes limitaciones:\n\n';
+
+      if (analisisFinal?.productosConProblemas && analisisFinal.productosConProblemas.length > 0) {
+        analisisFinal.productosConProblemas.forEach((problema: any) => {
+          mensajeDetallado += `• ${problema.denominacion || 'Producto'}: ${problema.motivoProblema}\n`;
+        });
+      }
+
+      if (analisisFinal?.insumosInsuficientes && analisisFinal.insumosInsuficientes.length > 0) {
+        mensajeDetallado += '\nInsumos insuficientes:\n';
+        analisisFinal.insumosInsuficientes.forEach((insumo: any) => {
+          mensajeDetallado += `• ${insumo.denominacion}: necesario ${insumo.cantidadNecesaria}, disponible ${insumo.stockDisponible}\n`;
+        });
+      }
+
+      mensajeDetallado += '\nPor favor, ajuste las cantidades en su carrito.';
+
+      alert(mensajeDetallado);
       return;
     }
 
     setMetodoPagoOpen(true);
   };
 
-  // 🚀 **FUNCIÓN OPTIMIZADA PARA MENSAJES DE LIMITACIÓN**
+  // 🚀 **FUNCIÓN OPTIMIZADA PARA MENSAJES DE LIMITACIÓN (SOLO PROBLEMAS REALES)**
   const getMensajeLimitacion = (item: any) => {
+    // Solo mostrar mensajes para items que REALMENTE están en el carrito
     if (item.tipo === 'promocion') {
       const esProblematica = promocionesProblematicas.has(item.id);
-      return esProblematica
-        ? '⚠️ Esta promoción contiene productos que no se pueden fabricar completamente'
-        : null;
+
+      // Solo mostrar mensaje si la promoción está realmente problemática
+      if (esProblematica) {
+        // return '⚠️ Esta promoción contiene productos con limitaciones de stock';
+        return null;
+      }
+      return null;
     }
 
+    // Para productos individuales
     if (!item.id) return null;
 
     const articuloIdStr = item.id.toString();
     const limitacionMaxima = limitacionesProduccion[articuloIdStr];
     const cantidadEnCarrito = item.cantidad;
 
-    if (!limitacionMaxima || cantidadEnCarrito <= limitacionMaxima) return null;
-
-    if (isArticuloInsumo(item)) {
-      return `⚠️ Stock limitado: máximo ${limitacionMaxima} unidades disponibles`;
-    } else if (isArticuloManufacturado(item)) {
-      return `⚠️ Solo se pueden producir hasta ${limitacionMaxima} unidades de este producto`;
+    // Solo mostrar mensaje si la cantidad actual EXCEDE realmente la limitación
+    if (!limitacionMaxima || cantidadEnCarrito <= limitacionMaxima) {
+      return null;
     }
 
-    return `⚠️ Cantidad limitada a ${limitacionMaxima} unidades`;
+    // Diferentes mensajes según el tipo de artículo
+    if (isArticuloInsumo(item)) {
+      return `⚠️ Stock limitado: máximo ${limitacionMaxima} unidades disponibles (cantidad actual: ${cantidadEnCarrito})`;
+    } else if (isArticuloManufacturado(item)) {
+      return `⚠️ Limitación de producción: máximo ${limitacionMaxima} unidades (cantidad actual: ${cantidadEnCarrito})`;
+    }
+
+    return `⚠️ Cantidad limitada a ${limitacionMaxima} unidades (cantidad actual: ${cantidadEnCarrito})`;
   }; // Función para obtener el precio de un item
   const getPrecioItem = (item: any): number => {
     if (item.tipo === 'promocion') {
@@ -272,21 +273,15 @@ export const VistaCarrito = () => {
             {todosLosItems.length > 0 && (
               <button
                 onClick={handleComprarClick}
-                disabled={hayLimitacionesExcedidas()}
+                disabled={isAnalyzing}
                 className={`mt-4 w-full py-2 text-lg md:text-xl font-semibold rounded-lg text-center ${
-                  hayLimitacionesExcedidas()
+                  isAnalyzing
                     ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
                     : 'bg-primary text-white hover:bg-primary-dark'
                 }`}
-                title={
-                  hayLimitacionesExcedidas()
-                    ? 'Hay cantidades que exceden los límites de producción'
-                    : hayLimitacionesAlcanzadas()
-                      ? 'Algunos productos están en su límite máximo de producción'
-                      : undefined
-                }
+                title={isAnalyzing ? 'Analizando carrito...' : undefined}
               >
-                {hayLimitacionesExcedidas() ? 'Reducir Cantidades' : 'Comprar'}
+                {isAnalyzing ? 'Analizando...' : 'Comprar'}
               </button>
             )}
           </div>

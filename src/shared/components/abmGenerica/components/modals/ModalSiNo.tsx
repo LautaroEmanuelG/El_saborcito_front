@@ -32,14 +32,18 @@ const ModalSiNo: React.FC<ModalSiNoProps> = ({
           ×
         </button>
         <h2 className="text-lg font-bold mb-2 text-center">{title}</h2>
-        <p className="mb-4 text-gray-700 break-words text-center">{description}</p>
+        <p className="mb-4 text-gray-700 break-words text-center whitespace-pre-line">
+          {description}
+        </p>
         <div className="flex justify-center gap-2 flex-wrap">
-          <button
-            className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
-            onClick={onClose}
-          >
-            {cancelText}
-          </button>
+          {cancelText && (
+            <button
+              className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+              onClick={onClose}
+            >
+              {cancelText}
+            </button>
+          )}
           <button
             className="bg-primary hover:bg-primarydark text-white font-bold py-2 px-4 rounded"
             onClick={onConfirm}
