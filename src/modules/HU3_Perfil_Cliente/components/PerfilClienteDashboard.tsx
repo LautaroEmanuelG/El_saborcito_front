@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useUser } from '../../../shared/providers/UserProvider';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth0 } from '@auth0/auth0-react';
 import IconoEditar from '../../../assets/svgs/icons/IconoEditar';
 import IconoUbicacion from '../../../assets/svgs/icons/IconoUbicacion';
 import IconoLoggin from '../../../assets/svgs/icons/IconoLoggin';
@@ -28,7 +29,10 @@ interface Localidad {
 
 export const PerfilClienteDashboard = () => {
   const { user, logout, setUser } = useUser();
+  const { isAuthenticated, logout: auth0Logout } = useAuth0();
   const location = useLocation();
+  const navigate = useNavigate();
+  const logoutInProgressRef = useRef(false);
   const [modal, setModal] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [localidades, setLocalidades] = useState<Localidad[]>([]);
@@ -56,6 +60,10 @@ export const PerfilClienteDashboard = () => {
     }
   }, [location.state]);
 
+  // Si estamos en proceso de logout, no mostrar nada (Auth0 manejará la redirección)
+  if (logoutInProgressRef.current) return null;
+
+  // Si no hay usuario y no estamos en proceso de logout, mostrar cargando
   if (!user) return <div>Cargando...</div>;
 
   // Dirección principal
@@ -87,6 +95,35 @@ export const PerfilClienteDashboard = () => {
   ];
 
   // Handlers para submit de cada modal
+  // Función mejorada de logout que maneja Auth0 Y usuarios manuales correctamente
+  const handleLogout = async () => {
+    logoutInProgressRef.current = true;
+
+    try {
+      // 1. Primero limpiar el estado local
+      logout();
+
+      // 2. Verificar si el usuario estaba autenticado con Auth0
+      if (isAuthenticated) {
+        // Usuario Auth0: Auth0 maneja la redirección
+        await auth0Logout({
+          logoutParams: {
+            returnTo: window.location.origin,
+          },
+        });
+      } else {
+        // Usuario manual: redirigir manualmente
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Error durante logout:', error);
+      // En caso de error, asegurar redirección manual
+      navigate('/');
+    } finally {
+      logoutInProgressRef.current = false;
+    }
+  };
+
   const handleSubmit = async (values: any, campo: string) => {
     if (!user.id) return;
 
@@ -206,7 +243,7 @@ export const PerfilClienteDashboard = () => {
               {/* Botón cerrar sesión */}
               <button
                 className="w-full mt-6 bg-primary text-white py-2 rounded-lg flex items-center justify-center gap-2 font-semibold shadow hover:bg-primary/90 transition"
-                onClick={logout}
+                onClick={handleLogout}
               >
                 <span className="inline-flex items-center justify-center bg-white/20 rounded-full p-1">
                   <IconoCerrar color="#fff" />
