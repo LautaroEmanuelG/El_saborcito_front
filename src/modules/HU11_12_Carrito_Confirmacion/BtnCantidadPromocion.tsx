@@ -17,6 +17,12 @@ const BtnCantidadPromocion: React.FC<BtnCantidadPromocionProps> = ({
   const [quantity, setQuantity] = useState(cantidadPromocion);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isOnCooldown, setIsOnCooldown] = useState(false);
+  const [showAutoAdjustModal, setShowAutoAdjustModal] = useState(false);
+  const [adjustmentInfo, setAdjustmentInfo] = useState<{
+    cantidadAnterior: number;
+    cantidadNueva: number;
+    motivoAjuste: string;
+  } | null>(null);
   const location = useLocation();
 
   if (!carritoContext) {
@@ -30,6 +36,8 @@ const BtnCantidadPromocion: React.FC<BtnCantidadPromocionProps> = ({
     removePromocionFromCart,
     isAnalyzing,
     canIncreasePromocion,
+    limitacionesProduccion,
+    promocionesProblematicas,
   } = carritoContext;
 
   //  **SINCRONIZACIÓN CON CARRITO**

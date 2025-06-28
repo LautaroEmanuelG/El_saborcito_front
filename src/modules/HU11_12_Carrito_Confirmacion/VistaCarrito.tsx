@@ -23,8 +23,12 @@ export const VistaCarrito = () => {
     throw new Error('VistaCarrito must be used within a CarritoProvider');
   }
 
-  const { analizarCarrito, limitacionesProduccion, promocionesProblematicas, isAnalyzing } =
-    carritoContext;
+  const {
+    analizarCarritoParaCompra,
+    limitacionesProduccion,
+    promocionesProblematicas,
+    isAnalyzing,
+  } = carritoContext;
 
   const { user } = useUser();
   const { mostrarNotificacion } = useNotificacion();
@@ -66,13 +70,30 @@ export const VistaCarrito = () => {
       return;
     }
 
-    // Realizar análisis final antes de abrir el modal
-    const analisisFinal = await analizarCarrito();
+    // Realizar análisis final antes de abrir el modal (SIN SIMULACIÓN +1)
+    const analisisFinal = await analizarCarritoParaCompra();
 
     if (!analisisFinal?.sePuedeProducirCompleto) {
-      alert(
-        '❌ No se puede completar la compra debido a limitaciones de stock. Por favor, ajuste las cantidades.'
-      );
+      // Crear mensaje detallado basado en los problemas encontrados
+      let mensajeDetallado =
+        '❌ No se puede completar la compra debido a las siguientes limitaciones:\n\n';
+
+      if (analisisFinal?.productosConProblemas && analisisFinal.productosConProblemas.length > 0) {
+        analisisFinal.productosConProblemas.forEach((problema: any) => {
+          mensajeDetallado += `• ${problema.denominacion || 'Producto'}: ${problema.motivoProblema}\n`;
+        });
+      }
+
+      if (analisisFinal?.insumosInsuficientes && analisisFinal.insumosInsuficientes.length > 0) {
+        mensajeDetallado += '\nInsumos insuficientes:\n';
+        analisisFinal.insumosInsuficientes.forEach((insumo: any) => {
+          mensajeDetallado += `• ${insumo.denominacion}: necesario ${insumo.cantidadNecesaria}, disponible ${insumo.stockDisponible}\n`;
+        });
+      }
+
+      mensajeDetallado += '\nPor favor, ajuste las cantidades en su carrito.';
+
+      alert(mensajeDetallado);
       return;
     }
 
@@ -87,7 +108,8 @@ export const VistaCarrito = () => {
 
       // Solo mostrar mensaje si la promoción está realmente problemática
       if (esProblematica) {
-        return '⚠️ Esta promoción contiene productos con limitaciones de stock';
+        // return '⚠️ Esta promoción contiene productos con limitaciones de stock';
+        return null;
       }
       return null;
     }

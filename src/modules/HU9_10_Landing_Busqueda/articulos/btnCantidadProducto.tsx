@@ -30,18 +30,18 @@ const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
     decreaseFromCart,
     removeFromCart,
     isAnalyzing,
-    limitacionesProduccion,
+    canIncreaseProduct,
   } = carritoContext;
 
   // 🔄 **SINCRONIZACIÓN CON CARRITO**
   useEffect(() => {
-    const productoEnCarrito = carrito.find((item) => item.denominacion === articulo.denominacion);
+    const productoEnCarrito = carrito.find((item) => item.id === articulo.id);
     if (productoEnCarrito) {
       setQuantity(productoEnCarrito.cantidad);
     } else {
       setQuantity(cantidadProducto);
     }
-  }, [carrito, articulo.denominacion, cantidadProducto]);
+  }, [carrito, articulo.id, cantidadProducto]);
   // ➕ **MANEJAR INCREMENTO CON ANÁLISIS PREDICTIVO Y COOLDOWN**
   const handleIncrease = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
@@ -120,24 +120,20 @@ const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
       return cantidadProducto;
     }
   };
-  // 🚫 **VERIFICAR SI EL BOTÓN + DEBE ESTAR DESHABILITADO**
+  // 🚫 **VERIFICAR SI EL BOTÓN + DEBE ESTAR DESHABILITADO (USANDO VALIDACIÓN CENTRALIZADA)**
   const isIncreaseDisabled = (): boolean => {
     if (location.pathname === '/carrito') {
-      // Solo deshabilitar si está analizando, en cooldown, o si hay limitación y está en el límite
+      // 🎯 **USAR VALIDACIÓN CENTRALIZADA DEL CONTEXTO**
       if (isAnalyzing || isOnCooldown) return true;
 
       if (articulo.id) {
-        const articuloIdStr = articulo.id.toString();
-        const limitacionMaxima = limitacionesProduccion[articuloIdStr];
-        const cantidadActual = carrito.find((item) => item.id === articulo.id)?.cantidad ?? 0;
-
-        return Boolean(limitacionMaxima && cantidadActual >= limitacionMaxima);
+        return !canIncreaseProduct(articulo.id);
       }
     }
     return false;
   };
 
-  // 💡 **OBTENER TÍTULO DEL BOTÓN +**
+  // 💡 **OBTENER TÍTULO DEL BOTÓN + (SIMPLIFICADO)**
   const getIncreaseButtonTitle = (): string | undefined => {
     if (!isIncreaseDisabled()) return undefined;
 
@@ -149,16 +145,7 @@ const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
       return 'Analizando disponibilidad...';
     }
 
-    if (articulo.id) {
-      const articuloIdStr = articulo.id.toString();
-      const limitacionMaxima = limitacionesProduccion[articuloIdStr];
-
-      if (limitacionMaxima) {
-        return `Máximo ${limitacionMaxima} unidades disponibles`;
-      }
-    }
-
-    return 'No se puede agregar más';
+    return 'No se puede agregar más - limitaciones de stock';
   };
 
   return (
