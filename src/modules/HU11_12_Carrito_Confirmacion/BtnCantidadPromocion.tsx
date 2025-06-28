@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { CarritoContext } from '../../shared/providers/CarritoProvider';
 import { useLocation } from 'react-router-dom';
 import type { Promocion } from '../../types/Promocion';
+import ModalSiNo from '../../shared/components/abmGenerica/components/modals/ModalSiNo';
 
 interface BtnCantidadPromocionProps {
   promocion: Promocion;
@@ -14,6 +15,8 @@ const BtnCantidadPromocion: React.FC<BtnCantidadPromocionProps> = ({
 }) => {
   const carritoContext = useContext(CarritoContext);
   const [quantity, setQuantity] = useState(cantidadPromocion);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isOnCooldown, setIsOnCooldown] = useState(false);
   const location = useLocation();
 
   if (!carritoContext) {
@@ -24,11 +27,12 @@ const BtnCantidadPromocion: React.FC<BtnCantidadPromocionProps> = ({
     promocionesEnCarrito,
     addPromocionToCarrito,
     decreasePromocionFromCart,
+    removePromocionFromCart,
     isAnalyzing,
     canIncreasePromocion,
   } = carritoContext;
 
-  // 🔄 **SINCRONIZACIÓN CON CARRITO**
+  //  **SINCRONIZACIÓN CON CARRITO**
   useEffect(() => {
     const promocionEnCarrito = promocionesEnCarrito.find(
       (item) => item.promocion.id === promocion.id
@@ -40,22 +44,38 @@ const BtnCantidadPromocion: React.FC<BtnCantidadPromocionProps> = ({
     }
   }, [promocionesEnCarrito, promocion.id, cantidadPromocion]);
 
-  // ➕ **MANEJAR INCREMENTO CON VALIDACIÓN CENTRALIZADA**
+  // ➕ **MANEJAR INCREMENTO CON VALIDACIÓN CENTRALIZADA Y COOLDOWN**
   const handleIncrease = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     event.preventDefault();
 
-    if (location.pathname === '/carrito') {
-      // � **USAR VALIDACIÓN CENTRALIZADA**
-      if (!canIncreasePromocion(promocion.id)) {
-        return;
-      }
+    // 🚫 **VERIFICAR COOLDOWN**
+    if (isOnCooldown) {
+      return;
+    }
 
+    if (location.pathname === '/carrito') {
       if (isAnalyzing) {
         return;
       }
 
+      // 🎯 **USAR SOLO VALIDACIÓN CENTRALIZADA DEL CONTEXTO**
+      // No hacer análisis predictivo aquí, usar la validación que ya está en el contexto
+      const puedeAgregar = canIncreasePromocion(promocion.id);
+
+      if (!puedeAgregar) {
+        console.log('❌ VALIDACIÓN CENTRALIZADA: NO se puede agregar más cantidad a la promoción');
+        return;
+      }
+
+      console.log('✅ VALIDACIÓN CENTRALIZADA: SÍ se puede agregar más cantidad');
+
+      // 🕐 **ACTIVAR COOLDOWN**
+      setIsOnCooldown(true);
+      setTimeout(() => setIsOnCooldown(false), 500);
+
       try {
+        // 🚀 **AGREGAR AL CARRITO**
         await addPromocionToCarrito(promocion, 1);
       } catch (error) {
         console.error('Error al agregar promoción:', error);
@@ -63,7 +83,7 @@ const BtnCantidadPromocion: React.FC<BtnCantidadPromocionProps> = ({
     }
   };
 
-  // ➖ **MANEJAR DECREMENTO**
+  // ➖ **MANEJAR DECREMENTO CON MODAL DE CONFIRMACIÓN**
   const handleDecrease = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     event.preventDefault();
@@ -74,30 +94,49 @@ const BtnCantidadPromocion: React.FC<BtnCantidadPromocionProps> = ({
         decreasePromocionFromCart(promocion.id);
       }
     } else {
-      // Si la cantidad es 1 y estamos en /carrito, elimina la promoción del carrito
+      // Si la cantidad es 1, mostrar modal de confirmación para eliminar
       if (location.pathname === '/carrito') {
-        decreasePromocionFromCart(promocion.id);
+        setShowDeleteModal(true);
       }
     }
   };
 
-  // 🚫 **VERIFICAR SI EL BOTÓN + DEBE ESTAR DESHABILITADO**
+  // 🗑️ **CONFIRMAR ELIMINACIÓN DE LA PROMOCIÓN**
+  const handleConfirmDelete = () => {
+    removePromocionFromCart(promocion.id);
+    setShowDeleteModal(false);
+  };
+
+  // ❌ **CANCELAR ELIMINACIÓN**
+  const handleCancelDelete = () => {
+    setShowDeleteModal(false);
+  };
+
+  // 🎯 **VERIFICAR SI EL BOTÓN + DEBE ESTAR DESHABILITADO (USANDO VALIDACIÓN CENTRALIZADA)**
   const isIncreaseDisabled = (): boolean => {
     if (location.pathname === '/carrito') {
-      return Boolean(isAnalyzing || !canIncreasePromocion(promocion.id));
+      // 🎯 **USAR VALIDACIÓN CENTRALIZADA OPTIMIZADA**
+      if (isAnalyzing || isOnCooldown) return true;
+
+      // Usar la validación centralizada del contexto
+      return !canIncreasePromocion(promocion.id);
     }
     return false;
   };
 
-  // 💡 **OBTENER TÍTULO DEL BOTÓN +**
+  // 💡 **OBTENER TÍTULO DEL BOTÓN + (SIMPLIFICADO)**
   const getIncreaseButtonTitle = (): string | undefined => {
     if (!isIncreaseDisabled()) return undefined;
+
+    if (isOnCooldown) {
+      return 'Esperando...';
+    }
 
     if (isAnalyzing) {
       return 'Analizando disponibilidad de promoción...';
     }
 
-    return 'No se puede agregar más - algunos productos de esta promoción no se pueden fabricar';
+    return 'No se puede agregar más promociones - limitaciones de stock';
   };
 
   // 📊 **OBTENER CANTIDAD ACTUAL**
@@ -110,29 +149,42 @@ const BtnCantidadPromocion: React.FC<BtnCantidadPromocionProps> = ({
   };
 
   return (
-    <div className="flex items-center justify-between space-x-2 sm:space-x-4 rounded-3xl border-t-gray-300 border-2 sm:w-32">
-      <button
-        onClick={handleDecrease}
-        className="px-3 py-2 bg-gray-300 text-black rounded-full hover:bg-gray-400"
-      >
-        -
-      </button>
+    <>
+      <div className="flex items-center justify-between space-x-2 sm:space-x-4 rounded-3xl border-t-gray-300 border-2 sm:w-32">
+        <button
+          onClick={handleDecrease}
+          className="px-3 py-2 bg-gray-300 text-black rounded-full hover:bg-gray-400"
+        >
+          -
+        </button>
 
-      <span className="sm:text-lg font-semibold">{cantProd()}</span>
+        <span className="sm:text-lg font-semibold">{cantProd()}</span>
 
-      <button
-        onClick={handleIncrease}
-        disabled={isIncreaseDisabled()}
-        className={`px-3 py-2 rounded-full ${
-          isIncreaseDisabled()
-            ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
-            : 'bg-primary text-white hover:font-bold hover:bg-primary-dark'
-        }`}
-        title={getIncreaseButtonTitle()}
-      >
-        +
-      </button>
-    </div>
+        <button
+          onClick={handleIncrease}
+          disabled={isIncreaseDisabled()}
+          className={`px-3 py-2 rounded-full ${
+            isIncreaseDisabled()
+              ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+              : 'bg-primary text-white hover:font-bold hover:bg-primary-dark'
+          }`}
+          title={getIncreaseButtonTitle()}
+        >
+          +
+        </button>
+      </div>
+
+      {/* Modal de confirmación para eliminar promoción */}
+      <ModalSiNo
+        open={showDeleteModal}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        title="🎁 Eliminar Promoción"
+        description={`¿Estás seguro de que deseas eliminar la promoción "${promocion.denominacion}" del carrito?`}
+        confirmText="Sí, eliminar"
+        cancelText="No, mantener"
+      />
+    </>
   );
 };
 
