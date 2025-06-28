@@ -1,6 +1,6 @@
 // src/modules/HU24_CompraIngredientes/components/CompraIngredientesModal.tsx
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { ArticuloInsumo } from '../../../types/Articulo';
 import ModalCompraSeleccionInsumo from './ModalCompraSeleccionInsumo';
 import ModalRestaurarInsumo from './ModalRestaurarInsumo';
@@ -15,6 +15,7 @@ interface Props {
   open: boolean;
   onClose: () => void;
   onCompraRegistrada: (compra: CompraInsumoDTO) => void;
+  insumosPreseleccionados?: ArticuloInsumo[];
 }
 
 interface InsumoCompraDetalle {
@@ -23,7 +24,12 @@ interface InsumoCompraDetalle {
   cantidad: number;
 }
 
-export const CompraIngredientesModal = ({ open, onClose, onCompraRegistrada }: Props) => {
+export const CompraIngredientesModal = ({
+  open,
+  onClose,
+  onCompraRegistrada,
+  insumosPreseleccionados = [],
+}: Props) => {
   const [openModalInsumo, setOpenModalInsumo] = useState(false);
   const [openModalRestaurar, setOpenModalRestaurar] = useState(false);
   const [openModalEditar, setOpenModalEditar] = useState(false);
@@ -37,6 +43,35 @@ export const CompraIngredientesModal = ({ open, onClose, onCompraRegistrada }: P
     cantidad: number;
     subtotal: number;
   } | null>(null);
+
+  // Efecto para preseleccionar insumos cuando el modal se abre
+  useEffect(() => {
+    if (open && insumosPreseleccionados.length > 0) {
+      // Limpiar detalles existentes cuando se preseleccionan insumos
+      setDetalles([]);
+
+      // Pre-agregar insumos con valores calculados automáticamente
+      const insumosConDatos = insumosPreseleccionados.map((insumo) => {
+        const stockNecesario = Math.max(0, (insumo.stockMinimo ?? 0) - (insumo.stockActual ?? 0));
+        const cantidadSugerida =
+          stockNecesario > 0 ? stockNecesario : (insumo.stockMinimo ?? 0) * 0.5; // Si no hay déficit, sugerir 50% del mínimo
+        const subtotalSugerido = cantidadSugerida * (insumo.precioCompra ?? 0);
+
+        return {
+          insumo,
+          cantidad: cantidadSugerida,
+          subtotal: subtotalSugerido,
+        };
+      });
+
+      setDetalles(insumosConDatos);
+
+      // Establecer denominación por defecto
+      if (!denominacion) {
+        setDenominacion(`Reposición de Stock - ${new Date().toLocaleDateString('es-ES')}`);
+      }
+    }
+  }, [open, insumosPreseleccionados, denominacion]);
 
   const handleAddInsumo = (insumo: ArticuloInsumo, subtotal: number, cantidad: number) => {
     setErrorRegistro(null);
@@ -136,7 +171,22 @@ export const CompraIngredientesModal = ({ open, onClose, onCompraRegistrada }: P
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-4xl h-[600px] flex flex-col">
-        <h2 className="text-2xl font-bold mb-6 text-center">Registrar compra de insumos</h2>
+        <h2 className="text-2xl font-bold mb-4 text-center">
+          {insumosPreseleccionados.length > 0
+            ? 'Reposición de Stock - Insumos Preseleccionados'
+            : 'Registrar compra de insumos'}
+        </h2>
+
+        {/* Mensaje informativo para insumos preseleccionados */}
+        {insumosPreseleccionados.length > 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+            <p className="text-blue-800 text-sm text-center">
+              ✨ Se han preseleccionado <strong>{insumosPreseleccionados.length} insumos</strong>{' '}
+              con stock bajo. Las cantidades y subtotales se calcularon automáticamente para
+              alcanzar el stock mínimo.
+            </p>
+          </div>
+        )}
 
         <div className="flex flex-col md:flex-row gap-4 flex-1">
           <div className="flex-1 p-2">
