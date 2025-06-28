@@ -13,14 +13,12 @@ import { useAuth } from './shared/hooks/useAuth';
 import { RankingProductos } from './modules/HU26_28_informes/components/RankingProductos';
 import ScreenArticulosManufacturados from './modules/HU22_CRUDArticulos/components/ScreenArticulosManufacturados';
 import ScreenInsumos from './modules/HU23_CRUDInsumos/components/ScreenInsumos';
-import { ScreenUnidadesMedida } from './modules/HU_CRUD_UnidadesMedida';
 import { Cocina } from './app/views/admin/Cocina';
 import { HistorialCocina } from './app/views/admin/HistorialCocina';
 import MovimientosMonetarios from './modules/HU26_28_informes/components/MovimientosMonetarios';
 import { RankingCliente } from './modules/HU26_28_informes/components/RankingCliente';
 import ScreenCategoriasArticulos from './modules/HU21_CRUD_CategoriasArticulos/components/ScreenCategoriasArticulos';
 import ScreenCategoriaPadreArticulo from './modules/HU21_CRUD_CategoriasPadresArticulos/components/ScreenCategoriaPadreArticulo';
-import ScreenSubcategoriasInsumos from './modules/HU20_CRUD_SubcategoriasInsumos/components/ScreenSubcategoriasInsumos';
 import ScreenCategoriaPadreInsumo from './modules/HU20_CRUD_CategoriasPadresInsumos/components/ScreenCategoriaPadreInsumo';
 import ScreenPromociones from './modules/HU25_Promociones/components/ScreenPromociones';
 import { Recepcion } from './modules/HU14_Recepcion/components/Recepcion';
@@ -174,22 +172,6 @@ const AppRoutes = () => {
             element={
               <ProtectedRoute allowedRoles={COCINERO}>
                 <ScreenCategoriaPadreInsumo />
-              </ProtectedRoute>
-            }
-          />{' '}
-          <Route
-            path="subcategorias-insumos"
-            element={
-              <ProtectedRoute allowedRoles={COCINERO}>
-                <ScreenSubcategoriasInsumos />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="unidades-medida"
-            element={
-              <ProtectedRoute allowedRoles={COCINERO}>
-                <ScreenUnidadesMedida />
               </ProtectedRoute>
             }
           />

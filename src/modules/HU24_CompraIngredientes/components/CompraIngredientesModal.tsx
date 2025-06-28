@@ -1,6 +1,6 @@
 // src/modules/HU24_CompraIngredientes/components/CompraIngredientesModal.tsx
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { ArticuloInsumo } from '../../../types/Articulo';
 import ModalCompraSeleccionInsumo from './ModalCompraSeleccionInsumo';
 import ModalRestaurarInsumo from './ModalRestaurarInsumo';
@@ -15,15 +15,21 @@ interface Props {
   open: boolean;
   onClose: () => void;
   onCompraRegistrada: (compra: CompraInsumoDTO) => void;
+  insumosPreseleccionados?: ArticuloInsumo[];
 }
 
 interface InsumoCompraDetalle {
   insumo: ArticuloInsumo;
-  precioCosto: number;
+  subtotal: number; // El usuario ingresa el subtotal directamente
   cantidad: number;
 }
 
-export const CompraIngredientesModal = ({ open, onClose, onCompraRegistrada }: Props) => {
+export const CompraIngredientesModal = ({
+  open,
+  onClose,
+  onCompraRegistrada,
+  insumosPreseleccionados = [],
+}: Props) => {
   const [openModalInsumo, setOpenModalInsumo] = useState(false);
   const [openModalRestaurar, setOpenModalRestaurar] = useState(false);
   const [openModalEditar, setOpenModalEditar] = useState(false);
@@ -35,27 +41,59 @@ export const CompraIngredientesModal = ({ open, onClose, onCompraRegistrada }: P
     index: number;
     insumo: ArticuloInsumo;
     cantidad: number;
-    precioCosto: number;
+    subtotal: number;
   } | null>(null);
 
-  const handleAddInsumo = (insumo: ArticuloInsumo, precioCosto: number, cantidad: number) => {
+  // Efecto para preseleccionar insumos cuando el modal se abre
+  useEffect(() => {
+    if (open && insumosPreseleccionados.length > 0) {
+      // Limpiar detalles existentes cuando se preseleccionan insumos
+      setDetalles([]);
+
+      // Pre-agregar insumos con valores calculados automáticamente
+      const insumosConDatos = insumosPreseleccionados.map((insumo) => {
+        const stockNecesario = Math.max(0, (insumo.stockMinimo ?? 0) - (insumo.stockActual ?? 0));
+        const cantidadSugerida =
+          stockNecesario > 0 ? stockNecesario : (insumo.stockMinimo ?? 0) * 0.5; // Si no hay déficit, sugerir 50% del mínimo
+        const subtotalSugerido = cantidadSugerida * (insumo.precioCompra ?? 0);
+
+        return {
+          insumo,
+          cantidad: cantidadSugerida,
+          subtotal: subtotalSugerido,
+        };
+      });
+
+      setDetalles(insumosConDatos);
+
+      // Establecer denominación por defecto
+      if (!denominacion) {
+        setDenominacion(`Reposición de Stock - ${new Date().toLocaleDateString('es-ES')}`);
+      }
+    }
+  }, [open, insumosPreseleccionados, denominacion]);
+
+  const handleAddInsumo = (insumo: ArticuloInsumo, subtotal: number, cantidad: number) => {
     setErrorRegistro(null);
     const idx = detalles.findIndex((d) => d.insumo.id === insumo.id);
     if (idx !== -1) {
+      // Si ya existe, sumamos el subtotal y la cantidad
       setDetalles((prev) =>
-        prev.map((d, i) => (i === idx ? { ...d, precioCosto, cantidad: d.cantidad + cantidad } : d))
+        prev.map((d, i) =>
+          i === idx ? { ...d, subtotal: d.subtotal + subtotal, cantidad: d.cantidad + cantidad } : d
+        )
       );
     } else {
-      setDetalles((prev) => [...prev, { insumo, precioCosto, cantidad }]);
+      setDetalles((prev) => [...prev, { insumo, subtotal, cantidad }]);
     }
   };
 
   const handleAddMultipleInsumos = (
-    insumosConPrecioYCantidad: { insumo: ArticuloInsumo; precioCosto: number; cantidad: number }[]
+    insumosConSubtotalYCantidad: { insumo: ArticuloInsumo; subtotal: number; cantidad: number }[]
   ) => {
     setErrorRegistro(null);
-    insumosConPrecioYCantidad.forEach(({ insumo, precioCosto, cantidad }) => {
-      handleAddInsumo(insumo, precioCosto, cantidad);
+    insumosConSubtotalYCantidad.forEach(({ insumo, subtotal, cantidad }) => {
+      handleAddInsumo(insumo, subtotal, cantidad);
     });
   };
 
@@ -69,17 +107,17 @@ export const CompraIngredientesModal = ({ open, onClose, onCompraRegistrada }: P
       index,
       insumo: detalle.insumo,
       cantidad: detalle.cantidad,
-      precioCosto: detalle.precioCosto,
+      subtotal: detalle.subtotal,
     });
     setOpenModalEditar(true);
   };
 
-  const handleSaveEditInsumo = (nuevaCantidad: number, nuevoPrecioCosto: number) => {
+  const handleSaveEditInsumo = (nuevaCantidad: number, nuevoSubtotal: number) => {
     if (insumoEditando) {
       setDetalles((prev) =>
         prev.map((detalle, i) =>
           i === insumoEditando.index
-            ? { ...detalle, cantidad: nuevaCantidad, precioCosto: nuevoPrecioCosto }
+            ? { ...detalle, cantidad: nuevaCantidad, subtotal: nuevoSubtotal }
             : detalle
         )
       );
@@ -102,7 +140,8 @@ export const CompraIngredientesModal = ({ open, onClose, onCompraRegistrada }: P
       detalles: detalles.map((d) => ({
         insumoId: d.insumo.id,
         cantidad: d.cantidad,
-        precioUnitario: d.precioCosto,
+        precioUnitario: d.cantidad !== 0 ? d.subtotal / d.cantidad : 0, // Calcular precio unitario
+        subtotal: d.subtotal,
       })),
     };
 
@@ -132,7 +171,22 @@ export const CompraIngredientesModal = ({ open, onClose, onCompraRegistrada }: P
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-4xl h-[600px] flex flex-col">
-        <h2 className="text-2xl font-bold mb-6 text-center">Registrar compra de insumos</h2>
+        <h2 className="text-2xl font-bold mb-4 text-center">
+          {insumosPreseleccionados.length > 0
+            ? 'Reposición de Stock - Insumos Preseleccionados'
+            : 'Registrar compra de insumos'}
+        </h2>
+
+        {/* Mensaje informativo para insumos preseleccionados */}
+        {insumosPreseleccionados.length > 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+            <p className="text-blue-800 text-sm text-center">
+              ✨ Se han preseleccionado <strong>{insumosPreseleccionados.length} insumos</strong>{' '}
+              con stock bajo. Las cantidades y subtotales se calcularon automáticamente para
+              alcanzar el stock mínimo.
+            </p>
+          </div>
+        )}
 
         <div className="flex flex-col md:flex-row gap-4 flex-1">
           <div className="flex-1 p-2">
@@ -170,16 +224,25 @@ export const CompraIngredientesModal = ({ open, onClose, onCompraRegistrada }: P
                 detalles.map((d, i) => (
                   <div
                     key={d.insumo.id}
-                    className="flex justify-between items-center p-2 border rounded mb-2"
+                    className={`flex justify-between items-center p-2 border rounded mb-2 ${
+                      d.cantidad < 0 ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    }`}
                   >
                     <div>
                       <div className="font-medium">{d.insumo.denominacion}</div>
-                      <div className="text-sm text-gray-600">
+                      <div
+                        className={`text-sm ${d.cantidad < 0 ? 'text-red-600' : 'text-gray-600'}`}
+                      >
                         Cantidad: {d.cantidad} {d.insumo.unidadMedida?.denominacion}
+                        {d.cantidad < 0 && <span className="ml-1 text-xs">(Ajuste negativo)</span>}
                       </div>
-                      <div className="text-sm text-gray-600">Costo unitario: ${d.precioCosto}</div>
-                      <div className="text-sm font-medium text-blue-600">
-                        Subtotal: ${(d.cantidad * d.precioCosto).toFixed(2)}
+                      <div className="text-sm text-gray-600">
+                        Subtotal: ${d.subtotal}
+                        {d.subtotal === 0 && <span className="ml-1 text-xs">(Gratuito)</span>}
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        Precio unitario: $
+                        {d.cantidad !== 0 ? (d.subtotal / d.cantidad).toFixed(2) : '0.00'}
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -239,8 +302,7 @@ export const CompraIngredientesModal = ({ open, onClose, onCompraRegistrada }: P
             {detalles.length > 0 && (
               <div className="mt-4 pt-3 border-t bg-blue-50 p-3 rounded">
                 <div className="text-lg font-bold text-blue-800">
-                  Total: $
-                  {detalles.reduce((total, d) => total + d.cantidad * d.precioCosto, 0).toFixed(2)}
+                  Total: ${detalles.reduce((total, d) => total + d.subtotal, 0).toFixed(2)}
                 </div>
               </div>
             )}
@@ -290,7 +352,7 @@ export const CompraIngredientesModal = ({ open, onClose, onCompraRegistrada }: P
         }}
         nombre={insumoEditando?.insumo.denominacion || ''}
         cantidad={insumoEditando?.cantidad || 0}
-        precioCosto={insumoEditando?.precioCosto || 0}
+        subtotal={insumoEditando?.subtotal || 0}
         unidadMedida={insumoEditando?.insumo.unidadMedida?.denominacion}
         esParaElaborar={insumoEditando?.insumo.esParaElaborar || false}
         onSave={handleSaveEditInsumo}
