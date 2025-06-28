@@ -351,229 +351,258 @@ export const CarritoProvider: React.FC<{ children: ReactNode }> = ({ children })
     [mostrarNotificacion]
   );
 
-  // 🔍 **ANÁLISIS CENTRALIZADO CORE**
-  const analyzeCarritoCore = useCallback(async (): Promise<AnalisisProduccionResponse | null> => {
-    if (analysisInProgress.current) {
-      return lastAnalysisResult.current;
-    }
-
-    try {
-      analysisInProgress.current = true;
-      setIsAnalyzing(true);
-      setIsProcessingInBackground(true);
-
-      // Carrito vacío
-      if (state.carrito.length === 0 && state.promocionesEnCarrito.length === 0) {
-        setLimitacionesProduccion({});
-        setPromocionesProblematicas(new Set());
-        lastAnalysisResult.current = null;
-        return null;
+  // 🔍 **ANÁLISIS CENTRALIZADO CORE OPTIMIZADO**
+  const analyzeCarritoCore = useCallback(
+    async (lastAction?: {
+      type: 'add_product' | 'add_promocion' | 'decrease_product' | 'decrease_promocion' | null;
+      productId?: number;
+      promocionId?: number;
+      cantidad?: number;
+    }): Promise<AnalisisProduccionResponse | null> => {
+      if (analysisInProgress.current) {
+        return lastAnalysisResult.current;
       }
 
-      // 🎯 **FILTRAR PRODUCTOS INDIVIDUALES DEL CARRITO**
-      const productosManufacturados = state.carrito.filter(
-        (item) => isArticuloManufacturado(item) && item.id
-      );
-      const productosInsumos = state.carrito.filter((item) => isArticuloInsumo(item) && item.id);
-      const todosLosProductos = [...productosManufacturados, ...productosInsumos];
+      try {
+        analysisInProgress.current = true;
+        setIsAnalyzing(true);
+        setIsProcessingInBackground(true);
 
-      // 🎯 **PRODUCTOS DE PROMOCIONES CON SIMULACIÓN +1**
-      const productosDePromociones: Array<{ articuloId: number; cantidad: number }> = [];
-      console.log(`🔍 PROMOCIONES EN CARRITO: ${state.promocionesEnCarrito.length}`);
+        // Carrito vacío
+        if (state.carrito.length === 0 && state.promocionesEnCarrito.length === 0) {
+          setLimitacionesProduccion({});
+          setPromocionesProblematicas(new Set());
+          lastAnalysisResult.current = null;
+          return null;
+        }
 
-      state.promocionesEnCarrito.forEach((promocionEnCarrito) => {
+        // 🎯 **FILTRAR PRODUCTOS INDIVIDUALES DEL CARRITO**
+        const productosManufacturados = state.carrito.filter(
+          (item) => isArticuloManufacturado(item) && item.id
+        );
+        const productosInsumos = state.carrito.filter((item) => isArticuloInsumo(item) && item.id);
+        const todosLosProductos = [...productosManufacturados, ...productosInsumos];
+
+        // 🎯 **PRODUCTOS DE PROMOCIONES CON SIMULACIÓN INTELIGENTE**
+        const productosDePromociones: Array<{ articuloId: number; cantidad: number }> = [];
+        console.log(`🔍 PROMOCIONES EN CARRITO: ${state.promocionesEnCarrito.length}`);
+
+        state.promocionesEnCarrito.forEach((promocionEnCarrito) => {
+          console.log(
+            `🔍 PROCESANDO PROMOCIÓN: ${promocionEnCarrito.promocion.denominacion}, cantidad actual: ${promocionEnCarrito.cantidad}`
+          );
+
+          // 🔮 **SIMULACIÓN INTELIGENTE: Solo +1 si esta promoción fue la recién agregada**
+          const esPromocionRecienAgregada =
+            lastAction?.type === 'add_promocion' &&
+            lastAction?.promocionId === promocionEnCarrito.promocion.id;
+
+          const cantidadParaAnalisis = esPromocionRecienAgregada
+            ? promocionEnCarrito.cantidad + 1 // Simular +1 solo para la promoción recién agregada
+            : promocionEnCarrito.cantidad; // Cantidad real para las demás
+
+          const articulosDePromocion = getArticulosFromPromocion(
+            promocionEnCarrito.promocion,
+            cantidadParaAnalisis
+          );
+          productosDePromociones.push(...articulosDePromocion);
+
+          if (esPromocionRecienAgregada) {
+            console.log(
+              `🔮 SIMULANDO PROMOCIÓN ${promocionEnCarrito.promocion.denominacion}: ${promocionEnCarrito.cantidad} → ${cantidadParaAnalisis}`
+            );
+          } else {
+            console.log(
+              `✅ CANTIDAD REAL PROMOCIÓN ${promocionEnCarrito.promocion.denominacion}: ${cantidadParaAnalisis}`
+            );
+          }
+          console.log(`📦 ARTÍCULOS DE ESTA PROMOCIÓN:`, articulosDePromocion);
+        });
+
+        // 🎯 **PRODUCTOS INDIVIDUALES CON SIMULACIÓN INTELIGENTE**
+        const productosIndividualesSimulados = todosLosProductos.map((item: any) => {
+          // 🔮 **SIMULACIÓN INTELIGENTE: Solo +1 si este producto fue el recién agregado**
+          const esProductoRecienAgregado =
+            lastAction?.type === 'add_product' && lastAction?.productId === item.id;
+
+          const cantidadParaAnalisis = esProductoRecienAgregado
+            ? item.cantidad + 1 // Simular +1 solo para el producto recién agregado
+            : item.cantidad; // Cantidad real para los demás
+
+          if (esProductoRecienAgregado) {
+            console.log(
+              `🔮 SIMULANDO PRODUCTO ${item.denominacion}: ${item.cantidad} → ${cantidadParaAnalisis}`
+            );
+          } else {
+            console.log(`✅ CANTIDAD REAL PRODUCTO ${item.denominacion}: ${cantidadParaAnalisis}`);
+          }
+
+          return {
+            articuloId: item.id!,
+            cantidad: cantidadParaAnalisis,
+          };
+        });
+
+        // Combinar todos los productos para análisis INTELIGENTE
+        const todosLosArticulosParaAnalizar = [
+          ...productosIndividualesSimulados,
+          ...productosDePromociones,
+        ];
+
+        console.log(`🔍 TOTAL PRODUCTOS INDIVIDUALES: ${productosIndividualesSimulados.length}`);
+        console.log(`🔍 TOTAL PRODUCTOS DE PROMOCIONES: ${productosDePromociones.length}`);
+        console.log(`🔍 TOTAL ARTÍCULOS PARA ANALIZAR: ${todosLosArticulosParaAnalizar.length}`);
+
+        if (todosLosArticulosParaAnalizar.length === 0) {
+          lastAnalysisResult.current = null;
+          return null;
+        }
+
+        console.log('📡 Analizando producción...');
         console.log(
-          `🔍 PROCESANDO PROMOCIÓN: ${promocionEnCarrito.promocion.denominacion}, cantidad actual: ${promocionEnCarrito.cantidad}`
+          '📤 ENVIANDO AL BACKEND:',
+          JSON.stringify(todosLosArticulosParaAnalizar, null, 2)
         );
+        const resultado = await analizarProduccion(todosLosArticulosParaAnalizar);
+        console.log('📥 RESPUESTA DEL BACKEND:', JSON.stringify(resultado, null, 2));
+        lastAnalysisResult.current = resultado;
 
-        // 🔮 **SIMULACIÓN: Agregar +1 promoción más para validar si se puede aumentar**
-        const cantidadSimulada = promocionEnCarrito.cantidad + 1;
+        // Actualizar limitaciones de producción
+        const nuevasLimitaciones: Record<string, number> = {};
 
-        const articulosDePromocion = getArticulosFromPromocion(
-          promocionEnCarrito.promocion,
-          cantidadSimulada // Usar cantidad simulada con +1
-        );
-        productosDePromociones.push(...articulosDePromocion);
+        if (resultado.productosConProblemas && resultado.productosConProblemas.length > 0) {
+          console.log('❌ Productos con limitaciones:', resultado.productosConProblemas.length);
+          resultado.productosConProblemas.forEach((problema: any) => {
+            const articuloId = problema.articuloId?.toString() || problema.id?.toString();
+            if (articuloId && problema.cantidadMaximaPosible !== undefined) {
+              nuevasLimitaciones[articuloId] = problema.cantidadMaximaPosible;
+              console.log(`🚫 ${articuloId}: máximo ${problema.cantidadMaximaPosible}`);
+            }
+          });
+        } else {
+          console.log('✅ Sin limitaciones de producción');
+        }
 
-        console.log(
-          `🔮 SIMULANDO PROMOCIÓN ${promocionEnCarrito.promocion.denominacion}: ${promocionEnCarrito.cantidad} → ${cantidadSimulada}`
-        );
-        console.log(`📦 ARTÍCULOS DE ESTA PROMOCIÓN:`, articulosDePromocion);
-      });
-
-      // 🎯 **PRODUCTOS INDIVIDUALES CON SIMULACIÓN +1**
-      const productosIndividualesSimulados = todosLosProductos.map((item: any) => {
-        // 🔮 **SIMULACIÓN: Agregar +1 producto más para validar si se puede aumentar**
-        const cantidadSimulada = item.cantidad + 1;
-
-        console.log(
-          `🔮 SIMULANDO PRODUCTO ${item.denominacion}: ${item.cantidad} → ${cantidadSimulada}`
-        );
-
-        return {
-          articuloId: item.id!,
-          cantidad: cantidadSimulada, // Usar cantidad simulada con +1
-        };
-      });
-
-      // Combinar todos los productos para análisis PREDICTIVO
-      const todosLosArticulosParaAnalizar = [
-        ...productosIndividualesSimulados,
-        ...productosDePromociones,
-      ];
-
-      console.log(`🔍 TOTAL PRODUCTOS INDIVIDUALES: ${productosIndividualesSimulados.length}`);
-      console.log(`🔍 TOTAL PRODUCTOS DE PROMOCIONES: ${productosDePromociones.length}`);
-      console.log(`🔍 TOTAL ARTÍCULOS PARA ANALIZAR: ${todosLosArticulosParaAnalizar.length}`);
-
-      if (todosLosArticulosParaAnalizar.length === 0) {
-        lastAnalysisResult.current = null;
-        return null;
-      }
-
-      console.log('📡 Analizando producción...');
-      console.log(
-        '📤 ENVIANDO AL BACKEND:',
-        JSON.stringify(todosLosArticulosParaAnalizar, null, 2)
-      );
-      const resultado = await analizarProduccion(todosLosArticulosParaAnalizar);
-      console.log('📥 RESPUESTA DEL BACKEND:', JSON.stringify(resultado, null, 2));
-      lastAnalysisResult.current = resultado;
-
-      // Actualizar limitaciones de producción
-      const nuevasLimitaciones: Record<string, number> = {};
-
-      if (resultado.productosConProblemas && resultado.productosConProblemas.length > 0) {
-        console.log('❌ Productos con limitaciones:', resultado.productosConProblemas.length);
-        resultado.productosConProblemas.forEach((problema: any) => {
-          const articuloId = problema.articuloId?.toString() || problema.id?.toString();
-          if (articuloId && problema.cantidadMaximaPosible !== undefined) {
-            nuevasLimitaciones[articuloId] = problema.cantidadMaximaPosible;
-            console.log(`🚫 ${articuloId}: máximo ${problema.cantidadMaximaPosible}`);
+        // Para insumos, agregar limitaciones
+        productosInsumos.forEach((insumo) => {
+          const stockActual = (insumo as any).stockActual;
+          if (stockActual !== undefined && insumo.cantidad >= stockActual) {
+            nuevasLimitaciones[insumo.id?.toString() || '0'] = stockActual;
           }
         });
-      } else {
-        console.log('✅ Sin limitaciones de producción');
-      }
 
-      // Para insumos, agregar limitaciones
-      productosInsumos.forEach((insumo) => {
-        const stockActual = (insumo as any).stockActual;
-        if (stockActual !== undefined && insumo.cantidad >= stockActual) {
-          nuevasLimitaciones[insumo.id?.toString() || '0'] = stockActual;
-        }
-      });
+        setLimitacionesProduccion(nuevasLimitaciones);
 
-      setLimitacionesProduccion(nuevasLimitaciones);
+        // Identificar promociones problemáticas
+        const promocionesConProblemas = getPromocionesProblematicas(resultado);
+        setPromocionesProblematicas(promocionesConProblemas);
 
-      // Identificar promociones problemáticas
-      const promocionesConProblemas = getPromocionesProblematicas(resultado);
-      setPromocionesProblematicas(promocionesConProblemas);
+        // 🚀 **AUTO-AJUSTE DE CANTIDADES CUANDO HAY LIMITACIONES**
+        if (!resultado.sePuedeProducirCompleto && resultado.productosConProblemas?.length > 0) {
+          console.log('🔧 AUTO-AJUSTE: Ajustando cantidades automáticamente...');
 
-      // 🚀 **AUTO-AJUSTE DE CANTIDADES CUANDO HAY LIMITACIONES**
-      if (!resultado.sePuedeProducirCompleto && resultado.productosConProblemas?.length > 0) {
-        console.log('🔧 AUTO-AJUSTE: Ajustando cantidades automáticamente...');
+          const ajustesProductos: Array<{
+            nombre: string;
+            cantidadAnterior: number;
+            cantidadNueva: number;
+          }> = [];
+          const ajustesPromociones: Array<{
+            nombre: string;
+            cantidadAnterior: number;
+            cantidadNueva: number;
+          }> = [];
 
-        const ajustesProductos: Array<{
-          nombre: string;
-          cantidadAnterior: number;
-          cantidadNueva: number;
-        }> = [];
-        const ajustesPromociones: Array<{
-          nombre: string;
-          cantidadAnterior: number;
-          cantidadNueva: number;
-        }> = [];
+          // Ajustar productos individuales
+          resultado.productosConProblemas.forEach((problema: any) => {
+            const articuloId = problema.articuloId;
+            const cantidadMaxima = problema.cantidadMaximaPosible;
 
-        // Ajustar productos individuales
-        resultado.productosConProblemas.forEach((problema: any) => {
-          const articuloId = problema.articuloId;
-          const cantidadMaxima = problema.cantidadMaximaPosible;
+            if (articuloId && cantidadMaxima !== undefined) {
+              // Buscar si el producto está en el carrito individual
+              const productoEnCarrito = state.carrito.find((item) => item.id === articuloId);
 
-          if (articuloId && cantidadMaxima !== undefined) {
-            // Buscar si el producto está en el carrito individual
-            const productoEnCarrito = state.carrito.find((item) => item.id === articuloId);
+              if (productoEnCarrito && productoEnCarrito.cantidad > cantidadMaxima) {
+                console.log(
+                  `🔧 AJUSTANDO PRODUCTO ${productoEnCarrito.denominacion}: ${productoEnCarrito.cantidad} → ${cantidadMaxima}`
+                );
 
-            if (productoEnCarrito && productoEnCarrito.cantidad > cantidadMaxima) {
+                // Guardar información del ajuste
+                ajustesProductos.push({
+                  nombre: productoEnCarrito.denominacion,
+                  cantidadAnterior: productoEnCarrito.cantidad,
+                  cantidadNueva: cantidadMaxima,
+                });
+
+                dispatch({
+                  type: 'ADJUST_QUANTITIES',
+                  payload: {
+                    limitaciones: { [articuloId.toString()]: cantidadMaxima },
+                  },
+                });
+              }
+            }
+          });
+
+          // Ajustar promociones problemáticas
+          promocionesConProblemas.forEach((promocionId) => {
+            const promocionEnCarrito = state.promocionesEnCarrito.find(
+              (item) => item.promocion.id === promocionId
+            );
+
+            if (promocionEnCarrito && promocionEnCarrito.cantidad > 1) {
               console.log(
-                `🔧 AJUSTANDO PRODUCTO ${productoEnCarrito.denominacion}: ${productoEnCarrito.cantidad} → ${cantidadMaxima}`
+                `🔧 AJUSTANDO PROMOCIÓN ${promocionEnCarrito.promocion.denominacion}: ${promocionEnCarrito.cantidad} → 1`
               );
 
               // Guardar información del ajuste
-              ajustesProductos.push({
-                nombre: productoEnCarrito.denominacion,
-                cantidadAnterior: productoEnCarrito.cantidad,
-                cantidadNueva: cantidadMaxima,
+              ajustesPromociones.push({
+                nombre: promocionEnCarrito.promocion.denominacion,
+                cantidadAnterior: promocionEnCarrito.cantidad,
+                cantidadNueva: 1,
               });
 
+              // Reducir a 1 promoción cuando hay problemas
               dispatch({
-                type: 'ADJUST_QUANTITIES',
+                type: 'ADJUST_PROMOCION_QUANTITIES',
                 payload: {
-                  limitaciones: { [articuloId.toString()]: cantidadMaxima },
+                  promocionId: promocionId,
+                  nuevaCantidad: 1,
                 },
               });
             }
+          });
+
+          // 🎯 **MOSTRAR MODAL DE AUTO-AJUSTE SI HAY AJUSTES**
+          if (ajustesProductos.length > 0 || ajustesPromociones.length > 0) {
+            // Usar setTimeout para mostrar el modal después de que se actualice el estado
+            setTimeout(() => {
+              mostrarModalAjuste({
+                productos: ajustesProductos,
+                promociones: ajustesPromociones,
+              });
+            }, 100);
           }
-        });
-
-        // Ajustar promociones problemáticas
-        promocionesConProblemas.forEach((promocionId) => {
-          const promocionEnCarrito = state.promocionesEnCarrito.find(
-            (item) => item.promocion.id === promocionId
-          );
-
-          if (promocionEnCarrito && promocionEnCarrito.cantidad > 1) {
-            console.log(
-              `🔧 AJUSTANDO PROMOCIÓN ${promocionEnCarrito.promocion.denominacion}: ${promocionEnCarrito.cantidad} → 1`
-            );
-
-            // Guardar información del ajuste
-            ajustesPromociones.push({
-              nombre: promocionEnCarrito.promocion.denominacion,
-              cantidadAnterior: promocionEnCarrito.cantidad,
-              cantidadNueva: 1,
-            });
-
-            // Reducir a 1 promoción cuando hay problemas
-            dispatch({
-              type: 'ADJUST_PROMOCION_QUANTITIES',
-              payload: {
-                promocionId: promocionId,
-                nuevaCantidad: 1,
-              },
-            });
-          }
-        });
-
-        // 🎯 **MOSTRAR MODAL DE AUTO-AJUSTE SI HAY AJUSTES**
-        if (ajustesProductos.length > 0 || ajustesPromociones.length > 0) {
-          // Usar setTimeout para mostrar el modal después de que se actualice el estado
-          setTimeout(() => {
-            mostrarModalAjuste({
-              productos: ajustesProductos,
-              promociones: ajustesPromociones,
-            });
-          }, 100);
         }
-      }
 
-      // Si el carrito es válido, limpiar estados problemáticos
-      if (resultado.sePuedeProducirCompleto) {
-        setLimitacionesProduccion({});
-        setPromocionesProblematicas(new Set());
-      }
+        // Si el carrito es válido, limpiar estados problemáticos
+        if (resultado.sePuedeProducirCompleto) {
+          setLimitacionesProduccion({});
+          setPromocionesProblematicas(new Set());
+        }
 
-      return resultado;
-    } catch (error) {
-      console.error('Error analizando carrito:', error);
-      mostrarNotificacion('Error al verificar disponibilidad del carrito', 'error', 3000);
-      return null;
-    } finally {
-      analysisInProgress.current = false;
-      setIsAnalyzing(false);
-      setIsProcessingInBackground(false);
-    }
-  }, [state.carrito, state.promocionesEnCarrito, mostrarNotificacion]);
+        return resultado;
+      } catch (error) {
+        console.error('Error analizando carrito:', error);
+        mostrarNotificacion('Error al verificar disponibilidad del carrito', 'error', 3000);
+        return null;
+      } finally {
+        analysisInProgress.current = false;
+        setIsAnalyzing(false);
+        setIsProcessingInBackground(false);
+      }
+    },
+    [state.carrito, state.promocionesEnCarrito, mostrarNotificacion]
+  );
 
   // Hook de análisis con manejo inteligente de reversión
   const { debouncedAnalysis } = useCarritoAnalysis(analyzeCarritoCore, revertLastAction);
@@ -931,7 +960,7 @@ export const CarritoProvider: React.FC<{ children: ReactNode }> = ({ children })
           `📋 Estado: ${state.carrito.length} productos, ${state.promocionesEnCarrito.length} promociones`
         );
 
-        // 🎯 **SOLO EJECUTAR ANÁLISIS CORE UNA VEZ**
+        // 🎯 **SOLO EJECUTAR ANÁLISIS CORE UNA VEZ (SIN ACCIÓN ESPECÍFICA)**
         await analyzeCarritoCore();
 
         console.log('✅ ANÁLISIS AUTOMÁTICO: Completado');
@@ -944,7 +973,7 @@ export const CarritoProvider: React.FC<{ children: ReactNode }> = ({ children })
     const timeoutId = setTimeout(performAutomaticAnalysis, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [state.carrito, state.promocionesEnCarrito]);
+  }, [state.carrito, state.promocionesEnCarrito, analyzeCarritoCore]);
 
   // 🎯 **FUNCIONES DE VALIDACIÓN CENTRALIZADAS**
   const canIncreaseProduct = useCallback(
@@ -1052,7 +1081,16 @@ export const CarritoProvider: React.FC<{ children: ReactNode }> = ({ children })
       console.log(`✅ AGREGANDO PRODUCTO: ${articulo.denominacion}`);
       dispatch({ type: 'ADD_TO_CARRITO', payload: { articulo, cantidad } });
 
-      // 3. Solo para productos nuevos, verificar disponibilidad en ProductProvider
+      // 3. Programar análisis con información de la acción específica
+      if (articulo.id) {
+        await debouncedAnalysis(300, {
+          type: 'add_product',
+          productId: articulo.id,
+          cantidad,
+        });
+      }
+
+      // 4. Solo para productos nuevos, verificar disponibilidad en ProductProvider
       const existeEnCarrito = state.carrito.some((item) => item.id === articulo.id);
       if (!existeEnCarrito && isArticuloManufacturado(articulo) && articulo.id) {
         try {
@@ -1084,7 +1122,13 @@ export const CarritoProvider: React.FC<{ children: ReactNode }> = ({ children })
 
       return true;
     },
-    [canIncreaseProduct, state.carrito, checkSingleProductAvailability, mostrarNotificacion]
+    [
+      canIncreaseProduct,
+      state.carrito,
+      checkSingleProductAvailability,
+      mostrarNotificacion,
+      debouncedAnalysis,
+    ]
   );
 
   const removeFromCart = useCallback((articulo: { denominacion: string }) => {
