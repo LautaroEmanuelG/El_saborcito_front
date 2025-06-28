@@ -73,6 +73,8 @@ const SeccionSubcategorias = () => {
         subcategoria: hija.denominacion,
         eliminado: hijaEliminada || padreEliminado,
         categoriaId: padre.id,
+        // Campo combinado para búsqueda que incluye tanto categoría padre como subcategoría
+        searchableText: `${padre.denominacion} ${hija.denominacion}`.toLowerCase(),
       });
     });
   });
@@ -193,7 +195,7 @@ const SeccionSubcategorias = () => {
         categories={categoriasPadre.map((c) => ({ id: c.id!, denominacion: c.denominacion }))}
         onToggleDeleted={toggleShowDeleted}
         showDeleted={showDeleted}
-        searchPlaceholder="🔍 Buscar subcategorías por nombre..."
+        searchPlaceholder="Buscar por categoría padre o subcategoría..."
       />
 
       <ModalSubcategoriasInsumosForm

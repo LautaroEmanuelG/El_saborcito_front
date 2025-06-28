@@ -171,7 +171,7 @@ const SeccionCategoriasPadre = () => {
         categories={[]}
         onToggleDeleted={toggleShowDeleted}
         showDeleted={showDeleted}
-        searchPlaceholder="🔍 Buscar categorías padre por nombre..."
+        searchPlaceholder="Buscar categorías padre por nombre..."
       />
 
       <ModalCategoriaPadreInsumoForm

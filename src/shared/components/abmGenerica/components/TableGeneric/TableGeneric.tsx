@@ -31,7 +31,13 @@ export interface ITableProps<T> {
 }
 
 export const TableGeneric = <
-  T extends { id: number; eliminado?: boolean; categoriaId?: number; denominacion?: string },
+  T extends {
+    id: number;
+    eliminado?: boolean;
+    categoriaId?: number;
+    denominacion?: string;
+    searchableText?: string;
+  },
 >({
   columns,
   handleDelete,
@@ -70,7 +76,8 @@ export const TableGeneric = <
       // Filtro por texto de búsqueda
       if (filters.search) {
         const searchTerm = filters.search.toLowerCase();
-        const searchableText = (row.denominacion || '').toLowerCase();
+        // Usar searchableText si está disponible, sino usar denominacion
+        const searchableText = (row.searchableText || row.denominacion || '').toLowerCase();
         if (!searchableText.includes(searchTerm)) {
           return false;
         }

@@ -48,7 +48,7 @@ const ADMIN_NAV: NavItemStructure[] = [
         title: 'Insumos',
         subItems: [
           { to: '/admin/insumos', label: 'Insumos' },
-          { to: '/admin/categorias-insumos', label: 'Gestión Completa' },
+          { to: '/admin/categorias-insumos', label: 'Categorías de Insumos' },
           { to: '/admin/compra-insumos', label: 'Compra de Insumos' },
           { to: '/admin/control-stock-insumos', label: 'Control Stock Insumos' },
         ],

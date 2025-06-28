@@ -11,6 +11,7 @@ export interface CategoriaTable {
   eliminado?: boolean;
   categoriaId?: number;
   subcategoria?: string;
+  searchableText?: string;
 }
 
 export const CATEGORIA_COLUMNS = [

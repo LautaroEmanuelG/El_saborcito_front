@@ -140,7 +140,7 @@ const SeccionUnidadesMedida = () => {
         categories={[]}
         onToggleDeleted={toggleShowDeleted}
         showDeleted={showDeleted}
-        searchPlaceholder="🔍 Buscar unidades de medida..."
+        searchPlaceholder="Buscar unidades de medida..."
       />
 
       <ModalUnidadMedidaForm
