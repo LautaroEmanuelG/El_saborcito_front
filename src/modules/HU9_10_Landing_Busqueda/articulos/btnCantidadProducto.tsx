@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { CarritoContext } from '../../../shared/providers/CarritoProvider';
 import { useLocation } from 'react-router-dom';
 import type { Articulo } from '../../../types/Articulo';
+import ModalSiNo from '../../../shared/components/abmGenerica/components/modals/ModalSiNo';
 
 interface BtnCantidadProductoProps {
   articulo: Articulo;
@@ -16,13 +17,21 @@ const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
 }) => {
   const carritoContext = useContext(CarritoContext);
   const [quantity, setQuantity] = useState(cantidadProducto);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isOnCooldown, setIsOnCooldown] = useState(false);
   const location = useLocation();
 
   if (!carritoContext) {
     throw new Error('BtnCantidadProducto must be used within a CarritoProvider');
   }
-  const { carrito, addToCarrito, decreaseFromCart, isAnalyzing, limitacionesProduccion } =
-    carritoContext;
+  const {
+    carrito,
+    addToCarrito,
+    decreaseFromCart,
+    removeFromCart,
+    isAnalyzing,
+    limitacionesProduccion,
+  } = carritoContext;
 
   // 🔄 **SINCRONIZACIÓN CON CARRITO**
   useEffect(() => {
@@ -33,10 +42,15 @@ const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
       setQuantity(cantidadProducto);
     }
   }, [carrito, articulo.denominacion, cantidadProducto]);
-  // ➕ **MANEJAR INCREMENTO CON ANÁLISIS PREDICTIVO**
+  // ➕ **MANEJAR INCREMENTO CON ANÁLISIS PREDICTIVO Y COOLDOWN**
   const handleIncrease = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     event.preventDefault();
+
+    // 🚫 **VERIFICAR COOLDOWN**
+    if (isOnCooldown) {
+      return;
+    }
 
     if (location.pathname === '/carrito') {
       // 🚀 **ESTRATEGIA PREDICTIVA: Validar antes de agregar**
@@ -47,6 +61,10 @@ const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
       if (isAnalyzing) {
         return;
       }
+
+      // 🕐 **ACTIVAR COOLDOWN**
+      setIsOnCooldown(true);
+      setTimeout(() => setIsOnCooldown(false), 500);
 
       try {
         // El addToCarrito ahora maneja internamente el análisis predictivo y auto-ajuste
@@ -60,7 +78,7 @@ const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
     }
   };
 
-  // ➖ **MANEJAR DECREMENTO**
+  // ➖ **MANEJAR DECREMENTO CON MODAL DE CONFIRMACIÓN**
   const handleDecrease = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     event.preventDefault();
@@ -73,13 +91,25 @@ const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
         setCantidadProducto(quantity - 1);
       }
     } else {
-      // Si la cantidad es 1 y estamos en /carrito, elimina el producto del carrito
+      // Si la cantidad es 1, mostrar modal de confirmación para eliminar
       if (location.pathname === '/carrito') {
-        decreaseFromCart({ id: articulo.id ?? 0 });
+        setShowDeleteModal(true);
       } else {
         setCantidadProducto(1);
       }
     }
+  };
+
+  // 🗑️ **CONFIRMAR ELIMINACIÓN DEL PRODUCTO**
+  const handleConfirmDelete = () => {
+    removeFromCart(articulo);
+    setShowDeleteModal(false);
+  };
+
+  // ❌ **CANCELAR ELIMINACIÓN**
+  const handleCancelDelete = () => {
+    setShowDeleteModal(false);
+    // Mantener la cantidad en 1
   };
 
   // 📊 **OBTENER CANTIDAD ACTUAL**
@@ -93,8 +123,8 @@ const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
   // 🚫 **VERIFICAR SI EL BOTÓN + DEBE ESTAR DESHABILITADO**
   const isIncreaseDisabled = (): boolean => {
     if (location.pathname === '/carrito') {
-      // Solo deshabilitar si está analizando o si hay limitación y está en el límite
-      if (isAnalyzing) return true;
+      // Solo deshabilitar si está analizando, en cooldown, o si hay limitación y está en el límite
+      if (isAnalyzing || isOnCooldown) return true;
 
       if (articulo.id) {
         const articuloIdStr = articulo.id.toString();
@@ -110,6 +140,10 @@ const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
   // 💡 **OBTENER TÍTULO DEL BOTÓN +**
   const getIncreaseButtonTitle = (): string | undefined => {
     if (!isIncreaseDisabled()) return undefined;
+
+    if (isOnCooldown) {
+      return 'Esperando...';
+    }
 
     if (isAnalyzing) {
       return 'Analizando disponibilidad...';
@@ -128,29 +162,42 @@ const BtnCantidadProducto: React.FC<BtnCantidadProductoProps> = ({
   };
 
   return (
-    <div className="flex items-center justify-between space-x-2 sm:space-x-4 rounded-3xl border-t-gray-300 border-2 sm:w-32">
-      <button
-        onClick={handleDecrease}
-        className="px-3 py-2 bg-gray-300 text-black rounded-full hover:bg-gray-400"
-      >
-        -
-      </button>
+    <>
+      <div className="flex items-center justify-between space-x-2 sm:space-x-4 rounded-3xl border-t-gray-300 border-2 sm:w-32">
+        <button
+          onClick={handleDecrease}
+          className="px-3 py-2 bg-gray-300 text-black rounded-full hover:bg-gray-400"
+        >
+          -
+        </button>
 
-      <span className="sm:text-lg font-semibold">{cantProd()}</span>
+        <span className="sm:text-lg font-semibold">{cantProd()}</span>
 
-      <button
-        onClick={handleIncrease}
-        disabled={isIncreaseDisabled()}
-        className={`px-3 py-2 rounded-full ${
-          isIncreaseDisabled()
-            ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
-            : 'bg-primary text-white hover:font-bold hover:bg-primary-dark'
-        }`}
-        title={getIncreaseButtonTitle()}
-      >
-        +
-      </button>
-    </div>
+        <button
+          onClick={handleIncrease}
+          disabled={isIncreaseDisabled()}
+          className={`px-3 py-2 rounded-full ${
+            isIncreaseDisabled()
+              ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+              : 'bg-primary text-white hover:font-bold hover:bg-primary-dark'
+          }`}
+          title={getIncreaseButtonTitle()}
+        >
+          +
+        </button>
+      </div>
+
+      {/* Modal de confirmación para eliminar producto */}
+      <ModalSiNo
+        open={showDeleteModal}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        title="Eliminar Producto"
+        description={`¿Estás seguro de que deseas eliminar "${articulo.denominacion}" del carrito?`}
+        confirmText="Sí, eliminar"
+        cancelText="No, mantener"
+      />
+    </>
   );
 };
 
