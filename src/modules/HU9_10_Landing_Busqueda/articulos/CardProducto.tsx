@@ -30,8 +30,8 @@ export const CardProducto = ({ articulo, setProductoModal }: ProductProps) => {
           <picture>
             <source type="image/webp" />
             <img
-              src={articulo?.imagen?.url ?? ''}
-              alt={articulo?.denominacion ?? ''}
+              src={articulo.imagen?.url ?? '/img/Default.png'}
+              alt={articulo.denominacion ?? 'Producto El Saborcito'}
               className="object-cover w-full h-full"
             />
           </picture>{' '}

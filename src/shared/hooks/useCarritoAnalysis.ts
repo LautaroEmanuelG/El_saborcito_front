@@ -13,7 +13,7 @@ interface LastActionRef {
  * Evita análisis múltiples innecesarios y maneja reversión inteligente
  */
 export const useCarritoAnalysis = (
-  analizarCarrito: () => Promise<AnalisisProduccionResponse | null>,
+  analizarCarrito: (action?: LastActionRef) => Promise<AnalisisProduccionResponse | null>,
   onRevertAction?: (action: LastActionRef) => void
 ) => {
   const timeoutRef = useRef<number | null>(null);
@@ -41,7 +41,7 @@ export const useCarritoAnalysis = (
         timeoutRef.current = window.setTimeout(async () => {
           try {
             isAnalyzingRef.current = true;
-            const resultado = await analizarCarrito();
+            const resultado = await analizarCarrito(lastActionRef.current);
 
             // Si el análisis falla y hay una acción para revertir
             if (
@@ -80,7 +80,7 @@ export const useCarritoAnalysis = (
 
       try {
         isAnalyzingRef.current = true;
-        const resultado = await analizarCarrito();
+        const resultado = await analizarCarrito(lastActionRef.current);
 
         // Si el análisis falla y hay una acción para revertir
         if (
