@@ -48,9 +48,7 @@ const ADMIN_NAV: NavItemStructure[] = [
         title: 'Insumos',
         subItems: [
           { to: '/admin/insumos', label: 'Insumos' },
-          { to: '/admin/categorias-insumos', label: 'Categorías de Insumos' },
-          { to: '/admin/subcategorias-insumos', label: 'Subcategorías de Insumos' },
-          { to: '/admin/unidades-medida', label: 'Unidades de Medida' },
+          { to: '/admin/categorias-insumos', label: 'Gestión Completa' },
           { to: '/admin/compra-insumos', label: 'Compra de Insumos' },
           { to: '/admin/control-stock-insumos', label: 'Control Stock Insumos' },
         ],
@@ -110,9 +108,7 @@ const COCINERO_NAV: NavItemStructure[] = [
         title: 'Insumos',
         subItems: [
           { to: '/admin/insumos', label: 'Insumos' },
-          { to: '/admin/categorias-insumos', label: 'Categorías de Insumos' },
-          { to: '/admin/subcategorias-insumos', label: 'Subcategorías de Insumos' },
-          { to: '/admin/unidades-medida', label: 'Unidades de Medida' },
+          { to: '/admin/categorias-insumos', label: 'Gestión Completa' },
           { to: '/admin/compra-insumos', label: 'Compra de Insumos' },
           { to: '/admin/control-stock-insumos', label: 'Control Stock Insumos' },
         ],
