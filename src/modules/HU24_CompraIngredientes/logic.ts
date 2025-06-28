@@ -3,18 +3,20 @@
 // HU24_CompraIngredientes/logic.ts
 
 /** Valida el formulario de compra */
-export function validarCompra(nueva: {
+export const validarCompra = (nueva: {
   denominacion: string;
   detalles: { cantidad: number; precioUnitario: number }[];
-}): string | null {
+}): string | null => {
   if (!nueva.denominacion?.trim()) return 'Debe ingresar denominación';
   if (!nueva.detalles.length) return 'Agrega al menos un insumo';
+
   for (const d of nueva.detalles) {
-    if (d.cantidad <= 0) return 'Cantidad mayor a 0';
-    if (d.precioUnitario <= 0) return 'Precio costo mayor a 0';
+    // Permitir cantidades negativas para ajustes de stock
+    if (d.cantidad === 0) return 'La cantidad no puede ser cero';
+    if (d.precioUnitario <= 0) return 'El precio de costo debe ser mayor a 0';
   }
   return null;
-}
+};
 
 /** Formatea moneda ARS */
 export const formatearMonto = (m: number) =>

@@ -170,15 +170,22 @@ export const CompraIngredientesModal = ({ open, onClose, onCompraRegistrada }: P
                 detalles.map((d, i) => (
                   <div
                     key={d.insumo.id}
-                    className="flex justify-between items-center p-2 border rounded mb-2"
+                    className={`flex justify-between items-center p-2 border rounded mb-2 ${
+                      d.cantidad < 0 ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    }`}
                   >
                     <div>
                       <div className="font-medium">{d.insumo.denominacion}</div>
-                      <div className="text-sm text-gray-600">
+                      <div
+                        className={`text-sm ${d.cantidad < 0 ? 'text-red-600' : 'text-gray-600'}`}
+                      >
                         Cantidad: {d.cantidad} {d.insumo.unidadMedida?.denominacion}
+                        {d.cantidad < 0 && <span className="ml-1 text-xs">(Ajuste negativo)</span>}
                       </div>
                       <div className="text-sm text-gray-600">Costo unitario: ${d.precioCosto}</div>
-                      <div className="text-sm font-medium text-blue-600">
+                      <div
+                        className={`text-sm font-medium ${d.cantidad < 0 ? 'text-red-600' : 'text-blue-600'}`}
+                      >
                         Subtotal: ${(d.cantidad * d.precioCosto).toFixed(2)}
                       </div>
                     </div>

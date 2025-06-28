@@ -22,29 +22,68 @@ const ModalEditarInsumoCompra: React.FC<ModalEditarInsumoCompraProps> = ({
   esParaElaborar,
   onSave,
 }) => {
-  const [nuevaCantidad, setNuevaCantidad] = useState(cantidad);
-  const [nuevoPrecioCosto, setNuevoPrecioCosto] = useState(precioCosto);
+  const [nuevaCantidad, setNuevaCantidad] = useState<string>(cantidad.toString());
+  const [nuevoPrecioCosto, setNuevoPrecioCosto] = useState<string>(precioCosto.toString());
+  const [errores, setErrores] = useState<{ cantidad?: string; precio?: string }>({});
 
-  const handleCantidadChange = (valor: number) => {
-    // Si no es para elaborar, redondear a entero; si es para elaborar, mantener decimales
-    const cantidadFinal = !esParaElaborar ? Math.round(valor) : valor;
-    setNuevaCantidad(cantidadFinal);
+  const handleCantidadChange = (value: string) => {
+    setNuevaCantidad(value);
+    // Limpiar error cuando el usuario empiece a escribir
+    if (errores.cantidad) {
+      setErrores((prev) => ({ ...prev, cantidad: undefined }));
+    }
+  };
+
+  const handlePrecioChange = (value: string) => {
+    setNuevoPrecioCosto(value);
+    // Limpiar error cuando el usuario empiece a escribir
+    if (errores.precio) {
+      setErrores((prev) => ({ ...prev, precio: undefined }));
+    }
   };
 
   useEffect(() => {
-    setNuevaCantidad(cantidad);
-    setNuevoPrecioCosto(precioCosto);
+    setNuevaCantidad(cantidad.toString());
+    setNuevoPrecioCosto(precioCosto.toString());
+    setErrores({});
   }, [cantidad, precioCosto, open]);
 
+  const validarFormulario = () => {
+    const nuevosErrores: { cantidad?: string; precio?: string } = {};
+
+    const cantidadNum = Number(nuevaCantidad);
+    const precioNum = Number(nuevoPrecioCosto);
+
+    if (isNaN(cantidadNum) || cantidadNum === 0) {
+      nuevosErrores.cantidad =
+        'La cantidad debe ser diferente de cero (puede ser negativa para ajustes)';
+    }
+
+    if (isNaN(precioNum) || precioNum <= 0) {
+      nuevosErrores.precio = 'El precio debe ser mayor a 0';
+    }
+
+    setErrores(nuevosErrores);
+    return Object.keys(nuevosErrores).length === 0;
+  };
+
   const handleGuardar = () => {
-    if (nuevaCantidad > 0 && nuevoPrecioCosto > 0) {
-      onSave(nuevaCantidad, nuevoPrecioCosto);
+    if (validarFormulario()) {
+      const cantidadNum = Number(nuevaCantidad);
+      const precioNum = Number(nuevoPrecioCosto);
+
+      // Si no es para elaborar, redondear a entero; si es para elaborar, mantener decimales
+      const cantidadFinal = !esParaElaborar ? Math.round(cantidadNum) : cantidadNum;
+
+      onSave(cantidadFinal, precioNum);
       onClose();
     }
   };
 
   const calcularSubtotal = () => {
-    return (nuevaCantidad * nuevoPrecioCosto).toFixed(2);
+    const cantidadNum = Number(nuevaCantidad) || 0;
+    const precioNum = Number(nuevoPrecioCosto) || 0;
+    return (cantidadNum * precioNum).toFixed(2);
   };
 
   return (
@@ -64,12 +103,15 @@ const ModalEditarInsumoCompra: React.FC<ModalEditarInsumoCompraProps> = ({
           <input
             id="cantidadInput"
             type="number"
-            min={esParaElaborar ? '0.01' : '1'}
             step={esParaElaborar ? '0.01' : '1'}
-            className="w-full border rounded px-3 py-2 bg-gray-100 text-base text-negro"
-            value={esParaElaborar ? nuevaCantidad.toFixed(2) : nuevaCantidad.toString()}
-            onChange={(e) => handleCantidadChange(Number(e.target.value))}
+            className={`w-full border rounded px-3 py-2 bg-gray-100 text-base text-negro ${
+              errores.cantidad ? 'border-red-500' : ''
+            }`}
+            value={nuevaCantidad}
+            onChange={(e) => handleCantidadChange(e.target.value)}
+            placeholder="Cantidad (puede ser negativa para ajustes)"
           />
+          {errores.cantidad && <div className="text-red-500 text-sm mt-1">{errores.cantidad}</div>}
         </div>
 
         <div>
@@ -79,12 +121,16 @@ const ModalEditarInsumoCompra: React.FC<ModalEditarInsumoCompraProps> = ({
           <input
             id="precioCostoInput"
             type="number"
-            min={0.01}
-            step={0.01}
-            className="w-full border rounded px-3 py-2 bg-gray-100 text-base text-negro"
+            min="0.01"
+            step="0.01"
+            className={`w-full border rounded px-3 py-2 bg-gray-100 text-base text-negro ${
+              errores.precio ? 'border-red-500' : ''
+            }`}
             value={nuevoPrecioCosto}
-            onChange={(e) => setNuevoPrecioCosto(Number(e.target.value))}
+            onChange={(e) => handlePrecioChange(e.target.value)}
+            placeholder="Precio unitario"
           />
+          {errores.precio && <div className="text-red-500 text-sm mt-1">{errores.precio}</div>}
         </div>
 
         <div className="bg-blue-50 p-3 rounded">
@@ -103,7 +149,6 @@ const ModalEditarInsumoCompra: React.FC<ModalEditarInsumoCompraProps> = ({
             type="button"
             className="bg-primary hover:bg-primarydark text-blanco font-bold py-2 px-4 rounded text-base"
             onClick={handleGuardar}
-            disabled={nuevaCantidad <= 0 || nuevoPrecioCosto <= 0}
           >
             Guardar
           </button>

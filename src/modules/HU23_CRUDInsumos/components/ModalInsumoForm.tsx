@@ -250,6 +250,17 @@ export const ModalInsumoForm = ({
       return;
     }
 
+    // Validación de campos requeridos
+    if (!form.denominacion?.trim()) {
+      alert('La denominación es requerida.');
+      return;
+    }
+
+    if (form.stockMinimo === undefined || form.stockMinimo < 0) {
+      alert('El stock mínimo es requerido y debe ser mayor o igual a 0.');
+      return;
+    }
+
     // Validación de stock: no permitir aumentar stock en modo edición
     if (
       mode === 'edit' &&
@@ -302,7 +313,10 @@ export const ModalInsumoForm = ({
       denominacionStatus?.isActive ||
       denominacionStatus?.isDeleted ||
       stockMayorAlOriginal ||
-      isValidatingDenominacion
+      isValidatingDenominacion ||
+      form.stockMinimo === undefined ||
+      form.stockMinimo < 0 ||
+      !form.denominacion?.trim()
   );
 
   return (
@@ -563,22 +577,31 @@ export const ModalInsumoForm = ({
                       id="stockMinimo"
                       name="stockMinimo"
                       type="number"
-                      value={form.stockMinimo ?? 0}
+                      value={form.stockMinimo ?? ''}
                       onChange={(e) => {
-                        let nuevoStock = Number(e.target.value);
-                        // Si no es para elaborar, redondear a entero
-                        if (!form.esParaElaborar) {
-                          nuevoStock = Math.round(nuevoStock);
+                        const value = e.target.value;
+                        if (value === '') {
+                          setForm((prev) => ({
+                            ...prev,
+                            stockMinimo: undefined,
+                          }));
+                        } else {
+                          let nuevoStock = Number(value);
+                          // Si no es para elaborar, redondear a entero
+                          if (!form.esParaElaborar && !isNaN(nuevoStock)) {
+                            nuevoStock = Math.round(nuevoStock);
+                          }
+                          setForm((prev) => ({
+                            ...prev,
+                            stockMinimo: nuevoStock,
+                          }));
                         }
-                        setForm((prev) => ({
-                          ...prev,
-                          stockMinimo: nuevoStock,
-                        }));
                       }}
                       className="w-full border rounded px-3 py-2"
                       required
                       min={0}
                       step={form.esParaElaborar ? '0.01' : '1'}
+                      placeholder="Ingrese el stock mínimo"
                     />
                   </div>
                   <div>
