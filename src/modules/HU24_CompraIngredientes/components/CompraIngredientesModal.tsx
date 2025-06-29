@@ -1,12 +1,14 @@
 // src/modules/HU24_CompraIngredientes/components/CompraIngredientesModal.tsx
 
 import { useState, useEffect } from 'react';
-import type { ArticuloInsumo } from '../../../types/Articulo';
+import type { ArticuloInsumo, ArticuloManufacturado } from '../../../types/Articulo';
 import ModalCompraSeleccionInsumo from './ModalCompraSeleccionInsumo';
 import ModalRestaurarInsumo from './ModalRestaurarInsumo';
 import ModalEditarInsumoCompra from './ModalEditarInsumoCompra';
+import ModalActualizarPreciosManufacturados from './ModalActualizarPreciosManufacturados';
 
 import * as articuloInsumoService from '../../../shared/services/articuloInsumoService';
+import { getArticuloManufacturadosByInsumo } from '../../../shared/services/articuloInsumoService';
 import { validarCompra } from '../logic';
 import { registrarCompra } from '../services/compraInsumoService';
 import type { NuevaCompraDTO, CompraInsumoDTO } from '../model';
@@ -22,6 +24,14 @@ interface InsumoCompraDetalle {
   insumo: ArticuloInsumo;
   subtotal: number; // El usuario ingresa el subtotal directamente
   cantidad: number;
+}
+
+interface InsumoCambioPrecio {
+  insumoId: number;
+  denominacion: string;
+  precioAnterior: number;
+  precioNuevo: number;
+  porcentajeAumento: number;
 }
 
 export const CompraIngredientesModal = ({
@@ -44,6 +54,13 @@ export const CompraIngredientesModal = ({
     subtotal: number;
   } | null>(null);
 
+  // 🆕 Estados para actualización de precios de manufacturados
+  const [openModalActualizarPrecios, setOpenModalActualizarPrecios] = useState(false);
+  const [insumosConCambiosPrecio, setInsumosConCambiosPrecio] = useState<InsumoCambioPrecio[]>([]);
+  const [articulosManufacturadosAfectados, setArticulosManufacturadosAfectados] = useState<
+    ArticuloManufacturado[]
+  >([]);
+
   // Efecto para preseleccionar insumos cuando el modal se abre
   useEffect(() => {
     if (open && insumosPreseleccionados.length > 0) {
@@ -55,12 +72,13 @@ export const CompraIngredientesModal = ({
         const stockNecesario = Math.max(0, (insumo.stockMinimo ?? 0) - (insumo.stockActual ?? 0));
         const cantidadSugerida =
           stockNecesario > 0 ? stockNecesario : (insumo.stockMinimo ?? 0) * 0.5; // Si no hay déficit, sugerir 50% del mínimo
-        const subtotalSugerido = cantidadSugerida * (insumo.precioCompra ?? 0);
+        // 🔴 IMPORTANTE: El subtotal debe ser 0 por defecto según requerimiento
+        const subtotalInicial = 0;
 
         return {
           insumo,
           cantidad: cantidadSugerida,
-          subtotal: subtotalSugerido,
+          subtotal: subtotalInicial,
         };
       });
 
@@ -135,6 +153,45 @@ export const CompraIngredientesModal = ({
   const handleRegistrarCompra = async () => {
     setErrorRegistro(null);
 
+    // 🔍 Detectar cambios de precio antes de registrar la compra
+    const insumosConCambios: InsumoCambioPrecio[] = [];
+
+    console.log('🔍 Analizando cambios de precio en', detalles.length, 'detalles');
+
+    detalles.forEach((detalle) => {
+      const precioUnitarioActual = detalle.insumo.precioCompra ?? 0;
+      const precioUnitarioNuevo = detalle.cantidad !== 0 ? detalle.subtotal / detalle.cantidad : 0;
+
+      console.log(`📊 Insumo: ${detalle.insumo.denominacion}`);
+      console.log(`   Precio actual: ${precioUnitarioActual}`);
+      console.log(`   Precio nuevo: ${precioUnitarioNuevo}`);
+
+      // Solo considerar como cambio significativo si la diferencia es mayor al 1%
+      const porcentajeDiferencia =
+        precioUnitarioActual > 0
+          ? Math.abs(((precioUnitarioNuevo - precioUnitarioActual) / precioUnitarioActual) * 100)
+          : 0;
+
+      console.log(`   Porcentaje diferencia: ${porcentajeDiferencia}%`);
+
+      if (porcentajeDiferencia > 1) {
+        const porcentajeAumento =
+          ((precioUnitarioNuevo - precioUnitarioActual) / precioUnitarioActual) * 100;
+
+        console.log(`✅ Cambio significativo detectado: ${porcentajeAumento}%`);
+
+        insumosConCambios.push({
+          insumoId: detalle.insumo.id,
+          denominacion: detalle.insumo.denominacion,
+          precioAnterior: precioUnitarioActual,
+          precioNuevo: precioUnitarioNuevo,
+          porcentajeAumento,
+        });
+      }
+    });
+
+    console.log('🎯 Total de insumos con cambios:', insumosConCambios.length);
+
     const nueva: NuevaCompraDTO = {
       denominacion,
       detalles: detalles.map((d) => ({
@@ -155,15 +212,100 @@ export const CompraIngredientesModal = ({
     try {
       const compraCreada = await registrarCompra(nueva);
       onCompraRegistrada(compraCreada);
-      onClose();
-      setDenominacion('');
-      setDetalles([]);
+
+      // 🚀 Si hay cambios de precio, mostrar modal de actualización de precios
+      if (insumosConCambios.length > 0) {
+        // NO cerrar el modal principal aquí, solo preparar el modal de actualización
+        await mostrarModalActualizacionPrecios(insumosConCambios);
+      } else {
+        // Si no hay cambios, cerrar normalmente
+        finalizarProceso();
+      }
     } catch (e) {
       console.error(e);
       setErrorRegistro('Error al registrar la compra');
     } finally {
       setLoadingRegistro(false);
     }
+  };
+
+  // 🔄 Función para mostrar modal de actualización de precios de manufacturados
+  const mostrarModalActualizacionPrecios = async (cambiosPrecios: InsumoCambioPrecio[]) => {
+    console.log(
+      '🚀 Iniciando mostrarModalActualizacionPrecios con',
+      cambiosPrecios.length,
+      'cambios'
+    );
+
+    try {
+      setInsumosConCambiosPrecio(cambiosPrecios);
+
+      // Obtener todos los artículos manufacturados afectados por los insumos con cambios
+      const todosLosArticulosAfectados: ArticuloManufacturado[] = [];
+      const idsArticulosYaAgregados = new Set<number>();
+
+      for (const cambio of cambiosPrecios) {
+        console.log(
+          `📡 Obteniendo artículos manufacturados para insumo ${cambio.insumoId} (${cambio.denominacion})`
+        );
+
+        try {
+          const articulosDeEsteInsumo = await getArticuloManufacturadosByInsumo(cambio.insumoId);
+
+          console.log(
+            `📦 Encontrados ${articulosDeEsteInsumo.length} artículos manufacturados para insumo ${cambio.denominacion}`
+          );
+
+          // Evitar duplicados
+          articulosDeEsteInsumo.forEach((articulo: ArticuloManufacturado) => {
+            if (!idsArticulosYaAgregados.has(articulo.id)) {
+              todosLosArticulosAfectados.push(articulo);
+              idsArticulosYaAgregados.add(articulo.id);
+              console.log(`✅ Agregado artículo: ${articulo.denominacion}`);
+            } else {
+              console.log(`⚠️ Artículo duplicado omitido: ${articulo.denominacion}`);
+            }
+          });
+        } catch (error) {
+          console.error(
+            `❌ Error al obtener artículos manufacturados para insumo ${cambio.insumoId}:`,
+            error
+          );
+        }
+      }
+
+      console.log(
+        `🎯 Total de artículos manufacturados únicos afectados: ${todosLosArticulosAfectados.length}`
+      );
+
+      setArticulosManufacturadosAfectados(todosLosArticulosAfectados);
+
+      if (todosLosArticulosAfectados.length > 0) {
+        console.log('🔴 Abriendo modal de actualización de precios');
+        setOpenModalActualizarPrecios(true);
+      } else {
+        console.log('⚪ No hay artículos manufacturados afectados, finalizando proceso');
+        // Si no hay artículos manufacturados afectados, cerrar normalmente
+        finalizarProceso();
+      }
+    } catch (error) {
+      console.error('❌ Error al preparar modal de actualización de precios:', error);
+      finalizarProceso();
+    }
+  };
+
+  // 🏁 Función para finalizar el proceso de compra
+  const finalizarProceso = () => {
+    onClose();
+    setDenominacion('');
+    setDetalles([]);
+    setInsumosConCambiosPrecio([]);
+    setArticulosManufacturadosAfectados([]);
+  };
+
+  // 📝 Handler para cuando se complete la actualización de precios
+  const handleActualizacionCompleta = () => {
+    finalizarProceso();
   };
 
   if (!open) return null;
@@ -331,7 +473,9 @@ export const CompraIngredientesModal = ({
             {loadingRegistro ? 'Registrando...' : 'Registrar compra'}
           </button>
         </div>
-      </div>{' '}
+      </div>
+
+      {/* Modales auxiliares - siempre disponibles */}
       <ModalCompraSeleccionInsumo
         open={openModalInsumo}
         onClose={() => setOpenModalInsumo(false)}
@@ -356,6 +500,16 @@ export const CompraIngredientesModal = ({
         unidadMedida={insumoEditando?.insumo.unidadMedida?.denominacion}
         esParaElaborar={insumoEditando?.insumo.esParaElaborar || false}
         onSave={handleSaveEditInsumo}
+      />
+      <ModalActualizarPreciosManufacturados
+        open={openModalActualizarPrecios}
+        onClose={() => {
+          setOpenModalActualizarPrecios(false);
+          finalizarProceso();
+        }}
+        insumosConCambios={insumosConCambiosPrecio}
+        articulosManufacturados={articulosManufacturadosAfectados}
+        onActualizacionCompleta={handleActualizacionCompleta}
       />
     </div>
   );

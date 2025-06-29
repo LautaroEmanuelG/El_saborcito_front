@@ -246,3 +246,11 @@ export const checkDenominacionStatus = async (
     };
   }
 };
+
+// 🔗 **OBTENER ARTÍCULOS MANUFACTURADOS QUE USAN UN INSUMO**
+
+// Obtener todos los artículos manufacturados que utilizan un insumo específico
+export const getArticuloManufacturadosByInsumo = async (insumoId: number) => {
+  const response = await axiosInstance.get(`${API_BASE_URL}/${insumoId}/manufacturados`);
+  return response.data;
+};
