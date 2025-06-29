@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { UnidadMedida } from '../../../types/UnidadMedida';
 import { useUnidadMedidaStore } from '../services/unidadMedidaStore';
+import ModalSiNo from '../../../shared/components/abmGenerica/components/modals/ModalSiNo';
 
 interface Props {
   open: boolean;
@@ -19,6 +20,22 @@ export const ModalUnidadMedidaForm = ({ open, onClose, initialValues, onSubmit, 
   const [form, setForm] = useState<Partial<UnidadMedida>>(getInitialForm(initialValues));
   const [isHabilitado, setIsHabilitado] = useState(true);
   const { error } = useUnidadMedidaStore();
+
+  // Estados para modal de notificación
+  const [modalNotificacion, setModalNotificacion] = useState({
+    open: false,
+    title: '',
+    description: '',
+  });
+
+  // Función para mostrar notificaciones
+  const mostrarNotificacion = (title: string, description: string) => {
+    setModalNotificacion({
+      open: true,
+      title,
+      description,
+    });
+  };
 
   useEffect(() => {
     setForm(getInitialForm(initialValues));
@@ -39,7 +56,7 @@ export const ModalUnidadMedidaForm = ({ open, onClose, initialValues, onSubmit, 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.denominacion?.trim()) {
-      alert('La denominación es requerida.');
+      mostrarNotificacion('Campo requerido', 'La denominación es requerida.');
       return;
     }
 
@@ -117,6 +134,17 @@ export const ModalUnidadMedidaForm = ({ open, onClose, initialValues, onSubmit, 
             )}
           </div>
         </form>
+
+        {/* Modal de notificación */}
+        <ModalSiNo
+          open={modalNotificacion.open}
+          onClose={() => setModalNotificacion((prev) => ({ ...prev, open: false }))}
+          onConfirm={() => setModalNotificacion((prev) => ({ ...prev, open: false }))}
+          title={modalNotificacion.title}
+          description={modalNotificacion.description}
+          confirmText="Aceptar"
+          cancelText=""
+        />
       </div>
     </div>
   );

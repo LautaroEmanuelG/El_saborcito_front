@@ -15,6 +15,7 @@ import {
 } from '../logic';
 import { TableGeneric } from '../../../shared/components/abmGenerica/components/TableGeneric/TableGeneric';
 import IconoVer from '../../../assets/svgs/icons/IconoVer';
+import ModalSiNo from '../../../shared/components/abmGenerica/components/modals/ModalSiNo';
 
 interface ClienteRankingExtended extends ClienteRanking {
   id: number;
@@ -33,6 +34,22 @@ export const RankingCliente = () => {
   const [pedidosCliente, setPedidosCliente] = useState<PedidoResumenPorCliente[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Estados para modal de notificación
+  const [modalNotificacion, setModalNotificacion] = useState({
+    open: false,
+    title: '',
+    description: '',
+  });
+
+  // Función para mostrar notificaciones
+  const mostrarNotificacion = (title: string, description: string) => {
+    setModalNotificacion({
+      open: true,
+      title,
+      description,
+    });
+  };
 
   // Validación de rango
   const errorValidacion = validarRangoFechas(desde, hasta);
@@ -103,7 +120,7 @@ export const RankingCliente = () => {
         clienteSeleccionado.nombreCompleto.replace(/\s+/g, '_')
       );
     } catch {
-      alert('Error al exportar pedidos de cliente');
+      mostrarNotificacion('Error de exportación', 'Error al exportar pedidos de cliente');
     }
   };
 
@@ -363,6 +380,17 @@ export const RankingCliente = () => {
           </div>
         </div>
       )}
+
+      {/* Modal de notificación */}
+      <ModalSiNo
+        open={modalNotificacion.open}
+        onClose={() => setModalNotificacion((prev) => ({ ...prev, open: false }))}
+        onConfirm={() => setModalNotificacion((prev) => ({ ...prev, open: false }))}
+        title={modalNotificacion.title}
+        description={modalNotificacion.description}
+        confirmText="Aceptar"
+        cancelText=""
+      />
     </div>
   );
 };

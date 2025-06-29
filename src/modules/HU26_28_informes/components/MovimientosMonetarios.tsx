@@ -13,6 +13,7 @@ import {
 } from '../../../shared/services/movimientosInforme';
 import type { PedidoGananciaDetalle, CompraCostoDetalle } from '../model';
 import { validarRangoFechas, formatearMonto, formatearFecha } from '../logic';
+import ModalSiNo from '../../../shared/components/abmGenerica/components/modals/ModalSiNo';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -38,6 +39,22 @@ const MovimientosMonetarios: React.FC = () => {
   const [loadingGanancias, setLoadingGanancias] = useState<boolean>(false);
   const [loadingCostos, setLoadingCostos] = useState<boolean>(false);
 
+  // Estados para modal de notificación
+  const [modalNotificacion, setModalNotificacion] = useState({
+    open: false,
+    title: '',
+    description: '',
+  });
+
+  // Función para mostrar notificaciones
+  const mostrarNotificacion = (title: string, description: string) => {
+    setModalNotificacion({
+      open: true,
+      title,
+      description,
+    });
+  };
+
   // 1) Defino al inicio del componente:
   const handleCloseCostos = () => {
     setShowCostosModal(false);
@@ -62,7 +79,7 @@ const MovimientosMonetarios: React.FC = () => {
       setDatos(response);
     } catch (e) {
       console.error(e);
-      alert('Error al obtener resumen de movimientos');
+      mostrarNotificacion('Error', 'Error al obtener resumen de movimientos');
     }
   };
 
@@ -72,7 +89,7 @@ const MovimientosMonetarios: React.FC = () => {
     try {
       await exportarMovimientosExcel(desde, hasta);
     } catch {
-      alert('Error al exportar Excel de movimientos');
+      mostrarNotificacion('Error de exportación', 'Error al exportar Excel de movimientos');
     }
   };
 
@@ -85,7 +102,7 @@ const MovimientosMonetarios: React.FC = () => {
       setGananciasData(data);
       setShowGananciasModal(true);
     } catch {
-      alert('Error al obtener detalle de ganancias');
+      mostrarNotificacion('Error', 'Error al obtener detalle de ganancias');
     } finally {
       setLoadingGanancias(false);
     }
@@ -100,7 +117,7 @@ const MovimientosMonetarios: React.FC = () => {
       setCostosData(data);
       setShowCostosModal(true);
     } catch {
-      alert('Error al obtener detalle de costos');
+      mostrarNotificacion('Error', 'Error al obtener detalle de costos');
     } finally {
       setLoadingCostos(false);
     }
@@ -112,7 +129,7 @@ const MovimientosMonetarios: React.FC = () => {
     try {
       await exportarDetalleGananciasExcel(desde, hasta);
     } catch {
-      alert('Error al exportar Excel de ganancias');
+      mostrarNotificacion('Error de exportación', 'Error al exportar Excel de ganancias');
     }
   };
 
@@ -122,7 +139,7 @@ const MovimientosMonetarios: React.FC = () => {
     try {
       await exportarDetalleCostosExcel(desde, hasta);
     } catch {
-      alert('Error al exportar Excel de costos');
+      mostrarNotificacion('Error de exportación', 'Error al exportar Excel de costos');
     }
   };
 
@@ -345,6 +362,17 @@ const MovimientosMonetarios: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Modal de notificación */}
+      <ModalSiNo
+        open={modalNotificacion.open}
+        onClose={() => setModalNotificacion((prev) => ({ ...prev, open: false }))}
+        onConfirm={() => setModalNotificacion((prev) => ({ ...prev, open: false }))}
+        title={modalNotificacion.title}
+        description={modalNotificacion.description}
+        confirmText="Aceptar"
+        cancelText=""
+      />
     </div>
   );
 };
