@@ -151,17 +151,21 @@ export const ScreenInsumos = () => {
     {
       label: 'Categoría',
       key: 'categoria',
-      render: (i: ArticuloInsumo) => getCategoriaPadre(i.categoria)?.denominacion,
-    },
-    {
-      label: 'Subcategoría',
-      key: 'subcategoria',
       render: (i: ArticuloInsumo) => {
-        // Si la categoría tiene tipoCategoria, es subcategoría
-        if (i.categoria && i.categoria.tipoCategoria) {
-          return i.categoria.denominacion;
-        }
-        return '-';
+        const categoriaPadre = getCategoriaPadre(i.categoria);
+        const subcategoria =
+          i.categoria && i.categoria.tipoCategoria ? i.categoria.denominacion : null;
+
+        return (
+          <div className="flex flex-col">
+            {subcategoria && <div className="text-sm font-medium text-negro">{subcategoria}</div>}
+            <div
+              className={`text-xs ${subcategoria ? 'text-gray-500' : 'text-sm font-medium text-negro'}`}
+            >
+              {categoriaPadre?.denominacion ?? '-'}
+            </div>
+          </div>
+        );
       },
     },
     {
@@ -193,7 +197,7 @@ export const ScreenInsumos = () => {
     setOpenModal(false);
   };
   return (
-    <div className="container mx-auto p-4">
+    <div className="container w-full mx-auto p-4">
       <div className="flex w-full justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Insumos</h1>
         <button

@@ -104,7 +104,7 @@ export const TableGeneric = <
   }, [rows, filters, showDeleted, customCategoryFilter]);
 
   return (
-    <div className="w-full flex flex-col justify-center items-center space-y-2">
+    <div className="w-full max-w-full flex flex-col justify-center items-center space-y-2">
       {/* Barra de filtros */}
       <div className="w-full bg-white rounded-lg shadow-sm border p-4 space-y-4">
         <div className="flex flex-col md:flex-row gap-4 items-center">
