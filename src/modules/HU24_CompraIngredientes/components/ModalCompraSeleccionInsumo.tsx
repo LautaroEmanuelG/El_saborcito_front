@@ -66,7 +66,15 @@ const ModalCompraSeleccionInsumo: React.FC<ModalCompraSeleccionInsumoProps> = ({
     if (selectedInsumos.size === 0 || !hasValidQuantities()) return;
 
     const insumosToAdd = Array.from(selectedInsumos.entries())
-      .filter(([, data]) => data.cantidad !== 0) // Solo incluir insumos con cantidad diferente de 0
+      .filter(([insumoId]) => {
+        // Verificar que los campos sean válidos antes de incluir
+        const inputValue = inputValues.get(insumoId);
+        const priceValid =
+          inputValue?.precio?.trim() !== '' && !isNaN(parseFloat(inputValue?.precio ?? ''));
+        const quantityValid =
+          inputValue?.cantidad?.trim() !== '' && !isNaN(parseFloat(inputValue?.cantidad ?? ''));
+        return priceValid && quantityValid;
+      })
       .map(([insumoId, data]) => {
         const insumo = insumos.find((i) => i.id === insumoId)!;
         return { insumo, subtotal: data.subtotal, cantidad: data.cantidad };
@@ -96,15 +104,15 @@ const ModalCompraSeleccionInsumo: React.FC<ModalCompraSeleccionInsumoProps> = ({
         });
       } else {
         newMap.set(insumo.id!, {
-          subtotal: insumo.precioCompra ?? 0,
-          cantidad: 1, // Empezar con 1 en lugar de 0
+          subtotal: 0,
+          cantidad: 0,
         });
-        // Inicializar valores de entrada locales
+        // Inicializar valores de entrada locales vacíos
         setInputValues((prevInputs) => {
           const newInputs = new Map(prevInputs);
           newInputs.set(insumo.id!, {
-            precio: (insumo.precioCompra ?? 0).toString(),
-            cantidad: '1', // Empezar con 1 en lugar de 0
+            precio: '',
+            cantidad: '',
           });
           return newInputs;
         });
@@ -118,7 +126,7 @@ const ModalCompraSeleccionInsumo: React.FC<ModalCompraSeleccionInsumoProps> = ({
   );
 
   const handleSubtotalChange = (insumoId: number, value: string) => {
-    // Actualizar el valor de entrada local
+    // Actualizar el valor de entrada local siempre
     setInputValues((prev) => {
       const newMap = new Map(prev);
       const current = newMap.get(insumoId) || { precio: '', cantidad: '' };
@@ -126,9 +134,9 @@ const ModalCompraSeleccionInsumo: React.FC<ModalCompraSeleccionInsumoProps> = ({
       return newMap;
     });
 
-    // Actualizar el estado principal solo si es un número válido
-    const subtotal = Number(value);
-    if (!isNaN(subtotal)) {
+    // Validar que sea un número válido (incluyendo negativos y 0)
+    const subtotal = parseFloat(value);
+    if (!isNaN(subtotal) && value.trim() !== '') {
       setSelectedInsumos((prev) => {
         const newMap = new Map(prev);
         const current = newMap.get(insumoId);
@@ -141,7 +149,7 @@ const ModalCompraSeleccionInsumo: React.FC<ModalCompraSeleccionInsumoProps> = ({
   };
 
   const handleCantidadChange = (insumoId: number, value: string) => {
-    // Actualizar el valor de entrada local
+    // Actualizar el valor de entrada local siempre
     setInputValues((prev) => {
       const newMap = new Map(prev);
       const current = newMap.get(insumoId) || { precio: '', cantidad: '' };
@@ -149,32 +157,34 @@ const ModalCompraSeleccionInsumo: React.FC<ModalCompraSeleccionInsumoProps> = ({
       return newMap;
     });
 
-    // Obtener el insumo para verificar si es para elaborar
-    const insumo = insumos.find((i) => i.id === insumoId);
-    const cantidad = Number(value);
+    const cantidad = parseFloat(value);
 
-    // Solo actualizar si es un número válido
-    if (!isNaN(cantidad)) {
-      // Si no es para elaborar, redondear a entero
-      const cantidadFinal = insumo && !insumo.esParaElaborar ? Math.round(cantidad) : cantidad;
-
+    // Validar que sea un número válido (incluyendo negativos y 0)
+    if (!isNaN(cantidad) && value.trim() !== '') {
       setSelectedInsumos((prev) => {
         const newMap = new Map(prev);
         const current = newMap.get(insumoId);
         if (current) {
-          newMap.set(insumoId, { ...current, cantidad: cantidadFinal });
+          newMap.set(insumoId, { ...current, cantidad });
         }
         return newMap;
       });
     }
   };
 
-  // Verificar si todos los insumos seleccionados tienen cantidad diferente de 0 y subtotal >= 0
+  // Verificar si todos los insumos seleccionados tienen valores numéricos válidos
   const hasValidQuantities = () => {
     if (selectedInsumos.size === 0) return false;
-    return Array.from(selectedInsumos.values()).every(
-      (data) => data.cantidad !== 0 && data.subtotal >= 0
-    );
+
+    // Verificar que todos los campos tengan valores numéricos válidos
+    return Array.from(selectedInsumos.entries()).every(([insumoId]) => {
+      const inputValue = inputValues.get(insumoId);
+      const priceValid =
+        inputValue?.precio?.trim() !== '' && !isNaN(parseFloat(inputValue?.precio ?? ''));
+      const quantityValid =
+        inputValue?.cantidad?.trim() !== '' && !isNaN(parseFloat(inputValue?.cantidad ?? ''));
+      return priceValid && quantityValid;
+    });
   };
   return (
     <Modal
@@ -204,16 +214,19 @@ const ModalCompraSeleccionInsumo: React.FC<ModalCompraSeleccionInsumoProps> = ({
                       >
                         <div className="font-medium">{insumo.denominacion}</div>
                         <div
-                          className={`text-gray-600 ${data.cantidad === 0 ? 'text-red-500' : ''}`}
+                          className={`text-gray-600 ${data.cantidad === 0 ? 'text-orange-500' : data.cantidad < 0 ? 'text-red-500' : ''}`}
                         >
-                          {data.cantidad > 0
-                            ? `Cantidad: ${data.cantidad} ${insumo.unidadMedida?.denominacion ?? ''}`
-                            : 'Sin cantidad'}
+                          {data.cantidad === 0
+                            ? 'Cantidad: 0 (Sin movimiento)'
+                            : `Cantidad: ${data.cantidad} ${insumo.unidadMedida?.denominacion ?? ''}`}
                         </div>
                         <div className="text-green-600 font-semibold">
-                          Subtotal: ${data.subtotal}
+                          Subtotal: $
+                          {data.subtotal >= 0
+                            ? data.subtotal.toFixed(2)
+                            : `(${Math.abs(data.subtotal).toFixed(2)})`}
                         </div>
-                        {data.cantidad > 0 && (
+                        {data.cantidad !== 0 && (
                           <div className="text-blue-600 font-semibold">
                             Precio unitario: ${(data.subtotal / data.cantidad).toFixed(2)}
                           </div>
@@ -227,7 +240,6 @@ const ModalCompraSeleccionInsumo: React.FC<ModalCompraSeleccionInsumoProps> = ({
                 <div className="font-semibold text-blue-800">
                   Total compra: $
                   {Array.from(selectedInsumos.entries())
-                    .filter(([, data]) => data.cantidad > 0)
                     .reduce((total, [, data]) => total + data.subtotal, 0)
                     .toFixed(2)}
                 </div>
@@ -269,7 +281,7 @@ const ModalCompraSeleccionInsumo: React.FC<ModalCompraSeleccionInsumoProps> = ({
                     );
                     const isSelected = selectedInsumos.has(insumo.id!);
                     const data = selectedInsumos.get(insumo.id!) || {
-                      subtotal: insumo.precioCompra ?? 0,
+                      subtotal: 0,
                       cantidad: 0,
                     };
 
@@ -319,18 +331,15 @@ const ModalCompraSeleccionInsumo: React.FC<ModalCompraSeleccionInsumoProps> = ({
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                               <div>
                                 <label className="block text-xs font-medium mb-1">
-                                  Subtotal<span className="text-red-500">*</span>
+                                  $Subtotal<span className="text-red-500">*</span>
                                 </label>
                                 <input
                                   type="number"
-                                  value={
-                                    inputValues.get(insumo.id!)?.precio ?? data.subtotal.toString()
-                                  }
+                                  value={inputValues.get(insumo.id!)?.precio ?? ''}
                                   onChange={(e) => handleSubtotalChange(insumo.id!, e.target.value)}
-                                  min="0"
                                   step="0.01"
                                   className="w-full border rounded px-2 py-1 text-sm"
-                                  placeholder="Subtotal ($0 para gratuitos)"
+                                  placeholder="Puede ser positivo, negativo o 0"
                                   onClick={(e) => e.stopPropagation()}
                                 />
                               </div>
@@ -341,31 +350,33 @@ const ModalCompraSeleccionInsumo: React.FC<ModalCompraSeleccionInsumoProps> = ({
                                 </label>
                                 <input
                                   type="number"
-                                  value={
-                                    inputValues.get(insumo.id!)?.cantidad ??
-                                    data.cantidad.toString()
-                                  }
+                                  value={inputValues.get(insumo.id!)?.cantidad ?? ''}
                                   onChange={(e) => handleCantidadChange(insumo.id!, e.target.value)}
                                   step={insumo.esParaElaborar ? '0.01' : '1'}
                                   className="w-full border rounded px-2 py-1 text-sm"
-                                  placeholder="Cantidad (puede ser negativa para ajustes)"
+                                  placeholder="Puede ser positivo, negativo o 0"
                                   onClick={(e) => e.stopPropagation()}
                                 />
                               </div>
                             </div>
-                            {data.subtotal >= 0 && data.cantidad !== 0 && (
-                              <div
-                                className={`text-xs font-semibold ${data.cantidad > 0 ? 'text-blue-600' : 'text-red-600'}`}
-                              >
-                                Precio unitario: ${(data.subtotal / data.cantidad).toFixed(2)}
-                                {data.cantidad < 0 && (
-                                  <span className="ml-1">(Ajuste negativo)</span>
-                                )}
-                                {data.subtotal === 0 && data.cantidad > 0 && (
-                                  <span className="ml-1">(Sin costo)</span>
-                                )}
-                              </div>
-                            )}
+                            {data.subtotal !== undefined &&
+                              data.cantidad !== undefined &&
+                              data.cantidad !== 0 && (
+                                <div
+                                  className={`text-xs font-semibold ${data.cantidad > 0 ? 'text-blue-600' : 'text-red-600'}`}
+                                >
+                                  Precio unitario: ${(data.subtotal / data.cantidad).toFixed(2)}
+                                  {data.cantidad < 0 && (
+                                    <span className="ml-1">(Ajuste negativo)</span>
+                                  )}
+                                  {data.subtotal === 0 && data.cantidad > 0 && (
+                                    <span className="ml-1">(Sin costo)</span>
+                                  )}
+                                  {data.subtotal < 0 && (
+                                    <span className="ml-1">(Valor negativo)</span>
+                                  )}
+                                </div>
+                              )}
                           </div>
                         )}
                       </div>
@@ -397,9 +408,7 @@ const ModalCompraSeleccionInsumo: React.FC<ModalCompraSeleccionInsumoProps> = ({
               onClick={handleAddInsumos}
               disabled={selectedInsumos.size === 0 || !hasValidQuantities()}
             >
-              Agregar{' '}
-              {Array.from(selectedInsumos.values()).filter((data) => data.cantidad > 0).length}{' '}
-              Insumo(s)
+              Agregar {Array.from(selectedInsumos.values()).length} Insumo(s)
             </button>
           </div>
         </div>

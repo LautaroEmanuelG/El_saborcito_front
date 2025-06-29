@@ -12,6 +12,7 @@ import { ButtonsTable } from '../../../shared/components/abmGenerica/components/
 import { useInsumoStore } from '../../HU23_CRUDInsumos/services/insumoStore';
 import { getArticuloManufacturadosByInsumo } from '../../../shared/services/articuloInsumoService';
 import * as compraInsumoService from '../services/compraInsumoService';
+import ModalSiNo from '../../../shared/components/abmGenerica/components/modals/ModalSiNo';
 import type { ArticuloManufacturado } from '../../../types/Articulo';
 
 interface InsumoCambioPrecio {
@@ -39,6 +40,27 @@ const ScreenCompraIngredientes = () => {
     ArticuloManufacturado[]
   >([]);
   const [loadingActualizarPrecios, setLoadingActualizarPrecios] = useState(false);
+
+  // Estados para modal de notificación
+  const [modalNotificacion, setModalNotificacion] = useState({
+    open: false,
+    title: '',
+    description: '',
+    onConfirm: () => {},
+  });
+
+  // Función para mostrar notificaciones
+  const mostrarNotificacion = (title: string, description: string, onConfirm = () => {}) => {
+    setModalNotificacion({
+      open: true,
+      title,
+      description,
+      onConfirm: () => {
+        setModalNotificacion((prev) => ({ ...prev, open: false }));
+        onConfirm();
+      },
+    });
+  };
 
   useEffect(() => {
     fetchCompras();
@@ -107,7 +129,10 @@ const ScreenCompraIngredientes = () => {
       const ultimaCompra = await compraInsumoService.getUltimaCompra();
 
       if (!ultimaCompra || !ultimaCompra.detalles || ultimaCompra.detalles.length === 0) {
-        alert('No se encontró ninguna compra reciente para actualizar precios.');
+        mostrarNotificacion(
+          'Sin compras recientes',
+          'No se encontró ninguna compra reciente para actualizar precios.'
+        );
         return;
       }
 
@@ -143,7 +168,10 @@ const ScreenCompraIngredientes = () => {
         });
 
       if (cambiosPrecios.length === 0) {
-        alert('No se detectaron cambios de precio significativos en la última compra.');
+        mostrarNotificacion(
+          'Sin cambios de precio',
+          'No se detectaron cambios de precio significativos en la última compra.'
+        );
         return;
       }
 
@@ -176,11 +204,14 @@ const ScreenCompraIngredientes = () => {
       if (todosLosArticulosAfectados.length > 0) {
         setOpenModalActualizarPrecios(true);
       } else {
-        alert('No se encontraron artículos manufacturados que usen estos insumos.');
+        mostrarNotificacion(
+          'Sin artículos afectados',
+          'No se encontraron artículos manufacturados que usen estos insumos.'
+        );
       }
     } catch (error) {
       console.error('Error al obtener la última compra:', error);
-      alert('Error al obtener información de la última compra.');
+      mostrarNotificacion('Error', 'Error al obtener información de la última compra.');
     } finally {
       setLoadingActualizarPrecios(false);
     }
@@ -308,6 +339,17 @@ const ScreenCompraIngredientes = () => {
           ❌ {error}
         </div>
       )}
+
+      {/* Modal de notificación */}
+      <ModalSiNo
+        open={modalNotificacion.open}
+        onClose={() => setModalNotificacion((prev) => ({ ...prev, open: false }))}
+        onConfirm={modalNotificacion.onConfirm}
+        title={modalNotificacion.title}
+        description={modalNotificacion.description}
+        confirmText="Aceptar"
+        cancelText=""
+      />
     </div>
   );
 };

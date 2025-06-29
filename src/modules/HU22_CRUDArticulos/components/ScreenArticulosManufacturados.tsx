@@ -173,10 +173,33 @@ const ScreenArticulosManufacturados = () => {
 
   // Adaptar columnas para incluir acciones y cumplir con la interfaz de TableGeneric
   const columns = [
-    ...ARTICULO_COLUMNS.map((col) => ({
+    // Filtrar las columnas para excluir 'subcategoria' y crear una columna combinada 'categoria'
+    ...ARTICULO_COLUMNS.filter(
+      (col) => col.field !== 'subcategoria' && col.field !== 'categoria'
+    ).map((col) => ({
       label: col.headerName,
       key: col.field,
     })),
+    // Columna combinada de Categoría
+    {
+      label: 'Categoría',
+      key: 'categoria',
+      render: (row: ArticuloManufacturado & { categoria: string; subcategoria: string }) => {
+        const subcategoria = row.subcategoria !== '-' ? row.subcategoria : null;
+        const categoria = row.categoria;
+
+        return (
+          <div className="flex flex-col">
+            {subcategoria && <div className="text-sm font-medium text-negro">{subcategoria}</div>}
+            <div
+              className={`text-xs ${subcategoria ? 'text-gray-500' : 'text-sm font-medium text-negro'}`}
+            >
+              {categoria ?? '-'}
+            </div>
+          </div>
+        );
+      },
+    },
     {
       label: 'Acciones',
       key: 'acciones',

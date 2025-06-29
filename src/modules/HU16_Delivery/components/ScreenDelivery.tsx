@@ -58,13 +58,15 @@ export const ScreenDelivery: React.FC = () => {
       </div>
 
       {/* Estadísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div className="bg-purple-100 p-4 rounded-lg">
-          <h3 className="font-semibold text-purple-800">En Delivery</h3>
-          <p className="text-2xl font-bold text-purple-900">{pedidosDelivery.length}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-6">
+        <div className="bg-white p-3 sm:p-4 rounded-lg shadow border-l-4 border-purple-500">
+          <div className="text-lg sm:text-2xl font-bold text-purple-600">
+            {pedidosDelivery.length}
+          </div>
+          <div className="text-xs sm:text-sm text-gray-600">En Delivery</div>
         </div>
-        <div className="bg-blue-100 p-4 rounded-lg">
-          <h3 className="font-semibold text-blue-800">Refrescar</h3>
+        <div className="bg-white p-3 sm:p-4 rounded-lg shadow border-l-4 border-blue-500">
+          <div className="text-xs sm:text-sm text-gray-600">Refrescar</div>
           <button
             onClick={cargarPedidosDelivery}
             disabled={loading}

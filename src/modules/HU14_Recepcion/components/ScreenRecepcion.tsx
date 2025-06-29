@@ -110,34 +110,36 @@ export const ScreenRecepcion: React.FC = () => {
         onLimpiarFiltros={limpiarFiltros}
       />{' '}
       {/* Estadísticas rápidas */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-        <div className="bg-yellow-100 p-4 rounded-lg">
-          <h3 className="font-semibold text-yellow-800">Pendientes</h3>
-          <p className="text-2xl font-bold text-yellow-900">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-3 sm:gap-4 mb-6">
+        <div className="bg-white p-3 sm:p-4 rounded-lg shadow border-l-4 border-yellow-500">
+          <div className="text-lg sm:text-2xl font-bold text-yellow-600">
             {pedidosFiltrados.filter((p) => p.estado.nombre === 'PENDIENTE').length}
-          </p>
+          </div>
+          <div className="text-xs sm:text-sm text-gray-600">Pendientes</div>
         </div>
-        <div className="bg-blue-100 p-4 rounded-lg">
-          <h3 className="font-semibold text-blue-800">En Preparación</h3>
-          <p className="text-2xl font-bold text-blue-900">
+        <div className="bg-white p-3 sm:p-4 rounded-lg shadow border-l-4 border-blue-500">
+          <div className="text-lg sm:text-2xl font-bold text-blue-600">
             {pedidosFiltrados.filter((p) => p.estado.nombre === 'EN_PREPARACION').length}
-          </p>
+          </div>
+          <div className="text-xs sm:text-sm text-gray-600">En Preparación</div>
         </div>
-        <div className="bg-red-100 p-4 rounded-lg">
-          <h3 className="font-semibold text-red-800">Demorados</h3>
-          <p className="text-2xl font-bold text-red-900">
+        <div className="bg-white p-3 sm:p-4 rounded-lg shadow border-l-4 border-red-500">
+          <div className="text-lg sm:text-2xl font-bold text-red-600">
             {pedidosFiltrados.filter((p) => p.estado.nombre === 'DEMORADO').length}
-          </p>
+          </div>
+          <div className="text-xs sm:text-sm text-gray-600">Demorados</div>
         </div>
-        <div className="bg-violet-100 p-4 rounded-lg">
-          <h3 className="font-semibold text-violet-800">En Delivery</h3>
-          <p className="text-2xl font-bold text-violet-900">
+        <div className="bg-white p-3 sm:p-4 rounded-lg shadow border-l-4 border-purple-500">
+          <div className="text-lg sm:text-2xl font-bold text-purple-600">
             {pedidosFiltrados.filter((p) => p.estado.nombre === 'EN_DELIVERY').length}
-          </p>
+          </div>
+          <div className="text-xs sm:text-sm text-gray-600">En Delivery</div>
         </div>
-        <div className="bg-gray-100 p-4 rounded-lg">
-          <h3 className="font-semibold text-gray-800">Total</h3>
-          <p className="text-2xl font-bold text-gray-900">{pedidosFiltrados.length}</p>
+        <div className="bg-white p-3 sm:p-4 rounded-lg shadow border-l-4 border-gray-500">
+          <div className="text-lg sm:text-2xl font-bold text-gray-600">
+            {pedidosFiltrados.length}
+          </div>
+          <div className="text-xs sm:text-sm text-gray-600">Total</div>
         </div>
       </div>{' '}
       {/* Tabla */}

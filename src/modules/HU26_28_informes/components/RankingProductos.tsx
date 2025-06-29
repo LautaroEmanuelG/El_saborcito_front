@@ -15,6 +15,7 @@ import {
   exportarRankingExcel,
 } from '../../../shared/services/productoInformes';
 import type { ProductoRankingResponse } from '../model';
+import ModalSiNo from '../../../shared/components/abmGenerica/components/modals/ModalSiNo';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend);
 
@@ -26,6 +27,22 @@ export const RankingProductos = () => {
     totalManufacturados: 0,
     totalInsumos: 0,
   });
+
+  // Estados para modal de notificación
+  const [modalNotificacion, setModalNotificacion] = useState({
+    open: false,
+    title: '',
+    description: '',
+  });
+
+  // Función para mostrar notificaciones
+  const mostrarNotificacion = (title: string, description: string) => {
+    setModalNotificacion({
+      open: true,
+      title,
+      description,
+    });
+  };
 
   // Validación de rango de fechas
   const isInvalidRange = new Date(desde) > new Date(hasta);
@@ -48,13 +65,13 @@ export const RankingProductos = () => {
 
   const handleExportar = async () => {
     if (isInvalidRange) {
-      alert('El rango de fechas no es válido.'); // 📌 validación antes de exportar
+      mostrarNotificacion('Rango de fechas inválido', 'El rango de fechas no es válido.');
       return;
     }
     try {
       await exportarRankingExcel(desde, hasta);
     } catch (err) {
-      alert('Error al exportar Excel');
+      mostrarNotificacion('Error de exportación', 'Error al exportar Excel');
       console.error(err);
     }
   };
@@ -181,6 +198,17 @@ export const RankingProductos = () => {
           Exportar a Excel
         </button>
       </div>
+
+      {/* Modal de notificación */}
+      <ModalSiNo
+        open={modalNotificacion.open}
+        onClose={() => setModalNotificacion((prev) => ({ ...prev, open: false }))}
+        onConfirm={() => setModalNotificacion((prev) => ({ ...prev, open: false }))}
+        title={modalNotificacion.title}
+        description={modalNotificacion.description}
+        confirmText="Aceptar"
+        cancelText=""
+      />
     </div>
   );
 };

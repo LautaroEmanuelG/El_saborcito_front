@@ -4,10 +4,28 @@ import { useHistorialCocina, useDetalleCompleto } from '../../../shared/hooks/us
 import { ModalReceta } from '../../../modules/HU17_Cocina/Components/ModalReceta';
 import { historialCocinaService } from '../../../shared/services/historialCocinaService';
 import { PedidoDTO } from '../../../modules/HU17_Cocina/Model';
+import ModalSiNo from '../../../shared/components/abmGenerica/components/modals/ModalSiNo';
+import { useState } from 'react';
 
 export const HistorialCocina: React.FC = () => {
   const { pedidos, loading, error, refetch } = useHistorialCocina();
   const { detalle, loading: detalleLoading, obtenerDetalle, cerrarDetalle } = useDetalleCompleto();
+
+  // Estados para modal de notificación
+  const [modalNotificacion, setModalNotificacion] = useState({
+    open: false,
+    title: '',
+    description: '',
+  });
+
+  // Función para mostrar notificaciones
+  const mostrarNotificacion = (title: string, description: string) => {
+    setModalNotificacion({
+      open: true,
+      title,
+      description,
+    });
+  };
 
   const handleVerDetalle = (id: number) => {
     obtenerDetalle(id);
@@ -18,7 +36,7 @@ export const HistorialCocina: React.FC = () => {
       await historialCocinaService.descargarPDF(id);
     } catch (error) {
       console.error('Error al descargar PDF:', error);
-      alert('Error al descargar el PDF');
+      mostrarNotificacion('Error de descarga', 'Error al descargar el PDF');
     }
   };
 
@@ -153,6 +171,17 @@ export const HistorialCocina: React.FC = () => {
       {detalle && (
         <ModalReceta detalle={detalle} onClose={cerrarDetalle} loading={detalleLoading} />
       )}
+
+      {/* Modal de notificación */}
+      <ModalSiNo
+        open={modalNotificacion.open}
+        onClose={() => setModalNotificacion((prev) => ({ ...prev, open: false }))}
+        onConfirm={() => setModalNotificacion((prev) => ({ ...prev, open: false }))}
+        title={modalNotificacion.title}
+        description={modalNotificacion.description}
+        confirmText="Aceptar"
+        cancelText=""
+      />
     </div>
   );
 };
