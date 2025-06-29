@@ -76,8 +76,6 @@ const BtnCantidadPromocion: React.FC<BtnCantidadPromocionProps> = ({
         return;
       }
 
-      console.log('✅ VALIDACIÓN CENTRALIZADA: SÍ se puede agregar más cantidad');
-
       // 🕐 **ACTIVAR COOLDOWN**
       setIsOnCooldown(true);
       setTimeout(() => setIsOnCooldown(false), 500);

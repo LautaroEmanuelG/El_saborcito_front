@@ -41,22 +41,12 @@ export const AsideEmpleado = ({ onMenuSelect, activeView }: AsideEmpleadoProps) 
   ] as const;
 
   const shouldShowAreaTrabajo = (): boolean => {
-    // 🐛 **DEBUG: Ver qué datos tenemos**
-    console.log('🔍 AsideEmpleado - shouldShowAreaTrabajo:', {
-      user,
-      rol: user?.rol,
-      localStorage_user: localStorage.getItem('user'),
-      localStorage_userType: localStorage.getItem('userType'),
-      localStorage_empleadoData: localStorage.getItem('empleadoData'),
-    });
-
     if (!user || !user.rol) return false;
 
     // Mostrar "Mi Área de Trabajo" para todos los roles EXCEPTO ADMIN y CLIENTE
     const rolesExcluidos = ['ADMIN', 'CLIENTE'];
     const result = !rolesExcluidos.includes(user.rol);
 
-    console.log('🔍 Resultado shouldShowAreaTrabajo:', result, 'para rol:', user.rol);
     return result;
   };
 

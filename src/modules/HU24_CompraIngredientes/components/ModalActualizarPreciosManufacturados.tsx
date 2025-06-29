@@ -136,13 +136,15 @@ export const ModalActualizarPreciosManufacturados = ({
     }
   };
 
-  if (!open) return null;
+  if (!open) {
+    return null;
+  }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[70]">
       <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-6xl h-[700px] flex flex-col">
         <h2 className="text-2xl font-bold mb-4 text-center">
-          📈 Actualizar Precios de Artículos Manufacturados
+          Actualizar Precios de Artículos Manufacturados
         </h2>
 
         {/* Información sobre los insumos con cambios */}

@@ -268,9 +268,6 @@ export const ModalInsumoForm = ({
       };
 
       await registrarCompra(ajusteDTO);
-      console.log(
-        `✅ Ajuste de stock generado: ${denominacionAjuste} (${cantidadAjuste > 0 ? '+' : ''}${cantidadAjuste})`
-      );
     } catch (error) {
       console.error('❌ Error al generar ajuste de stock:', error);
       throw new Error('No se pudo generar el ajuste de stock automático');
