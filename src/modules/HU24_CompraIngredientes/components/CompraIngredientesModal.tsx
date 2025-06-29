@@ -155,7 +155,8 @@ export const CompraIngredientesModal = ({
 
     detalles.forEach((detalle) => {
       const precioUnitarioActual = detalle.insumo.precioCompra ?? 0;
-      const precioUnitarioNuevo = detalle.cantidad !== 0 ? detalle.subtotal / detalle.cantidad : 0;
+      const precioUnitarioNuevo =
+        detalle.cantidad !== 0 ? parseFloat((detalle.subtotal / detalle.cantidad).toFixed(2)) : 0;
 
       // Solo considerar como cambio significativo si la diferencia es mayor al 1%
       // Y si el precio nuevo es mayor a 0 (evitar divisiones por 0 y cambios sin costo)
@@ -184,7 +185,7 @@ export const CompraIngredientesModal = ({
       detalles: detalles.map((d) => ({
         insumoId: d.insumo.id,
         cantidad: d.cantidad,
-        precioUnitario: d.cantidad !== 0 ? d.subtotal / d.cantidad : 0,
+        precioUnitario: d.cantidad !== 0 ? parseFloat((d.subtotal / d.cantidad).toFixed(2)) : 0,
         subtotal: d.subtotal,
       })),
     };
