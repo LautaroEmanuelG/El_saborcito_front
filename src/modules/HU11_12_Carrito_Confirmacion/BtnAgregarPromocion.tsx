@@ -59,7 +59,6 @@ export const BtnAgregarPromocion: React.FC<BtnAgregarPromocionProps> = ({
       return;
     }
 
-    console.log(`🎁 Agregando promoción: ${promocion.denominacion}`);
     const success = await addPromocionToCarrito(promocion, 1);
 
     if (success) {

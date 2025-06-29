@@ -7,8 +7,6 @@ export const AdminRedirect = () => {
   const { empleadoAutenticado } = useEmpleado();
 
   useEffect(() => {
-    console.log('🔄 AdminRedirect: empleadoAutenticado:', empleadoAutenticado);
-
     // Pequeño delay para asegurar que el contexto esté cargado
     const timer = setTimeout(() => {
       redirectByRole();

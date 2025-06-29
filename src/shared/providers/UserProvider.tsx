@@ -28,7 +28,6 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     const storedUser = localStorage.getItem(USER_STORAGE_KEY);
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
-      console.log('🔄 Usuario recuperado desde localStorage:', parsedUser);
       return parsedUser;
     }
     return null;
@@ -79,8 +78,6 @@ export const UserProvider = ({ children }: UserProviderProps) => {
       localStorage.setItem('email', empleado.email);
     }
     // ⚠️ NO copiar empleadoToken como token - son sistemas diferentes
-
-    console.log('✅ Usuario sincronizado desde empleado:', usuarioFromEmpleado);
   }, []);
 
   const logout = useCallback(() => {
@@ -147,18 +144,10 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     const userType = localStorage.getItem('userType');
     const empleadoData = localStorage.getItem('empleadoData');
 
-    console.log('🔍 Verificando sincronización inicial:', {
-      userType,
-      hasEmpleadoData: !!empleadoData,
-      currentUser: user,
-      isEmployeeUser,
-    });
-
     // Solo sincronizar si es empleado Y no tenemos usuario actual O el usuario actual no tiene rol
     if (userType === 'employee' && empleadoData && (!user || !user.rol)) {
       try {
         const empleado = JSON.parse(empleadoData);
-        console.log('🔄 Sincronizando desde empleadoData:', empleado);
         syncFromEmpleado(empleado);
       } catch (error) {
         console.error('❌ Error al sincronizar empleado inicial:', error);

@@ -1,12 +1,13 @@
 // src/modules/HU24_CompraIngredientes/components/CompraIngredientesModal.tsx
 
 import { useState, useEffect } from 'react';
-import type { ArticuloInsumo } from '../../../types/Articulo';
+import type { ArticuloInsumo, ArticuloManufacturado } from '../../../types/Articulo';
 import ModalCompraSeleccionInsumo from './ModalCompraSeleccionInsumo';
 import ModalRestaurarInsumo from './ModalRestaurarInsumo';
 import ModalEditarInsumoCompra from './ModalEditarInsumoCompra';
 
 import * as articuloInsumoService from '../../../shared/services/articuloInsumoService';
+import { getArticuloManufacturadosByInsumo } from '../../../shared/services/articuloInsumoService';
 import { validarCompra } from '../logic';
 import { registrarCompra } from '../services/compraInsumoService';
 import type { NuevaCompraDTO, CompraInsumoDTO } from '../model';
@@ -16,6 +17,10 @@ interface Props {
   onClose: () => void;
   onCompraRegistrada: (compra: CompraInsumoDTO) => void;
   insumosPreseleccionados?: ArticuloInsumo[];
+  onActualizarPrecios?: (
+    insumosConCambios: InsumoCambioPrecio[],
+    articulosAfectados: ArticuloManufacturado[]
+  ) => void;
 }
 
 interface InsumoCompraDetalle {
@@ -24,11 +29,20 @@ interface InsumoCompraDetalle {
   cantidad: number;
 }
 
+interface InsumoCambioPrecio {
+  insumoId: number;
+  denominacion: string;
+  precioAnterior: number;
+  precioNuevo: number;
+  porcentajeAumento: number;
+}
+
 export const CompraIngredientesModal = ({
   open,
   onClose,
   onCompraRegistrada,
   insumosPreseleccionados = [],
+  onActualizarPrecios,
 }: Props) => {
   const [openModalInsumo, setOpenModalInsumo] = useState(false);
   const [openModalRestaurar, setOpenModalRestaurar] = useState(false);
@@ -55,12 +69,13 @@ export const CompraIngredientesModal = ({
         const stockNecesario = Math.max(0, (insumo.stockMinimo ?? 0) - (insumo.stockActual ?? 0));
         const cantidadSugerida =
           stockNecesario > 0 ? stockNecesario : (insumo.stockMinimo ?? 0) * 0.5; // Si no hay déficit, sugerir 50% del mínimo
-        const subtotalSugerido = cantidadSugerida * (insumo.precioCompra ?? 0);
+        // 🔴 IMPORTANTE: El subtotal debe ser 0 por defecto según requerimiento
+        const subtotalInicial = 0;
 
         return {
           insumo,
           cantidad: cantidadSugerida,
-          subtotal: subtotalSugerido,
+          subtotal: subtotalInicial,
         };
       });
 
@@ -135,12 +150,41 @@ export const CompraIngredientesModal = ({
   const handleRegistrarCompra = async () => {
     setErrorRegistro(null);
 
+    // Detectar cambios de precio antes de registrar la compra
+    const insumosConCambios: InsumoCambioPrecio[] = [];
+
+    detalles.forEach((detalle) => {
+      const precioUnitarioActual = detalle.insumo.precioCompra ?? 0;
+      const precioUnitarioNuevo = detalle.cantidad !== 0 ? detalle.subtotal / detalle.cantidad : 0;
+
+      // Solo considerar como cambio significativo si la diferencia es mayor al 1%
+      // Y si el precio nuevo es mayor a 0 (evitar divisiones por 0 y cambios sin costo)
+      if (precioUnitarioNuevo > 0 && precioUnitarioActual > 0) {
+        const porcentajeDiferencia = Math.abs(
+          ((precioUnitarioNuevo - precioUnitarioActual) / precioUnitarioActual) * 100
+        );
+
+        if (porcentajeDiferencia > 1) {
+          const porcentajeAumento =
+            ((precioUnitarioNuevo - precioUnitarioActual) / precioUnitarioActual) * 100;
+
+          insumosConCambios.push({
+            insumoId: detalle.insumo.id,
+            denominacion: detalle.insumo.denominacion,
+            precioAnterior: precioUnitarioActual,
+            precioNuevo: precioUnitarioNuevo,
+            porcentajeAumento,
+          });
+        }
+      }
+    });
+
     const nueva: NuevaCompraDTO = {
       denominacion,
       detalles: detalles.map((d) => ({
         insumoId: d.insumo.id,
         cantidad: d.cantidad,
-        precioUnitario: d.cantidad !== 0 ? d.subtotal / d.cantidad : 0, // Calcular precio unitario
+        precioUnitario: d.cantidad !== 0 ? d.subtotal / d.cantidad : 0,
         subtotal: d.subtotal,
       })),
     };
@@ -155,15 +199,51 @@ export const CompraIngredientesModal = ({
     try {
       const compraCreada = await registrarCompra(nueva);
       onCompraRegistrada(compraCreada);
-      onClose();
-      setDenominacion('');
-      setDetalles([]);
+
+      // Si hay cambios de precio, llamar al callback para que el padre maneje el modal de actualización
+      if (insumosConCambios.length > 0 && onActualizarPrecios) {
+        // Obtener los artículos manufacturados afectados
+        const todosLosArticulosAfectados: ArticuloManufacturado[] = [];
+        const idsArticulosYaAgregados = new Set<number>();
+
+        for (const cambio of insumosConCambios) {
+          try {
+            const articulosDeEsteInsumo = await getArticuloManufacturadosByInsumo(cambio.insumoId);
+
+            articulosDeEsteInsumo.forEach((articulo: ArticuloManufacturado) => {
+              if (!idsArticulosYaAgregados.has(articulo.id)) {
+                todosLosArticulosAfectados.push(articulo);
+                idsArticulosYaAgregados.add(articulo.id);
+              }
+            });
+          } catch (error) {
+            console.error(
+              `Error al obtener artículos manufacturados para insumo ${cambio.insumoId}:`,
+              error
+            );
+          }
+        }
+
+        // Llamar al callback del padre para manejar la actualización
+        onActualizarPrecios(insumosConCambios, todosLosArticulosAfectados);
+      } else {
+        // Si no hay cambios de precio, cerrar el modal normalmente
+        finalizarProceso();
+      }
     } catch (e) {
       console.error(e);
       setErrorRegistro('Error al registrar la compra');
     } finally {
       setLoadingRegistro(false);
     }
+  };
+
+  // Función para finalizar el proceso de compra
+  const finalizarProceso = () => {
+    setDenominacion('');
+    setDetalles([]);
+    setErrorRegistro(null);
+    onClose();
   };
 
   if (!open) return null;
@@ -331,7 +411,9 @@ export const CompraIngredientesModal = ({
             {loadingRegistro ? 'Registrando...' : 'Registrar compra'}
           </button>
         </div>
-      </div>{' '}
+      </div>
+
+      {/* Modales auxiliares - siempre disponibles */}
       <ModalCompraSeleccionInsumo
         open={openModalInsumo}
         onClose={() => setOpenModalInsumo(false)}

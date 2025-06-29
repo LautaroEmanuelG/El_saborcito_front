@@ -19,8 +19,6 @@ export const useEmpleadoLogin = () => {
   const loginEmpleadoWithSync = useCallback(
     async (empleadoData: any, token: string): Promise<void> => {
       try {
-        console.log('🔄 Iniciando login sincronizado de empleado:', empleadoData);
-
         // 1. Guardar token
         localStorage.setItem('empleadoToken', token);
 
@@ -37,8 +35,6 @@ export const useEmpleadoLogin = () => {
         setTimeout(() => {
           redirectEmpleadoByRole(empleadoData);
         }, 100);
-
-        console.log('✅ Login de empleado completado exitosamente');
       } catch (error) {
         console.error('❌ Error en login sincronizado de empleado:', error);
         throw error;
@@ -57,8 +53,6 @@ export const useEmpleadoLogin = () => {
         navigate('/admin');
         return;
       }
-
-      console.log('🎯 Redirigiendo empleado según rol:', empleado.rol);
 
       let targetRoute = '';
       switch (empleado.rol) {
@@ -79,9 +73,7 @@ export const useEmpleadoLogin = () => {
           targetRoute = '/admin';
       }
 
-      console.log('🚀 Navegando a:', targetRoute);
       navigate(targetRoute, { replace: true });
-      console.log('✅ Navegación ejecutada a:', targetRoute);
     },
     [navigate]
   );

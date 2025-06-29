@@ -16,8 +16,6 @@ export const AuthDebugInfo = () => {
   const { rol, email, isAuthenticated: hasToken } = useAuth();
 
   const handleForceLogout = () => {
-    console.log('🔧 Forzando logout completo...');
-
     // Limpiar todo el localStorage
     localStorage.clear();
 
