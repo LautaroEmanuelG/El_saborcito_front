@@ -8,6 +8,7 @@ import * as unidadMedidaService from '../../../shared/services/unidadMedidaServi
 import { checkDenominacionStatus } from '../../../shared/services/articuloInsumoService';
 import { registrarCompra } from '../../HU24_CompraIngredientes/services/compraInsumoService';
 import type { NuevaCompraDTO } from '../../HU24_CompraIngredientes/model';
+import ModalSiNo from '../../../shared/components/abmGenerica/components/modals/ModalSiNo';
 
 interface Props {
   open: boolean;
@@ -70,6 +71,14 @@ export const ModalInsumoForm = ({
   // Estado para controlar ajuste de stock
   const [requiereAjusteStock, setRequiereAjusteStock] = useState(false);
   const [cantidadAjuste, setCantidadAjuste] = useState(0);
+
+  // Estados para modales de confirmación
+  const [modalConfirmacion, setModalConfirmacion] = useState({
+    open: false,
+    title: '',
+    description: '',
+    onConfirm: () => {},
+  });
 
   // Filtrar solo las categorías padre de tipo INSUMOS para el select del modal
   const categoriasPadre = categorias.filter((cat) => !cat.tipoCategoria && cat.tipo === 'INSUMOS');
@@ -228,6 +237,20 @@ export const ModalInsumoForm = ({
     const subcat = subcategorias.find((c) => c.id === subId);
     setForm((prev) => ({ ...prev, categoria: subcat }));
   };
+
+  // Función helper para mostrar modal de confirmación
+  const mostrarModal = (title: string, description: string, onConfirm: () => void) => {
+    setModalConfirmacion({
+      open: true,
+      title,
+      description,
+      onConfirm,
+    });
+  };
+
+  const cerrarModal = () => {
+    setModalConfirmacion((prev) => ({ ...prev, open: false }));
+  };
   const handleAgregarUnidad = () => {
     clearError(); // Limpiar errores previos del store
     setOpenUnidadModal(true);
@@ -252,9 +275,7 @@ export const ModalInsumoForm = ({
     try {
       const denominacionAjuste = `Ajuste de Stock [${insumo.denominacion}]`;
 
-      // Calcular el subtotal usando precio de compra * cantidad ajustada
-      const subtotal = Math.abs(cantidadAjuste) * (insumo.precioCompra ?? 0);
-
+      // El subtotal se calculará en el backend como precioUnitario * cantidad
       const ajusteDTO: NuevaCompraDTO = {
         denominacion: denominacionAjuste,
         detalles: [
@@ -262,7 +283,7 @@ export const ModalInsumoForm = ({
             insumoId: insumo.id,
             cantidad: cantidadAjuste, // Puede ser negativo para reducir stock
             precioUnitario: insumo.precioCompra ?? 0,
-            subtotal: subtotal,
+            subtotal: (insumo.precioCompra ?? 0) * cantidadAjuste, // precioUnitario * cantidad
           },
         ],
       };
@@ -279,18 +300,26 @@ export const ModalInsumoForm = ({
 
     // Validación de duplicados antes de enviar
     if (denominacionError || denominacionStatus?.isActive || denominacionStatus?.isDeleted) {
-      alert('Por favor, corrige los errores antes de continuar.');
+      mostrarModal(
+        'Error de validación',
+        'Por favor, corrige los errores antes de continuar.',
+        () => {}
+      );
       return;
     }
 
     // Validación de campos requeridos
     if (!form.denominacion?.trim()) {
-      alert('La denominación es requerida.');
+      mostrarModal('Campo requerido', 'La denominación es requerida.', () => {});
       return;
     }
 
     if (form.stockMinimo === undefined || form.stockMinimo < 0) {
-      alert('El stock mínimo es requerido y debe ser mayor o igual a 0.');
+      mostrarModal(
+        'Campo requerido',
+        'El stock mínimo es requerido y debe ser mayor o igual a 0.',
+        () => {}
+      );
       return;
     }
 
@@ -298,11 +327,11 @@ export const ModalInsumoForm = ({
     // Ya no impedimos el aumento de stock, se genera una transacción automática
 
     if (!form.unidadMedida || !form.unidadMedida.id) {
-      alert('Debes seleccionar una unidad de medida válida.');
+      mostrarModal('Campo requerido', 'Debes seleccionar una unidad de medida válida.', () => {});
       return;
     }
     if (!form.categoria || !form.categoria.id) {
-      alert('Debes seleccionar una categoría válida.');
+      mostrarModal('Campo requerido', 'Debes seleccionar una categoría válida.', () => {});
       return;
     }
 
@@ -331,12 +360,14 @@ export const ModalInsumoForm = ({
             `✅ Se generó automáticamente una transacción de ajuste de stock:\n\n` +
             `• Insumo: ${form.denominacion}\n` +
             `• ${tipoAjuste === 'incremento' ? 'Incremento' : 'Reducción'}: ${Math.abs(cantidadAjuste)} ${form.unidadMedida?.denominacion || 'unidades'}\n` +
-            `• Valor: $${(Math.abs(cantidadAjuste) * (form.precioCompra ?? 0)).toFixed(2)}`;
+            `• Valor: $${(cantidadAjuste * (form.precioCompra ?? 0)).toFixed(2)}`;
 
-          alert(mensaje);
+          mostrarModal('Ajuste de stock generado', mensaje, () => {});
         } catch (error) {
-          alert(
-            '❌ Error al generar el ajuste de stock automático. Por favor, inténtelo nuevamente.'
+          mostrarModal(
+            'Error',
+            '❌ Error al generar el ajuste de stock automático. Por favor, inténtelo nuevamente.',
+            () => {}
           );
           return;
         }
@@ -623,7 +654,7 @@ export const ModalInsumoForm = ({
                             {Math.abs(cantidadAjuste)}{' '}
                             {form.unidadMedida?.denominacion || 'unidades'}
                             <br />• Valor de la transacción: $
-                            {(Math.abs(cantidadAjuste) * (form.precioCompra ?? 0)).toFixed(2)}
+                            {(cantidadAjuste * (form.precioCompra ?? 0)).toFixed(2)}
                             <br />• Stock original: {initialValues.stockActual ?? 0} → Nuevo stock:{' '}
                             {form.stockActual ?? 0}
                           </div>
@@ -973,6 +1004,20 @@ export const ModalInsumoForm = ({
         initialValues={{ denominacion: '' }}
         onSubmit={handleSubmitUnidad}
         mode="add"
+      />
+
+      {/* Modal de confirmación */}
+      <ModalSiNo
+        open={modalConfirmacion.open}
+        onClose={cerrarModal}
+        onConfirm={() => {
+          modalConfirmacion.onConfirm();
+          cerrarModal();
+        }}
+        title={modalConfirmacion.title}
+        description={modalConfirmacion.description}
+        confirmText="Aceptar"
+        cancelText="Cerrar"
       />
     </div>
   );
