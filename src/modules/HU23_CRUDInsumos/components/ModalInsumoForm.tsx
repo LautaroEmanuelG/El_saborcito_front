@@ -326,7 +326,8 @@ export const ModalInsumoForm = ({
     // La validación de stock ahora se maneja con ajustes automáticos
     // Ya no impedimos el aumento de stock, se genera una transacción automática
 
-    if (!form.unidadMedida || !form.unidadMedida.id) {
+    // Validar unidad de medida solo en modo 'add', en 'edit' no se puede cambiar
+    if (mode === 'add' && (!form.unidadMedida || !form.unidadMedida.id)) {
       mostrarModal('Campo requerido', 'Debes seleccionar una unidad de medida válida.', () => {});
       return;
     }
@@ -750,32 +751,40 @@ export const ModalInsumoForm = ({
                   <div>
                     <label className="block text-sm font-medium mb-1" htmlFor="unidadMedida">
                       Unidad de Medida<span className="text-red-500">*</span>
-                    </label>{' '}
-                    <div className="flex gap-2">
-                      <select
-                        id="unidadMedida"
-                        name="unidadMedida"
-                        value={form.unidadMedida?.id ?? ''}
-                        onChange={handleUnidadChange}
-                        className="flex-1 border rounded px-3 py-2"
-                        required
-                      >
-                        <option value="">Seleccionar Unidad de Medida</option>
-                        {unidadesLocal.map((uni) => (
-                          <option key={uni.id} value={uni.id}>
-                            {uni.denominacion}
-                          </option>
-                        ))}
-                      </select>{' '}
-                      <button
-                        type="button"
-                        onClick={handleAgregarUnidad}
-                        className="bg-primary hover:bg-primarydark text-blanco px-3 py-2 rounded font-bold text-lg leading-none"
-                        title="Agregar nueva unidad de medida"
-                      >
-                        +
-                      </button>
-                    </div>
+                    </label>
+                    {mode === 'edit' ? (
+                      // En modo edición, solo mostrar la unidad de medida (no editable)
+                      <div className="w-full border rounded px-3 py-2 bg-gray-100">
+                        {form.unidadMedida?.denominacion ?? 'Sin unidad de medida'}
+                      </div>
+                    ) : (
+                      // En modo agregar, mostrar el select con botón +
+                      <div className="flex gap-2">
+                        <select
+                          id="unidadMedida"
+                          name="unidadMedida"
+                          value={form.unidadMedida?.id ?? ''}
+                          onChange={handleUnidadChange}
+                          className="flex-1 border rounded px-3 py-2"
+                          required
+                        >
+                          <option value="">Seleccionar Unidad de Medida</option>
+                          {unidadesLocal.map((uni) => (
+                            <option key={uni.id} value={uni.id}>
+                              {uni.denominacion}
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={handleAgregarUnidad}
+                          className="bg-primary hover:bg-primarydark text-blanco px-3 py-2 rounded font-bold text-lg leading-none"
+                          title="Agregar nueva unidad de medida"
+                        >
+                          +
+                        </button>
+                      </div>
+                    )}
                     {/* Mostrar advertencia si la unidad original del insumo ya no está disponible */}
                     {initialValues.unidadMedida &&
                       mode === 'edit' &&
