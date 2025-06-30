@@ -4,10 +4,14 @@ import type { Categoria } from '../../../types/Categoria';
 import type { UnidadMedida } from '../../../types/UnidadMedida';
 import { ModalUnidadMedidaForm } from '../../HU_CRUD_UnidadesMedida';
 import { useUnidadMedidaStore } from '../../HU_CRUD_UnidadesMedida/services/unidadMedidaStore';
+import { useInsumoStore } from '../services/insumoStore';
 import * as unidadMedidaService from '../../../shared/services/unidadMedidaService';
 import { checkDenominacionStatus } from '../../../shared/services/articuloInsumoService';
 import { registrarCompra } from '../../HU24_CompraIngredientes/services/compraInsumoService';
-import type { NuevaCompraDTO } from '../../HU24_CompraIngredientes/model';
+import type { NuevaCompraDTO, CompraInsumoDTO } from '../../HU24_CompraIngredientes/model';
+import ModalSiNo from '../../../shared/components/abmGenerica/components/modals/ModalSiNo';
+import CompraIngredientesModal from '../../HU24_CompraIngredientes/components/CompraIngredientesModal';
+import type { ArticuloManufacturado } from '../../../types/Articulo';
 
 interface Props {
   open: boolean;
@@ -57,6 +61,8 @@ export const ModalInsumoForm = ({
   const [unidadesLocal, setUnidadesLocal] = useState<UnidadMedida[]>(unidades);
   // Usar el store de unidades de medida para validaciones
   const { addUnidad, clearError } = useUnidadMedidaStore();
+  // Usar el store de insumos para refrescar después de compras
+  const { fetchInsumos } = useInsumoStore();
 
   // Estados para validación de duplicados
   const [denominacionError, setDenominacionError] = useState<string>('');
@@ -68,8 +74,24 @@ export const ModalInsumoForm = ({
   } | null>(null);
 
   // Estado para controlar ajuste de stock
-  const [requiereAjusteStock, setRequiereAjusteStock] = useState(false);
-  const [cantidadAjuste, setCantidadAjuste] = useState(0);
+  const [requiereAjusteStock] = useState(false);
+  const [cantidadAjuste] = useState(0);
+
+  // Estados para modales de confirmación
+  const [modalConfirmacion, setModalConfirmacion] = useState({
+    open: false,
+    title: '',
+    description: '',
+    onConfirm: () => {},
+  });
+
+  // Estados para modal de compra de ingredientes
+  const [openCompraModal, setOpenCompraModal] = useState(false);
+
+  // Estado para rastrear compras realizadas durante la sesión
+  const [comprasRealizadas, setComprasRealizadas] = useState<
+    { insumoId: number; cantidadTotal: number }[]
+  >([]);
 
   // Filtrar solo las categorías padre de tipo INSUMOS para el select del modal
   const categoriasPadre = categorias.filter((cat) => !cat.tipoCategoria && cat.tipo === 'INSUMOS');
@@ -117,6 +139,7 @@ export const ModalInsumoForm = ({
     setImagenPreview(initialValues.imagen?.url ?? null);
     setSelectedImageFile(null); // Limpiar archivo seleccionado al abrir
     setPrecioOriginal(null); // Limpiar precio original al abrir
+    setComprasRealizadas([]); // Limpiar compras realizadas al abrir
     // Corrige el tipado para acceder a 'eliminado' aunque no esté en el tipo base
     setIsHabilitado(
       (initialValues as any).eliminado === undefined ? true : !(initialValues as any).eliminado
@@ -228,6 +251,100 @@ export const ModalInsumoForm = ({
     const subcat = subcategorias.find((c) => c.id === subId);
     setForm((prev) => ({ ...prev, categoria: subcat }));
   };
+
+  // Función helper para mostrar modal de confirmación
+  const mostrarModal = (title: string, description: string, onConfirm: () => void) => {
+    setModalConfirmacion({
+      open: true,
+      title,
+      description,
+      onConfirm,
+    });
+  };
+
+  const cerrarModal = () => {
+    setModalConfirmacion((prev) => ({ ...prev, open: false }));
+  };
+
+  // Funciones para manejar el modal de compra
+  const handleRealizarCompra = () => {
+    setOpenCompraModal(true);
+  };
+
+  const handleCloseCompraModal = () => {
+    setOpenCompraModal(false);
+  };
+
+  const handleCompraRegistrada = async (compra: CompraInsumoDTO) => {
+    // Cuando se registra una compra, refrescamos los insumos para actualizar el stock
+    try {
+      await fetchInsumos();
+
+      // Buscar si la compra incluye el insumo actual y actualizar el formulario
+      let mensajeDetalle = '';
+      if (form.id && compra.detalles) {
+        const detalleInsumoActual = compra.detalles.find((detalle) => detalle.insumoId === form.id);
+        if (detalleInsumoActual) {
+          // Registrar la compra realizada para evitar ajustes innecesarios
+          setComprasRealizadas((prev) => {
+            const existente = prev.find((c) => c.insumoId === form.id);
+            if (existente) {
+              // Actualizar la cantidad total comprada
+              return prev.map((c) =>
+                c.insumoId === form.id
+                  ? { ...c, cantidadTotal: c.cantidadTotal + detalleInsumoActual.cantidad }
+                  : c
+              );
+            } else {
+              // Agregar nueva compra
+              return [...prev, { insumoId: form.id!, cantidadTotal: detalleInsumoActual.cantidad }];
+            }
+          });
+
+          // Actualizar el stock actual en el formulario
+          const nuevoStock = (form.stockActual ?? 0) + detalleInsumoActual.cantidad;
+          setForm((prev) => ({
+            ...prev,
+            stockActual: nuevoStock,
+          }));
+
+          mensajeDetalle =
+            `\n\n📦 Stock actualizado de "${form.denominacion}":\n` +
+            `• Cantidad comprada: ${detalleInsumoActual.cantidad} ${form.unidadMedida?.denominacion || 'unidades'}\n` +
+            `• Nuevo stock: ${nuevoStock.toFixed(form.esParaElaborar ? 2 : 0)} ${form.unidadMedida?.denominacion || 'unidades'}`;
+        }
+      }
+
+      setOpenCompraModal(false);
+
+      // Mostrar mensaje de éxito
+      mostrarModal(
+        '✅ Compra realizada exitosamente',
+        `La compra "${compra.denominacion}" se registró correctamente por un total de $${compra.totalCompra.toFixed(2)}.${mensajeDetalle}`,
+        () => {}
+      );
+
+      console.log('Compra registrada y stock actualizado:', compra);
+    } catch (error) {
+      console.error('Error al actualizar los insumos después de la compra:', error);
+      // Aún así cerramos el modal pero mostramos un mensaje
+      setOpenCompraModal(false);
+      mostrarModal(
+        'Compra realizada',
+        'La compra se realizó exitosamente, pero hubo un problema al actualizar la vista. Por favor, recarga la página para ver los cambios.',
+        () => {}
+      );
+    }
+  };
+
+  const handleActualizarPrecios = (
+    _insumosConCambios: any[],
+    _articulosAfectados: ArticuloManufacturado[]
+  ) => {
+    // Esta función se ejecuta cuando hay cambios de precios desde el modal de compra
+    // Por ahora solo cerramos el modal de compra
+    setOpenCompraModal(false);
+  };
   const handleAgregarUnidad = () => {
     clearError(); // Limpiar errores previos del store
     setOpenUnidadModal(true);
@@ -252,9 +369,7 @@ export const ModalInsumoForm = ({
     try {
       const denominacionAjuste = `Ajuste de Stock [${insumo.denominacion}]`;
 
-      // Calcular el subtotal usando precio de compra * cantidad ajustada
-      const subtotal = Math.abs(cantidadAjuste) * (insumo.precioCompra ?? 0);
-
+      // El subtotal se calculará en el backend como precioUnitario * cantidad
       const ajusteDTO: NuevaCompraDTO = {
         denominacion: denominacionAjuste,
         detalles: [
@@ -262,7 +377,7 @@ export const ModalInsumoForm = ({
             insumoId: insumo.id,
             cantidad: cantidadAjuste, // Puede ser negativo para reducir stock
             precioUnitario: insumo.precioCompra ?? 0,
-            subtotal: subtotal,
+            subtotal: (insumo.precioCompra ?? 0) * cantidadAjuste, // precioUnitario * cantidad
           },
         ],
       };
@@ -279,41 +394,60 @@ export const ModalInsumoForm = ({
 
     // Validación de duplicados antes de enviar
     if (denominacionError || denominacionStatus?.isActive || denominacionStatus?.isDeleted) {
-      alert('Por favor, corrige los errores antes de continuar.');
+      mostrarModal(
+        'Error de validación',
+        'Por favor, corrige los errores antes de continuar.',
+        () => {}
+      );
       return;
     }
 
     // Validación de campos requeridos
     if (!form.denominacion?.trim()) {
-      alert('La denominación es requerida.');
+      mostrarModal('Campo requerido', 'La denominación es requerida.', () => {});
       return;
     }
 
     if (form.stockMinimo === undefined || form.stockMinimo < 0) {
-      alert('El stock mínimo es requerido y debe ser mayor o igual a 0.');
+      mostrarModal(
+        'Campo requerido',
+        'El stock mínimo es requerido y debe ser mayor o igual a 0.',
+        () => {}
+      );
       return;
     }
 
     // La validación de stock ahora se maneja con ajustes automáticos
     // Ya no impedimos el aumento de stock, se genera una transacción automática
 
-    if (!form.unidadMedida || !form.unidadMedida.id) {
-      alert('Debes seleccionar una unidad de medida válida.');
+    // Validar unidad de medida solo en modo 'add', en 'edit' no se puede cambiar
+    if (mode === 'add' && (!form.unidadMedida || !form.unidadMedida.id)) {
+      mostrarModal('Campo requerido', 'Debes seleccionar una unidad de medida válida.', () => {});
       return;
     }
     if (!form.categoria || !form.categoria.id) {
-      alert('Debes seleccionar una categoría válida.');
+      mostrarModal('Campo requerido', 'Debes seleccionar una categoría válida.', () => {});
       return;
     }
 
     // Detectar si hay cambios en el stock y generar ajuste automático
+    // NUEVA LÓGICA: Solo genera ajuste si hay diferencia real después de considerar compras manuales
     if (
       mode === 'edit' &&
       form.stockActual !== undefined &&
       initialValues.stockActual !== undefined &&
       form.stockActual !== initialValues.stockActual
     ) {
-      const cantidadAjuste = form.stockActual - initialValues.stockActual;
+      // Calcular el stock esperado considerando las compras realizadas durante la sesión
+      let stockEsperado = initialValues.stockActual;
+      const compraDelInsumo = comprasRealizadas.find((c) => c.insumoId === form.id);
+      if (compraDelInsumo) {
+        stockEsperado += compraDelInsumo.cantidadTotal;
+      }
+
+      // Solo generar ajuste si hay diferencia entre el stock esperado y el que ingresó el usuario
+      // Esto evita generar ajustes innecesarios cuando el usuario hace compras manuales
+      const cantidadAjuste = form.stockActual - stockEsperado;
 
       if (cantidadAjuste !== 0) {
         try {
@@ -331,12 +465,17 @@ export const ModalInsumoForm = ({
             `✅ Se generó automáticamente una transacción de ajuste de stock:\n\n` +
             `• Insumo: ${form.denominacion}\n` +
             `• ${tipoAjuste === 'incremento' ? 'Incremento' : 'Reducción'}: ${Math.abs(cantidadAjuste)} ${form.unidadMedida?.denominacion || 'unidades'}\n` +
-            `• Valor: $${(Math.abs(cantidadAjuste) * (form.precioCompra ?? 0)).toFixed(2)}`;
+            `• Stock original: ${initialValues.stockActual}\n` +
+            `• Stock después de compras: ${stockEsperado}\n` +
+            `• Stock final: ${form.stockActual}\n` +
+            `• Valor del ajuste: $${(cantidadAjuste * (form.precioCompra ?? 0)).toFixed(2)}`;
 
-          alert(mensaje);
+          mostrarModal('Ajuste de stock generado', mensaje, () => {});
         } catch (error) {
-          alert(
-            '❌ Error al generar el ajuste de stock automático. Por favor, inténtelo nuevamente.'
+          mostrarModal(
+            'Error',
+            '❌ Error al generar el ajuste de stock automático. Por favor, inténtelo nuevamente.',
+            () => {}
           );
           return;
         }
@@ -596,6 +735,50 @@ export const ModalInsumoForm = ({
                         min={0}
                         step={form.esParaElaborar ? '0.01' : '1'}
                       />{' '}
+                      {/* Información sobre compras realizadas */}
+                      {comprasRealizadas.find((c) => c.insumoId === form.id) && (
+                        <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-md">
+                          <p className="text-sm font-medium text-green-700 flex items-center">
+                            <span className="mr-2">🛒</span>
+                            Compra realizada en esta sesión
+                          </p>
+                          <div className="mt-1 text-xs text-green-600">
+                            {(() => {
+                              const compra = comprasRealizadas.find((c) => c.insumoId === form.id);
+                              const stockOriginal = initialValues.stockActual ?? 0;
+                              const stockDespuesCompra =
+                                stockOriginal + (compra?.cantidadTotal ?? 0);
+                              const stockActual = form.stockActual ?? 0;
+                              const ajusteManual = stockActual - stockDespuesCompra;
+
+                              return (
+                                <>
+                                  • Stock original:{' '}
+                                  {stockOriginal.toFixed(form.esParaElaborar ? 2 : 0)}{' '}
+                                  {form.unidadMedida?.denominacion || 'unidades'}
+                                  <br />• Cantidad comprada:{' '}
+                                  {compra?.cantidadTotal?.toFixed(form.esParaElaborar ? 2 : 0)}{' '}
+                                  {form.unidadMedida?.denominacion || 'unidades'}
+                                  <br />• Stock después de compra:{' '}
+                                  {stockDespuesCompra.toFixed(form.esParaElaborar ? 2 : 0)}{' '}
+                                  {form.unidadMedida?.denominacion || 'unidades'}
+                                  {ajusteManual !== 0 && (
+                                    <>
+                                      <br />• Ajuste manual adicional: {ajusteManual > 0 ? '+' : ''}
+                                      {ajusteManual.toFixed(form.esParaElaborar ? 2 : 0)}{' '}
+                                      {form.unidadMedida?.denominacion || 'unidades'}
+                                      <br />
+                                      <span className="text-orange-600 font-medium">
+                                        ⚠️ Se generará un ajuste automático al guardar
+                                      </span>
+                                    </>
+                                  )}
+                                </>
+                              );
+                            })()}
+                          </div>
+                        </div>
+                      )}
                       {/* Aviso para ajuste de stock automático */}
                       {requiereAjusteStock && (
                         <div
@@ -623,7 +806,7 @@ export const ModalInsumoForm = ({
                             {Math.abs(cantidadAjuste)}{' '}
                             {form.unidadMedida?.denominacion || 'unidades'}
                             <br />• Valor de la transacción: $
-                            {(Math.abs(cantidadAjuste) * (form.precioCompra ?? 0)).toFixed(2)}
+                            {(cantidadAjuste * (form.precioCompra ?? 0)).toFixed(2)}
                             <br />• Stock original: {initialValues.stockActual ?? 0} → Nuevo stock:{' '}
                             {form.stockActual ?? 0}
                           </div>
@@ -719,32 +902,40 @@ export const ModalInsumoForm = ({
                   <div>
                     <label className="block text-sm font-medium mb-1" htmlFor="unidadMedida">
                       Unidad de Medida<span className="text-red-500">*</span>
-                    </label>{' '}
-                    <div className="flex gap-2">
-                      <select
-                        id="unidadMedida"
-                        name="unidadMedida"
-                        value={form.unidadMedida?.id ?? ''}
-                        onChange={handleUnidadChange}
-                        className="flex-1 border rounded px-3 py-2"
-                        required
-                      >
-                        <option value="">Seleccionar Unidad de Medida</option>
-                        {unidadesLocal.map((uni) => (
-                          <option key={uni.id} value={uni.id}>
-                            {uni.denominacion}
-                          </option>
-                        ))}
-                      </select>{' '}
-                      <button
-                        type="button"
-                        onClick={handleAgregarUnidad}
-                        className="bg-primary hover:bg-primarydark text-blanco px-3 py-2 rounded font-bold text-lg leading-none"
-                        title="Agregar nueva unidad de medida"
-                      >
-                        +
-                      </button>
-                    </div>
+                    </label>
+                    {mode === 'edit' ? (
+                      // En modo edición, solo mostrar la unidad de medida (no editable)
+                      <div className="w-full border rounded px-3 py-2 bg-gray-100">
+                        {form.unidadMedida?.denominacion ?? 'Sin unidad de medida'}
+                      </div>
+                    ) : (
+                      // En modo agregar, mostrar el select con botón +
+                      <div className="flex gap-2">
+                        <select
+                          id="unidadMedida"
+                          name="unidadMedida"
+                          value={form.unidadMedida?.id ?? ''}
+                          onChange={handleUnidadChange}
+                          className="flex-1 border rounded px-3 py-2"
+                          required
+                        >
+                          <option value="">Seleccionar Unidad de Medida</option>
+                          {unidadesLocal.map((uni) => (
+                            <option key={uni.id} value={uni.id}>
+                              {uni.denominacion}
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={handleAgregarUnidad}
+                          className="bg-primary hover:bg-primarydark text-blanco px-3 py-2 rounded font-bold text-lg leading-none"
+                          title="Agregar nueva unidad de medida"
+                        >
+                          +
+                        </button>
+                      </div>
+                    )}
                     {/* Mostrar advertencia si la unidad original del insumo ya no está disponible */}
                     {initialValues.unidadMedida &&
                       mode === 'edit' &&
@@ -942,6 +1133,16 @@ export const ModalInsumoForm = ({
                 <button type="button" className="bg-gray-300 px-4 py-2 rounded" onClick={onClose}>
                   Cancelar
                 </button>
+                {mode === 'edit' && (
+                  <button
+                    type="button"
+                    className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
+                    onClick={handleRealizarCompra}
+                    title={`Realizar compra de ${form.denominacion || 'este insumo'}`}
+                  >
+                    🛒 Realizar Compra
+                  </button>
+                )}
                 <button
                   type="submit"
                   className={`px-4 py-2 rounded ${
@@ -973,6 +1174,29 @@ export const ModalInsumoForm = ({
         initialValues={{ denominacion: '' }}
         onSubmit={handleSubmitUnidad}
         mode="add"
+      />
+
+      {/* Modal de confirmación */}
+      <ModalSiNo
+        open={modalConfirmacion.open}
+        onClose={cerrarModal}
+        onConfirm={() => {
+          modalConfirmacion.onConfirm();
+          cerrarModal();
+        }}
+        title={modalConfirmacion.title}
+        description={modalConfirmacion.description}
+        confirmText="Aceptar"
+        cancelText="Cerrar"
+      />
+
+      {/* Modal de Compra de Ingredientes */}
+      <CompraIngredientesModal
+        open={openCompraModal}
+        onClose={handleCloseCompraModal}
+        insumosPreseleccionados={form.id ? [form as ArticuloInsumo] : []}
+        onCompraRegistrada={handleCompraRegistrada}
+        onActualizarPrecios={handleActualizarPrecios}
       />
     </div>
   );
