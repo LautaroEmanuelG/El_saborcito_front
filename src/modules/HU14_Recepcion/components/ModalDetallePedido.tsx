@@ -10,11 +10,9 @@ interface ModalDetallePedidoProps {
   pedido: PedidoCompletoConDetalles;
   isOpen: boolean;
   onClose: () => void;
-  onCambiarEstado: (pedidoId: number, nuevoEstado: string) => void;
   onAvanzarEstado: (pedidoId: number) => void;
   onCancelarPedido: (pedidoId: number) => void;
-  puedeAvanzarEstado: (estadoActual: string, tipoEnvio: string) => boolean;
-  obtenerProximoEstado: (estadoActual: string, tipoEnvio: string) => string | null;
+  puedeAvanzarEstado: (estadoActual: string) => boolean;
 }
 
 interface PromocionConArticulos {
@@ -36,7 +34,6 @@ export const ModalDetallePedido: React.FC<ModalDetallePedidoProps> = ({
   onAvanzarEstado,
   onCancelarPedido,
   puedeAvanzarEstado,
-  obtenerProximoEstado,
 }) => {
   const [promocionesDetalle, setPromocionesDetalle] = useState<Record<number, any>>({});
 
@@ -437,16 +434,13 @@ export const ModalDetallePedido: React.FC<ModalDetallePedidoProps> = ({
               Cerrar
             </button>
 
-            {puedeAvanzarEstado(pedido.estado.nombre, pedido.tipoEnvio.nombre) && (
+            {puedeAvanzarEstado(pedido.estado.nombre) && (
               <button
                 onClick={manejarAvanzarEstado}
                 className="px-4 py-2 gap-2 bg-primary text-white rounded hover:bg-primarydark transition-colors flex items-center"
               >
                 <IconoArrowRight />
-                {obtenerProximoEstado(pedido.estado.nombre, pedido.tipoEnvio.nombre)?.replace(
-                  /_/g,
-                  ' '
-                )}
+                Avanzar Estado
               </button>
             )}
           </div>

@@ -1,8 +1,5 @@
 import { useState, useEffect } from 'react';
-import {
-  updateEstadoPedido,
-  getPedidosDetalladosCompletos,
-} from '../../shared/services/pedidoService';
+import { getPedidosDetalladosCompletos } from '../../shared/services/pedidoService';
 import {
   getAllEstados,
   avanzarEstadoPedidoGenerico,
@@ -73,24 +70,6 @@ export const useRecepcionLogic = () => {
 
     setPedidosFiltrados(pedidosFiltrados);
   };
-  const cambiarEstadoPedido = async (pedidoId: number, nuevoEstado: string) => {
-    try {
-      setLoading(true);
-      await updateEstadoPedido(pedidoId, nuevoEstado);
-
-      // Actualizar el pedido en el estado local
-      setPedidos((prevPedidos) =>
-        prevPedidos.map((pedido) =>
-          pedido.id === pedidoId ? { ...pedido, estado: { id: 0, nombre: nuevoEstado } } : pedido
-        )
-      );
-    } catch (err) {
-      setError(`Error al actualizar el estado: ${err}`);
-      console.error('Error updating estado:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   /**
    * Avanza automáticamente el estado de un pedido usando la lógica del backend
@@ -146,33 +125,11 @@ export const useRecepcionLogic = () => {
     }
   };
 
-  const getEstadoSiguiente = (estadoActual: string): string | null => {
-    const flujoEstados: Record<string, string> = {
-      PENDIENTE: 'CONFIRMADO',
-      CONFIRMADO: 'EN_PREPARACION',
-      EN_PREPARACION: 'LISTO',
-      LISTO: 'EN_DELIVERY',
-      EN_DELIVERY: 'ENTREGADO',
-    };
+  // Estados que pueden ser avanzados (basado en los IDs del backend)
+  const ESTADOS_AVANZABLES = ['PENDIENTE', 'EN_PREPARACION', 'DEMORADO', 'LISTO', 'EN_DELIVERY'];
 
-    return flujoEstados[estadoActual] || null;
-  };
-
-  const puedeAvanzarEstado = (estadoActual: string, tipoEnvio: string): boolean => {
-    // Si es LISTO y el tipo de envío no es DELIVERY, puede ir directo a ENTREGADO
-    if (estadoActual === 'LISTO' && tipoEnvio !== 'DELIVERY') {
-      return true;
-    }
-
-    return getEstadoSiguiente(estadoActual) !== null;
-  };
-
-  const obtenerProximoEstado = (estadoActual: string, tipoEnvio: string): string | null => {
-    if (estadoActual === 'LISTO' && tipoEnvio !== 'DELIVERY') {
-      return 'ENTREGADO';
-    }
-
-    return getEstadoSiguiente(estadoActual);
+  const puedeAvanzarEstado = (estadoActual: string): boolean => {
+    return ESTADOS_AVANZABLES.includes(estadoActual);
   };
 
   const limpiarFiltros = () => {
@@ -197,12 +154,10 @@ export const useRecepcionLogic = () => {
     setBuscarId,
     setFechaDesde,
     setFechaHasta,
-    cambiarEstadoPedido,
     avanzarEstadoPedido,
     cargarDatos,
     limpiarFiltros,
     puedeAvanzarEstado,
-    obtenerProximoEstado,
     cancelarPedido,
   };
 };

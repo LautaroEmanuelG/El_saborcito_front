@@ -10,8 +10,7 @@ interface TablaRecepcionProps {
   onVerDetalle: (pedido: PedidoCompletoConDetalles) => void;
   onAvanzarEstado: (pedidoId: number) => void;
   onCancelarPedido: (pedidoId: number) => void;
-  puedeAvanzarEstado: (estadoActual: string, tipoEnvio: string) => boolean;
-  obtenerProximoEstado: (estadoActual: string, tipoEnvio: string) => string | null;
+  puedeAvanzarEstado: (estadoActual: string) => boolean;
 }
 
 export const TablaRecepcion: React.FC<TablaRecepcionProps> = ({
@@ -20,7 +19,6 @@ export const TablaRecepcion: React.FC<TablaRecepcionProps> = ({
   onAvanzarEstado,
   onCancelarPedido,
   puedeAvanzarEstado,
-  obtenerProximoEstado,
 }) => {
   const getTipoEnvioBadgeColor = (tipo: string): string => {
     const colors: Record<string, string> = {
@@ -141,11 +139,11 @@ export const TablaRecepcion: React.FC<TablaRecepcionProps> = ({
                     </button>
 
                     {/* Botón Avanzar Estado */}
-                    {puedeAvanzarEstado(pedido.estado.nombre, pedido.tipoEnvio.nombre) && (
+                    {puedeAvanzarEstado(pedido.estado.nombre) && (
                       <button
                         onClick={() => manejarAvanzarEstado(pedido)}
                         className="bg-primary text-white px-3 py-1 rounded text-xs hover:bg-green-600 transition-colors"
-                        title={`Cambiar a ${obtenerProximoEstado(pedido.estado.nombre, pedido.tipoEnvio.nombre)}`}
+                        title="Avanzar estado del pedido"
                       >
                         <IconoArrowRight />
                       </button>

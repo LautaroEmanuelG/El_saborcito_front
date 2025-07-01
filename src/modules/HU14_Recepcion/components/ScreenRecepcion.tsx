@@ -20,12 +20,10 @@ export const ScreenRecepcion: React.FC = () => {
     setBuscarId,
     setFechaDesde,
     setFechaHasta,
-    cambiarEstadoPedido,
     avanzarEstadoPedido,
     cargarDatos,
     limpiarFiltros,
     puedeAvanzarEstado,
-    obtenerProximoEstado,
     cancelarPedido,
   } = useRecepcionLogic();
   const [pedidoSeleccionado, setPedidoSeleccionado] = useState<PedidoCompletoConDetalles | null>(
@@ -42,10 +40,6 @@ export const ScreenRecepcion: React.FC = () => {
     setPedidoSeleccionado(null);
     setModalDetalle(false);
   };
-  const manejarCambioEstado = async (pedidoId: number, nuevoEstado: string) => {
-    await cambiarEstadoPedido(pedidoId, nuevoEstado);
-  };
-
   const manejarAvanzarEstado = async (pedidoId: number) => {
     const exito = await avanzarEstadoPedido(pedidoId);
     if (exito) {
@@ -123,11 +117,11 @@ export const ScreenRecepcion: React.FC = () => {
           </div>
           <div className="text-xs sm:text-sm text-gray-600">En Preparación</div>
         </div>
-        <div className="bg-white p-3 sm:p-4 rounded-lg shadow border-l-4 border-red-500">
-          <div className="text-lg sm:text-2xl font-bold text-red-600">
-            {pedidosFiltrados.filter((p) => p.estado.nombre === 'DEMORADO').length}
+        <div className="bg-white p-3 sm:p-4 rounded-lg shadow border-l-4 border-green-500">
+          <div className="text-lg sm:text-2xl font-bold text-green-600">
+            {pedidosFiltrados.filter((p) => p.estado.nombre === 'LISTO').length}
           </div>
-          <div className="text-xs sm:text-sm text-gray-600">Demorados</div>
+          <div className="text-xs sm:text-sm text-gray-600">Listos</div>
         </div>
         <div className="bg-white p-3 sm:p-4 rounded-lg shadow border-l-4 border-purple-500">
           <div className="text-lg sm:text-2xl font-bold text-purple-600">
@@ -148,7 +142,6 @@ export const ScreenRecepcion: React.FC = () => {
         onVerDetalle={abrirDetalle}
         onAvanzarEstado={manejarAvanzarEstado}
         puedeAvanzarEstado={puedeAvanzarEstado}
-        obtenerProximoEstado={obtenerProximoEstado}
         onCancelarPedido={manejarCancelarPedido}
       />
       {/* Modal de detalle */}
@@ -157,11 +150,9 @@ export const ScreenRecepcion: React.FC = () => {
           pedido={pedidoSeleccionado}
           isOpen={modalDetalle}
           onClose={cerrarDetalle}
-          onCambiarEstado={manejarCambioEstado}
           onAvanzarEstado={manejarAvanzarEstado}
           onCancelarPedido={manejarCancelarPedido}
           puedeAvanzarEstado={puedeAvanzarEstado}
-          obtenerProximoEstado={obtenerProximoEstado}
         />
       )}
     </div>
