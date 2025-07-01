@@ -281,7 +281,7 @@ export const VistaCarrito = () => {
                 }`}
                 title={isAnalyzing ? 'Analizando carrito...' : undefined}
               >
-                {isAnalyzing ? 'Analizando...' : 'Comprar'}
+                Comprar
               </button>
             )}
           </div>

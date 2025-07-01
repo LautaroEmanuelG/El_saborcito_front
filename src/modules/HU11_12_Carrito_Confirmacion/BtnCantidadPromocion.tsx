@@ -78,7 +78,7 @@ const BtnCantidadPromocion: React.FC<BtnCantidadPromocionProps> = ({
 
       // 🕐 **ACTIVAR COOLDOWN**
       setIsOnCooldown(true);
-      setTimeout(() => setIsOnCooldown(false), 500);
+      setTimeout(() => setIsOnCooldown(false), 0);
 
       try {
         // 🚀 **AGREGAR AL CARRITO**
