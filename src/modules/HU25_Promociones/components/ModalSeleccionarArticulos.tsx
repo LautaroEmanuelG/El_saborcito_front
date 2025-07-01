@@ -123,7 +123,7 @@ const ModalSeleccionarArticulos: React.FC<ModalSeleccionarArticulosProps> = ({
       if (newMap.has(articulo.id!)) {
         newMap.delete(articulo.id!);
       } else {
-        newMap.set(articulo.id!, 0); // Cantidad por defecto
+        newMap.set(articulo.id!, 0); // Inicializar en 0 pero mostrar como vacío
       }
       return newMap;
     });
@@ -133,19 +133,13 @@ const ModalSeleccionarArticulos: React.FC<ModalSeleccionarArticulosProps> = ({
     // Redondear a entero ya que solo hay manufacturados e insumos no para elaborar
     const cantidadFinal = Math.floor(cantidad);
 
-    if (cantidadFinal <= 0) {
-      setSelectedArticulos((prev) => {
-        const newMap = new Map(prev);
-        newMap.delete(articuloId);
-        return newMap;
-      });
-    } else {
-      setSelectedArticulos((prev) => {
-        const newMap = new Map(prev);
-        newMap.set(articuloId, cantidadFinal);
-        return newMap;
-      });
-    }
+    // Siempre mantener el artículo seleccionado, incluso si la cantidad es 0
+    // Solo actualizar la cantidad sin eliminar de la selección
+    setSelectedArticulos((prev) => {
+      const newMap = new Map(prev);
+      newMap.set(articuloId, cantidadFinal >= 0 ? cantidadFinal : 0);
+      return newMap;
+    });
   };
 
   // Verificar si todos los artículos seleccionados tienen cantidad > 0
@@ -264,14 +258,14 @@ const ModalSeleccionarArticulos: React.FC<ModalSeleccionarArticulosProps> = ({
                             <label className="block text-xs font-medium mb-1">Cantidad</label>
                             <input
                               type="number"
-                              value={cantidad}
+                              value={cantidad > 0 ? cantidad : ''}
                               onChange={(e) =>
                                 handleCantidadChange(articulo.id!, Number(e.target.value))
                               }
                               min="1"
                               step="1"
                               className="w-full border rounded px-2 py-1 text-sm"
-                              placeholder="Cantidad"
+                              placeholder="Ingrese la cantidad"
                               onClick={(e) => e.stopPropagation()}
                             />
                           </div>

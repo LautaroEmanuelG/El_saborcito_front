@@ -78,10 +78,18 @@ const SeccionUnidadesMedida = () => {
       label: 'Acciones',
       key: 'acciones',
       render: (row: any) => {
-        const soloVer = showDeleted && row.eliminado;
+        // Agregar propiedad eliminado si no existe (para elementos de deletedUnidades)
+        const elementoConEliminado = {
+          ...row,
+          eliminado: deletedUnidades.some((d) => d.id === row.id),
+        };
+
+        // Solo mostrar "ver" si está en vista eliminados pero no permitir editar elementos activos en esa vista
+        const soloVer = showDeleted && !elementoConEliminado.eliminado;
+
         return (
           <ButtonsTable
-            el={row}
+            el={elementoConEliminado}
             handleDelete={handleDelete}
             setOpenModal={setOpenModal}
             setSelectedItem={setSelectedUnidad}
