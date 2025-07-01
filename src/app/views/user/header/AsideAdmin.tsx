@@ -7,12 +7,17 @@ import { useAuth } from '../../../../shared/hooks/useAuth';
 import { useEmpleado } from '../../../../shared/providers/EmpleadoProvider';
 import { getNavigationByRole } from '../../../../shared/config/navigationConfig';
 import { LoadingSpinner } from '../../../../shared/components/LoadingSpinner';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
+import IconoUsuario from '../../../../assets/svgs/icons/IconoUsuario';
 
 export const AsideAdmin = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [navItems, setNavItems] = useState<NavItemStructure[]>([]);
   const { rol, email, isLoading } = useAuth();
   const { empleadoAutenticado } = useEmpleado();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isPerfilActive = location.pathname.startsWith('/empleado/perfil');
 
   // 🚀 **LÓGICA HÍBRIDA: DETECTAR EMPLEADOS Y CLIENTES**
   const finalRol = empleadoAutenticado?.rol || rol;
@@ -81,6 +86,20 @@ export const AsideAdmin = () => {
         </div>
 
         <ul className="mt-8 xl:mt-0">
+          <li className="mb-3">
+            <div
+              className={`flex items-center justify-between p-2.5 rounded-lg bg-blanco font-bold text-xl ${isPerfilActive ? 'text-primary' : 'text-negro'}`}
+            >
+              <Link
+                to="/empleado/perfil"
+                onClick={closeMenu}
+                className="block w-full flex items-center gap-3"
+              >
+                <IconoUsuario className="w-5 h-5" />
+                Mi Perfil
+              </Link>
+            </div>
+          </li>
           {navItems.map((navItem) => (
             <CollapsibleNavItem key={navItem.title} itemData={navItem} onLinkClick={closeMenu} />
           ))}

@@ -28,7 +28,6 @@ export const LoginEmpleadoModal = ({ isOpen, onClose }: LoginEmpleadoModalProps)
   const [isBlocked, setIsBlocked] = useState(false);
   const [blockTime, setBlockTime] = useState(0);
   const [empleadoTemp, setEmpleadoTemp] = useState<Empleado | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
   const { empleadoAutenticado } = useEmpleado();
   const { redirectByRole } = useRoleRedirection();
   const { loginEmpleadoWithSync } = useEmpleadoLogin();
@@ -62,7 +61,6 @@ export const LoginEmpleadoModal = ({ isOpen, onClose }: LoginEmpleadoModalProps)
     setError('');
     setEstado(EstadoLoginEmpleado.INICIAL);
     setEmpleadoTemp(null);
-    setIsAdmin(false);
 
     // Cerrar el modal
     onClose();
@@ -85,45 +83,29 @@ export const LoginEmpleadoModal = ({ isOpen, onClose }: LoginEmpleadoModalProps)
         setEstado(EstadoLoginEmpleado.ERROR);
         return;
       }
-      if (isAdmin) {
-        // Login como admin - usar endpoint /admin/login
-        try {
-          const response = await loginAdmin({ email, password: contraseña });
-          if (response.token && response.usuario) {
-            // 🚀 **USAR NUEVO SISTEMA SINCRONIZADO PARA ADMIN**
-            await loginEmpleadoWithSync(response.usuario, response.token);
-            handleCloseModal();
-            return;
-          }
-        } catch (adminError: any) {
-          setError('No tienes permisos de administrador o credenciales incorrectas');
-          setEstado(EstadoLoginEmpleado.ERROR);
-          return;
-        }
-      } else {
-        // Login como empleado - usar endpoint /empleados/login/manual
-        try {
-          const response = await loginEmpleado({ email, password: contraseña });
 
-          if (response.cambioRequerido) {
-            setEstado(EstadoLoginEmpleado.CAMBIO_CONTRASEÑA);
-            setEmpleadoTemp(response.empleado);
-          } else {
-            setEstado(EstadoLoginEmpleado.EXITOSO);
-            if (response.token && response.empleado) {
-              // 🚀 **USAR NUEVO SISTEMA SINCRONIZADO PARA EMPLEADO**
-              await loginEmpleadoWithSync(response.empleado, response.token);
-            }
-            handleCloseModal();
+      // Login como empleado - usar endpoint /empleados/login/manual
+      try {
+        const response = await loginEmpleado({ email, password: contraseña });
+
+        if (response.cambioRequerido) {
+          setEstado(EstadoLoginEmpleado.CAMBIO_CONTRASEÑA);
+          setEmpleadoTemp(response.empleado);
+        } else {
+          setEstado(EstadoLoginEmpleado.EXITOSO);
+          if (response.token && response.empleado) {
+            // 🚀 **USAR NUEVO SISTEMA SINCRONIZADO PARA EMPLEADO**
+            await loginEmpleadoWithSync(response.empleado, response.token);
           }
-        } catch (empleadoError: any) {
-          setError(
-            empleadoError.message ||
-              'Este usuario no es un empleado. Use el checkbox "¿Eres admin?" si es administrador.'
-          );
-          setEstado(EstadoLoginEmpleado.ERROR);
-          return;
+          handleCloseModal();
         }
+      } catch (empleadoError: any) {
+        setError(
+          empleadoError.message ||
+            'Este usuario no es un empleado. Use el checkbox "¿Eres admin?" si es administrador.'
+        );
+        setEstado(EstadoLoginEmpleado.ERROR);
+        return;
       }
     } catch (error: any) {
       setError(error.message || 'Error en el servidor. Intente nuevamente.');
@@ -210,18 +192,6 @@ export const LoginEmpleadoModal = ({ isOpen, onClose }: LoginEmpleadoModalProps)
             onChange={(e) => setContraseña(e.target.value)}
             disabled={isBlocked || estado === EstadoLoginEmpleado.AUTENTICANDO}
           />
-        </div>
-        <div className="mb-4">
-          <label className="flex items-center text-negro text-sm font-medium cursor-pointer">
-            <input
-              type="checkbox"
-              checked={isAdmin}
-              onChange={() => setIsAdmin(!isAdmin)}
-              className="mr-3 w-4 h-4 text-primary bg-white border-2 border-gris rounded focus:ring-primary focus:ring-2 cursor-pointer"
-              disabled={isBlocked || estado === EstadoLoginEmpleado.AUTENTICANDO}
-            />
-            ¿Eres admin?
-          </label>
         </div>
         {error && <p className="text-primary mb-4">{error}</p>}
         <button

@@ -27,27 +27,11 @@ export const AsideEmpleado = ({ onMenuSelect, activeView }: AsideEmpleadoProps) 
     setIsOpen(false);
   };
 
-  const menuItems = [
-    {
-      id: VistaPerfilEmpleado.DATOS,
-      label: 'Mis Datos Personales',
-      icon: <IconoUsuario className="w-5 h-5" />,
-    },
-    {
-      id: VistaPerfilEmpleado.CONTRASEÑA,
-      label: 'Cambiar Contraseña',
-      icon: <IconoPassword className="w-5 h-5" />,
-    },
-  ] as const;
-
   const shouldShowAreaTrabajo = (): boolean => {
     if (!user || !user.rol) return false;
-
-    // Mostrar "Mi Área de Trabajo" para todos los roles EXCEPTO ADMIN y CLIENTE
-    const rolesExcluidos = ['ADMIN', 'CLIENTE'];
-    const result = !rolesExcluidos.includes(user.rol);
-
-    return result;
+    // Mostrar 'Mi Área de Trabajo' para todos los roles excepto CLIENTE
+    const rolesExcluidos = ['CLIENTE'];
+    return !rolesExcluidos.includes(user.rol);
   };
 
   const handleAreaTrabajo = () => {
@@ -56,7 +40,7 @@ export const AsideEmpleado = ({ onMenuSelect, activeView }: AsideEmpleadoProps) 
     closeMenu();
     switch (user.rol) {
       case 'ADMIN':
-        navigate('/admin/historial');
+        navigate('/admin/empleados');
         break;
       case 'CAJERO':
         navigate('/admin/recepcion');
@@ -80,6 +64,21 @@ export const AsideEmpleado = ({ onMenuSelect, activeView }: AsideEmpleadoProps) 
   const togglePerfil = () => {
     setIsPerfilExpanded(!isPerfilExpanded);
   };
+
+  const menuItems = [
+    {
+      id: VistaPerfilEmpleado.DATOS,
+      label: 'Mis Datos Personales',
+      icon: <IconoUsuario className="w-5 h-5" />,
+      onClick: () => handleMenuClick(VistaPerfilEmpleado.DATOS),
+    },
+    {
+      id: VistaPerfilEmpleado.CONTRASEÑA,
+      label: 'Cambiar Contraseña',
+      icon: <IconoPassword className="w-5 h-5" />,
+      onClick: () => handleMenuClick(VistaPerfilEmpleado.CONTRASEÑA),
+    },
+  ] as const;
 
   if (!user) {
     return (
@@ -176,7 +175,7 @@ export const AsideEmpleado = ({ onMenuSelect, activeView }: AsideEmpleadoProps) 
                       }`}
                     >
                       <button
-                        onClick={() => handleMenuClick(item.id)}
+                        onClick={item.onClick}
                         className="flex items-center gap-3 w-full text-md font-medium text-left"
                       >
                         {item.icon}

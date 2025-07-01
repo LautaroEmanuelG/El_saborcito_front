@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useEmpleado } from '../../../shared/providers/EmpleadoProvider';
+import { useUser } from '../../../shared/providers/UserProvider';
 import { HeaderEmpleado } from './HeaderEmpleado';
 import { AsideEmpleado } from './AsideEmpleado';
 import { VistaPerfilEmpleado } from '../model';
@@ -7,8 +8,25 @@ import { MisDatosEmpleado } from './MisDatosEmpleado';
 import { CambiarContraseñaEmpleado } from './CambiarContraseñaEmpleado';
 
 export const PerfilEmpleadoDashboard = () => {
-  const { empleadoAutenticado } = useEmpleado();
+  const { empleadoAutenticado, setEmpleado } = useEmpleado();
+  const { user } = useUser();
   const [activeView, setActiveView] = useState<VistaPerfilEmpleado>(VistaPerfilEmpleado.DATOS);
+
+  useEffect(() => {
+    if (user && user.rol === 'ADMIN' && !empleadoAutenticado) {
+      // Adaptar el usuario global al modelo de empleado
+      setEmpleado({
+        id: user.id,
+        nombre: user.nombre,
+        apellido: user.apellido,
+        telefono: user.telefono || '',
+        email: user.email,
+        rol: user.rol,
+        estado: true,
+        fechaRegistro: user.fechaRegistro || new Date().toISOString(),
+      });
+    }
+  }, [user, empleadoAutenticado, setEmpleado]);
 
   if (!empleadoAutenticado) {
     return (

@@ -4,21 +4,24 @@ import IconoLogoSaborcito from '../../../../assets/svgs/icons/IconoLogoSaborcito
 import { IconoCerrar } from '../../../../assets/svgs/icons/IconoCerrar';
 import { ModalConfirm } from '../../../../shared/components/utils/ModalConfirm';
 import { useEmpleado } from '../../../../shared/providers/EmpleadoProvider';
+import { useUser } from '../../../../shared/providers/UserProvider';
 import BackButton from './BackButton';
+import { useGlobalLogout } from '../../../../shared/hooks/useGlobalLogout';
 
 export const HeaderAdmin = () => {
   const [hoverLogin, setHoverLogin] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const navigate = useNavigate();
   const { logoutEmpleado } = useEmpleado();
+  const { logout } = useUser();
+  const globalLogout = useGlobalLogout();
 
   const toggleLoginModal = () => {
     setIsLoginOpen(!isLoginOpen);
   };
 
   const handleCerrarSesion = () => {
-    logoutEmpleado();
-    navigate('/');
+    globalLogout();
   };
 
   return (
