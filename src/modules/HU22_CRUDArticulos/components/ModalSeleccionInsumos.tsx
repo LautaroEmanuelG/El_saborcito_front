@@ -86,26 +86,20 @@ const ModalSeleccionInsumos: React.FC<ModalSeleccionInsumosProps> = ({
       if (newMap.has(insumo.id!)) {
         newMap.delete(insumo.id!);
       } else {
-        newMap.set(insumo.id!, 0); // Cantidad por defecto
+        newMap.set(insumo.id!, 0); // Inicializar en 0 pero mostrar como vacío
       }
       return newMap;
     });
   };
 
   const handleCantidadChange = (insumoId: number, cantidad: number) => {
-    if (cantidad <= 0) {
-      setSelectedInsumos((prev) => {
-        const newMap = new Map(prev);
-        newMap.delete(insumoId);
-        return newMap;
-      });
-    } else {
-      setSelectedInsumos((prev) => {
-        const newMap = new Map(prev);
-        newMap.set(insumoId, cantidad);
-        return newMap;
-      });
-    }
+    // Siempre mantener el insumo seleccionado, incluso si la cantidad es 0
+    // Solo actualizar la cantidad sin eliminar de la selección
+    setSelectedInsumos((prev) => {
+      const newMap = new Map(prev);
+      newMap.set(insumoId, cantidad >= 0 ? cantidad : 0);
+      return newMap;
+    });
   };
 
   // Verificar si todos los insumos seleccionados tienen cantidad > 0
@@ -231,14 +225,14 @@ const ModalSeleccionInsumos: React.FC<ModalSeleccionInsumosProps> = ({
                             </label>
                             <input
                               type="number"
-                              value={cantidad}
+                              value={cantidad > 0 ? cantidad : ''}
                               onChange={(e) =>
                                 handleCantidadChange(insumo.id!, Number(e.target.value))
                               }
                               min="0.01"
                               step="0.01"
                               className="w-full border rounded px-2 py-1 text-sm"
-                              placeholder="Cantidad"
+                              placeholder="Ingrese la cantidad"
                               onClick={(e) => e.stopPropagation()}
                             />
                           </div>

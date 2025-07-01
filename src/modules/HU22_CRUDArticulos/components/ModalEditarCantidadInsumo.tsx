@@ -45,8 +45,9 @@ const ModalEditarCantidadInsumo: React.FC<ModalEditarCantidadInsumoProps> = ({
             type="number"
             min={1}
             className="w-full border rounded px-3 py-2 bg-gray-100 text-base text-negro"
-            value={valor}
-            onChange={(e) => setValor(Number(e.target.value))}
+            value={valor > 0 ? valor : ''}
+            onChange={(e) => setValor(Number(e.target.value) || 0)}
+            placeholder="Ingrese la cantidad"
             autoFocus
           />
         </div>
