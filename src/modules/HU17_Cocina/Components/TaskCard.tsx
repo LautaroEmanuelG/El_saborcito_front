@@ -47,6 +47,12 @@ const ESTILOS_ESTADO: Partial<
     boton: 'bg-orange-500 text-white hover:bg-orange-600',
     texto: 'Completar',
   },
+  [ESTADO_IDS.EN_COCINA]: {
+    card: 'border-l-4 border-l-orange-500 bg-orange-50 hover:bg-orange-100',
+    badge: 'bg-orange-200 text-orange-800',
+    boton: 'bg-orange-500 text-white hover:bg-orange-600',
+    texto: 'Completar',
+  },
   [ESTADO_IDS.DEMORADO]: {
     card: 'border-l-4 border-l-red-500 bg-red-50 hover:bg-red-100',
     badge: 'bg-red-200 text-red-800',
@@ -121,6 +127,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   const puedeAgregarTiempo =
     acciones.includes('agregar_tiempo') ||
     estadoId === ESTADO_IDS.EN_PREPARACION ||
+    estadoId === ESTADO_IDS.EN_COCINA ||
     estadoId === ESTADO_IDS.DEMORADO;
 
   const puedeAvanzar = acciones.includes('avanzar_automatico') || acciones.includes('completar');

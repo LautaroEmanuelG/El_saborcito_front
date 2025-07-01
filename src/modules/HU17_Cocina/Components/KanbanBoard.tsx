@@ -171,7 +171,13 @@ export const KanbanBoard: React.FC = () => {
             if (estado.id === ESTADO_IDS.PENDIENTE && !showPendiente) return null;
             if (estado.id === ESTADO_IDS.LISTO && !showListo) return null;
 
-            const pedidosFiltrados = pedidos.filter((p) => p.estado.id === estado.id);
+            let pedidosFiltrados = pedidos.filter((p) => p.estado.id === estado.id);
+            // Si es la columna EN_PREPARACION, incluir también los de id 2 y 3
+            if (estado.id === ESTADO_IDS.EN_PREPARACION) {
+              pedidosFiltrados = pedidos.filter(
+                (p) => p.estado.id === ESTADO_IDS.EN_PREPARACION || p.estado.id === 3
+              );
+            }
             return (
               <Column
                 key={estado.id}

@@ -2,17 +2,21 @@
 
 // IDs fijos de estados según especificación del backend
 export const ESTADO_IDS = {
-  PENDIENTE: 1,
-  EN_PREPARACION: 3,
-  LISTO: 4,
-  DELIVERY: 5,
+  A_CONFIRMAR: 1,
+  CANCELADO: 7,
+  CONFIRMADO: 9,
+  DEMORADO: 3,
+  EN_DELIVERY: 5,
+  EN_PREPARACION: 2,
   ENTREGADO: 6,
-  DEMORADO: 8,
+  LISTO: 4,
+  PENDIENTE: 8,
 } as const;
 
 export type EstadoId = (typeof ESTADO_IDS)[keyof typeof ESTADO_IDS];
 export type EstadoNombre =
   | 'PENDIENTE'
+  | 'EN_COCINA'
   | 'EN_PREPARACION'
   | 'LISTO'
   | 'DELIVERY'
@@ -105,9 +109,12 @@ export const TRANSICIONES_VALIDAS: Record<EstadoId, EstadoId[]> = {
   [ESTADO_IDS.PENDIENTE]: [ESTADO_IDS.EN_PREPARACION, ESTADO_IDS.LISTO, ESTADO_IDS.DEMORADO],
   [ESTADO_IDS.EN_PREPARACION]: [ESTADO_IDS.LISTO, ESTADO_IDS.DEMORADO],
   [ESTADO_IDS.DEMORADO]: [ESTADO_IDS.LISTO],
-  [ESTADO_IDS.LISTO]: [ESTADO_IDS.DELIVERY, ESTADO_IDS.ENTREGADO],
-  [ESTADO_IDS.DELIVERY]: [ESTADO_IDS.ENTREGADO],
-  [ESTADO_IDS.ENTREGADO]: [], // Estado final
+  [ESTADO_IDS.LISTO]: [ESTADO_IDS.EN_DELIVERY, ESTADO_IDS.ENTREGADO],
+  [ESTADO_IDS.EN_DELIVERY]: [ESTADO_IDS.ENTREGADO],
+  [ESTADO_IDS.ENTREGADO]: [],
+  [ESTADO_IDS.A_CONFIRMAR]: [],
+  [ESTADO_IDS.CANCELADO]: [],
+  [ESTADO_IDS.CONFIRMADO]: [],
 };
 
 // Función para validar si una transición es válida (ahora solo informativa)
@@ -122,7 +129,7 @@ export const getNombreEstado = (estadoId: EstadoId): EstadoNombre => {
 
   // Estados que no están en el Kanban pero existen en el sistema
   switch (estadoId) {
-    case ESTADO_IDS.DELIVERY:
+    case ESTADO_IDS.EN_DELIVERY:
       return 'DELIVERY';
     case ESTADO_IDS.ENTREGADO:
       return 'ENTREGADO';
@@ -139,7 +146,7 @@ export const getIdEstado = (estadoNombre: EstadoNombre): EstadoId => {
   // Estados que no están en el Kanban
   switch (estadoNombre) {
     case 'DELIVERY':
-      return ESTADO_IDS.DELIVERY;
+      return ESTADO_IDS.EN_DELIVERY;
     case 'ENTREGADO':
       return ESTADO_IDS.ENTREGADO;
     default:
