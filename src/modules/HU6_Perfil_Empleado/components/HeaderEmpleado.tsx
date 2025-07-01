@@ -5,6 +5,7 @@ import { IconoCerrar } from '../../../assets/svgs/icons/IconoCerrar';
 import { ModalConfirm } from '../../../shared/components/utils/ModalConfirm';
 import { useEmpleado } from '../../../shared/providers/EmpleadoProvider';
 import BackButton from '../../../app/views/user/header/BackButton';
+import { useGlobalLogout } from '../../../shared/hooks/useGlobalLogout';
 
 export const HeaderEmpleado = () => {
   const [hoverLogin, setHoverLogin] = useState(false);
@@ -12,14 +13,14 @@ export const HeaderEmpleado = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { logoutEmpleado } = useEmpleado();
+  const globalLogout = useGlobalLogout();
 
   const toggleLoginModal = () => {
     setIsLoginOpen(!isLoginOpen);
   };
 
   const handleCerrarSesion = () => {
-    logoutEmpleado();
-    navigate('/');
+    globalLogout();
   };
 
   return (
