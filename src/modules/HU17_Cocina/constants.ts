@@ -45,6 +45,13 @@ export const ESTILOS_ESTADOS = {
     badgeClass: 'bg-green-200 text-green-800',
     buttonClass: 'bg-primary hover:bg-primarydark',
   },
+  [ESTADO_IDS.EN_COCINA]: {
+    color: '#EB9417',
+    bgClass: 'bg-orange-50',
+    borderClass: 'border-l-orange-500',
+    badgeClass: 'bg-orange-200 text-orange-800',
+    buttonClass: 'bg-orange-500 hover:bg-orange-600',
+  },
 } as const;
 
 /**
@@ -57,6 +64,7 @@ export const MENSAJES_ESTADO: Record<EstadoId, string> = {
   [ESTADO_IDS.LISTO]: 'Pedido finalizado',
   [ESTADO_IDS.DELIVERY]: 'Marcar como entregado',
   [ESTADO_IDS.ENTREGADO]: 'Entregado',
+  [ESTADO_IDS.EN_COCINA]: 'Completar pedido',
 };
 
 /**
@@ -80,6 +88,7 @@ export const TRANSICIONES_PERMITIDAS: Record<EstadoId, readonly EstadoId[]> = {
   [ESTADO_IDS.LISTO]: [ESTADO_IDS.DELIVERY, ESTADO_IDS.ENTREGADO],
   [ESTADO_IDS.DELIVERY]: [ESTADO_IDS.ENTREGADO],
   [ESTADO_IDS.ENTREGADO]: [], // Estado final
+  [ESTADO_IDS.EN_COCINA]: [], // Estado final
 } as const;
 
 /**
@@ -92,6 +101,7 @@ export const ACCIONES_POR_ESTADO: Record<EstadoId, readonly string[]> = {
   [ESTADO_IDS.LISTO]: [], // Ya no se puede modificar desde cocina
   [ESTADO_IDS.DELIVERY]: ['marcar_entregado'],
   [ESTADO_IDS.ENTREGADO]: [], // Estado final
+  [ESTADO_IDS.EN_COCINA]: ['completar', 'marcar_demorado', 'agregar_tiempo'],
 } as const;
 
 /**
@@ -104,4 +114,5 @@ export const NOMBRES_ESTADOS: Record<EstadoId, string> = {
   [ESTADO_IDS.LISTO]: 'Listo',
   [ESTADO_IDS.DELIVERY]: 'Delivery',
   [ESTADO_IDS.ENTREGADO]: 'Entregado',
+  [ESTADO_IDS.EN_COCINA]: 'En Cocina',
 } as const;
