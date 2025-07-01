@@ -287,6 +287,43 @@ const isArticuloInsumo = (articulo: any): boolean => {
   return 'stockActual' in articulo && 'esParaElaborar' in articulo;
 };
 
+// 🧮 **FUNCIÓN PARA CALCULAR CANTIDAD MÁXIMA DE PROMOCIONES**
+const calcularCantidadMaximaPromocion = (
+  promocion: Promocion,
+  productosConProblemas: any[]
+): number => {
+  let cantidadMaxima = Number.MAX_SAFE_INTEGER;
+
+  // Revisar cada artículo de la promoción
+  promocion.promocionDetalles.forEach((detalle) => {
+    const articuloId = detalle.articulo.id;
+    const cantidadRequeridaPorPromocion = detalle.cantidadRequerida;
+
+    // Buscar si este artículo tiene problemas
+    const problemaArticulo = productosConProblemas.find(
+      (problema: any) => problema.articuloId === articuloId
+    );
+
+    if (problemaArticulo && problemaArticulo.cantidadMaximaPosible !== undefined) {
+      // Calcular cuántas promociones se pueden hacer con este artículo
+      const promocionesPosiblesConEsteArticulo = Math.floor(
+        problemaArticulo.cantidadMaximaPosible / cantidadRequeridaPorPromocion
+      );
+
+      // La cantidad máxima de promociones está limitada por el artículo más restrictivo
+      cantidadMaxima = Math.min(cantidadMaxima, promocionesPosiblesConEsteArticulo);
+    }
+  });
+
+  // Si no hay limitaciones específicas, devolver un valor alto (pero razonable)
+  if (cantidadMaxima === Number.MAX_SAFE_INTEGER) {
+    cantidadMaxima = 100; // Valor por defecto razonable
+  }
+
+  // Asegurar que sea un número entero positivo
+  return Math.max(0, Math.floor(cantidadMaxima));
+};
+
 // 🚀 **PROVIDER OPTIMIZADO**
 export const CarritoProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(carritoReducer, initialState);
@@ -440,7 +477,11 @@ export const CarritoProvider: React.FC<{ children: ReactNode }> = ({ children })
           resultado.productosConProblemas.forEach((problema: any) => {
             const articuloId = problema.articuloId?.toString() || problema.id?.toString();
             if (articuloId && problema.cantidadMaximaPosible !== undefined) {
-              nuevasLimitaciones[articuloId] = problema.cantidadMaximaPosible;
+              // ✅ **ASEGURAR QUE LAS LIMITACIONES SEAN ENTEROS**
+              nuevasLimitaciones[articuloId] = Math.max(
+                0,
+                Math.floor(problema.cantidadMaximaPosible)
+              );
             }
           });
         }
@@ -472,12 +513,15 @@ export const CarritoProvider: React.FC<{ children: ReactNode }> = ({ children })
             cantidadNueva: number;
           }> = [];
 
-          // Ajustar productos individuales
+          // 🔧 **AJUSTAR PRODUCTOS INDIVIDUALES CON VALIDACIÓN DE ENTEROS**
           resultado.productosConProblemas.forEach((problema: any) => {
             const articuloId = problema.articuloId;
-            const cantidadMaxima = problema.cantidadMaximaPosible;
+            const cantidadMaximaOriginal = problema.cantidadMaximaPosible;
 
-            if (articuloId && cantidadMaxima !== undefined) {
+            if (articuloId && cantidadMaximaOriginal !== undefined) {
+              // ✅ **ASEGURAR QUE LA CANTIDAD MÁXIMA SEA UN ENTERO**
+              const cantidadMaxima = Math.max(0, Math.floor(cantidadMaximaOriginal));
+
               // Buscar si el producto está en el carrito individual
               const productoEnCarrito = state.carrito.find((item) => item.id === articuloId);
 
@@ -499,32 +543,49 @@ export const CarritoProvider: React.FC<{ children: ReactNode }> = ({ children })
             }
           });
 
-          // Ajustar promociones problemáticas
+          // 🔧 **AJUSTAR PROMOCIONES PROBLEMÁTICAS CON CÁLCULO CORRECTO DE CANTIDAD MÁXIMA**
           promocionesConProblemas.forEach((promocionId) => {
             const promocionEnCarrito = state.promocionesEnCarrito.find(
               (item) => item.promocion.id === promocionId
             );
 
-            if (promocionEnCarrito && promocionEnCarrito.cantidad > 1) {
-              console.log(
-                `🔧 AJUSTANDO PROMOCIÓN ${promocionEnCarrito.promocion.denominacion}: ${promocionEnCarrito.cantidad} → 1`
+            if (promocionEnCarrito) {
+              // 🧮 **CALCULAR CANTIDAD MÁXIMA REAL PARA LA PROMOCIÓN**
+              const cantidadMaximaPromocion = calcularCantidadMaximaPromocion(
+                promocionEnCarrito.promocion,
+                resultado.productosConProblemas || []
               );
 
-              // Guardar información del ajuste
-              ajustesPromociones.push({
-                nombre: promocionEnCarrito.promocion.denominacion,
-                cantidadAnterior: promocionEnCarrito.cantidad,
-                cantidadNueva: 1,
-              });
+              // Solo ajustar si la cantidad actual excede la máxima posible
+              if (promocionEnCarrito.cantidad > cantidadMaximaPromocion) {
+                console.log(
+                  `🔧 AJUSTANDO PROMOCIÓN ${promocionEnCarrito.promocion.denominacion}: ${promocionEnCarrito.cantidad} → ${cantidadMaximaPromocion}`
+                );
 
-              // Reducir a 1 promoción cuando hay problemas
-              dispatch({
-                type: 'ADJUST_PROMOCION_QUANTITIES',
-                payload: {
-                  promocionId: promocionId,
-                  nuevaCantidad: 1,
-                },
-              });
+                // Guardar información del ajuste
+                ajustesPromociones.push({
+                  nombre: promocionEnCarrito.promocion.denominacion,
+                  cantidadAnterior: promocionEnCarrito.cantidad,
+                  cantidadNueva: cantidadMaximaPromocion,
+                });
+
+                // ✅ **AJUSTAR A LA CANTIDAD MÁXIMA CALCULADA (NO SIEMPRE A 1)**
+                if (cantidadMaximaPromocion > 0) {
+                  dispatch({
+                    type: 'ADJUST_PROMOCION_QUANTITIES',
+                    payload: {
+                      promocionId: promocionId,
+                      nuevaCantidad: cantidadMaximaPromocion,
+                    },
+                  });
+                } else {
+                  // Si no se puede hacer ni una promoción, eliminarla
+                  dispatch({
+                    type: 'REMOVE_PROMOCION_FROM_CARRITO',
+                    payload: { promocionId: promocionId },
+                  });
+                }
+              }
             }
           });
 
@@ -714,7 +775,11 @@ export const CarritoProvider: React.FC<{ children: ReactNode }> = ({ children })
             );
 
             if (problemaDelProducto?.cantidadMaximaPosible !== undefined) {
-              const cantidadMaxima = problemaDelProducto.cantidadMaximaPosible;
+              // ✅ **ASEGURAR QUE LA CANTIDAD MÁXIMA SEA UN ENTERO**
+              const cantidadMaxima = Math.max(
+                0,
+                Math.floor(problemaDelProducto.cantidadMaximaPosible)
+              );
 
               // 🚀 **AUTO-AJUSTE AUTOMÁTICO: Colocar el máximo inmediatamente**
               setLimitacionesProduccion((prev) => ({
