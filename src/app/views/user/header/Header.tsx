@@ -251,8 +251,8 @@ export const Header = ({ onSearch }: Props) => {
                         {/* Opciones para EMPLEADOS */}
                         <Link
                           to="/empleado/perfil"
-                          className="block py-2 hover:bg-gray-700"
-                          onClick={toggleMenu}
+                          className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+                          onClick={() => setUserMenuOpen(false)}
                         >
                           Mi Perfil
                         </Link>
@@ -425,7 +425,7 @@ export const Header = ({ onSearch }: Props) => {
                 {/* Opciones para EMPLEADOS */}
                 <Link
                   to="/empleado/perfil"
-                  className="block py-2 hover:bg-gray-700"
+                  className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
                   onClick={toggleMenu}
                 >
                   Mi Perfil
