@@ -45,14 +45,21 @@ export const ESTILOS_ESTADOS = {
     badgeClass: 'bg-green-200 text-green-800',
     buttonClass: 'bg-primary hover:bg-primarydark',
   },
-  [ESTADO_IDS.EN_COCINA]: {
-    color: '#EB9417',
-    bgClass: 'bg-orange-50',
-    borderClass: 'border-l-orange-500',
-    badgeClass: 'bg-orange-200 text-orange-800',
-    buttonClass: 'bg-orange-500 hover:bg-orange-600',
+  [ESTADO_IDS.EN_DELIVERY]: {
+    color: '#8B5CF6',
+    bgClass: 'bg-purple-50',
+    borderClass: 'border-l-purple-500',
+    badgeClass: 'bg-purple-200 text-purple-800',
+    buttonClass: 'bg-purple-500 hover:bg-purple-600',
   },
-} as const;
+  [ESTADO_IDS.ENTREGADO]: {
+    color: '#10B981',
+    bgClass: 'bg-green-100',
+    borderClass: 'border-l-green-700',
+    badgeClass: 'bg-green-300 text-green-900',
+    buttonClass: 'bg-green-700 hover:bg-green-800',
+  },
+};
 
 /**
  * 🎯 Mensajes de estado optimizados
@@ -62,9 +69,11 @@ export const MENSAJES_ESTADO: Record<EstadoId, string> = {
   [ESTADO_IDS.EN_PREPARACION]: 'Completar pedido',
   [ESTADO_IDS.DEMORADO]: 'Completar pedido',
   [ESTADO_IDS.LISTO]: 'Pedido finalizado',
-  [ESTADO_IDS.DELIVERY]: 'Marcar como entregado',
+  [ESTADO_IDS.EN_DELIVERY]: 'Marcar como entregado',
   [ESTADO_IDS.ENTREGADO]: 'Entregado',
-  [ESTADO_IDS.EN_COCINA]: 'Completar pedido',
+  [ESTADO_IDS.A_CONFIRMAR]: 'A confirmar',
+  [ESTADO_IDS.CANCELADO]: 'Cancelado',
+  [ESTADO_IDS.CONFIRMADO]: 'Confirmado',
 };
 
 /**
@@ -74,7 +83,7 @@ export const TRANSICIONES_AVANZAR: ReadonlyArray<readonly [EstadoId, EstadoId]> 
   [ESTADO_IDS.PENDIENTE, ESTADO_IDS.EN_PREPARACION],
   [ESTADO_IDS.EN_PREPARACION, ESTADO_IDS.LISTO],
   [ESTADO_IDS.DEMORADO, ESTADO_IDS.LISTO],
-  [ESTADO_IDS.LISTO, ESTADO_IDS.DELIVERY],
+  [ESTADO_IDS.LISTO, ESTADO_IDS.EN_DELIVERY],
   [ESTADO_IDS.LISTO, ESTADO_IDS.ENTREGADO],
 ] as const;
 
@@ -82,27 +91,31 @@ export const TRANSICIONES_AVANZAR: ReadonlyArray<readonly [EstadoId, EstadoId]> 
  * ✅ Matriz de transiciones válidas
  */
 export const TRANSICIONES_PERMITIDAS: Record<EstadoId, readonly EstadoId[]> = {
-  [ESTADO_IDS.PENDIENTE]: [ESTADO_IDS.EN_PREPARACION, ESTADO_IDS.DEMORADO],
+  [ESTADO_IDS.PENDIENTE]: [ESTADO_IDS.EN_PREPARACION, ESTADO_IDS.LISTO, ESTADO_IDS.DEMORADO],
   [ESTADO_IDS.EN_PREPARACION]: [ESTADO_IDS.LISTO, ESTADO_IDS.DEMORADO],
   [ESTADO_IDS.DEMORADO]: [ESTADO_IDS.LISTO],
-  [ESTADO_IDS.LISTO]: [ESTADO_IDS.DELIVERY, ESTADO_IDS.ENTREGADO],
-  [ESTADO_IDS.DELIVERY]: [ESTADO_IDS.ENTREGADO],
-  [ESTADO_IDS.ENTREGADO]: [], // Estado final
-  [ESTADO_IDS.EN_COCINA]: [], // Estado final
-} as const;
+  [ESTADO_IDS.LISTO]: [ESTADO_IDS.EN_DELIVERY, ESTADO_IDS.ENTREGADO],
+  [ESTADO_IDS.EN_DELIVERY]: [ESTADO_IDS.ENTREGADO],
+  [ESTADO_IDS.ENTREGADO]: [],
+  [ESTADO_IDS.A_CONFIRMAR]: [],
+  [ESTADO_IDS.CANCELADO]: [],
+  [ESTADO_IDS.CONFIRMADO]: [],
+};
 
 /**
  * 🎮 Acciones disponibles por estado
  */
 export const ACCIONES_POR_ESTADO: Record<EstadoId, readonly string[]> = {
   [ESTADO_IDS.PENDIENTE]: ['avanzar_automatico', 'marcar_demorado'],
-  [ESTADO_IDS.EN_PREPARACION]: ['completar', 'marcar_demorado', 'agregar_tiempo'],
+  [ESTADO_IDS.EN_PREPARACION]: ['completar', 'agregar_tiempo'],
   [ESTADO_IDS.DEMORADO]: ['completar', 'agregar_tiempo'],
-  [ESTADO_IDS.LISTO]: [], // Ya no se puede modificar desde cocina
-  [ESTADO_IDS.DELIVERY]: ['marcar_entregado'],
-  [ESTADO_IDS.ENTREGADO]: [], // Estado final
-  [ESTADO_IDS.EN_COCINA]: ['completar', 'marcar_demorado', 'agregar_tiempo'],
-} as const;
+  [ESTADO_IDS.LISTO]: [],
+  [ESTADO_IDS.EN_DELIVERY]: ['marcar_entregado'],
+  [ESTADO_IDS.ENTREGADO]: [],
+  [ESTADO_IDS.A_CONFIRMAR]: [],
+  [ESTADO_IDS.CANCELADO]: [],
+  [ESTADO_IDS.CONFIRMADO]: [],
+};
 
 /**
  * 📝 Nombres de estados para mostrar al usuario
@@ -112,7 +125,9 @@ export const NOMBRES_ESTADOS: Record<EstadoId, string> = {
   [ESTADO_IDS.EN_PREPARACION]: 'En Preparación',
   [ESTADO_IDS.DEMORADO]: 'Demorado',
   [ESTADO_IDS.LISTO]: 'Listo',
-  [ESTADO_IDS.DELIVERY]: 'Delivery',
+  [ESTADO_IDS.EN_DELIVERY]: 'En Delivery',
   [ESTADO_IDS.ENTREGADO]: 'Entregado',
-  [ESTADO_IDS.EN_COCINA]: 'En Cocina',
-} as const;
+  [ESTADO_IDS.A_CONFIRMAR]: 'A Confirmar',
+  [ESTADO_IDS.CANCELADO]: 'Cancelado',
+  [ESTADO_IDS.CONFIRMADO]: 'Confirmado',
+};
